@@ -70,7 +70,7 @@ void test_watchdog(TestConnections& test, int argc, char* argv[])
         test.log_includes("received fatal signal 6");
         if (test.global_result == 0)
         {
-            test.tprintf("Maxscale was killed by systemd - ok");
+            test.tprintf("Percona Proxy was killed by systemd - ok");
 
             for (int i = 0; i < 30; i++)
             {

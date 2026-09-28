@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
     mysql_close(conn);
 
     test.tprintf("Reconnectiong");
-    test.add_result(!try_connect(test), "Error connecting to Maxscale");
+    test.add_result(!try_connect(test), "Error connecting to Percona Proxy");
 
 
     test.tprintf("Trying simple operations with t1 ");

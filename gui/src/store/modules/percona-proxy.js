@@ -219,7 +219,7 @@ export default {
                 this.vue.$logger.error(e)
             }
         },
-        //-----------------------------------------------Maxscale parameter update---------------------------------
+        //-----------------------------------------------Percona Proxy parameter update---------------------------------
         /**
          * @param {Object} payload payload object
          * @param {String} payload.id percona-proxy

@@ -441,7 +441,7 @@ private:
                                              * and N slaves topology? Also allows unsafe failover */
 
         /* Should all cluster modification commands require a majority of server locks?
-         * Used in multi-Maxscale situations. */
+         * Used in multi-Percona Proxy situations. */
         RequireLocks require_server_locks;
 
         // Cluster operations additional settings

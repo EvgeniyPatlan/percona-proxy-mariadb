@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
     map<int, ThreadInfo> cbt1 = get_thread_info(test);
     cout << "Connection distribution at startup:\n" << cbt1 << endl;
 
-    int nMaxscale_threads = cbt1.size();
+    int nPercona_proxy_threads = cbt1.size();
 
     int nConn_total1 = 0;
 
@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
     }
 
     // This is as many connections a thread will have by default after startup.
-    int nConn_default = nConn_total1 / nMaxscale_threads;
+    int nConn_default = nConn_total1 / nPercona_proxy_threads;
 
     int nThreads = 30;
 
@@ -234,7 +234,7 @@ int main(int argc, char* argv[])
     }
 
     int nConn_max = cbt3[recipient].nConnections;
-    int nConn_to_move = (nMaxscale_threads - 1) * (nConn_max - nConn_default) / nMaxscale_threads;
+    int nConn_to_move = (nPercona_proxy_threads - 1) * (nConn_max - nConn_default) / nPercona_proxy_threads;
     int nMax_rounds = nConn_to_move / nConn_per_session;    // Should be worst case.
 
     int rebalance_period = 1;

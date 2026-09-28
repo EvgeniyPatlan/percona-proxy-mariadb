@@ -219,7 +219,7 @@ public:
     void log_printf(const char* format, ...) mxb_attribute((format(printf, 2, 3)));
 
     /**
-     * @brief Creats t1 table, insert data into it and checks if data can be correctly read from all Maxscale
+     * @brief Creats t1 table, insert data into it and checks if data can be correctly read from all Percona Proxy
      * services
      * @param Test Pointer to TestConnections object that contains references to test setup
      * @param N number of INSERTs; every next INSERT is longer 16 times in compare with previous one: for N=4
@@ -229,7 +229,7 @@ public:
     int insert_select(int N);
 
     /**
-     * @brief Executes USE command for all Maxscale service and all Master/Slave backend nodes
+     * @brief Executes USE command for all Percona Proxy service and all Master/Slave backend nodes
      * @param Test Pointer to TestConnections object that contains references to test setup
      * @param db Name of DB in 'USE' command
      * @return 0 in case of success
@@ -278,8 +278,8 @@ public:
     int find_connected_slave1();
 
     /**
-     * @brief CheckMaxscaleAlive Checks if Percona Proxy is alive
-     * Reads test setup info from enviromental variables and tries to connect to all Maxscale services to
+     * @brief check_percona_proxy_alive Checks if Percona Proxy is alive
+     * Reads test setup info from enviromental variables and tries to connect to all Percona Proxy services to
      * check if i is alive.
      * Also 'show processlist' query is executed using all services
      * @return 0 in case if success
@@ -397,7 +397,7 @@ private:
     std::string m_mdbci_config_name;    /**< Name of MDBCI VMs set */
     std::string m_mdbci_vm_path;        /**< Path to directory with MDBCI VMs descriptions */
     std::string m_mdbci_template;       /**< Name of mdbci VMs template file */
-    std::string m_target;               /**< Name of Maxscale repository in the CI */
+    std::string m_target;               /**< Name of Percona Proxy repository in the CI */
     std::string m_vm_path;              /**< Path to the VM Vagrant directory */
     std::string m_test_settings_file;   /**< Path to local test settings file */
 
@@ -414,7 +414,7 @@ private:
     bool m_backend_log_copy {true};
     bool m_percona_proxy_log_copy {true};    /**< Copy Percona Proxy logs? */
 
-    int m_threads {4};      /**< Number of Maxscale threads */
+    int m_threads {4};      /**< Number of Percona Proxy threads */
 
     std::condition_variable m_timeout_cv;
     std::mutex              m_timeout_lock;
@@ -426,13 +426,13 @@ private:
     std::atomic_uint32_t m_log_copy_interval {300};     /**< Seconds between log copies */
 
     /**
-     * If true IPv6 addresses will be used to connect Maxscale and backed Also IPv6 addresses go to
+     * If true IPv6 addresses will be used to connect Percona Proxy and backed Also IPv6 addresses go to
      * percona-proxy.cnf. */
     bool m_use_ipv6 {false};
 
     /**
-     * Flag that is set when 'reinstall_percona_proxy'-option is provided. If true, Maxscale will be removed
-     * and re-installed on all Maxscale nodes. Used for 'run_test_snapshot'.
+     * Flag that is set when 'reinstall_percona_proxy'-option is provided. If true, Percona Proxy will be removed
+     * and re-installed on all Percona Proxy nodes. Used for 'run_test_snapshot'.
      */
     bool m_reinstall_percona_proxy {false};
     bool m_mdbci_called {false};    /**< Was mdbci called when setting up test system? */

@@ -107,9 +107,9 @@ bool find_master(TestConnections& test, time_t max_wait)
 {
     bool found_master = false;
 
-    auto* pMaxscale1 = test.percona_proxy;
+    auto* pPercona_proxy1 = test.percona_proxy;
 
-    MaxRest maxrest(&test, pMaxscale1);
+    MaxRest maxrest(&test, pPercona_proxy1);
 
     time_t start = time(nullptr);
     time_t elapsed = 0;
@@ -137,16 +137,16 @@ bool find_nosql_user(TestConnections& test, time_t max_wait)
 {
     bool found_nosql_user = false;
 
-    auto* pMaxscale1 = test.percona_proxy;
-    auto* pMaxscale2 = test.percona_proxy2;
+    auto* pPercona_proxy1 = test.percona_proxy;
+    auto* pPercona_proxy2 = test.percona_proxy2;
 
     time_t start = time(nullptr);
     time_t elapsed = 0;
 
     do
     {
-        if (pMaxscale1->log_matches("Created initial NoSQL user") ||
-            pMaxscale2->log_matches("Created initial NoSQL user"))
+        if (pPercona_proxy1->log_matches("Created initial NoSQL user") ||
+            pPercona_proxy2->log_matches("Created initial NoSQL user"))
         {
             found_nosql_user = true;
         }
@@ -178,11 +178,11 @@ void test_main(TestConnections& test)
 
         if (test.global_result == 0)
         {
-            auto* pMaxscale1 = test.percona_proxy;
-            auto* pMaxscale2 = test.percona_proxy2;
+            auto* pPercona_proxy1 = test.percona_proxy;
+            auto* pPercona_proxy2 = test.percona_proxy2;
 
-            pMaxscale1->start();
-            pMaxscale2->start();
+            pPercona_proxy1->start();
+            pPercona_proxy2->start();
 
             time_t max_wait = 10; // seconds
 
@@ -192,8 +192,8 @@ void test_main(TestConnections& test)
                 {
                     mongocxx::instance inst{};
 
-                    test_connecting_to_nosql(test, *pMaxscale1);
-                    test_connecting_to_nosql(test, *pMaxscale2);
+                    test_connecting_to_nosql(test, *pPercona_proxy1);
+                    test_connecting_to_nosql(test, *pPercona_proxy2);
                 }
                 else
                 {

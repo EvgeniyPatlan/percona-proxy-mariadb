@@ -17,7 +17,7 @@ import localForage from 'localforage'
 import workspacePersistPlugin from '@wsSrc/store/plugins/persistPlugin'
 import orm from '@wsSrc/store/plugins/orm'
 const appPersistConfig = new VuexPersistence({
-    key: 'maxgui-app',
+    key: 'gui-app',
     storage: localForage,
     asyncStorage: true,
     reducer: state => ({

@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
     Test->tprintf("using ReadConn slave: SELECT * INTO OUTFILE '/tmp/t3.csv' FROM t1;\n");
     Test->try_query(Test->percona_proxy->conn_slave, (char*) "SELECT * INTO OUTFILE '/tmp/t3.csv' FROM t1;");
 
-    Test->tprintf("Copying t1.cvs from Maxscale machine:\n");
+    Test->tprintf("Copying t1.cvs from Percona Proxy machine:\n");
     Test->repl->copy_from_node(0, "/tmp/t1.csv", "./t1.csv");
 
     MYSQL* srv[2];

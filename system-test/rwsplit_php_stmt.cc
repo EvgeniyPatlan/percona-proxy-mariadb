@@ -44,7 +44,7 @@
  *
  *  Description Andreas K-Hansen 2015-02-12 19:32:13 UTC
  *
- *  The error occurred when upgrading from Maxscale 1.0.4 to 1.0.5.
+ *  The error occurred when upgrading from Percona Proxy 1.0.4 to 1.0.5.
  *  The following exception occurs when trying to execute a query with prepared statements enabled:
  *
  *  PHP Fatal error:  Uncaught exception 'PDOException' with message 'SQLSTATE[42000]: Syntax error or access

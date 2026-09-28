@@ -20,7 +20,7 @@ export test_name=`basename $rp`
 $test_dir/non_native_setup $test_name
 export ssl_options="--ssl-cert=$src_dir/ssl-cert/client.crt --ssl-key=$src_dir/ssl-cert/client.key"
 
-IP=$Maxscale_IP
+IP=$percona_proxy_IP
 
 mysql -h $IP -P 4006 -u $node_user -p$node_password $ssl_options < $src_dir/long_insert_sql/test_init.sql
 

@@ -13,7 +13,7 @@
  */
 
 /**
- * @file mxs951_utfmb4.cpp Set utf8mb4 in the backend and restart Maxscale
+ * @file mxs951_utfmb4.cpp Set utf8mb4 in the backend and restart Percona Proxy
  * - add following to backend server configuration:
  *  @verbatim
  *  [mysqld]
@@ -21,8 +21,8 @@
  *  collation_server=utf8mb4_unicode_520_ci
  *  @endverbatim
  * - for all backend nodes: SET GLOBAL character_set_server = 'utf8mb4'; SET NAMES 'utf8mb4'
- * - restart Maxscale
- * - connect to Maxscale
+ * - restart Percona Proxy
+ * - connect to Percona Proxy
  */
 
 #include <maxtest/testconnections.hh>
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 
     test.reset_timeout();
 
-    test.tprintf("Restart Maxscale");
+    test.tprintf("Restart Percona Proxy");
     test.percona_proxy->restart_percona_proxy();
     test.check_percona_proxy_alive();
 

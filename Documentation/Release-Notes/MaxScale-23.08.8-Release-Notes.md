@@ -44,7 +44,7 @@ report on [our Jira](https://jira.mariadb.org/projects/MXS).
 * [MXS-5343](https://jira.mariadb.org/browse/MXS-5343) Kafkacdc does not mention row-based replication as a requirement
 * [MXS-5341](https://jira.mariadb.org/browse/MXS-5341) User account manager hangs on shutdown
 * [MXS-5339](https://jira.mariadb.org/browse/MXS-5339) Slow servers may cause OOM situations if prepared statements are used
-* [MXS-5338](https://jira.mariadb.org/browse/MXS-5338) Maxscale Admin Audit file should include ip address or host of calling session
+* [MXS-5338](https://jira.mariadb.org/browse/MXS-5338) Percona Proxy Admin Audit file should include ip address or host of calling session
 * [MXS-5315](https://jira.mariadb.org/browse/MXS-5315) maxctrl destroy session takes only one ID as argument
 * [MXS-5307](https://jira.mariadb.org/browse/MXS-5307) MaxScale kafkacdc logs "notice : Started replicating from [x.x.x.x]:3306 at GTID 'N-N-N' at every timeout/reconnection
 * [MXS-5302](https://jira.mariadb.org/browse/MXS-5302) Prepared statements should never be removed from session command history

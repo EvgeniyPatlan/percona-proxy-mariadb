@@ -13,7 +13,7 @@
  */
 
 /**
- * @file mxs548_short_session_change_user.cpp MXS-548 regression case ("Maxscale crash")
+ * @file mxs548_short_session_change_user.cpp MXS-548 regression case ("Percona Proxy crash")
  * - configure 2 backend servers (one Master, one Slave)
  * - create 'user' with password 'pass2'
  * - create load on Master (3 threads are inserting data into 't1' in the loop)

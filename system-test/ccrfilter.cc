@@ -14,7 +14,7 @@
 
 /**
  * @file ccrfilter.cpp Tests for the CCRFilter module
- * - configure Maxscale to use Consistent Critical Read Filter
+ * - configure Percona Proxy to use Consistent Critical Read Filter
  * - configure CCR filter with parameter 'time=10'
  * - Execute INSERT
  * - check that SELECT goes to Master

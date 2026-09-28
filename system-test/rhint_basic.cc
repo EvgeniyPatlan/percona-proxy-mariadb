@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
                            (char*) "@@server_id",
                            &server_id_d[0]);
 
-                Test->tprintf("server%d ID from Maxscale: \t%s\n", j + 1, server_id);
+                Test->tprintf("server%d ID from Percona Proxy: \t%s\n", j + 1, server_id);
                 Test->tprintf("server%d ID directly from node: \t%s\n", j + 1, server_id_d);
 
                 Test->add_result(strcmp(server_id, server_id_d), "Hints does not work!\n");

@@ -13,7 +13,7 @@
  */
 
 /**
- * @file slave_failover.cpp  Check how Maxscale works in case of one slave failure, only one slave is
+ * @file slave_failover.cpp  Check how Percona Proxy works in case of one slave failure, only one slave is
  * configured
  *
  * - Connect to RWSplit
@@ -23,7 +23,7 @@
  * - check which slave is used for connection now, expecting any other slave
  * - check warning in the error log about broken slave
  * - unblock mariadb backend (restore slave firewall settings)
- * - check if Maxscale still alive
+ * - check if Percona Proxy still alive
  */
 
 

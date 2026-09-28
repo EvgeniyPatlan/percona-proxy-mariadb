@@ -16,11 +16,11 @@
  * @file pers_02.cpp - Persistent connection test
  *
  * - Set max_connections to 20
- * - Open 75 connections to all Maxscale services
+ * - Open 75 connections to all Percona Proxy services
  * - Close connections
  * - Restart replication (stop all nodes and start them again, execute CHANGE MASTER TO again)
  * - Set max_connections to 2000
- * - Open 70 connections to all Maxscale services
+ * - Open 70 connections to all Percona Proxy services
  * - Close connections
  * - Check there is not crash during restart
  */

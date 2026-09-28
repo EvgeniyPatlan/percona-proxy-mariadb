@@ -106,7 +106,7 @@ private:
         // The slave should be connected and Reader waiting for Writer to sync
         test.log_includes("ReplSYNC: Reader waiting for primary to sync.");
 
-        // Maxscale should not receive any binlog data yet
+        // Percona Proxy should not receive any binlog data yet
         int zero_count = percona_proxy.rows("SHOW BINARY LOGS").size();
         test.expect(zero_count == 0, "percona-proxy should not have any binary logs");
 

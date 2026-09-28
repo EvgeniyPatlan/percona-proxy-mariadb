@@ -20,7 +20,7 @@
  * - Block all Mariadb servers
  * - Restart Percona Proxy
  * - Unblock Mariadb servers
- * - Sleep and check if Maxscale is alive
+ * - Sleep and check if Percona Proxy is alive
  */
 
 #include <maxtest/testconnections.hh>

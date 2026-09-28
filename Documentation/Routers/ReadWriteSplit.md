@@ -521,7 +521,7 @@ possible when `transaction_replay` is enabled.
 - **Default**: false
 
 Retry queries over a period of time. This parameter takes a boolean value, was
-added in Maxscale 2.3.0 and is disabled by default.
+added in Percona Proxy 2.3.0 and is disabled by default.
 
 When this feature is enabled, a failure to route a query due to a connection
 problem will not immediately result in an error. The routing of the query is

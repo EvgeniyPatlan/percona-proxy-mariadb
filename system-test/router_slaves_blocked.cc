@@ -14,7 +14,7 @@
 
 /**
  * @file bug547.cpp regression case for bug 547 and bug 594 ( "get_dcb fails if slaves are not available" and
- *"Maxscale fails to start without anything in the logs if there is no slave available" )
+ *"Percona Proxy fails to start without anything in the logs if there is no slave available" )
  * Behaviour has been changed and this test check only for crash
  * - block all slaves
  * - try some queries (create table, do INSERT using RWSplit router)

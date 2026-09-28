@@ -21,7 +21,7 @@ is fixed when the client connects also means that routing hints are ignored.
 
 Connections from other Percona Proxy instances or connections done directly on a
 database are not taken into account. Only connections done through the same
-Maxscale instance are taken into account.
+Percona Proxy instance are taken into account.
 
 **Warning:** `readconnroute` will not prevent writes from being done even if you
   define `router_options=slave`. The client application is responsible for

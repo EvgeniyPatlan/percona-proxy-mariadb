@@ -31,12 +31,12 @@ report on [our Jira](https://jira.mariadb.org/projects/MXS).
 * [MXS-5081](https://jira.mariadb.org/browse/MXS-5081) The values of ssl_version in MaxScale and tls_version in MariaDB accept different values
 * [MXS-5074](https://jira.mariadb.org/browse/MXS-5074) Warning about missing slashes around regular expressions is confusing
 * [MXS-5068](https://jira.mariadb.org/browse/MXS-5068) users_refresh_time=0s does not work as documented
-* [MXS-5063](https://jira.mariadb.org/browse/MXS-5063) Maxscale crash - "terminate called after throwing an instance of 'std::bad_alloc'"
+* [MXS-5063](https://jira.mariadb.org/browse/MXS-5063) Percona Proxy crash - "terminate called after throwing an instance of 'std::bad_alloc'"
 * [MXS-5051](https://jira.mariadb.org/browse/MXS-5051) cmake does not check for unixodbc-dev
 * [MXS-5048](https://jira.mariadb.org/browse/MXS-5048) Problem in hostname matching when using regex (%) for user authentication
 * [MXS-5046](https://jira.mariadb.org/browse/MXS-5046) maxctrl alter admin_ssl_* <same full path as prior cert> not actually updating
 * [MXS-5039](https://jira.mariadb.org/browse/MXS-5039) cooperative_monitoring_locks can leave stale locks on a server if network breaks
-* [MXS-5038](https://jira.mariadb.org/browse/MXS-5038) Maxscale key limitations
+* [MXS-5038](https://jira.mariadb.org/browse/MXS-5038) Percona Proxy key limitations
 * [MXS-5035](https://jira.mariadb.org/browse/MXS-5035) Setting a path argument to empty reads uninitialized memory
 * [MXS-5034](https://jira.mariadb.org/browse/MXS-5034) REST-API TLS keys are not validated at runtime
 * [MXS-5033](https://jira.mariadb.org/browse/MXS-5033) MaxScale should prevent incompatible TLS certificates from being configured

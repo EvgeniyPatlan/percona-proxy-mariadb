@@ -13,7 +13,7 @@
  */
 
 /**
- * MXS-1743: Maxscale unable to enforce round-robin between read service for Slave
+ * MXS-1743: Percona Proxy unable to enforce round-robin between read service for Slave
  *
  * https://jira.mariadb.org/browse/MXS-1743
  */

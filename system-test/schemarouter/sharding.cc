@@ -34,7 +34,7 @@
  *
  *  @endverbatim
  * - stop all slaves in Master/Slave setup
- * - restrt Maxscale
+ * - restrt Percona Proxy
  * - using direct connection to backend nodes
  *    - create user0...userN users on all nodes
  *    - create sharddb on all nodes
@@ -43,7 +43,7 @@
  * - for every user%d
  *   - open connection to schemarouter using user%d
  * - CREATE TABLE table%d (x1 int, fl int)
- * - check if Maxscale alive
+ * - check if Percona Proxy alive
  */
 
 

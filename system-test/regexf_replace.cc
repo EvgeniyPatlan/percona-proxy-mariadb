@@ -16,7 +16,7 @@
  * @file bug571.cpp  regression case for bug 571 and bug 585 ( "Using regex filter hangs Percona Proxy" and
  *"modutil_extract_SQL doesn't work with multiple GWBUF buffers" )
  *
- * - Maxscale.cnf
+ * - Percona Proxy.cnf
  * @verbatim
  *  [regex]
  *  type=filter
@@ -72,7 +72,7 @@
  *  @endverbatim
  * - fetch * from mysql.user;
  * - fetch count(*) form mysql.user;
- * - check if Maxscale is alive
+ * - check if Percona Proxy is alive
  */
 
 /*
@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
 
     Test->tprintf("Connecting to all Percona Proxy services\n");
     Test->reset_timeout();
-    Test->add_result(Test->percona_proxy->connect_percona_proxy(), "Error connectiong to Maxscale\n");
+    Test->add_result(Test->percona_proxy->connect_percona_proxy(), "Error connectiong to Percona Proxy\n");
 
     Test->tprintf("executing fetch * from mysql.user \n");
     Test->reset_timeout();

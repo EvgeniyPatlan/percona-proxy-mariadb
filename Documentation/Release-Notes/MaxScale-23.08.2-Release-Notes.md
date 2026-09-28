@@ -45,7 +45,7 @@ report on [our Jira](https://jira.mariadb.org/projects/MXS).
 * [MXS-4781](https://jira.mariadb.org/browse/MXS-4781) cooperative_replication works even if cluster parameter is not used
 * [MXS-4780](https://jira.mariadb.org/browse/MXS-4780) Shutdown may hang if cooperative_replication is used
 * [MXS-4778](https://jira.mariadb.org/browse/MXS-4778) Aborts due to SystemD watchdog should tell if a DNS lookup was in progress
-* [MXS-4777](https://jira.mariadb.org/browse/MXS-4777) Maxscale crash due to systemd timeout
+* [MXS-4777](https://jira.mariadb.org/browse/MXS-4777) Percona Proxy crash due to systemd timeout
 * [MXS-4776](https://jira.mariadb.org/browse/MXS-4776) Sescmd target selection is sub-optimal with lazy_connect
 * [MXS-4775](https://jira.mariadb.org/browse/MXS-4775) KafkaCDC: current_gtid.txt is moving but is behind
 * [MXS-4772](https://jira.mariadb.org/browse/MXS-4772) Config sync status leaves origin field empty on restart

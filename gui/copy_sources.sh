@@ -11,5 +11,5 @@ src=$1
 if [ "$PWD" != "$src" ]
 then
     # Copy sources to working directory
-    cp -r -t $PWD/ $src/maxgui/
+    cp -r -t $PWD/ $src/gui/
 fi

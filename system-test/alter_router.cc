@@ -56,7 +56,7 @@ void alter_readwritesplit(TestConnections& test)
                 "Read to second connection should work: %s",
                 second.error());
 
-    // Unblock the master, restart Maxscale and check that changes are persisted
+    // Unblock the master, restart Percona Proxy and check that changes are persisted
     test.repl->unblock_node(0);
     test.percona_proxy->wait_for_monitor();
     test.percona_proxy->restart();

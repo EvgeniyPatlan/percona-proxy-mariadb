@@ -14,7 +14,7 @@
 
 /**
  * @file encrypted_passwords.cpp - Test percona-proxy-keys and percona-proxy-passwd interaction with Percona Proxy
- * - put encrypted password into percona-proxy.cnf and try to use Maxscale
+ * - put encrypted password into percona-proxy.cnf and try to use Percona Proxy
  */
 
 #include <iostream>

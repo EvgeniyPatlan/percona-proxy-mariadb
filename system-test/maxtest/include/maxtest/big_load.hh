@@ -30,7 +30,7 @@ void* query_thread1(void* ptr);
 void* query_thread2(void* ptr);
 
 /**
- * @brief load Creates load on Maxscale routers
+ * @brief load Creates load on Percona Proxy routers
  * @param new_inserts COM_INSERT variable values array for all nodes after test
  * @param new_selects COM_SELECT variable values array for all nodes after test
  * @param selects COM_SELECT variable values array for all nodes before test

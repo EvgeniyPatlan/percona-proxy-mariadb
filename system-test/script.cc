@@ -14,7 +14,7 @@
 
 /**
  * @file script.cpp - test for running external script feature (MXS-121)
- * - setup Maxscale to execute script on folowing events:
+ * - setup Percona Proxy to execute script on folowing events:
  *   - for MariaDB monitor: master_down,master_up, slave_up,   server_down
  * ,server_up,lost_master,lost_slave,new_master,new_slave
  *   - for Galera monitor: events=master_down,master_up, slave_up,   server_down
@@ -43,7 +43,7 @@
  * - make script non-executable
  * - block and unblock node1
  * - check error log for 'The file cannot be executed: /home/$percona_proxies->access_user[0]/script.sh' error
- * - check if Maxscale still alive
+ * - check if Percona Proxy still alive
  */
 
 
@@ -161,7 +161,7 @@ void test_main(TestConnections& test)
     auto mxs_homedir = mxs.access_homedir();
     auto sudo = mxs.access_sudo();
 
-    test.tprintf("Creating script on Maxscale machine");
+    test.tprintf("Creating script on Percona Proxy machine");
     mxs.ssh_node_f(false,
                    "%s rm -rf %s/script; mkdir %s/script; "
                    "echo \"echo \\$* >> %s/script_output\" > %s/script/script.sh; "
@@ -196,7 +196,7 @@ void test_main(TestConnections& test)
     fprintf(f, line_4up_fmt, "synced_up", gal1, gal0, gal1, gal2, gal3);
     fclose(f);
 
-    test.tprintf("Copying expected script output files to Maxscale machine.");
+    test.tprintf("Copying expected script output files to Percona Proxy machine.");
     mxs.copy_to_node(repl_script_outfile, mxs_homedir);
     mxs.copy_to_node(galera_script_outfile, mxs_homedir);
 

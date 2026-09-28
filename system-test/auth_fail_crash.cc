@@ -16,7 +16,7 @@
  * @file bug572.cpp  regression case for bug 572 ( " If reading a user from users table fails, Percona Proxy fails"
  *)
  *
- * - try GRANT with wrong IP using all Maxscale services:
+ * - try GRANT with wrong IP using all Percona Proxy services:
  *  + GRANT ALL PRIVILEGES ON *.* TO  'foo'@'*.foo.notexists' IDENTIFIED BY 'foo';
  *  + GRANT ALL PRIVILEGES ON *.* TO  'bar'@'127.0.0.*' IDENTIFIED BY 'bar'
  *  + DROP USER 'foo'@'*.foo.notexists'
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
     Test->tprintf("Trying GRANT for with bad IP: RWSplit\n");
     create_drop_bad_user(Test->percona_proxy->conn_rwsplit, Test);
 
-    Test->tprintf("Trying SELECT to check if Maxscale hangs\n");
+    Test->tprintf("Trying SELECT to check if Percona Proxy hangs\n");
     Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "select * from mysql.user");
 
     int rval = Test->global_result;

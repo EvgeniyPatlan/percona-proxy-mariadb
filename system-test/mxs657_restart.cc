@@ -15,7 +15,7 @@
 /**
  * @file mxs657_restart.cpp Regression case for MXS-657 ("Debug assertion when service is shut down and
  * restarted repeatedly")
- * - playing with 'restart service' and restart Maxscale under load
+ * - playing with 'restart service' and restart Percona Proxy under load
  */
 
 #include <maxtest/big_load.hh>

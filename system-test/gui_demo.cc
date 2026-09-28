@@ -12,7 +12,7 @@
  * Public License.
  */
 /**
- * @file gui_demo.cpp Dummy test to start Maxscale GUI demo
+ * @file gui_demo.cpp Dummy test to start Percona Proxy GUI demo
  */
 
 #include <maxtest/testconnections.hh>

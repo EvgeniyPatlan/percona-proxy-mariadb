@@ -15,7 +15,7 @@
 /**
  * @file mx314.cpp regression case for bug MXS-314 ("Read Write Split Error with Galera Nodes")
  * - try prepared stmt 'SELECT 1,1,1,1...." with different number of '1'
- * - check if Maxscale alive
+ * - check if Percona Proxy alive
  */
 
 #include <maxtest/testconnections.hh>

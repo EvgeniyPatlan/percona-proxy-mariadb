@@ -28,7 +28,7 @@ report on [our Jira](https://jira.mariadb.org/projects/MXS).
 
 * [MXS-5008](https://jira.mariadb.org/browse/MXS-5008) Log message on releasing exclusive locks when no lock majority is confusing
 * [MXS-5007](https://jira.mariadb.org/browse/MXS-5007) Top-level service reconnection may cause a use-after-free
-* [MXS-5001](https://jira.mariadb.org/browse/MXS-5001) Maxscale fail to initiate maxscale.service (Missing /var/run/maxscale) directory
+* [MXS-5001](https://jira.mariadb.org/browse/MXS-5001) Percona Proxy fail to initiate maxscale.service (Missing /var/run/maxscale) directory
 * [MXS-4998](https://jira.mariadb.org/browse/MXS-4998) MaxScale may send two COM_QUIT packets
 * [MXS-4997](https://jira.mariadb.org/browse/MXS-4997) MaxScale: BUILD/install_build_deps.sh: deprecated --force-yes
 * [MXS-4996](https://jira.mariadb.org/browse/MXS-4996) Order of servers is different after restart if runtime modifications have been done

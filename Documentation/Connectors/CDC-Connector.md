@@ -1,4 +1,4 @@
-# Maxscale CDC Connector
+# Percona Proxy CDC Connector
 
 The C++ connector for the [Percona Proxy for MariaDB](https://mariadb.com/products/technology/percona-proxy)
 [CDC system](../Tutorials/Avrorouter-Tutorial.md).

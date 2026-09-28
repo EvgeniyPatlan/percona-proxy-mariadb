@@ -15,7 +15,7 @@
 /**
  * MXS-2115: Automatic version string detection doesn't work
  *
- * When servers are available, the backend server and Maxscale should return the
+ * When servers are available, the backend server and Percona Proxy should return the
  * same version string.
  */
 

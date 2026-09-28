@@ -40,18 +40,18 @@
  *  INSERT INTO t1 (x1, fl) VALUES (0, 2), (1, 2), ...(4095, 2);
  *  INSERT INTO t1 (x1, fl) VALUES (0, 3), (1, 3), ...(65535, 3);
  *  @endverbatim
- * - check date in t1 using all Maxscale services and direct connections to backend nodes
+ * - check date in t1 using all Percona Proxy services and direct connections to backend nodes
  * - using RWSplit connections:
  *   + DROP TABLE t1
  *   + DROP DATABASE IF EXISTS test1;
  *   + CREATE DATABASE test1;
- * - execute USE test1 for all Maxscale service and backend nodes
+ * - execute USE test1 for all Percona Proxy service and backend nodes
  * - create t1 table and INSERT a lot of date into it
  * - check that 't1' exists in 'test1' DB and does not exist in 'test'
- * - executes queries with syntax error against all Maxscale services
+ * - executes queries with syntax error against all Percona Proxy services
  *   + "DROP DATABASE I EXISTS test1;"
  *   + "CREATE TABLE "
- * - check if Maxscale is alive
+ * - check if Percona Proxy is alive
  */
 
 #include <iostream>
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
         Test->reset_timeout();
         Test->tprintf("Connection to backend\n");
         Test->repl->connect();
-        Test->tprintf("Connection to Maxscale\n");
+        Test->tprintf("Connection to Percona Proxy\n");
         if (Test->percona_proxy->connect_percona_proxy() != 0)
         {
             Test->add_result(1, "Error connecting to Percona Proxy");

@@ -21,7 +21,7 @@ report on [our Jira](https://jira.mariadb.org/projects/MXS).
 * [MXS-5920](https://jira.mariadb.org/browse/MXS-5920) MaxCtrl/REST-API should tell if password encryption is enabled
 * [MXS-5915](https://jira.mariadb.org/browse/MXS-5915) MaxScale 24.02.6 is not compatible with MariaDB 12.0.2: Monitor fails with 'Cannot convert field ON to boolean'
 * [MXS-5911](https://jira.mariadb.org/browse/MXS-5911) Upgrade Connector/C to 3.3.16 and 3.4.6
-* [MXS-5910](https://jira.mariadb.org/browse/MXS-5910) Error 1047 when trying to run semi-sync replication through Maxscale
+* [MXS-5910](https://jira.mariadb.org/browse/MXS-5910) Error 1047 when trying to run semi-sync replication through Percona Proxy
 * [MXS-5897](https://jira.mariadb.org/browse/MXS-5897) Failing COM_STMT_PREPAREs that don't generate an ID aren't discarded from the history
 * [MXS-5865](https://jira.mariadb.org/browse/MXS-5865) Run-time modification of users_refresh_time and users_refresh_interval are not immediately taken into use
 * [MXS-5837](https://jira.mariadb.org/browse/MXS-5837) MaxScale 24.02.5 crashes with fatal signal 6 (std::length_error in maxbase::load_file<std::string>) on Ubuntu 24.04

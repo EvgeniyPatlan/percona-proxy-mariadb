@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
     TestConnections* Test = new TestConnections(argc, argv);
     Test->reset_timeout();
 
-    Test->add_result(Test->percona_proxy->connect_percona_proxy(), "Can not connect to Maxscale\n");
+    Test->add_result(Test->percona_proxy->connect_percona_proxy(), "Can not connect to Percona Proxy\n");
 
 
     Test->tprintf("Trying queries that caused crashes before fix: bug473\n");
@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
 
     Test->percona_proxy->close_percona_proxy_connections();
 
-    Test->tprintf("Checking if Maxscale is alive\n");
+    Test->tprintf("Checking if Percona Proxy is alive\n");
     fflush(stdout);
     Test->check_percona_proxy_alive();
 

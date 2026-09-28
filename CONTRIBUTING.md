@@ -1,4 +1,4 @@
-# Contributing to Maxscale
+# Contributing to Percona Proxy
 
 ## Prerequisites
 

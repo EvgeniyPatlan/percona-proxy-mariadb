@@ -522,7 +522,7 @@ public:
     bool                substitute_variables;       /**< Should environment variables be substituted */
     using CacheProperties = mxs::CachingParser::Properties;
     CacheProperties     qc_cache_properties;        /**< The query classifier cache properties. */
-    int64_t             promoted_at;                /**< Time when this Maxscale instance was
+    int64_t             promoted_at;                /**< Time when this Percona Proxy instance was
                                                     * promoted from a passive to an active */
     std::string m_file_path; // Path of main configuration file.
 

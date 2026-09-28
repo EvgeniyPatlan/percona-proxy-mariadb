@@ -1,4 +1,4 @@
-# Crash in case of backend node in Galera cluster stopping and then reconnect to Maxscale
+# Crash in case of backend node in Galera cluster stopping and then reconnect to Percona Proxy
 add_test_executable_ex(NAME bug676 SOURCE bug676.cc CONFIG standard_galera.cnf VMS galera_backend
         LABELS galeramon)
 
@@ -22,7 +22,7 @@ add_test_executable_ex(NAME mxs564_big_dump SOURCE mxs564_big_dump.cc CONFIG gal
 # https://jira.mariadb.org/browse/MXS-1476
 add_test_executable_ex(NAME mxs1476 SOURCE mxs1476.cc CONFIG mxs1476.cnf VMS galera_backend LABELS galeramon)
 
-# MXS-1751: Maxscale crashes when certain config is in play (with nodes down)
+# MXS-1751: Percona Proxy crashes when certain config is in play (with nodes down)
 # https://jira.mariadb.org/browse/MXS-1751
 add_test_executable_ex(NAME mxs1751_available_when_donor_crash SOURCE mxs1751_available_when_donor_crash.cc
         CONFIG mxs1751_available_when_donor_crash.cnf VMS galera_backend LABELS galeramon)

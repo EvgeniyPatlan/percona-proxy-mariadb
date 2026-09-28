@@ -3217,7 +3217,7 @@ client hosts and not the Percona Proxy host.
 **NOTE**: If you use a cloud load balancer like AWS ELB that supports the proxy
 protocol in front of a Percona Proxy, you need to configure
 [proxy_protocol_networks](#proxy_protocol_networks) in Percona Proxy. This also needs
-to be done whenever one Percona Proxy may connect to another Maxscale and the
+to be done whenever one Percona Proxy may connect to another Percona Proxy and the
 connecting Percona Proxy has `proxy_protocol` enabled.
 
 PROXY protocol will be supported by MariaDB 10.3, which this feature has been
@@ -4228,7 +4228,7 @@ details on how this mechanism works and how to disable it.
 
 The configuration synchronization mechanism is intended for synchronizing
 configuration changes done on one Percona Proxy to all other PerconaProxies. This is done
-by propagating the changes via the database cluster used by Maxscale.
+by propagating the changes via the database cluster used by Percona Proxy.
 
 When configuring configuration synchronization for the first time, the same
 static configuration files should be used on all Percona Proxy instances that use the
@@ -4297,7 +4297,7 @@ need to all use the same encryption keys that were created with `percona-proxy-k
 ### Managing Configuration Synchronization
 
 The output of `percona-proxyctl show percona-proxy` contains the `Config Sync` field with
-information about the current configuration state of the local Maxscale as well
+information about the current configuration state of the local Percona Proxy as well
 as the state of any other nodes using this cluster.
 
 ```
@@ -4318,7 +4318,7 @@ as the state of any other nodes using this cluster.
 The `version` field is the logical configuration version and the `origin` is the
 node that originates the latest configuration change. The `checksum` field is
 the checksum of the logical configuration and can be used to compare whether two
-Maxscale instances are in the same configuration state. The `nodes` field
+Percona Proxy instances are in the same configuration state. The `nodes` field
 contains the status of each Percona Proxy instance mapped to the hostname of the
 server. This field is updated whenever Percona Proxy reads the configuration from the
 cluster and can thus be used to detect which PerconaProxies have updated their
@@ -4404,7 +4404,7 @@ configured by placing the parameters in the `[percona-proxy]` section.
 
 The encryption key managers can be enabled at runtime using `percona-proxyctl alter
 percona-proxy` but cannot be disabled once enabled. To disable the encryption key
-management, stop Maxscale, remove any persisted configuration files and remove
+management, stop Percona Proxy, remove any persisted configuration files and remove
 `key_manager` as well as any key manager options from the static configuration
 files.
 

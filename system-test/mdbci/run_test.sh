@@ -15,7 +15,7 @@
 
 # see set_run_test_variables.sh for default values of all variables
 
-# $box - Name of Vagrant box for Maxscale machine
+# $box - Name of Vagrant box for Percona Proxy machine
 # see lists of supported boxes
 # https://github.com/mariadb-corporation/mdbci/tree/integration/BOXES
 
@@ -51,7 +51,7 @@
 # line
 # example: '#NAME long_test_time=3600 ./long_test'
 #
-# $percona_proxy_product - use CI or production version of Maxscale
+# $percona_proxy_product - use CI or production version of Percona Proxy
 # 'percona_proxy_ci' or 'percona-proxy'
 
 export vm_memory=${vm_memory:-"2048"}

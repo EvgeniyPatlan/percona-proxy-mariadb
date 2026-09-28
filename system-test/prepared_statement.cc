@@ -13,7 +13,7 @@
  */
 
 /**
- * @file prepared_statement.cpp Checks if prepared statement works via Maxscale
+ * @file prepared_statement.cpp Checks if prepared statement works via Percona Proxy
  *
  * - Create table t1 and fill it ith some data
  * - via RWSplit:
@@ -22,7 +22,7 @@
  *   + EXECUTE stmt")
  *   + SET @x = 4;")
  *   + EXECUTE stmt")
- * - check if Maxscale is alive
+ * - check if Percona Proxy is alive
  */
 
 #include <maxtest/testconnections.hh>

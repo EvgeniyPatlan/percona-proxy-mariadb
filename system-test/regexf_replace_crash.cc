@@ -27,7 +27,7 @@
  *
  *  @endverbatim
  * - try SET OPTION SQL_QUOTE_SHOW_CREATE = 1; against all percona_proxies->routers[0]
- * - check if Maxscale alive
+ * - check if Percona Proxy alive
  */
 
 /*

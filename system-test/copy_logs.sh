@@ -43,7 +43,7 @@ if [ $percona_proxy_IP != "127.0.0.1" ] ; then
     ssh -i ${percona_proxy_000_keyfile} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet ${percona_proxy_000_whoami}@${percona_proxy_000_network} "rm -rf logs; mkdir logs; ${percona_proxy_000_access_sudo} cp ${percona_proxy_log_dir}/*.log logs/; ${percona_proxy_000_access_sudo} cp /tmp/core* logs; ${percona_proxy_000_access_sudo} chmod 777 -R logs"
     scp -i ${percona_proxy_000_keyfile} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet ${percona_proxy_000_whoami}@${percona_proxy_000_network}:logs/* $logs_dir
     if [ $? -ne 0 ]; then
-	echo "Error copying Maxscale logs"
+	echo "Error copying Percona Proxy logs"
     fi
     scp -i ${percona_proxy_000_keyfile} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet ${percona_proxy_000_whoami}@${percona_proxy_000_network}:$percona_proxy_cnf $logs_dir
     chmod a+r $logs_dir/*

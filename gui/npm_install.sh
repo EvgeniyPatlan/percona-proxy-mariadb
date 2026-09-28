@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd $PWD/maxgui
+cd $PWD/gui
 
 # The pipefail option will cause the command to return the exit code of the
 # first failing command in the pipeline rather than the default of returning the

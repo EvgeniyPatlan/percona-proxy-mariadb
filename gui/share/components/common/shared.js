@@ -10,7 +10,7 @@
  * of this software will be governed by version 2 or later of the General
  * Public License.
  */
-// Components to be shared between workspace and maxgui
+// Components to be shared between workspace and gui
 import '@share/components/common/MxsCharts/config'
 import MxsDataTable from '@share/components/common/MxsDataTable'
 import MxsDlg from '@share/components/common/MxsDlg'

@@ -28,7 +28,7 @@
  *  1. setup: Master/Slave replication
  *  2. reboot slaves
  *  3. create user usinf connection to RWSplit
- *  4. try to use this user to connect to Maxscale
+ *  4. try to use this user to connect to Percona Proxy
  *
  *  expected result:
  *  Authentication is ok
@@ -93,7 +93,7 @@
  *   Current no. of operations:  0
  *
  *
- *  Maxscale read mysql.user table from server4 which was not properly replicated
+ *  Percona Proxy read mysql.user table from server4 which was not properly replicated
  *  Comment 1 Mark Riddoch 2014-11-05 09:55:07 UTC
  *  In the reload users routine, if there is a master available then use that rather than the first.
  */

@@ -16,7 +16,7 @@ import workspaceModules from '@wsSrc/store/modules'
 import queryHttp from '@wsSrc/plugins/queryHttp'
 
 /**
- * Notice: To make mxs-workspace work in maxgui,
+ * Notice: To make mxs-workspace work in gui,
  * '@wsSrc/store/persistPlugin' needs to be registered manually because it can not be registered
  * with the `store` object dynamically like `registerModule`.
  */
@@ -31,7 +31,7 @@ export default {
         Vue.component('mxs-workspace', WorkspaceCtr)
         // Register workspace vuex modules
         Object.keys(workspaceModules).forEach(key => {
-            // mxsApp exists in maxgui already
+            // mxsApp exists in gui already
             if (key === 'mxsApp') null
             else store.registerModule(key, workspaceModules[key])
         })

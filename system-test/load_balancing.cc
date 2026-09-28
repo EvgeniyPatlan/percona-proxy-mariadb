@@ -13,7 +13,7 @@
  */
 
 /**
- * @file load_balancing.cpp Checks how Maxscale balances load
+ * @file load_balancing.cpp Checks how Percona Proxy balances load
  *
  * - also used for 'load_balancing_pers1' and 'load_balancing_pers10' tests (with 'persistpoolmax=1' and
  *'persistpoolmax=10' for all servers)

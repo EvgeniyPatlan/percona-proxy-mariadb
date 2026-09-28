@@ -13,7 +13,7 @@
  */
 import mount from '@tests/unit/setup'
 import App from '@rootSrc/App'
-import * as maxguiHelpers from '@rootSrc/utils/helpers'
+import * as guiHelpers from '@rootSrc/utils/helpers'
 
 const dummyValues = {
     undefined: undefined,
@@ -30,7 +30,7 @@ const dummyValues = {
     validArrObj: [{ keyName: 'keyValue' }],
 }
 
-describe('maxgui helpers unit tests', () => {
+describe('gui helpers unit tests', () => {
     it('Should add $helpers to vue prototype methods', () => {
         let wrapper = mount({
             shallow: false,
@@ -44,7 +44,7 @@ describe('maxgui helpers unit tests', () => {
         for (const [key, value] of Object.entries(dummyValues)) {
             let expectResult = key === 'validObj'
             it(`Should return ${expectResult} when value is ${key}`, () => {
-                expect(maxguiHelpers.isNotEmptyObj(value)).to.be[expectResult]
+                expect(guiHelpers.isNotEmptyObj(value)).to.be[expectResult]
             })
         }
     })
@@ -53,7 +53,7 @@ describe('maxgui helpers unit tests', () => {
         for (const [key, value] of Object.entries(dummyValues)) {
             let expectResult = key === 'validArr' || key === 'validArrObj'
             it(`Should return ${expectResult} when value is ${key}`, () => {
-                expect(maxguiHelpers.isNotEmptyArray(value)).to.be[expectResult]
+                expect(guiHelpers.isNotEmptyArray(value)).to.be[expectResult]
             })
         }
     })
@@ -69,7 +69,7 @@ describe('maxgui helpers unit tests', () => {
                     'Should return empty string (bug icon will be rendered)'
                 )
             it(des, () => {
-                expect(maxguiHelpers.serviceStateIcon(state)).to.be.equals(expectedReturn[i])
+                expect(guiHelpers.serviceStateIcon(state)).to.be.equals(expectedReturn[i])
             })
         })
     })
@@ -88,7 +88,7 @@ describe('maxgui helpers unit tests', () => {
         const expectedReturn = [0, 0, 1, 1, 1, 1, 2, 2]
         dummyServerStates.forEach((state, i) => {
             it(`Should return ${expectedReturn[i]} when state is ${state}`, () => {
-                expect(maxguiHelpers.serverStateIcon(state)).to.be.equals(expectedReturn[i])
+                expect(guiHelpers.serverStateIcon(state)).to.be.equals(expectedReturn[i])
             })
         })
     })
@@ -104,7 +104,7 @@ describe('maxgui helpers unit tests', () => {
                     'Should return empty string (bug icon will be rendered)'
                 )
             it(des, () => {
-                expect(maxguiHelpers.monitorStateIcon(state)).to.be.equals(expectedReturn[i])
+                expect(guiHelpers.monitorStateIcon(state)).to.be.equals(expectedReturn[i])
             })
         })
     })
@@ -120,7 +120,7 @@ describe('maxgui helpers unit tests', () => {
                     'Should return empty string (bug icon will be rendered)'
                 )
             it(des, () => {
-                expect(maxguiHelpers.listenerStateIcon(state)).to.be.equals(expectedReturn[i])
+                expect(guiHelpers.listenerStateIcon(state)).to.be.equals(expectedReturn[i])
             })
         })
     })
@@ -153,7 +153,7 @@ describe('maxgui helpers unit tests', () => {
             'Not Monitored': [{ id: 'server_3', groupId: 'Not Monitored' }],
         }
 
-        expect(maxguiHelpers.hashMapByPath({ arr: dummy_arr, path: 'groupId' })).to.be.deep.equals(
+        expect(guiHelpers.hashMapByPath({ arr: dummy_arr, path: 'groupId' })).to.be.deep.equals(
             expectReturn
         )
     })
@@ -220,7 +220,7 @@ describe('maxgui helpers unit tests', () => {
     ]
 
     it(`Should return flattened tree when flattenExpandableTree is called`, () => {
-        const flattened = maxguiHelpers.flattenExpandableTree(treeArrStub)
+        const flattened = guiHelpers.flattenExpandableTree(treeArrStub)
         const lastNodeId = treeArrStub[treeArrStub.length - 1].nodeId
         expect(flattened.length).to.be.equals(lastNodeId)
         flattened.forEach(node => {
@@ -232,9 +232,9 @@ describe('maxgui helpers unit tests', () => {
         const expectAncestorNodeId = treeArrStub[0].nodeId
         const nodeStub = treeArrStub[0].children[0].children[0]
         let treeMapMock = new Map()
-        const flattened = maxguiHelpers.flattenExpandableTree(treeArrStub)
+        const flattened = guiHelpers.flattenExpandableTree(treeArrStub)
         flattened.forEach(node => treeMapMock.set(node.nodeId, node))
-        const ancestorId = maxguiHelpers.findAncestor({ node: nodeStub, treeMap: treeMapMock })
+        const ancestorId = guiHelpers.findAncestor({ node: nodeStub, treeMap: treeMapMock })
         expect(ancestorId).to.be.equals(expectAncestorNodeId)
     })
 
@@ -257,7 +257,7 @@ describe('maxgui helpers unit tests', () => {
                 node_child_1: 'node_child_1 value',
             },
         }
-        maxguiHelpers.updateNode({
+        guiHelpers.updateNode({
             obj: objToBeUpdated,
             node: {
                 id: 'grand_child_1',
@@ -269,7 +269,7 @@ describe('maxgui helpers unit tests', () => {
 
     describe('objToTree and treeToObj assertions', () => {
         it(`Should convert object to tree array accurately when objToTree is called`, () => {
-            const treeArr = maxguiHelpers.objToTree({
+            const treeArr = guiHelpers.objToTree({
                 obj: dummyTree,
                 keepPrimitiveValue: true,
                 level: 0,
@@ -307,7 +307,7 @@ describe('maxgui helpers unit tests', () => {
                 },
             }
 
-            const resultObj = maxguiHelpers.treeToObj({
+            const resultObj = guiHelpers.treeToObj({
                 changedNodes,
                 tree: treeArrStub,
             })
@@ -333,7 +333,7 @@ describe('maxgui helpers unit tests', () => {
                     des = des.replace(`return ${expectResult}`, `not change value type`)
             }
             it(des, () => {
-                expect(maxguiHelpers.convertType(value)).to.be.equals(expectResult)
+                expect(guiHelpers.convertType(value)).to.be.equals(expectResult)
             })
         }
     })
@@ -354,7 +354,7 @@ describe('maxgui helpers unit tests', () => {
             }
             it(des, () => {
                 expect(
-                    maxguiHelpers.convertSize({ suffix, val: bytes, isIEC: true, reverse })
+                    guiHelpers.convertSize({ suffix, val: bytes, isIEC: true, reverse })
                 ).to.be.equals(expectReturnsIEC[i])
             })
         })
@@ -376,7 +376,7 @@ describe('maxgui helpers unit tests', () => {
             }
             it(des, () => {
                 expect(
-                    maxguiHelpers.convertSize({ suffix, val: bits, isIEC: false, reverse })
+                    guiHelpers.convertSize({ suffix, val: bits, isIEC: false, reverse })
                 ).to.be.equals(expectReturnsSI[i])
             })
         })
@@ -391,7 +391,7 @@ describe('maxgui helpers unit tests', () => {
             let des = `Should convert ${ms}ms to ${expectReturns[i]}${suffix} `
             it(des, () => {
                 expect(
-                    maxguiHelpers.convertDuration({ suffix, val: ms, toMilliseconds: false })
+                    guiHelpers.convertDuration({ suffix, val: ms, toMilliseconds: false })
                 ).to.be.equals(expectReturns[i])
             })
         })
@@ -404,7 +404,7 @@ describe('maxgui helpers unit tests', () => {
             let des = `Should convert ${values[i]}${suffix} to ${expectReturns}ms`
             it(des, () => {
                 expect(
-                    maxguiHelpers.convertDuration({
+                    guiHelpers.convertDuration({
                         suffix,
                         val: values[i],
                         toMilliseconds: true,
@@ -417,7 +417,7 @@ describe('maxgui helpers unit tests', () => {
     it('getSuffixFromValue should return object with suffix and indexOfSuffix keys', () => {
         const paramObj = { value: '1000ms' }
         let suffixes = ['ms', 's', 'm', 'h']
-        const result = maxguiHelpers.getSuffixFromValue(paramObj, suffixes)
+        const result = guiHelpers.getSuffixFromValue(paramObj, suffixes)
         expect(result).to.have.all.keys('suffix', 'indexOfSuffix')
         expect(result.suffix).to.be.equals('ms')
         expect(result.indexOfSuffix).to.be.equals(4)
@@ -428,7 +428,7 @@ describe('maxgui helpers unit tests', () => {
         const value = 150
         const colorIndex = 0
         it('Should return dataset object with accurate keys', () => {
-            const result = maxguiHelpers.genLineStreamDataset({ label, value, colorIndex })
+            const result = guiHelpers.genLineStreamDataset({ label, value, colorIndex })
             expect(result).to.have.all.keys(
                 'label',
                 'id',
@@ -442,13 +442,13 @@ describe('maxgui helpers unit tests', () => {
         })
         it(`Should get timestamp form Date.now() if timestamp
         argument is not provided`, () => {
-            const result = maxguiHelpers.genLineStreamDataset({ label, value, colorIndex })
+            const result = guiHelpers.genLineStreamDataset({ label, value, colorIndex })
             expect(result.data.length).to.be.equals(1)
             expect(result.data[0].x).to.be.a('number')
         })
         it(`Should use provided timestamp argument`, () => {
             const timestamp = Date.now()
-            const result = maxguiHelpers.genLineStreamDataset({
+            const result = guiHelpers.genLineStreamDataset({
                 label,
                 value,
                 colorIndex,
@@ -459,12 +459,12 @@ describe('maxgui helpers unit tests', () => {
         })
         it(`Should have resourceId key if id argument is provided`, () => {
             const id = 'server_0'
-            const result = maxguiHelpers.genLineStreamDataset({ label, value, colorIndex, id })
+            const result = guiHelpers.genLineStreamDataset({ label, value, colorIndex, id })
             expect(result).to.have.property('resourceId', id)
         })
         it(`Should create data array for key data if
         data argument is not provided`, () => {
-            const result = maxguiHelpers.genLineStreamDataset({ label, value, colorIndex })
+            const result = guiHelpers.genLineStreamDataset({ label, value, colorIndex })
             expect(result.data[0]).to.have.all.keys('x', 'y')
         })
         it(`Should use data argument for key data`, () => {
@@ -472,7 +472,7 @@ describe('maxgui helpers unit tests', () => {
                 { x: 1598972034170, y: value - 10 },
                 { x: 1600000000000, y: value },
             ]
-            const result = maxguiHelpers.genLineStreamDataset({ label, value, colorIndex, data })
+            const result = guiHelpers.genLineStreamDataset({ label, value, colorIndex, data })
             expect(result.data).to.be.deep.equals(data)
         })
     })

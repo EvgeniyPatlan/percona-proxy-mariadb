@@ -24,7 +24,7 @@
 class SmartRouter;
 
 /** Currently SmartRouter is configured like this (star means many):
- *  SmartRouter -*> ServerAsService -> MaxscaleRouter -*> Server
+ *  SmartRouter -*> ServerAsService -> PerconaProxyRouter -*> Server
  *  For the time being the limitation is that the tail router must be RWSplit.
  *  This will change once we implement it so that SmartRouter can call the tail router directly.
  *  Although the assumption is one RowServer and one ColumnServer, the code does not assume that,
@@ -76,7 +76,7 @@ private:
         }
     }
 
-    /** struct Cluster represents a cluster of mariadb servers as a Maxscale internal Server.
+    /** struct Cluster represents a cluster of mariadb servers as a Percona Proxy internal Server.
      *  TODO In the next iteration a directly callable "Thing" should be implemented (Router, Backend
      *       Server - the terms are overused and confusing, maybe a new thing called MariaDB).
      */

@@ -25,7 +25,7 @@ report on [our Jira](https://jira.mariadb.org/projects/MXS).
 * [MXS-5507](https://jira.mariadb.org/browse/MXS-5507) readwritesplit enables multi-statements regardless of the state of causal_reads
 * [MXS-5493](https://jira.mariadb.org/browse/MXS-5493) Cluster tree is not visualized accurately
 * [MXS-5492](https://jira.mariadb.org/browse/MXS-5492) idle_session_pool_time=0s does not fairly share connections
-* [MXS-5488](https://jira.mariadb.org/browse/MXS-5488) Need Documentation updates for Maxscale install recommendation
+* [MXS-5488](https://jira.mariadb.org/browse/MXS-5488) Need Documentation updates for Percona Proxy install recommendation
 * [MXS-5481](https://jira.mariadb.org/browse/MXS-5481) Galera Monitor does not log an error if "SHOW SLAVE STATUS" fails
 * [MXS-5480](https://jira.mariadb.org/browse/MXS-5480) disable_sescmd_history=true causes a use-after-free
 * [MXS-5466](https://jira.mariadb.org/browse/MXS-5466) MaxCtrl warnings are very verbose

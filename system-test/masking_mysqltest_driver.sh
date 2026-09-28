@@ -31,7 +31,7 @@ then
     exit 1
 fi
 
-echo $source copied to $target, restarting Maxscale
+echo $source copied to $target, restarting Percona Proxy
 
 ssh  -i $percona_proxy_000_keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${percona_proxy_000_whoami}@${percona_proxy_000_network} 'sudo systemctl restart percona-proxy'
 

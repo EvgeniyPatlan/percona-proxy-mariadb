@@ -17,7 +17,7 @@
  * not readable")
  *
  * - make percona-proxy.cnf unreadable
- * - try to restart Maxscale
+ * - try to restart Percona Proxy
  * - check log for error
  * - retore access rights to percona-proxy.cnf
  */

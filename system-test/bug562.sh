@@ -15,7 +15,7 @@
 
 ###
 ## @file bug562.sh Regression case for the bug "Wrong error message for Access denied error"
-## - try to connect with bad credestials directly to MariaDB server and via Maxscale
+## - try to connect with bad credestials directly to MariaDB server and via Percona Proxy
 ## - compare error messages
 
 export ssl_options="--ssl-cert=$src_dir/ssl-cert/client.crt --ssl-key=$src_dir/ssl-cert/client.key --ssl-verify-server-cert=0"
@@ -26,14 +26,14 @@ percona_proxy_err=`mariadb -u no_such_user -psome_pwd -h ${percona_proxy_000_net
 echo "MariaDB message"
 echo "$mariadb_err"
 echo " "
-echo "Maxscale message"
+echo "Percona Proxy message"
 echo "$percona_proxy_err"
 
 res=0
 #echo "$percona_proxy_err" | grep "$mariadb_err"
 echo "$percona_proxy_err" |grep "ERROR 1045 (28000): Access denied for user 'no_such_user'@'"
 if [ "$?" != 0 ]; then
-	echo "Maxscale message is not ok!"
+	echo "Percona Proxy message is not ok!"
     echo "Message: $percona_proxy_err"
 	res=1
 else

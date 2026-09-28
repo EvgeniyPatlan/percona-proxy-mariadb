@@ -14,7 +14,7 @@
 
 /**
  * @file pers_01.cpp - Persistent connection test
- * Open 70 connections to all Maxscale services
+ * Open 70 connections to all Percona Proxy services
  * Close connections
  * Check that connection pool behaves as expected as time passes
  */

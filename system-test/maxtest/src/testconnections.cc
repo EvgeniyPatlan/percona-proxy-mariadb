@@ -234,7 +234,7 @@ int TestConnections::prepare_for_test(int argc, char* argv[])
             }
             else
             {
-                tprintf("Maxscale_full_version_start:\n%s\nMaxscale_full_version_end\n", res.output.c_str());
+                tprintf("Percona_proxy_full_version_start:\n%s\nPercona_proxy_full_version_end\n", res.output.c_str());
             }
         }
 
@@ -458,7 +458,7 @@ int TestConnections::setup_vms()
             }
             else
             {
-                add_failure("Failed to install Maxscale: target is %s", m_target.c_str());
+                add_failure("Failed to install Percona Proxy: target is %s", m_target.c_str());
                 rval = MDBCI_FAIL;
             }
         }
@@ -907,7 +907,7 @@ port=4006)";
 }
 
 /**
- * Copy percona-proxy.cnf and start Percona Proxy on all Maxscale VMs.
+ * Copy percona-proxy.cnf and start Percona Proxy on all Percona Proxy VMs.
  */
 void TestConnections::init_percona_proxies()
 {
@@ -1161,8 +1161,8 @@ bool TestConnections::stop_all_percona_proxies()
 int TestConnections::check_percona_proxy_alive()
 {
     int gr = global_result;
-    tprintf("Connecting to Maxscale\n");
-    add_result(percona_proxy->connect_percona_proxy(), "Can not connect to Maxscale\n");
+    tprintf("Connecting to Percona Proxy\n");
+    add_result(percona_proxy->connect_percona_proxy(), "Can not connect to Percona Proxy\n");
     tprintf("Trying simple query against all sevices\n");
     tprintf("RWSplit \n");
     try_query(percona_proxy->conn_rwsplit, "show databases;");
@@ -1171,7 +1171,7 @@ int TestConnections::check_percona_proxy_alive()
     tprintf("ReadConn Slave \n");
     try_query(percona_proxy->conn_slave, "show databases;");
     percona_proxy->close_percona_proxy_connections();
-    add_result(global_result - gr, "Maxscale is not alive\n");
+    add_result(global_result - gr, "Percona Proxy is not alive\n");
     my_percona_proxy(0)->expect_running_status(true);
 
     return global_result - gr;
@@ -1445,7 +1445,7 @@ void TestConnections::timeout_thread_func()
 }
 
 /**
- * Function which periodically copies logs from Maxscale machine.
+ * Function which periodically copies logs from Percona Proxy machine.
  */
 void TestConnections::log_copy_thread_func()
 {
@@ -1903,13 +1903,13 @@ bool TestConnections::read_cmdline_options(int argc, char* argv[])
             break;
 
         case 's':
-            printf("Maxscale won't be started\n");
+            printf("Percona Proxy won't be started\n");
             start_percona_proxy = false;
             m_mxs_manual_debug = true;
             break;
 
         case 'i':
-            printf("Maxscale won't be started and Maxscale.cnf won't be uploaded\n");
+            printf("Percona Proxy won't be started and Percona Proxy.cnf won't be uploaded\n");
             m_init_percona_proxy = false;
             break;
 
@@ -1950,7 +1950,7 @@ bool TestConnections::read_cmdline_options(int argc, char* argv[])
             break;
 
         case 'm':
-            printf("Maxscale will be reinstalled.\n");
+            printf("Percona Proxy will be reinstalled.\n");
             m_reinstall_percona_proxy = true;
             break;
 

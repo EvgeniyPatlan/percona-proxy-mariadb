@@ -13,7 +13,7 @@
  */
 
 /**
- * MXS-2609: Maxscale crash in RWSplitSession::retry_master_query()
+ * MXS-2609: Percona Proxy crash in RWSplitSession::retry_master_query()
  *
  * https://jira.mariadb.org/browse/MXS-2609
  *

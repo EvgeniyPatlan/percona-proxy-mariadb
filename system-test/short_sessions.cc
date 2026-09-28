@@ -20,7 +20,7 @@
  * - close connection
  * - do 100 times: open connections to RWSplit, execute short INSERT, close connection
  * - Select inserted rows through all services
- * - check if Maxscale alive
+ * - check if Percona Proxy alive
  */
 
 

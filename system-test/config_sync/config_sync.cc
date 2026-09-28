@@ -462,7 +462,7 @@ void test_bad_change(TestConnections& test)
     const char CREATE_DIR[] = "mkdir --mode 0777 -p /tmp/path-that-exists-on-mxs1/";
     test.percona_proxy->ssh_node(CREATE_DIR, false);
 
-    // Make sure the path on the other Maxscale doesn't exist
+    // Make sure the path on the other Percona Proxy doesn't exist
     test.percona_proxy2->ssh_node(REMOVE_DIR, false);
 
     auto res = test.percona_proxy->percona_proxyctl("create filter test-filter qlafilter "

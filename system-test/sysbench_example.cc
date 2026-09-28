@@ -18,7 +18,7 @@
  * - start sysbanch test
  * - repeat for all services
  * - DROP sysbanch tables
- * - check if Maxscale is alive
+ * - check if Percona Proxy is alive
  */
 
 

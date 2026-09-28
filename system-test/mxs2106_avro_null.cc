@@ -13,7 +13,7 @@
  */
 
 /**
- * MXS-2106: Maxscale CDC JSON output does not respect null values
+ * MXS-2106: Percona Proxy CDC JSON output does not respect null values
  */
 
 #include <maxtest/testconnections.hh>

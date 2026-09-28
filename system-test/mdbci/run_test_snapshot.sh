@@ -69,7 +69,7 @@ fi
 for percona_proxy_vm_name in ${percona_proxies_vm}
 do
 
-    checkExitStatus $? "Error installing Maxscale" $snapshot_lock_file
+    checkExitStatus $? "Error installing Percona Proxy" $snapshot_lock_file
 done
 
 

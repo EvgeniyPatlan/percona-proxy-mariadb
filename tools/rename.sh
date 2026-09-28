@@ -93,7 +93,7 @@ RULES=(
     's/maxkeys/percona-proxy-keys/g'
     's/maxpasswd/percona-proxy-passwd/g'
     's/maxavrocheck/percona-proxy-avrocheck/g'
-    's/maxgui/gui/g'
+    's/gui/gui/g'
 
     # Remaining C identifiers, for example maxscale_commit() or maxscale_started.
     's/\bmaxscale_/percona_proxy_/g'
@@ -126,6 +126,8 @@ RULES=(
     # Everything left: paths, configuration section, REST endpoint, package and service names,
     # and the bare product name in prose.
     's/\bmaxscale\b/percona-proxy/g'
+    # Upstream spells the name both ways in prose.
+    's/\bMaxscale\b/Percona Proxy/g'
     's/\bMaxScale\b/Percona Proxy/g'
     's/\bMAXSCALE\b/PERCONA_PROXY/g'
 
@@ -151,7 +153,7 @@ mapfile -t code_files < <(find "${find_args[@]}" \( -name '*.c' -o -name '*.cc' 
     -o -name '*.h' -o -name '*.hh' -o -name '*.hpp' \
     -o -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o -name '*.py' -o -name '*.vue' \) \
     ! -path '*/node_modules/*' -print0 \
-    | xargs -0 grep -lIE 'maxscale|MaxScale|Maxscale|MAXSCALE|maxctrl|MaxCtrl|maxgui|MaxGUI|maxkeys|maxpasswd|maxavrocheck' 2>/dev/null || true)
+    | xargs -0 grep -lIE 'maxscale|MaxScale|Percona Proxy|MAXSCALE|maxctrl|MaxCtrl|gui|MaxGUI|maxkeys|maxpasswd|maxavrocheck' 2>/dev/null || true)
 echo "   ${#code_files[@]} sources contain the name"
 
 if [ "$DRY_RUN" = 0 ] && [ "${#code_files[@]}" -gt 0 ]
@@ -160,7 +162,7 @@ then
 fi
 
 echo "== rewriting file contents"
-mapfile -t files < <(find "${find_args[@]}" -print0 | xargs -0 grep -lIE 'maxscale|MaxScale|Maxscale|MAXSCALE|maxctrl|MaxCtrl|maxgui|MaxGUI|maxkeys|maxpasswd|maxavrocheck' 2>/dev/null || true)
+mapfile -t files < <(find "${find_args[@]}" -print0 | xargs -0 grep -lIE 'maxscale|MaxScale|Percona Proxy|MAXSCALE|maxctrl|MaxCtrl|gui|MaxGUI|maxkeys|maxpasswd|maxavrocheck' 2>/dev/null || true)
 echo "   ${#files[@]} files contain the name"
 
 if [ "$DRY_RUN" = 0 ]
@@ -180,7 +182,7 @@ rename_one() {
         return 0
     fi
     # mv moves into a directory that already exists instead of failing, which would bury the
-    # tree one level deeper (gui/maxgui) and leave the build looking for a CMakeLists.txt that
+    # tree one level deeper (gui/gui) and leave the build looking for a CMakeLists.txt that
     # is no longer where it was. Refuse instead: on a re-run, clean the tree with
     # "git clean -fdx" first, because an ignored file (.vscode) keeps the old directory alive.
     if [ -e "$dst" ]
@@ -211,14 +213,14 @@ do
               -e 's/maxkeys/percona-proxy-keys/g' \
               -e 's/maxpasswd/percona-proxy-passwd/g' \
               -e 's/maxavrocheck/percona-proxy-avrocheck/g' \
-              -e 's/maxgui/gui/g' \
+              -e 's/gui/gui/g' \
               -e 's/MaxScale\([A-Za-z0-9_]\)/PerconaProxy\1/g' \
               -e 's/MaxScale/Percona-Proxy/g' \
               -e 's/MaxCtrl/Percona-Proxyctl/g' \
               -e 's/MaxGUI/Percona-Proxy-GUI/g' \
               -e 's/maxscale/percona-proxy/g')
     rename_one "$path" "$dir/$new"
-done < <(find . -depth \( -iname '*maxscale*' -o -iname '*maxctrl*' -o -iname '*maxgui*' \
+done < <(find . -depth \( -iname '*maxscale*' -o -iname '*maxctrl*' -o -iname '*gui*' \
     -o -iname '*maxkeys*' -o -iname '*maxpasswd*' -o -iname '*maxavrocheck*' \) \
     "${rename_excludes[@]}")
 

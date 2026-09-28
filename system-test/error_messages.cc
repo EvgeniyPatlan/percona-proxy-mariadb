@@ -13,9 +13,9 @@
  */
 
 /**
- * Regression case for the bug "Different error messages from MariaDB and Maxscale"
+ * Regression case for the bug "Different error messages from MariaDB and Percona Proxy"
  *
- * - try to connect to non existing DB directly to MariaDB server and via Maxscale
+ * - try to connect to non existing DB directly to MariaDB server and via Percona Proxy
  * - compare error messages
  * - repeat for RWSplit, ReadConn
  */

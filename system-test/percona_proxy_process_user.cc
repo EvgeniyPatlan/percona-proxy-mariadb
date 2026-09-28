@@ -13,7 +13,7 @@
  */
 
 /**
- * Check if Maxscale priocess is running as 'percona-proxy'
+ * Check if Percona Proxy priocess is running as 'percona-proxy'
  */
 
 #include <maxtest/testconnections.hh>

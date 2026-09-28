@@ -20,7 +20,7 @@
  * - execute query
  * - unblock Mariadb server
  * - do same test, but block all backend nodes
- * - check if Maxscale is alive
+ * - check if Percona Proxy is alive
  */
 
 /*
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     TestConnections* Test = new TestConnections(argc, argv);
     Test->reset_timeout();
 
-    Test->tprintf("Connecting to Maxscale %s", Test->percona_proxy->ip4());
+    Test->tprintf("Connecting to Percona Proxy %s", Test->percona_proxy->ip4());
     Test->percona_proxy->connect_percona_proxy();
 
     printf("Setup firewall to block mysql on master");

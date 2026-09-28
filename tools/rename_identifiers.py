@@ -30,7 +30,7 @@ RENAMES = [
     (r"maxscale\b", "percona_proxy"),
     (r"MaxScale_", "PerconaProxy_"),
     (r"MaxScale\b", "PerconaProxy"),
-    (r"Maxscale\b", "PerconaProxy"),
+    (r"Percona Proxy\b", "PerconaProxy"),
     # maxctrl needs no boundary at all: maxctrlf is a real method name, and unlike maxscale
     # there is no camelCase family here that has to keep the old spelling.
     (r"maxctrl", "percona_proxyctl"),

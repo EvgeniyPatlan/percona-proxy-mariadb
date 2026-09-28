@@ -15,10 +15,10 @@
 /**
  * @file bug620.cpp bug620 regression case ("enable_root_user=true generates errors to error log")
  *
- * - Maxscale.cnf contains RWSplit router definition with enable_root_user=true
+ * - Percona Proxy.cnf contains RWSplit router definition with enable_root_user=true
  * - GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'skysqlroot';
  * - try to connect using 'root' user and execute some query
- * - errors are not expected in the log. All Maxscale services should be alive.
+ * - errors are not expected in the log. All Percona Proxy services should be alive.
  */
 
 /*

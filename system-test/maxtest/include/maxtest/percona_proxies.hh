@@ -239,9 +239,9 @@ public:
     const std::string& password() const;
 
     /**
-     * @brief ConnectMaxscale   Opens connections to RWSplit, ReadConn master and ReadConn slave Maxscale
+     * @brief connect_percona_proxy Opens connections to RWSplit, ReadConn master and ReadConn slave Percona Proxy
      * services
-     * Opens connections to RWSplit, ReadConn master and ReadConn slave Maxscale services
+     * Opens connections to RWSplit, ReadConn master and ReadConn slave Percona Proxy services
      * Connections stored in percona_proxies->conn_rwsplit, percona_proxies->conn_master[0] and
      * percona_proxies->conn_slave[0] MYSQL structs
      * @return 0 in case of success
@@ -250,7 +250,7 @@ public:
     int connect(const std::string& db = "test");
 
     /**
-     * @brief CloseMaxscaleConn Closes connection that were opened by ConnectMaxscale()
+     * @brief close_percona_proxy_connections Closes connections opened by connect_percona_proxy()
      * @return 0
      */
     int close_percona_proxy_connections();
@@ -406,8 +406,8 @@ public:
     mxt::CmdResult percona_proxyctlf(Expect expect, const char* fmt, ...) mxb_attribute((format (printf, 3, 4)));
 
     /**
-     * @brief get_maxscale_memsize Gets size of the memory consumed by Maxscale process
-     * @param m Number of Maxscale node
+     * @brief get_maxscale_memsize Gets size of the memory consumed by Percona Proxy process
+     * @param m Number of Percona Proxy node
      * @return memory size in kilobytes
      */
     long unsigned get_percona_proxy_memsize(int m = 0);
@@ -568,7 +568,7 @@ private:
     bool m_ssl {false};         /**< Use ssl when connecting to Percona Proxy */
     bool m_leak_check {true};
 
-    int  m_valgrind_log_num {0};    /**< Counter for Maxscale restarts to avoid Valgrind log overwriting */
+    int  m_valgrind_log_num {0};    /**< Counter for Percona Proxy restarts to avoid Valgrind log overwriting */
 
     std::string m_rest_user {"admin"};
     std::string m_rest_pw {"mariadb"};
@@ -577,7 +577,7 @@ private:
 
     std::string m_user_name;        /**< User name to access backend nodes */
     std::string m_password;         /**< Password to access backend nodes */
-    std::string m_cnf_path;         /**< Maxscale configuration file path */
+    std::string m_cnf_path;         /**< Percona Proxy configuration file path */
     std::string m_local_percona_proxyctl;    /**< Path to Percona Proxyctl */
 
     std::string m_log_dir {"/var/log/percona-proxy"};/**< Where is Percona Proxy writing its logs */

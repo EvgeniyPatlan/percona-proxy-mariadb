@@ -56,7 +56,7 @@ With these values, a fresh session can start off with a speed of 2000 qps, and
 maintain that speed for 2 seconds before throttling starts.
 
 If the client continues to query at high speed and throttling duration is set to
-10 seconds, Maxscale will disconnect the session 12 seconds after it started.
+10 seconds, Percona Proxy will disconnect the session 12 seconds after it started.
 
 ### Filter Parameters
 

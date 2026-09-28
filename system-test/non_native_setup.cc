@@ -14,7 +14,7 @@
 
 /**
  * @file Simple dummy configuration program for non-C++ tests
- * - Configure Maxscale (prepare percona-proxy.cnf and copy it to Maxscale machine)
+ * - Configure Percona Proxy (prepare percona-proxy.cnf and copy it to Percona Proxy machine)
  * - check backends
  * - try to restore broken backends
  */
