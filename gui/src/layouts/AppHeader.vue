@@ -2,7 +2,7 @@
     <v-app-bar height="64px" class="pl-8" fixed clipped-left app flat color="blue-azure">
         <v-toolbar-title class="app-headline text-h5">
             <router-link to="/dashboard/servers">
-                <img src="@share/assets/logo.svg" alt="MariaDB Logo" />
+                <img src="@share/assets/logo.svg" alt="Percona Proxy for MariaDB logo" />
                 <span class="product-name tk-azo-sans-web font-weight-medium  white--text">
                     Percona Proxy
                 </span>

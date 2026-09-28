@@ -16,6 +16,9 @@ import. See `NOTICE` for the provenance and the licensing.
 The bundled SQLite parser keeps the upstream names, on both sides of its interface,
 because it is third-party code that is not renamed.
 
+The GUI icons and the wordmark in `gui/public` and `gui/share/assets` are plain placeholders,
+not the final artwork.
+
 An installation that has not been migrated is still read: when `/etc/percona-proxy.cnf`
 does not exist, `/etc/maxscale.cnf` is used and a warning is logged.
 `percona-proxy-migrate` converts a MaxScale configuration into a Percona Proxy one.

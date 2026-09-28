@@ -38,7 +38,7 @@
 
                 <v-sheet style="border-radius: 10px;" class="px-6 py-6" max-width="320px">
                     <span class="d-block mb-1 text-body-2 font-weight-bold text-capitalize">
-                        {{ $mxs_t('aboutMaxScale') }}
+                        {{ $mxs_t('aboutPerconaProxy') }}
                     </span>
                     <div v-for="(value, name) in getMaxScaleInfo" :key="name">
                         <span class="d-flex text-body-2">

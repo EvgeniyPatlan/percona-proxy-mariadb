@@ -71,7 +71,7 @@
         },
         "404Error": "404 Error",
         "404ErrorMessage": "Sorry, that page doesn't exist",
-        "aboutMaxScale": "about percona-proxy",
+        "aboutPerconaProxy": "about Percona Proxy",
         "actions": "Actions",
         "add": "Add",
         "addEntity": "Add {entityName}",
