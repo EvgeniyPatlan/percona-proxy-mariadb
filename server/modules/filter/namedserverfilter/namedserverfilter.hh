@@ -13,20 +13,20 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <string>
 #include <vector>
 #include <memory>
 #include <netdb.h>
 
-#include <maxscale/filter.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/pcre2.hh>
-#include <maxscale/hint.hh>
-#include <maxscale/workerlocal.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/pcre2.hh>
+#include <percona-proxy/hint.hh>
+#include <percona-proxy/workerlocal.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 
 class RegexHintFilter;
 class RegexHintFSession;
@@ -124,7 +124,7 @@ private:
 /**
  * The session structure for the regexhint (namedserver) filter
  */
-class RegexHintFSession : public maxscale::FilterSession
+class RegexHintFSession : public percona_proxy::FilterSession
 {
 public:
     RegexHintFSession(MXS_SESSION* session, SERVICE* service, RegexHintFilter& filter, bool active,

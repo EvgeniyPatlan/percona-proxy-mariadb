@@ -1,4 +1,4 @@
-[maxscale]
+[percona-proxy]
 threads=###threads###
 log_info=0
 

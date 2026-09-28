@@ -13,7 +13,7 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <stdbool.h>
 #include <stdint.h>
 #include <time.h>

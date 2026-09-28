@@ -1,5 +1,5 @@
 find_package(GSSAPI REQUIRED)
 add_library(gssapiauth SHARED gssapi_common.cc gssapi_client_auth.cc gssapi_backend_auth.cc)
-target_link_libraries(gssapiauth maxscale-common ${GSSAPI_LIBS})
+target_link_libraries(gssapiauth percona-proxy-common ${GSSAPI_LIBS})
 set_target_properties(gssapiauth PROPERTIES VERSION "1.0.0" LINK_FLAGS -Wl,-z,defs)
 install_module(gssapiauth core)

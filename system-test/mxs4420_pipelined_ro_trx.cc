@@ -16,7 +16,7 @@
 
 void do_test(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     c.send_query("START TRANSACTION READ ONLY");
     c.send_query("SELECT @@server_id");
@@ -66,14 +66,14 @@ void test_main(TestConnections& test)
         {
             auto cnf = mxb::cat(trx_replay, " ", causal_reads);
             test.tprintf("Testing: %s", cnf.c_str());
-            test.check_maxctrl("alter service RW-Split-Router " + cnf);
+            test.check_percona_proxyctl("alter service RW-Split-Router " + cnf);
             do_test(test);
         }
     }
 
     std::string cnf = "transaction_replay=false causal_reads=none optimistic_trx=true";
     test.tprintf("Testing: %s", cnf.c_str());
-    test.check_maxctrl("alter service RW-Split-Router " + cnf);
+    test.check_percona_proxyctl("alter service RW-Split-Router " + cnf);
     do_test(test);
 }
 

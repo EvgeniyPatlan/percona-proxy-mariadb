@@ -22,8 +22,8 @@
 #include <cstdio>
 #include <maxbase/log.hh>
 #include <maxbase/alloc.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 namespace
 {

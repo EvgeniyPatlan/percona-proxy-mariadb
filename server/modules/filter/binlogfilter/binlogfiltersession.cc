@@ -53,9 +53,9 @@
 #include <mysqld_error.h>
 #include <maxbase/regex.hh>
 #include <maxbase/alloc.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/session.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/session.hh>
 
 #include "binlogfilter.hh"
 #include "binlogfiltersession.hh"

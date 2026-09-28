@@ -15,6 +15,6 @@
 
 #define MXB_MODULE_NAME "nosqlprotocol"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <maxbase/assert.hh>
-#include <maxscale/log.hh>
+#include <percona-proxy/log.hh>

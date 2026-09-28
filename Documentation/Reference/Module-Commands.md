@@ -1,11 +1,11 @@
 # Module commands
 
-Introduced in MaxScale 2.1, the module commands are special, module-specific
+Introduced in Percona Proxy 2.1, the module commands are special, module-specific
 commands. They allow the modules to expand beyond the capabilities of the module
-API. Currently, only MaxCtrl implements an interface to the module commands.
+API. Currently, only Percona Proxyctl implements an interface to the module commands.
 
-All registered module commands can be shown with `maxctrl list commands` and
-they can be executed with `maxctrl call command <module> <name> ARGS...` where
+All registered module commands can be shown with `percona-proxyctl list commands` and
+they can be executed with `percona-proxyctl call command <module> <name> ARGS...` where
 _<module>_ is the name of the module and _<name>_ is the name of the command.
 _ARGS_ is a command specific list of arguments.
 
@@ -19,7 +19,7 @@ The following example registers the module command _my_command_ for module
 _my_module_.
 
 ```
-#include <maxscale/modulecmd.hh>
+#include <percona-proxy/modulecmd.hh>
 
 bool my_simple_cmd(const MODULECMD_ARG *argv)
 {

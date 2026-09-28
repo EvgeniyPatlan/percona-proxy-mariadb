@@ -6,8 +6,8 @@
 
 #define MXB_MODULE_NAME "throttlefilter"
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/config2.hh>
 
 #include "throttlefilter.hh"
 
@@ -28,7 +28,7 @@ cfg::ParamInteger s_max_qps(
 
 cfg::ParamMilliseconds s_throttling_duration(
     &s_spec, "throttling_duration",
-    "How long a session is allowed to be throttled before MaxScale disconnects the session",
+    "How long a session is allowed to be throttled before Percona Proxy disconnects the session",
     cfg::Param::AT_RUNTIME);
 
 cfg::ParamMilliseconds s_sampling_duration(

@@ -19,13 +19,13 @@ using mxb::Json;
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     auto get_sessions = [&]() {
-        auto res = mxs.maxctrlf("api get sessions data[].attributes.connections");
+        auto res = mxs.percona_proxyctlf("api get sessions data[].attributes.connections");
         Json sessions;
-        test.expect(sessions.load_string(res.output), "Failed to get sessions from MaxScale");
+        test.expect(sessions.load_string(res.output), "Failed to get sessions from Percona Proxy");
         return sessions.get_array_elems();
     };
 
@@ -42,16 +42,16 @@ void test_main(TestConnections& test)
     };
 
     /**
-     * Inject fixed hostnames into the MaxScale VM for the backend nodes. The actual hostnames
+     * Inject fixed hostnames into the Percona Proxy VM for the backend nodes. The actual hostnames
      * might be different depending on where the nodes are located. This way, the test can
      * be made much simpler.
      */
     for (int i = 0; i < test.repl->n_nodes(); i++)
     {
-        test.maxscale->ssh_node_f(true, "echo '%s node00%d' >> /etc/hosts", test.repl->ip(i), i);
+        test.percona_proxy->ssh_node_f(true, "echo '%s node00%d' >> /etc/hosts", test.repl->ip(i), i);
     }
 
-    test.maxscale->start();
+    test.percona_proxy->start();
 
     test.tprintf("Server peer cert & host verification is on and servers have valid certificates. "
                  "All should be working normally.");
@@ -129,12 +129,12 @@ void test_main(TestConnections& test)
 
     for (int i = 0; i < test.repl->n_nodes(); i++)
     {
-        test.maxscale->ssh_node_f(true, "sed -i '/node00%d/ d' /etc/hosts", i);
+        test.percona_proxy->ssh_node_f(true, "sed -i '/node00%d/ d' /etc/hosts", i);
     }
 }
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return TestConnections().run_test(argc, argv, test_main);
 }

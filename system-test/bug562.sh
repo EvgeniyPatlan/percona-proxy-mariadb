@@ -21,20 +21,20 @@
 export ssl_options="--ssl-cert=$src_dir/ssl-cert/client.crt --ssl-key=$src_dir/ssl-cert/client.key --ssl-verify-server-cert=0"
 
 mariadb_err=`mariadb -u no_such_user -psome_pwd -h $node_001_network $ssl_option $node_001_socket_cmd test 2>&1`
-maxscale_err=`mariadb -u no_such_user -psome_pwd -h ${maxscale_000_network} -P 4006  $ssl_options test 2>&1`
+percona_proxy_err=`mariadb -u no_such_user -psome_pwd -h ${percona_proxy_000_network} -P 4006  $ssl_options test 2>&1`
 
 echo "MariaDB message"
 echo "$mariadb_err"
 echo " "
 echo "Maxscale message"
-echo "$maxscale_err"
+echo "$percona_proxy_err"
 
 res=0
-#echo "$maxscale_err" | grep "$mariadb_err"
-echo "$maxscale_err" |grep "ERROR 1045 (28000): Access denied for user 'no_such_user'@'"
+#echo "$percona_proxy_err" | grep "$mariadb_err"
+echo "$percona_proxy_err" |grep "ERROR 1045 (28000): Access denied for user 'no_such_user'@'"
 if [ "$?" != 0 ]; then
 	echo "Maxscale message is not ok!"
-    echo "Message: $maxscale_err"
+    echo "Message: $percona_proxy_err"
 	res=1
 else
 	echo "Messages are same"

@@ -22,10 +22,10 @@ using std::string;
 int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
-    auto host = test.maxscale->ip();
-    auto port = test.maxscale->port();
-    auto& user = test.maxscale->user_name();
-    auto& pw = test.maxscale->password();
+    auto host = test.percona_proxy->ip();
+    auto port = test.percona_proxy->port();
+    auto& user = test.percona_proxy->user_name();
+    auto& pw = test.percona_proxy->password();
     string wrong_pw = "wrong_pw";
 
     auto testfunc = [&](ConnectorVersion vrs) {

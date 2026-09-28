@@ -17,8 +17,8 @@ add_library(postgresprotocol SHARED
   authenticators/trust.cc
   )
 
-add_dependencies(postgresprotocol maxscale-common libgsasl libidn)
-target_link_libraries(postgresprotocol maxscale-common maxpgsql ${LIBGSASL_LIBRARIES} ${LIBIDN_LIBRARIES})
+add_dependencies(postgresprotocol percona-proxy-common libgsasl libidn)
+target_link_libraries(postgresprotocol percona-proxy-common maxpgsql ${LIBGSASL_LIBRARIES} ${LIBIDN_LIBRARIES})
 target_include_directories(postgresprotocol PRIVATE ${CMAKE_SOURCE_DIR}/maxutils/maxpgsql/include)
 include_directories(${LIBGSASL_INCLUDE_DIR} ${LIBIDN_INCLUDE_DIR})
 

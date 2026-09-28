@@ -62,7 +62,7 @@ std::string print(const Map& m)
 
 void mxs4776_normal_sescmd(TestConnections& test)
 {
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     c.connect();
 
     auto conns = get_connections(test);
@@ -88,8 +88,8 @@ void mxs4776_normal_sescmd(TestConnections& test)
 
 void mxs4776_max_slave_connections(TestConnections& test)
 {
-    test.check_maxctrl("alter service RW-Split-Router master_accept_reads=true");
-    Connection c = test.maxscale->rwsplit();
+    test.check_percona_proxyctl("alter service RW-Split-Router master_accept_reads=true");
+    Connection c = test.percona_proxy->rwsplit();
     c.connect();
 
     auto conns = get_connections(test);
@@ -111,13 +111,13 @@ void mxs4776_max_slave_connections(TestConnections& test)
     conns = get_connections(test);
     test.expect(sum(conns) == 4, "Sum of all connections should be 4: %s", print(conns).c_str());
 
-    test.check_maxctrl("alter service RW-Split-Router master_accept_reads=false");
+    test.check_percona_proxyctl("alter service RW-Split-Router master_accept_reads=false");
 }
 
 void mxs4776_master_accept_reads(TestConnections& test)
 {
-    test.check_maxctrl("alter service RW-Split-Router max_slave_connections=1");
-    Connection c = test.maxscale->rwsplit();
+    test.check_percona_proxyctl("alter service RW-Split-Router max_slave_connections=1");
+    Connection c = test.percona_proxy->rwsplit();
     c.connect();
 
     auto conns = get_connections(test);
@@ -139,7 +139,7 @@ void mxs4776_master_accept_reads(TestConnections& test)
     conns = get_connections(test);
     test.expect(sum(conns) == 1, "Sum of all connections should still be 1: %s", print(conns).c_str());
 
-    test.check_maxctrl("alter service RW-Split-Router max_slave_connections=256");
+    test.check_percona_proxyctl("alter service RW-Split-Router max_slave_connections=256");
 }
 
 // The session may end up in an infinite retry loop if lazy_connect is used and authentication fails on all
@@ -148,10 +148,10 @@ void mxs4776_master_accept_reads(TestConnections& test)
 void mxs4956(TestConnections& test)
 {
     // Turn on delayed_retry
-    test.check_maxctrl("alter service RW-Split-Router delayed_retry=true delayed_retry_timeout=5s "
+    test.check_percona_proxyctl("alter service RW-Split-Router delayed_retry=true delayed_retry_timeout=5s "
                        "master_failure_mode=fail_on_write master_reconnection=true log_info=true");
 
-    Connection admin = test.maxscale->rwsplit();
+    Connection admin = test.percona_proxy->rwsplit();
     admin.connect();
 
     // Create a user for the test
@@ -160,7 +160,7 @@ void mxs4956(TestConnections& test)
     test.repl->sync_slaves();
 
     // lazy_connect should delay the creation of the connection until the first query arrives.
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     c.set_timeout(60);
     c.set_credentials("mxs4956_user", "mxs4965");
     test.expect(c.connect(), "Failed to connect: %s", c.error());
@@ -178,10 +178,10 @@ void mxs4956(TestConnections& test)
 int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
 
     test.expect(c.connect(), "Connection should work");
-    auto output = test.maxscale->ssh_output("maxctrl list servers --tsv|cut -f 4|sort|uniq").output;
+    auto output = test.percona_proxy->ssh_output("percona-proxyctl list servers --tsv|cut -f 4|sort|uniq").output;
     mxb::trim(output);
     test.expect(output == "0", "Servers should have no connections: %s", output.c_str());
     c.disconnect();
@@ -208,9 +208,9 @@ int main(int argc, char* argv[])
     test.expect(c.query("SET @a = 1"), "Session command should work");
 
     test.repl->block_all_nodes();
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     test.repl->unblock_all_nodes();
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     test.expect(c.query("SET @a = 1"), "Session command should work: %s", c.error());
     c.disconnect();

@@ -14,8 +14,8 @@
 
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
 
 namespace packet_parser
 {

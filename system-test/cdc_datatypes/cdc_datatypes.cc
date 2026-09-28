@@ -40,7 +40,7 @@ bool run_test(TestConnections& test)
     test.repl->connect();
     execute_query(test.repl->nodes[0], "RESET MASTER");
     test.repl->close_connections();
-    test.maxscale->start();
+    test.percona_proxy->start();
 
     std::set<std::string> excluded = {"JSON", "INET6"};
     std::vector<sql_generation::SQLType> test_set;
@@ -78,7 +78,7 @@ bool run_test(TestConnections& test)
     {
         test.reset_timeout();
         test.log_printf("Testing type: %s", t.type_name.c_str());
-        CDC::Connection conn(test.maxscale->ip4(), 4001, "skysql", "skysql");
+        CDC::Connection conn(test.percona_proxy->ip4(), 4001, "skysql", "skysql");
 
         if (conn.connect(t.full_name))
         {
@@ -133,7 +133,7 @@ bool run_test(TestConnections& test)
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
     if (!run_test(test))
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
         test.add_result(1, "Test failed");
     }
 
-    test.maxscale->expect_running_status(true);
+    test.percona_proxy->expect_running_status(true);
 
     return test.global_result;
 }

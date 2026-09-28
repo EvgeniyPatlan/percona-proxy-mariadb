@@ -1,6 +1,6 @@
 # Binlog Filter
 
-This filter was introduced in MariaDB MaxScale 2.3.0.
+This filter was introduced in Percona Proxy for MariaDB 2.3.0.
 
 [TOC]
 

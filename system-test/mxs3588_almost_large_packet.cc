@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     query.append(0xfffffb - 1 - query.size() - 1, 'a');
     query += "'";
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
     test.expect(c.query(query), "First query should work: %s", c.error());
     test.expect(c.query(query), "Second query should work: %s", c.error());

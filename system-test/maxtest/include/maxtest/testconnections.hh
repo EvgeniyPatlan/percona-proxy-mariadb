@@ -27,7 +27,7 @@
 #include <maxbase/ccdefs.hh>
 #include <maxtest/log.hh>
 #include <maxtest/replication_cluster.hh>
-#include <maxtest/maxscales.hh>
+#include <maxtest/percona_proxies.hh>
 #include <maxtest/test_dir.hh>
 #include <maxtest/mariadb_connector.hh>
 
@@ -79,7 +79,7 @@ public:
 
     /**
      * Combined constructor and test system initialization. Reads environment variables,
-     * copies MaxScale.cnf for MaxScale machine etc. Only meant for backwards compatibility.
+     * copies Percona Proxy.cnf for Percona Proxy machine etc. Only meant for backwards compatibility.
      * Use 'run_test' instead.
      *
      * @param argc Command line argument count
@@ -131,17 +131,17 @@ public:
 
     mxt::ReplicationCluster* repl {nullptr};        /**< Master-Slave replication cluster */
     mxt::GaleraCluster*      galera {nullptr};      /**< Galera cluster */
-    mxt::MaxScale*           maxscale {nullptr};    /**< MaxScale */
-    mxt::MaxScale*           maxscale2 {nullptr};   /**< Second MaxScale */
+    mxt::PerconaProxy*           percona_proxy {nullptr};    /**< Percona Proxy */
+    mxt::PerconaProxy*           percona_proxy2 {nullptr};   /**< Second Percona Proxy */
 
     int& global_result;     /**< Result of test, 0 if PASSED */
     bool smoke {true};      /**< Run tests in quick mode. Only affects some long tests. */
 
-    int  maxscale_ssl {false};  /**< Use SSL when connecting to MaxScale */
+    int  percona_proxy_ssl {false};  /**< Use SSL when connecting to Percona Proxy */
     bool backend_ssl {false};   /**< Add SSL-settings to backend server configurations */
 
-    /** Skip initial start of MaxScale */
-    static void skip_maxscale_start(bool value);
+    /** Skip initial start of Percona Proxy */
+    static void skip_percona_proxy_start(bool value);
 
     /** Test requires a certain backend version  */
     static void require_repl_version(const char* version);
@@ -167,16 +167,16 @@ public:
     void revert_replicate_from_master();
 
     /**
-     * @brief Test that connections to MaxScale are in the expected state
-     * @param rw_split State of the MaxScale connection to Readwritesplit. True for working connection, false
+     * @brief Test that connections to Percona Proxy are in the expected state
+     * @param rw_split State of the Percona Proxy connection to Readwritesplit. True for working connection, false
      * for no connection.
-     * @param rc_master State of the MaxScale connection to Readconnroute Master. True for working connection,
+     * @param rc_master State of the Percona Proxy connection to Readconnroute Master. True for working connection,
      * false for no connection.
-     * @param rc_slave State of the MaxScale connection to Readconnroute Slave. True for working connection,
+     * @param rc_slave State of the Percona Proxy connection to Readconnroute Slave. True for working connection,
      * false for no connection.
      * @return  0 if connections are in the expected state
      */
-    int test_maxscale_connections(bool rw_split, bool rc_master, bool rc_slave);
+    int test_percona_proxy_connections(bool rw_split, bool rc_master, bool rc_slave);
 
     /**
      * @brief Create a number of connections to all services, run simple query, close all connections
@@ -214,7 +214,7 @@ public:
     void tprintf(const char* format, ...) mxb_attribute((format(printf, 2, 3)));
 
     /**
-     * @brief injects a message into maxscale.log
+     * @brief injects a message into percona-proxy.log
      */
     void log_printf(const char* format, ...) mxb_attribute((format(printf, 2, 3)));
 
@@ -278,13 +278,13 @@ public:
     int find_connected_slave1();
 
     /**
-     * @brief CheckMaxscaleAlive Checks if MaxScale is alive
+     * @brief CheckMaxscaleAlive Checks if Percona Proxy is alive
      * Reads test setup info from enviromental variables and tries to connect to all Maxscale services to
      * check if i is alive.
      * Also 'show processlist' query is executed using all services
      * @return 0 in case if success
      */
-    int check_maxscale_alive();
+    int check_percona_proxy_alive();
 
     /**
      * @brief try_query Executes SQL query and repors error
@@ -305,40 +305,40 @@ public:
 
 
     /**
-     * Test a MaxScale configuration file
+     * Test a Percona Proxy configuration file
      *
      * @param config Config file path
-     * @param expected_rc Expected return code from MaxScale
+     * @param expected_rc Expected return code from Percona Proxy
      */
     void test_config(const std::string& config, int expected_rc);
 
     /**
-     * Execute a MaxCtrl command
+     * Execute a Percona Proxyctl command
      *
-     * @param cmd  Command to execute, without the `maxctrl` part
+     * @param cmd  Command to execute, without the `percona-proxyctl` part
      * @param sudo Run the command as root
      *
-     * @return The exit code and output of MaxCtrl
+     * @return The exit code and output of Percona Proxyctl
      */
-    mxt::CmdResult maxctrl(const std::string& cmd, bool sudo = true)
+    mxt::CmdResult percona_proxyctl(const std::string& cmd, bool sudo = true)
     {
-        return maxscale->maxctrl(cmd, sudo);
+        return percona_proxy->percona_proxyctl(cmd, sudo);
     }
 
-    void check_maxctrl(const std::string& cmd, bool sudo = true)
+    void check_percona_proxyctl(const std::string& cmd, bool sudo = true)
     {
-        auto result = maxctrl(cmd, sudo);
+        auto result = percona_proxyctl(cmd, sudo);
         expect(result.rc == 0, "Command '%s' should work: %s", cmd.c_str(), result.output.c_str());
     }
 
-    void print_maxctrl(const std::string& cmd, bool sudo = true)
+    void print_percona_proxyctl(const std::string& cmd, bool sudo = true)
     {
-        tprintf("\n%s", maxctrl(cmd, sudo).output.c_str());
+        tprintf("\n%s", percona_proxyctl(cmd, sudo).output.c_str());
     }
 
     void check_current_operations(int value);
 
-    bool stop_all_maxscales();
+    bool stop_all_percona_proxies();
 
     /**
      * Get the current master server id from the cluster, as seen by rwsplit.
@@ -349,10 +349,10 @@ public:
 
 
     /**
-     * Remove MaxScale form all nodes and installs new ones (to be used for run_test_snapshot)
+     * Remove Percona Proxy form all nodes and installs new ones (to be used for run_test_snapshot)
      * @return True on success
      */
-    bool reinstall_maxscales();
+    bool reinstall_percona_proxies();
 
     mxt::TestLogger& logger();
     mxt::Settings&   settings();
@@ -364,7 +364,7 @@ public:
     }
 
     /**
-     * Get the master server as seen by MaxScale monitor. Only considers the Master-Slave-cluster.
+     * Get the master server as seen by Percona Proxy monitor. Only considers the Master-Slave-cluster.
      *
      * @return Master server, or null if none.
      */
@@ -376,7 +376,7 @@ public:
     void set_verbose(bool val);
     bool verbose() const;
     void write_node_env_vars();
-    int  n_maxscales() const;
+    int  n_percona_proxies() const;
     bool run_shell_command(const std::string& cmd, const std::string& errmsg = "");
 
     mxt::CmdResult run_shell_cmd_output(const std::string& cmd, const std::string& errmsg = "");
@@ -386,7 +386,7 @@ private:
 
     mxt::SharedData m_shared;   /**< Data shared with other objects */
 
-    std::string m_cnf_template_path;    /**< MaxScale config file template used by test */
+    std::string m_cnf_template_path;    /**< Percona Proxy config file template used by test */
 
     StringSet   m_required_mdbci_labels;    /**< MDBCI-labels required by test. Subset of test labels. */
     std::string m_required_mdbci_labels_str;/**< MDBCI-labels in string form. Used on the command line. */
@@ -403,16 +403,16 @@ private:
 
     // Basic options read at startup. Some of these can be set both as env vars or on
     // the command line. If both, the value read from command line takes priority.
-    bool m_init_maxscale {true};        /**< Is MaxScale initialized normally? */
+    bool m_init_percona_proxy {true};        /**< Is Percona Proxy initialized normally? */
     bool m_check_nodes {true};          /**< Check nodes when preparing for test? */
-    bool m_mxs_manual_debug {false};    /**< Manually debugging MaxScale? */
+    bool m_mxs_manual_debug {false};    /**< Manually debugging Percona Proxy? */
     bool m_fix_clusters_after {false};  /**< Fix clusters after test? */
     bool m_enable_timeout {true};       /**< Is timeout enabled? */
     bool m_recreate_vms {false};        /**< Wipeout and recreate test VMs. */
 
     /* If false, logs from backends are not copied (needed with Aurora RDS backend or similar) */
     bool m_backend_log_copy {true};
-    bool m_maxscale_log_copy {true};    /**< Copy MaxScale logs? */
+    bool m_percona_proxy_log_copy {true};    /**< Copy Percona Proxy logs? */
 
     int m_threads {4};      /**< Number of Maxscale threads */
 
@@ -427,14 +427,14 @@ private:
 
     /**
      * If true IPv6 addresses will be used to connect Maxscale and backed Also IPv6 addresses go to
-     * maxscale.cnf. */
+     * percona-proxy.cnf. */
     bool m_use_ipv6 {false};
 
     /**
-     * Flag that is set when 'reinstall_maxscale'-option is provided. If true, Maxscale will be removed
+     * Flag that is set when 'reinstall_percona_proxy'-option is provided. If true, Maxscale will be removed
      * and re-installed on all Maxscale nodes. Used for 'run_test_snapshot'.
      */
-    bool m_reinstall_maxscale {false};
+    bool m_reinstall_percona_proxy {false};
     bool m_mdbci_called {false};    /**< Was mdbci called when setting up test system? */
 
     enum class State {NONE, INIT, RUNNING, CLEANUP, CLEANUP_DONE};
@@ -453,7 +453,7 @@ private:
     bool check_backend_versions();
     bool check_create_vm_dir();
     bool read_network_config();
-    bool process_template(mxt::MaxScale& mxs, const std::string& config_file_path);
+    bool process_template(mxt::PerconaProxy& mxs, const std::string& config_file_path);
     bool process_mdbci_template();
     bool call_mdbci(const char* options);
     int  setup_vms();
@@ -463,15 +463,15 @@ private:
     void log_copy_thread_func();
     void copy_all_logs();
     void copy_all_logs_periodic();
-    void copy_maxscale_logs(int timestamp);
+    void copy_percona_proxy_logs(int timestamp);
 
     int prepare_for_test(int argc, char* argv[]);
     int cleanup();
 
-    mxt::MaxScale* my_maxscale(int m) const;
+    mxt::PerconaProxy* my_percona_proxy(int m) const;
 
-    void init_maxscale(int m = 0);
-    void init_maxscales();
+    void init_percona_proxy(int m = 0);
+    void init_percona_proxies();
 
     /**
      * Counts the number of TCP connections in the TIME_WAIT state

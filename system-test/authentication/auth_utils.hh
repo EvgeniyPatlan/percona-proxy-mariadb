@@ -26,12 +26,12 @@ void copy_basic_pam_cfg(mxt::Node& node);
 void remove_basic_pam_cfg(mxt::Node& node);
 void create_basic_pam_user(mxt::MariaDBServer* server, const std::string& user);
 void delete_basic_pam_user(mxt::MariaDBServer* server, const std::string& user);
-void prepare_basic_pam_user(const std::string& user, const std::string& pw, mxt::MaxScale* mxs,
+void prepare_basic_pam_user(const std::string& user, const std::string& pw, mxt::PerconaProxy* mxs,
                             mxt::MariaDBServer* master, const std::vector<mxt::MariaDBServer*>& slaves);
 void prepare_pam_user(const std::string& user, const std::string& pw, const std::string& service,
-                      mxt::MaxScale* mxs, mxt::MariaDBServer* master,
+                      mxt::PerconaProxy* mxs, mxt::MariaDBServer* master,
                       const std::vector<mxt::MariaDBServer*>& slaves);
-void remove_pam_user(const std::string& user, mxt::MaxScale* mxs, mxt::MariaDBServer* master,
+void remove_pam_user(const std::string& user, mxt::PerconaProxy* mxs, mxt::MariaDBServer* master,
                      const std::vector<mxt::MariaDBServer*>& slaves);
 void install_pam_plugin(mxt::MariaDBServer* server);
 void uninstall_pam_plugin(mxt::MariaDBServer* server);

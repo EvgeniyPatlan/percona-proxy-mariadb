@@ -22,14 +22,14 @@
 
 int check_server_id(TestConnections* test, int idx)
 {
-    test->maxscale->close_maxscale_connections();
-    test->maxscale->connect_maxscale();
+    test->percona_proxy->close_percona_proxy_connections();
+    test->percona_proxy->connect_percona_proxy();
 
     int a = test->repl->get_server_id(idx);
     int b = -1;
     char str[1024];
 
-    if (find_field(test->maxscale->conn_rwsplit, "SELECT @@server_id", "@@server_id", str) == 0)
+    if (find_field(test->percona_proxy->conn_rwsplit, "SELECT @@server_id", "@@server_id", str) == 0)
     {
         b = atoi(str);
     }
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
     config.destroy_server(1);
     config.destroy_server(1, mxt::Config::Expect::FAIL);
     config.check_server_count(0);
-    test->maxscale->expect_running_status(true);
+    test->percona_proxy->expect_running_status(true);
 
     test->tprintf("Testing adding of server to service");
 
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
     config.add_server(1);
     config.check_server_count(1);
     sleep(1);
-    test->check_maxscale_alive();
+    test->check_percona_proxy_alive();
     config.remove_server(1);
     config.destroy_server(1);
     config.check_server_count(0);
@@ -72,11 +72,11 @@ int main(int argc, char* argv[])
     config.add_server(1);
     config.alter_server(1, "address", test->repl->ip_private(1));
     sleep(1);
-    test->check_maxscale_alive();
+    test->check_percona_proxy_alive();
     config.alter_server(1, "address", "127.0.0.1");
     config.alter_server(1, "port", 12345);
-    test->maxscale->connect_maxscale();
-    test->add_result(execute_query_silent(test->maxscale->conn_rwsplit, "SELECT 1") == 0,
+    test->percona_proxy->connect_percona_proxy();
+    test->add_result(execute_query_silent(test->percona_proxy->conn_rwsplit, "SELECT 1") == 0,
                      "Query with bad address should fail");
 
     config.remove_server(1);
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 
     config.reset();
     sleep(1);
-    test->check_maxscale_alive();
+    test->check_percona_proxy_alive();
     int rval = test->global_result;
     delete test;
     return rval;

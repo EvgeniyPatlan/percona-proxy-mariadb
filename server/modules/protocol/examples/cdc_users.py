@@ -14,7 +14,7 @@
 
 import sys, binascii, hashlib, argparse
 
-parser = argparse.ArgumentParser(description = "CDC User manager", epilog = "Append the output of this program to /var/lib/maxscale/<service name>/cdcusers")
+parser = argparse.ArgumentParser(description = "CDC User manager", epilog = "Append the output of this program to /var/lib/percona-proxy/<service name>/cdcusers")
 parser.add_argument("USER", help="Username")
 parser.add_argument("PASSWORD", help="Password")
 opts = parser.parse_args(sys.argv[1:])

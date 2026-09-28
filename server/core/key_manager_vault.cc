@@ -14,8 +14,8 @@
 
 #include "internal/key_manager_vault.hh"
 #include <maxbase/json.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/secrets.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/secrets.hh>
 
 #include <libvault/VaultClient.h>
 

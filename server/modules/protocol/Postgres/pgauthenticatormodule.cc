@@ -12,8 +12,8 @@
  */
 
 #include "pgauthenticatormodule.hh"
-#include <maxscale/protocol/postgresql/scram.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/protocol/postgresql/scram.hh>
+#include <percona-proxy/utils.hh>
 #include <gsasl.h>
 
 std::string PgAuthenticatorModule::supported_protocol() const

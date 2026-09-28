@@ -39,9 +39,9 @@ void test_main(TestConnections& test)
 
     for (int i = 0; i < CONNECTIONS; i++)
     {
-        conns.push_back(test.maxscale->rwsplit());
-        conns.push_back(test.maxscale->readconn_master());
-        conns.push_back(test.maxscale->readconn_slave());
+        conns.push_back(test.percona_proxy->rwsplit());
+        conns.push_back(test.percona_proxy->readconn_master());
+        conns.push_back(test.percona_proxy->readconn_slave());
     }
 
     for (auto& c : conns)
@@ -62,7 +62,7 @@ void test_main(TestConnections& test)
 
         for (int i = 0; i < test.repl->N; i++)
         {
-            auto res = test.maxctrl("api get servers/server"
+            auto res = test.percona_proxyctl("api get servers/server"
                                     + std::to_string(i + 1)
                                     + " data.attributes.statistics.connections");
 

@@ -109,7 +109,7 @@ public:
      *
      * @param argstr  Command to execute with the parameters
      * @param timeout Command timeout in seconds
-     * @param handler Output handler to use. By default the output is logged into the MaxScale log.
+     * @param handler Output handler to use. By default the output is logged into the Percona Proxy log.
      *
      * @return Pointer to new external command struct or NULL if an error occurred
      */

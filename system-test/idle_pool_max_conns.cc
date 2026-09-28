@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     mxs.check_servers_status(mxt::ServersInfo::default_repl_states());
 
@@ -187,7 +187,7 @@ void test_main(TestConnections& test)
 
                 // Acquire the lock on a different connection. This makes sure that the queries do not proceed
                 // but also does not slow down the test too much.
-                auto lock_owner = test.maxscale->rwsplit();
+                auto lock_owner = test.percona_proxy->rwsplit();
                 lock_owner.connect();
                 lock_owner.query(LOCK_QUERY);
 
@@ -195,7 +195,7 @@ void test_main(TestConnections& test)
 
                 for (int i = 0; i < n_sessions; i++)
                 {
-                    conns.push_back(test.maxscale->rwsplit(""));
+                    conns.push_back(test.percona_proxy->rwsplit(""));
                 }
 
                 mxb::StopWatch timer;

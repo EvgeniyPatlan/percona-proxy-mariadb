@@ -16,8 +16,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <iostream>
-#include <maxscale/buffer.hh>
-#include <maxscale/paths.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/paths.hh>
 
 using namespace std;
 

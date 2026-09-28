@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     int i;
     TestConnections* Test = new TestConnections(argc, argv);
     Test->reset_timeout();
-    Test->maxscale->connect_maxscale();
+    Test->percona_proxy->connect_percona_proxy();
 
     Test->tprintf("Create /tmp/t1.csv on all backend nodes\n");
     for (i = 0; i < Test->repl->N; i++)
@@ -43,11 +43,11 @@ int main(int argc, char* argv[])
         Test->repl->ssh_node(i, (char*) "touch /tmp/t1.csv", true);
     }
 
-    Test->add_result(create_t1(Test->maxscale->conn_rwsplit), "Error creating t1\n");
-    Test->try_query(Test->maxscale->conn_rwsplit,
+    Test->add_result(create_t1(Test->percona_proxy->conn_rwsplit), "Error creating t1\n");
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
                     (char*) "INSERT INTO t1 (x1, fl) VALUES (0, 0), (1, 0)");
 
-    if ((execute_query(Test->maxscale->conn_rwsplit,
+    if ((execute_query(Test->percona_proxy->conn_rwsplit,
                        (char*) "SELECT * INTO OUTFILE '/tmp/t1.csv' FROM t1;")) == 0)
     {
         Test->add_result(1, "SELECT INTO OUTFILE epected to fail, but it is OK\n");

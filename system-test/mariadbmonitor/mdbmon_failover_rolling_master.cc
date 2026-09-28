@@ -41,9 +41,9 @@ void sleep(int s)
     cout << endl;
 }
 
-int get_server_id(mxt::MaxScale& maxscales)
+int get_server_id(mxt::PerconaProxy& percona_proxies)
 {
-    MYSQL* conn = maxscales.open_rwsplit_connection();
+    MYSQL* conn = percona_proxies.open_rwsplit_connection();
     int id = -1;
     char str[1024];
 
@@ -71,7 +71,7 @@ class XTestConnections : private TestConnections
 public:
     using TestConnections::add_result;
     using TestConnections::global_result;
-    using TestConnections::maxscale;
+    using TestConnections::percona_proxy;
     using TestConnections::repl;
 
     XTestConnections(int argc, char* argv[])
@@ -84,17 +84,17 @@ public:
         return *this;
     }
 
-    void maxctrl(const std::string& s)
+    void percona_proxyctl(const std::string& s)
     {
-        TestConnections::maxctrl(s);
+        TestConnections::percona_proxyctl(s);
     }
 
-    void connect_maxscale(int m = 0)
+    void connect_percona_proxy(int m = 0)
     {
-        if (maxscale->connect_maxscale() != 0)
+        if (percona_proxy->connect_percona_proxy() != 0)
         {
             ++global_result;
-            throw std::runtime_error("Could not connect to MaxScale.");
+            throw std::runtime_error("Could not connect to Percona Proxy.");
         }
     }
 
@@ -138,7 +138,7 @@ public:
 void list_servers(XTestConnections& test)
 {
     cout << endl;
-    test.maxctrl("list servers");
+    test.percona_proxyctl("list servers");
 }
 }
 
@@ -147,8 +147,8 @@ namespace
 
 void create_table(XTestConnections& test)
 {
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE IF EXISTS test.t1");
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE TABLE test.t1(id INT)");
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE IF EXISTS test.t1");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE TABLE test.t1(id INT)");
 }
 
 static int i_start = 0;
@@ -157,7 +157,7 @@ static int i_end = 0;
 
 void insert_data(XTestConnections& test)
 {
-    test.try_query(test.maxscale->conn_rwsplit, "BEGIN");
+    test.try_query(test.percona_proxy->conn_rwsplit, "BEGIN");
 
     i_end = i_start + n_rows;
 
@@ -165,16 +165,16 @@ void insert_data(XTestConnections& test)
     {
         stringstream ss;
         ss << "INSERT INTO test.t1 VALUES (" << i << ")";
-        test.try_query(test.maxscale->conn_rwsplit, ss.str().c_str());
+        test.try_query(test.percona_proxy->conn_rwsplit, ss.str().c_str());
     }
-    test.try_query(test.maxscale->conn_rwsplit, "COMMIT");
+    test.try_query(test.percona_proxy->conn_rwsplit, "COMMIT");
 
     i_start = i_end;
 }
 
 void check(XTestConnections& test)
 {
-    MYSQL* pConn = test.maxscale->open_rwsplit_connection();
+    MYSQL* pConn = test.percona_proxy->open_rwsplit_connection();
     const char* zQuery = "SELECT * FROM test.t1";
 
     test.try_query(pConn, "BEGIN");
@@ -212,12 +212,12 @@ void stop_node(XTestConnections& test, int index)
 
 void run(XTestConnections& test)
 {
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     const int N = 4;
 
-    cout << "\nConnecting to MaxScale." << endl;
-    test.connect_maxscale();
+    cout << "\nConnecting to Percona Proxy." << endl;
+    test.connect_percona_proxy();
 
     cout << "\nCreating table." << endl;
     create_table(test);
@@ -234,24 +234,24 @@ void run(XTestConnections& test)
         cout << "\nSyncing slaves." << endl;
         test.repl->sync_slaves();
 
-        int master_id = get_server_id(*test.maxscale);
+        int master_id = get_server_id(*test.percona_proxy);
         int master_index = master_id - 1;
 
         cout << "\nStopping master." << endl;
         stop_node(test, master_index);
 
-        cout << "\nClosing connection to MaxScale." << endl;
-        test.maxscale->close_maxscale_connections();
+        cout << "\nClosing connection to Percona Proxy." << endl;
+        test.percona_proxy->close_percona_proxy_connections();
 
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
 
         list_servers(test);
 
-        master_id = get_server_id(*test.maxscale);
+        master_id = get_server_id(*test.percona_proxy);
         cout << "\nNew master is: " << master_id << endl;
 
-        cout << "\nConnecting to MaxScale." << endl;
-        test.connect_maxscale();
+        cout << "\nConnecting to Percona Proxy." << endl;
+        test.connect_percona_proxy();
 
         cout << "\nChecking result." << endl;
         check(test);

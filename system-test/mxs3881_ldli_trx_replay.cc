@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection failed: %s", conn.error());
 
     test.expect(conn.query("CREATE OR REPLACE TABLE t1(id INT)"), "Failed to create table: %s", conn.error());

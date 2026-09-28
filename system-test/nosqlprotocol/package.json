@@ -2,7 +2,7 @@
   "name": "nosqlprotocol",
   "version": "1.0.0",
   "description": "NoSQL protocol tests",
-  "repository": "https://github.com/mariadb-corporation/MaxScale",
+  "repository": "https://github.com/mariadb-corporation/Percona Proxy",
   "main": "index.js",
   "scripts": {
     "test": "mocha --exit"

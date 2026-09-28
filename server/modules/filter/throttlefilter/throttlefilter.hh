@@ -13,8 +13,8 @@
  */
 #pragma once
 
-#include <maxscale/filter.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/config2.hh>
 #include "throttlesession.hh"
 #include <maxbase/eventcount.hh>
 #include <maxbase/stopwatch.hh>

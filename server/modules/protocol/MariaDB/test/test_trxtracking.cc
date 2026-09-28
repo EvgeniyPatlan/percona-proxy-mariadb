@@ -12,13 +12,13 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <getopt.h>
 #include <algorithm>
 #include <iostream>
-#include <maxscale/paths.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/testparser.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/testparser.hh>
 
 using namespace std;
 

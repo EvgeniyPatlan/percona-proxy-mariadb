@@ -12,18 +12,18 @@ listener.
 ### `clear_pw_passthrough`
 
 Boolean, default value is "false". Activates passthrough-mode. In this mode,
-MaxScale does not check client credentials at all and defers authentication to
+Percona Proxy does not check client credentials at all and defers authentication to
 the backend server. This feature is primarily meant to be used with Xpand LDAP-
-authentication, although it may be useful in any situation where MaxScale
+authentication, although it may be useful in any situation where Percona Proxy
 cannot check the existence of client user account nor authenticate the client.
 
-When a client connects to a listener with this setting enabled, MaxScale will
+When a client connects to a listener with this setting enabled, Percona Proxy will
 change authentication method to "mysql_clear_password", causing the client to
-send their cleartext password to MaxScale. MaxScale will then attempt to use
+send their cleartext password to Percona Proxy. Percona Proxy will then attempt to use
 the password to authenticate to backends. The authentication result of the
 first backend to respond will be sent to the client. The backend may ask
-MaxScale for either cleartext password or standard ("mysql_native_password")
-authentication token. MaxScale can work with both backend plugins since it has
+Percona Proxy for either cleartext password or standard ("mysql_native_password")
+authentication token. Percona Proxy can work with both backend plugins since it has
 the original password.
 
 This feature is incompatible with service setting *lazy_connect*. Either leave

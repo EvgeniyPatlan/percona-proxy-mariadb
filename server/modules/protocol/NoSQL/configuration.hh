@@ -14,7 +14,7 @@
 #pragma once
 
 #include "nosqlprotocol.hh"
-#include <maxscale/config2.hh>
+#include <percona-proxy/config2.hh>
 
 class ProtocolModule;
 
@@ -57,7 +57,7 @@ public:
         CURSOR_TIMEOUT_DEFAULT = 60     // seconds
     };
 
-    // Can only be changed via MaxScale
+    // Can only be changed via Percona Proxy
     std::string           user;
     std::string           password;
     std::string           host;

@@ -23,7 +23,7 @@ Kafka::Kafka(TestConnections& test)
         {4008},
 {
     "KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:4008,CONTROLLER://0.0.0.0:9093",
-    "KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://"s + test.maxscale->ip4() + ":4008,CONTROLLER://" + test.maxscale->ip4() + ":9093",
+    "KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://"s + test.percona_proxy->ip4() + ":4008,CONTROLLER://" + test.percona_proxy->ip4() + ":9093",
     "KAFKA_NODE_ID=1",
     "KAFKA_PROCESS_ROLES=broker,controller",
     "KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER",
@@ -78,7 +78,7 @@ Consumer::Consumer(TestConnections& test, const std::string& subscription)
 {
     std::string err;
     std::unique_ptr<RdKafka::Conf> cnf {RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL)};
-    cnf->set("bootstrap.servers", test.maxscale->ip4() + std::string(":4008"), err);
+    cnf->set("bootstrap.servers", test.percona_proxy->ip4() + std::string(":4008"), err);
     cnf->set("group.id", "kafkacdc", err);
     cnf->set("enable.auto.commit", "false", err);
     cnf->set("enable.auto.offset.store", "true", err);
@@ -148,7 +148,7 @@ Producer::Producer(TestConnections& test)
 {
     std::string err;
     std::unique_ptr<RdKafka::Conf> cnf {RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL)};
-    cnf->set("bootstrap.servers", test.maxscale->ip4() + std::string(":4008"), err);
+    cnf->set("bootstrap.servers", test.percona_proxy->ip4() + std::string(":4008"), err);
     cnf->set("event_cb", &m_logger, err);
     m_producer.reset(RdKafka::Producer::create(cnf.get(), err));
 }

@@ -19,7 +19,7 @@ namespace
 {
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     auto master = mxt::ServerInfo::master_st;
     auto slave = mxt::ServerInfo::slave_st;
@@ -59,7 +59,7 @@ void test_main(TestConnections& test)
         mxs.sleep_and_wait_for_monitor(1, 1);
         mxs.check_print_servers_status(one_master);
 
-        test.tprintf("Stop all but server2 and restart MaxScale. Check that server2 does not get promoted.");
+        test.tprintf("Stop all but server2 and restart Percona Proxy. Check that server2 does not get promoted.");
         for (int i = 0; i < repl.N; i++)
         {
             if (i != 1)

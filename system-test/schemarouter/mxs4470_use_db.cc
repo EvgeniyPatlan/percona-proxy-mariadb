@@ -29,7 +29,7 @@ int main(int argc, char** argv)
                     "Failed to create table on node %d: %s", i, repl.error());
     }
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
 
     test.expect(c.query("USE db1"), "USE db1 failed: %s", c.error());

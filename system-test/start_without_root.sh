@@ -19,20 +19,20 @@ export test_name=`basename $rp`
 
 $test_dir/non_native_setup $test_name
 
-errmsg="MaxScale doesn't have write permission to MAXSCALE_HOME. Exiting"
-ssh -i $maxscale_sshkey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $maxscale_access_user@$maxscale_IP "$maxscale_access_sudo service maxscale stop" &
+errmsg="Percona Proxy doesn't have write permission to PERCONA_PROXY_HOME. Exiting"
+ssh -i $percona_proxy_sshkey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $percona_proxy_access_user@$percona_proxy_IP "$percona_proxy_access_sudo service percona-proxy stop" &
 sleep 5
 
-conf_dir=$(dirname "${maxscale_cnf}")
-ssh -i $maxscale_sshkey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $maxscale_access_user@$maxscale_IP "maxscale -d -c $conf_dir" 2>&1 | grep "$errmsg"
+conf_dir=$(dirname "${percona_proxy_cnf}")
+ssh -i $percona_proxy_sshkey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $percona_proxy_access_user@$percona_proxy_IP "percona-proxy -d -c $conf_dir" 2>&1 | grep "$errmsg"
 res=$?
-ssh -i $maxscale_sshkey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $maxscale_access_user@$maxscale_IP "maxscale -d -c $conf_dir" 2>&1 | grep "$errmsg"
+ssh -i $percona_proxy_sshkey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $percona_proxy_access_user@$percona_proxy_IP "percona-proxy -d -c $conf_dir" 2>&1 | grep "$errmsg"
 res1=$?
 
 if [[ $res != 0  || $res1 != 0 ]] ; then
 	echo "FAILED: no proper error message"
-	ssh -i $maxscale_sshkey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $maxscale_access_user@$maxscale_IP "maxscale -d -c $conf_dir"
-	ssh -i $maxscale_sshkey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $maxscale_access_user@$maxscale_IP "maxscale -c $cond_dir"
+	ssh -i $percona_proxy_sshkey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $percona_proxy_access_user@$percona_proxy_IP "percona-proxy -d -c $conf_dir"
+	ssh -i $percona_proxy_sshkey -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $percona_proxy_access_user@$percona_proxy_IP "percona-proxy -c $cond_dir"
 	$test_dir/copy_logs.sh start_without_root
 	exit 1
 fi

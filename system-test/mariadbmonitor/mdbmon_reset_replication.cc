@@ -47,7 +47,7 @@ void test_main(TestConnections& test)
 
     const int N = 4;
 
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     // Set up test table
     auto maxconn = mxs.open_rwsplit_connection2();
@@ -63,8 +63,8 @@ void test_main(TestConnections& test)
     status.print();
     status.check_servers_status(mxt::ServersInfo::default_repl_states());
 
-    // Stop MaxScale and mess with the nodes.
-    test.tprintf("Inserting events directly to nodes while MaxScale is stopped.");
+    // Stop Percona Proxy and mess with the nodes.
+    test.tprintf("Inserting events directly to nodes while Percona Proxy is stopped.");
     mxs.stop();
     test.repl->connect();
 
@@ -78,7 +78,7 @@ void test_main(TestConnections& test)
         test.try_query(test.repl->nodes[0], insert_query, insert_val);
     }
 
-    // Restart MaxScale, there should be no slaves. Master is still ok.
+    // Restart Percona Proxy, there should be no slaves. Master is still ok.
     mxs.start();
     mxs.wait_for_monitor(2);
     status = mxs.get_servers();
@@ -93,7 +93,7 @@ void test_main(TestConnections& test)
     {
         // Use the reset-replication command to magically fix the situation.
         test.tprintf("Running reset-replication to fix the situation.");
-        test.check_maxctrl("call command mariadbmon reset-replication MariaDB-Monitor server2");
+        test.check_percona_proxyctl("call command mariadbmon reset-replication MariaDB-Monitor server2");
         mxs.wait_for_monitor();
         // Add another event to force gtid forward.
         maxconn = mxs.open_rwsplit_connection2();
@@ -117,7 +117,7 @@ void test_main(TestConnections& test)
 
         // Finally, switchover back and erase table
         test.tprintf("Running switchover.");
-        test.check_maxctrl("call command mariadbmon switchover MariaDB-Monitor");
+        test.check_percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor");
         mxs.wait_for_monitor();
         status = mxs.get_servers();
         status.print();

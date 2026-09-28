@@ -28,14 +28,14 @@ filters=MyLogFilter
 
 ## Log Rotation
 
-The `qlafilter` logs can be rotated by executing the `maxctrl rotate logs`
+The `qlafilter` logs can be rotated by executing the `percona-proxyctl rotate logs`
 command. This will cause the log files to be reopened when the next message is
 written to the file. This applies to both unified and session type logging.
 
 ## Filter Parameters
 
 The QLA filter has one mandatory parameter, `filebase`, and a number of optional
-parameters. These were introduced in the 1.0 release of MariaDB MaxScale.
+parameters. These were introduced in the 1.0 release of Percona Proxy for MariaDB.
 
 ### `filebase`
 
@@ -229,7 +229,7 @@ use near 'password="clear text pwd"' at line 1
 
 The unit for logging a duration. The unit can be `milliseconds` or `microseconds`.
 The abbreviations `ms` for milliseconds and `us` for microseconds are also valid.
-This option is available as of MaxScale version 6.2.
+This option is available as of Percona Proxy version 6.2.
 
 ### `use_canonical_form`
 
@@ -240,7 +240,7 @@ This option is available as of MaxScale version 6.2.
 
 When this option is true the canonical form of the query is logged. In the
 canonical form all user defined constants are replaced with question marks.
-This option is available as of MaxScale version 6.2.
+This option is available as of Percona Proxy version 6.2.
 
 ### `flush`
 

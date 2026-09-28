@@ -24,7 +24,7 @@ void test_main(TestConnections& test)
 
     for (int i = 0; i < 10; i++)
     {
-        MYSQL* c = test.maxscale->open_rwsplit_connection();
+        MYSQL* c = test.percona_proxy->open_rwsplit_connection();
 
         bool ok = c
             && mysql_send_query(c, sql.c_str(), sql.size()) == 0
@@ -57,7 +57,7 @@ void test_main(TestConnections& test)
             }
         }
 
-        std::string status = test.maxscale->ssh_output("ps -C maxscale -o %mem=,%cpu=").output;
+        std::string status = test.percona_proxy->ssh_output("ps -C percona-proxy -o %mem=,%cpu=").output;
         test.tprintf("MEM%% and CPU%%: %s", status.c_str());
 
         // This has the effect of rounding the memory usage to whole percentages.

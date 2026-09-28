@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/indexedstorage.hh>
+#include <percona-proxy/indexedstorage.hh>
 
 namespace
 {
@@ -24,7 +24,7 @@ namespace
 std::atomic<uint64_t> id_generator {0};
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 // static

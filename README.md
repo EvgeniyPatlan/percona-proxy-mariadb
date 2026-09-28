@@ -8,7 +8,7 @@ architecture for protocols, routers, filters, monitors and authenticators.
 
 ## Status
 
-Early development. The product is derived from MariaDB MaxScale 23.08.12 and is
+Early development. The product is derived from Percona Proxy for MariaDB 23.08.12 and is
 being renamed; until that work lands, parts of the tree, the binaries and the
 packages still carry the upstream names. See `NOTICE` for the provenance and the
 licensing.
@@ -17,7 +17,7 @@ licensing.
 
 GNU General Public License, version 2 or later. See `COPYING`.
 
-MaxScale 23.08 was published under the Business Source License 1.1 with the Change
+Percona Proxy 23.08 was published under the Business Source License 1.1 with the Change
 Date 2026-09-21 and the GNU General Public License version 2 or later as the Change
 License. That date has passed, so this code is available under the GPL.
 
@@ -36,9 +36,9 @@ make -j$(nproc)
 Packages are built from the packaging in `BUILD/percona`:
 
 ```bash
-BUILD/percona/maxscale_builder.sh --builddir=<dir> --install_deps=1 --get_sources=1
-BUILD/percona/maxscale_builder.sh --builddir=<dir> --build_src_rpm=1
-BUILD/percona/maxscale_builder.sh --builddir=<dir> --build_rpm=1
+BUILD/percona/percona_proxy_builder.sh --builddir=<dir> --install_deps=1 --get_sources=1
+BUILD/percona/percona_proxy_builder.sh --builddir=<dir> --build_src_rpm=1
+BUILD/percona/percona_proxy_builder.sh --builddir=<dir> --build_rpm=1
 ```
 
 `BUILD/percona/verify_packages.sh` installs the resulting packages on every

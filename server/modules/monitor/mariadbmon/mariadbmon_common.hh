@@ -19,10 +19,10 @@
 
 #define MXB_MODULE_NAME "mariadbmon"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <string>
-#include <maxscale/json_api.hh>
+#include <percona-proxy/json_api.hh>
 
 /** Utility macros for printing both MXB_ERROR and json error */
 #define PRINT_MXS_JSON_ERROR(err_out, format, ...) \

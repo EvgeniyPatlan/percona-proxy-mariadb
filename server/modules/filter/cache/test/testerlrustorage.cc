@@ -17,7 +17,7 @@
 #include "storagefactory.hh"
 
 using namespace std;
-using namespace maxscale;
+using namespace percona_proxy;
 
 TesterLRUStorage::TesterLRUStorage(std::ostream* pOut, StorageFactory* pFactory)
     : TesterStorage(pOut, pFactory)

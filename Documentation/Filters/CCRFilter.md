@@ -1,13 +1,13 @@
 # Consistent Critical Read Filter
 
-This filter was introduced in MariaDB MaxScale 2.1.
+This filter was introduced in Percona Proxy for MariaDB 2.1.
 
 [TOC]
 
 ## Overview
 
 The Consistent Critical Read (CCR) filter allows consistent critical reads to be
-done through MaxScale while still allowing scaleout of non-critical reads.
+done through Percona Proxy while still allowing scaleout of non-critical reads.
 
 When the filter detects a statement that would modify the database, it attaches
 a routing hint to all following statements done by that connection. This routing
@@ -20,21 +20,21 @@ by default, propagate to other sessions.
 
 ### Controlling the Filter with SQL Comments
 
-The triggering of the filter can be limited further by adding MaxScale supported
+The triggering of the filter can be limited further by adding Percona Proxy supported
 comments to queries and/or by using regular expressions. The query comments take
 precedence: if a comment is found it is obeyed even if a regular expression
 parameter might give a different result. Even a comment cannot cause a
 SELECT-query to trigger the filter. Such a comment is considered an error and
 ignored.
 
-The comments must follow the [MaxScale hint syntax](../Reference/Hint-Syntax.md)
+The comments must follow the [Percona Proxy hint syntax](../Reference/Hint-Syntax.md)
 and the *HintFilter* needs to be in the filter chain before the CCR-filter. If a
-query has a MaxScale supported comment line which defines the parameter `ccr`,
+query has a Percona Proxy supported comment line which defines the parameter `ccr`,
 that comment is caught by the  CCR-filter. Parameter values `match` and `ignore`
 are supported, causing the filter to trigger (`match`) or not trigger (`ignore`)
 on receiving the write query. For example, the query
 ```
-INSERT INTO departments VALUES ('d1234', 'NewDepartment'); -- maxscale ccr=ignore
+INSERT INTO departments VALUES ('d1234', 'NewDepartment'); -- percona-proxy ccr=ignore
 ```
 would normally cause the filter to trigger, but does not because of the
 comment. The `match`-comment typically has no effect, since write queries by
@@ -57,7 +57,7 @@ can be specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations)
 but the value  will always be rounded to the nearest second.
 If no explicit unit has been specified, the value is interpreted as seconds
-in MaxScale 2.4. In subsequent versions a value without a unit may be rejected.
+in Percona Proxy 2.4. In subsequent versions a value without a unit may be rejected.
 The default value for this parameter is 60 seconds.
 
 When a data modifying SQL statement is processed, a timer is set to the value of

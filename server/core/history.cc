@@ -11,11 +11,11 @@
  * Public License.
  */
 
-#include <maxscale/history.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/history.hh>
+#include <percona-proxy/service.hh>
 #include <utility>
 
-namespace maxscale
+namespace percona_proxy
 {
 History::Subscriber::Subscriber(History& history, std::function<void ()> cb)
     : m_history(history)

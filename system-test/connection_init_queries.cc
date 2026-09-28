@@ -22,8 +22,8 @@ using std::cout;
 
 int main(int argc, char** argv)
 {
-    // Before starting MaxScale, need to write the connection initialization file on the MaxScale machine.
-    TestConnections::skip_maxscale_start(true);
+    // Before starting Percona Proxy, need to write the connection initialization file on the Percona Proxy machine.
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
     const string init_var1 = "@var1";
@@ -47,10 +47,10 @@ int main(int argc, char** argv)
     string create_file_cmd = "printf \"" + file_contents + "\" > " + filepath;
     string delete_file_cmd = "rm -f " + filepath;
 
-    test.maxscale->ssh_node_f(true, "%s", create_file_cmd.c_str());
-    test.maxscale->start_and_check_started();
-    test.maxscale->wait_for_monitor();
-    auto conn = test.maxscale->open_rwsplit_connection();
+    test.percona_proxy->ssh_node_f(true, "%s", create_file_cmd.c_str());
+    test.percona_proxy->start_and_check_started();
+    test.percona_proxy->wait_for_monitor();
+    auto conn = test.percona_proxy->open_rwsplit_connection();
 
     auto check_variable_value = [conn](const string& var_name, const string& expected_value) {
             string query = "select " + var_name + ";";
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
     test.expect(check_variable_value(init_var2, extected_res2), msg);
     test.expect(check_variable_value(init_var3, extected_res3), msg);
 
-    test.maxscale->ssh_node_f(true, "%s", delete_file_cmd.c_str());
+    test.percona_proxy->ssh_node_f(true, "%s", delete_file_cmd.c_str());
     test.log_includes("Super user '.*' logged in to service");
     return test.global_result;
 }

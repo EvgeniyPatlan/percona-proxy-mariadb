@@ -1,0 +1,4 @@
+[percona-proxy]
+threads=###threads###
+maxlog=false
+syslog=true

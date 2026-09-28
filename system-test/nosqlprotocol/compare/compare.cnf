@@ -1,6 +1,6 @@
 # Config suitable for the test-programs in this directory.
 
-[maxscale]
+[percona-proxy]
 threads=1
 
 [Server1]

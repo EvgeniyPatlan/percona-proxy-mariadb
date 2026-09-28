@@ -15,7 +15,7 @@
 /**
  * @file mxs922_double_listener.cpp MXS-922: Double creation of listeners
  *
- * Check that MaxScale doesn't crash when the same listeners are created twice.
+ * Check that Percona Proxy doesn't crash when the same listeners are created twice.
  */
 
 #include <maxtest/config_operations.hh>
@@ -27,14 +27,14 @@ int main(int argc, char* argv[])
 
     config.create_all_listeners();
     config.create_all_listeners(mxt::Config::Expect::FAIL);
-    test->maxscale->expect_running_status(true);
+    test->percona_proxy->expect_running_status(true);
 
     config.create_monitor("mysql-monitor", "mysqlmon", 500);
     config.reset();
 
-    test->maxscale->wait_for_monitor();
+    test->percona_proxy->wait_for_monitor();
 
-    test->check_maxscale_alive();
+    test->check_percona_proxy_alive();
     int rval = test->global_result;
     delete test;
     return rval;

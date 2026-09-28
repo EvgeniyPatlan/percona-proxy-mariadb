@@ -38,7 +38,7 @@
  *
  *  Th issue was discovered with following setup state:
  *
- *  MaxScale> show servers
+ *  Percona Proxy> show servers
  *  Server 0x3428260 (server1)
  *   Server:             192.168.122.106
  *   Status:                     Master, Running
@@ -109,21 +109,21 @@ int main(int argc, char* argv[])
     int i;
 
     test.repl->connect();
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
 
     for (i = 1; i < test.repl->N; i++)
     {
         execute_query(test.repl->nodes[i], (char*) "stop slave;");
     }
 
-    execute_query(test.maxscale->conn_rwsplit,
+    execute_query(test.percona_proxy->conn_rwsplit,
                   (char*) "CREATE USER 'test_user'@'%%' IDENTIFIED BY 'pass'");
 
-    MYSQL* conn = open_conn_no_db(test.maxscale->rwsplit_port,
-                                  test.maxscale->ip4(),
+    MYSQL* conn = open_conn_no_db(test.percona_proxy->rwsplit_port,
+                                  test.percona_proxy->ip4(),
                                   (char*) "test_user",
                                   (char*) "pass",
-                                  test.maxscale_ssl);
+                                  test.percona_proxy_ssl);
 
     if (conn == NULL)
     {
@@ -135,10 +135,10 @@ int main(int argc, char* argv[])
         execute_query(test.repl->nodes[i], (char*) "start slave;");
     }
 
-    execute_query(test.maxscale->conn_rwsplit, (char*) "DROP USER 'test_user'@'%%'");
+    execute_query(test.percona_proxy->conn_rwsplit, (char*) "DROP USER 'test_user'@'%%'");
 
     test.repl->close_connections();
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 
     mysql_close(conn);
 

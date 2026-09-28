@@ -12,14 +12,14 @@
  */
 #pragma once
 
-#include <maxscale/protocol/postgresql/module_names.hh>
+#include <percona-proxy/protocol/postgresql/module_names.hh>
 #define MXB_MODULE_NAME MXS_POSTGRESQL_PROTOCOL_NAME
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <maxbase/assert.hh>
-#include <maxscale/log.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/dcb.hh>
+#include <percona-proxy/log.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/dcb.hh>
 
 #include <endian.h>
 #include <string_view>

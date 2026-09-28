@@ -22,7 +22,7 @@
 int main(int argc, char *argv[])
 {
     TestConnections test(argc, argv);
-    Connection conn = test.maxscale->rwsplit();
+    Connection conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection failed: %s", conn.error());
 
     for (int i = 0; i < 10; i++)

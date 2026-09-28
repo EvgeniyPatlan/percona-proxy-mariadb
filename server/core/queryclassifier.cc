@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/queryclassifier.hh>
+#include <percona-proxy/queryclassifier.hh>
 #include <unordered_map>
 #include <maxbase/alloc.hh>
 #include <maxbase/string.hh>
@@ -758,7 +758,7 @@ QueryClassifier::update_route_info(GWBUF& buffer)
                 // If the type is CURRENT_TARGET_MASTER, the query contains either a stored procedure call or
                 // a multi-statement SQL command. In both cases we cannot know what the actual result of the
                 // SQL execution is and thus both of them must be classified as writes. The multi-statement
-                // case is mostly a limitation of the parsing in MaxScale but for stored procedures it is
+                // case is mostly a limitation of the parsing in Percona Proxy but for stored procedures it is
                 // extremely difficult to determine whether they modify the database or not.
                 type_mask |= mxs::sql::TYPE_WRITE;
 

@@ -1,7 +1,7 @@
 /**
  * @section LICENCE
  *
- * This file is distributed as part of the MariaDB Corporation MaxScale. It is
+ * This file is distributed as part of the MariaDB Corporation Percona Proxy. It is
  * free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the
  * Free Software Foundation, version 2.
@@ -74,14 +74,14 @@
 #include <maxbase/string.hh>
 #include <maxsimd/canonical.hh>
 #include <maxsimd/multistmt.hh>
-#include <maxscale/log.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/trxboundaryparser.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/log.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/trxboundaryparser.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/utils.hh>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1542,7 +1542,7 @@ static uint32_t resolve_query_type(parsing_info_t* pi, THD* thd)
                 {
                 case Item_func::FUNC_SP:
                     /**
-                     * An unknown (for maxscale) function / sp
+                     * An unknown (for percona-proxy) function / sp
                      * belongs to this category.
                      */
                     func_qtype |= mxs::sql::TYPE_WRITE;
@@ -1567,7 +1567,7 @@ static uint32_t resolve_query_type(parsing_info_t* pi, THD* thd)
                     {
                         MXB_DEBUG("%lu [resolve_query_type] "
                                   "functype NOW_FUNC, could be "
-                                  "executed in MaxScale.",
+                                  "executed in Percona Proxy.",
                                   pthread_self());
                     }
                     break;
@@ -3836,7 +3836,7 @@ namespace
 // Do not change the order without making corresponding changes to IDX_... below.
 const char* server_options[] =
 {
-    "MariaDB Corporation MaxScale",
+    "MariaDB Corporation Percona Proxy",
     "--no-defaults",
     "--datadir=",
     "--language=",
@@ -3906,7 +3906,7 @@ int32_t pp_mysql_process_init(void)
 
     if (strlen(mxs::langdir()) >= PATH_MAX)
     {
-        fprintf(stderr, "MaxScale: error: Language path is too long: %s.", mxs::langdir());
+        fprintf(stderr, "Percona Proxy: error: Language path is too long: %s.", mxs::langdir());
     }
     else
     {
@@ -4153,7 +4153,7 @@ public:
 
     uint32_t get_trx_type_mask(const GWBUF& stmt) const override
     {
-        maxscale::TrxBoundaryParser parser;
+        percona_proxy::TrxBoundaryParser parser;
         return parser.type_mask_of(m_helper.get_sql(stmt));
     }
 

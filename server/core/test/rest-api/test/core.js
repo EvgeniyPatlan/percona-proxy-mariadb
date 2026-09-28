@@ -2,20 +2,20 @@ require("../utils.js")();
 
 function set_value(key, value) {
   return request
-    .get(base_url + "/maxscale")
+    .get(base_url + "/percona-proxy")
     .then(function (d) {
       d.data.attributes.parameters[key] = value;
-      return request.patch(base_url + "/maxscale", { json: d });
+      return request.patch(base_url + "/percona-proxy", { json: d });
     })
     .then(function () {
-      return request.get(base_url + "/maxscale");
+      return request.get(base_url + "/percona-proxy");
     })
     .then(function (d) {
       d.data.attributes.parameters[key].should.deep.equal(value);
     });
 }
 
-describe("MaxScale Core", function () {
+describe("Percona Proxy Core", function () {
 
   describe("Core Parameters", function () {
     it("auth_connect_timeout", function () {
@@ -57,10 +57,10 @@ describe("MaxScale Core", function () {
           attributes: { parameters: { key_manager: "file", file: { keyfile: "/tmp/fake_encryption.key" } } },
         },
       };
-      await request.patch(base_url + "/maxscale", { json: d1 });
+      await request.patch(base_url + "/percona-proxy", { json: d1 });
 
       const d2 = { data: { attributes: { parameters: { log_info: true } } } };
-      await request.patch(base_url + "/maxscale", { json: d2 });
+      await request.patch(base_url + "/percona-proxy", { json: d2 });
 
       fs.unlinkSync("/tmp/fake_encryption.key");
     });
@@ -75,7 +75,7 @@ describe("MaxScale Core", function () {
         obj.data.attributes.parameters.find((e) => e.name == name).unit.should.equal(type);
       };
 
-      var core = await request.get(base_url + "/maxscale/modules/maxscale");
+      var core = await request.get(base_url + "/percona-proxy/modules/percona-proxy");
       check_type(core, "admin_auth", "bool");
       check_type(core, "admin_host", "string");
       check_type(core, "admin_port", "int");
@@ -86,7 +86,7 @@ describe("MaxScale Core", function () {
       check_type(core, "query_classifier_cache_size", "size");
       check_type(core, "rebalance_window", "count");
 
-      var mon = await request.get(base_url + "/maxscale/modules/mariadbmon");
+      var mon = await request.get(base_url + "/percona-proxy/modules/mariadbmon");
       check_type(mon, "events", "enum_mask");
       check_type(mon, "monitor_interval", "duration");
       check_unit(mon, "monitor_interval", "ms");
@@ -94,8 +94,8 @@ describe("MaxScale Core", function () {
   });
 
   describe("Debug Functionality", function () {
-    it("/maxscale/debug/monitor_wait", function () {
-      return request.get(base_url + "/maxscale/debug/monitor_wait");
+    it("/percona-proxy/debug/monitor_wait", function () {
+      return request.get(base_url + "/percona-proxy/debug/monitor_wait");
     });
   });
 });

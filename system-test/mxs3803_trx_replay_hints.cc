@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     auto ids = test.repl->get_all_server_ids_str();
     test.repl->close_connections();
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
 
 

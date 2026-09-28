@@ -17,18 +17,18 @@
  * @file config_runtime.hh  - Functions for runtime configuration modifications
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
-#include <maxscale/listener.hh>
-#include <maxscale/monitor.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/monitor.hh>
+#include <percona-proxy/service.hh>
 
 #include "service.hh"
 #include "filter.hh"
 
 class Server;
 
-namespace maxscale
+namespace percona_proxy
 {
 class RoutingWorker;
 }
@@ -45,7 +45,7 @@ void config_runtime_add_error(std::string_view error);
 
 /**
  * This function creates a new "volatile" server. Such servers are not persisted to any config files and are
- * lost on MaxScale exit. Currently only used by Clustrix monitor when discovering new servers.
+ * lost on Percona Proxy exit. Currently only used by Clustrix monitor when discovering new servers.
  *
  * @param name          Server name
  * @param address       Network address
@@ -296,13 +296,13 @@ bool runtime_remove_user(const char* id);
 bool runtime_alter_user(const std::string& user, const std::string& type, json_t* json);
 
 /**
- * @brief Alter core MaxScale parameters from JSON
+ * @brief Alter core Percona Proxy parameters from JSON
  *
  * @param new_json JSON defining the new core parameters
  *
  * @return True if the core parameters are valid and were successfully applied
  */
-bool runtime_alter_maxscale_from_json(json_t* new_json);
+bool runtime_alter_percona_proxy_from_json(json_t* new_json);
 
 /**
  * Rebalance work of particular thread.
@@ -313,7 +313,7 @@ bool runtime_alter_maxscale_from_json(json_t* new_json);
  *
  * @return True, if the rebalancing could be initiated.
  */
-bool runtime_thread_rebalance(maxscale::RoutingWorker& worker,
+bool runtime_thread_rebalance(percona_proxy::RoutingWorker& worker,
                               const std::string& sessions,
                               const std::string& recipient);
 

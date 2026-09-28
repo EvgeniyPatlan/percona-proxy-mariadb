@@ -88,10 +88,10 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    test.maxctrl("enable log-priority info");
-    test.maxscale->connect();
-    double_cursor(test, test.maxscale->conn_rwsplit);
-    test.maxscale->disconnect();
+    test.percona_proxyctl("enable log-priority info");
+    test.percona_proxy->connect();
+    double_cursor(test, test.percona_proxy->conn_rwsplit);
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

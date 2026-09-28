@@ -1,11 +1,11 @@
 macro(set_maxscale_version)
 
-  #MaxScale-test version number
-  set(MAXSCALE_VERSION_MAJOR "1")
-  set(MAXSCALE_VERSION_MINOR "3")
-  set(MAXSCALE_VERSION_PATCH "0")
-  set(MAXSCALE_VERSION_NUMERIC "${MAXSCALE_VERSION_MAJOR}.${MAXSCALE_VERSION_MINOR}.${MAXSCALE_VERSION_PATCH}")
-  set(MAXSCALE_VERSION "${MAXSCALE_VERSION_MAJOR}.${MAXSCALE_VERSION_MINOR}.${MAXSCALE_VERSION_PATCH}-beta")
+  #Percona Proxy-test version number
+  set(PERCONA_PROXY_VERSION_MAJOR "1")
+  set(PERCONA_PROXY_VERSION_MINOR "3")
+  set(PERCONA_PROXY_VERSION_PATCH "0")
+  set(PERCONA_PROXY_VERSION_NUMERIC "${PERCONA_PROXY_VERSION_MAJOR}.${PERCONA_PROXY_VERSION_MINOR}.${PERCONA_PROXY_VERSION_PATCH}")
+  set(PERCONA_PROXY_VERSION "${PERCONA_PROXY_VERSION_MAJOR}.${PERCONA_PROXY_VERSION_MINOR}.${PERCONA_PROXY_VERSION_PATCH}-beta")
 
 endmacro()
 
@@ -13,9 +13,9 @@ macro(check_deps)
 
   find_library(MYSQL_CLIENT mariadbclient mysqlclient PATH_SUFFIXES mysql mariadb)
 
-  # Check for libraries MaxScale depends on
-  set(MAXSCALE_DEPS z crypt nsl m pthread ssl crypto dl rt jansson)
-  foreach(lib ${MAXSCALE_DEPS})
+  # Check for libraries Percona Proxy depends on
+  set(PERCONA_PROXY_DEPS z crypt nsl m pthread ssl crypto dl rt jansson)
+  foreach(lib ${PERCONA_PROXY_DEPS})
     find_library(lib${lib} ${lib})
     if((DEFINED lib${lib}) AND (${lib${lib}} MATCHES "NOTFOUND"))
       set(DEPS_ERROR TRUE)

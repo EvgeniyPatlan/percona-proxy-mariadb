@@ -37,51 +37,51 @@ int main(int argc, char** argv)
     sprintf(master_id, "%d", test.repl->get_server_id(0));
     sprintf(slave_id, "%d", test.repl->get_server_id(1));
 
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
     test.tprintf("Configuration: strict_multi_stmt=true");
 
-    test.add_result(execute_query_check_one(test.maxscale->conn_rwsplit,
+    test.add_result(execute_query_check_one(test.percona_proxy->conn_rwsplit,
                                             "SELECT @@server_id",
                                             slave_id),
                     "Query should be routed to slave");
 
-    test.add_result(execute_query_check_one(test.maxscale->conn_rwsplit,
+    test.add_result(execute_query_check_one(test.percona_proxy->conn_rwsplit,
                                             "USE test; SELECT @@server_id",
                                             master_id),
                     "Query should be routed to master");
 
-    test.add_result(execute_query_check_one(test.maxscale->conn_rwsplit,
+    test.add_result(execute_query_check_one(test.percona_proxy->conn_rwsplit,
                                             "SELECT @@server_id",
                                             master_id),
                     "All queries should be routed to master");
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
-    // Reconfigure MaxScale
-    test.maxscale->ssh_node(
-        "sed -i 's/strict_multi_stmt=true/strict_multi_stmt=false/' /etc/maxscale.cnf",
+    // Reconfigure Percona Proxy
+    test.percona_proxy->ssh_node(
+        "sed -i 's/strict_multi_stmt=true/strict_multi_stmt=false/' /etc/percona-proxy.cnf",
         true);
-    test.maxscale->restart_maxscale();
+    test.percona_proxy->restart_percona_proxy();
 
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
     test.tprintf("Configuration: strict_multi_stmt=false");
 
-    test.add_result(execute_query_check_one(test.maxscale->conn_rwsplit,
+    test.add_result(execute_query_check_one(test.percona_proxy->conn_rwsplit,
                                             "SELECT @@server_id",
                                             slave_id),
                     "Query should be routed to slave");
 
-    test.add_result(execute_query_check_one(test.maxscale->conn_rwsplit,
+    test.add_result(execute_query_check_one(test.percona_proxy->conn_rwsplit,
                                             "USE test; SELECT @@server_id",
                                             master_id),
                     "Query should be routed to master");
 
-    test.add_result(execute_query_check_one(test.maxscale->conn_rwsplit,
+    test.add_result(execute_query_check_one(test.percona_proxy->conn_rwsplit,
                                             "SELECT @@server_id",
                                             slave_id),
                     "Query should be routed to slave");
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

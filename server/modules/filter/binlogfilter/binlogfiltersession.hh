@@ -13,8 +13,8 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/filter.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/filter.hh>
 #include "binlogconfig.hh"
 #include "binlogfilter.hh"
 
@@ -48,7 +48,7 @@ typedef struct rep_header_t
 //
 class BinlogFilter;
 
-class BinlogFilterSession : public maxscale::FilterSession
+class BinlogFilterSession : public percona_proxy::FilterSession
 {
     // Prevent copy-constructor and assignment operator usage
     BinlogFilterSession(const BinlogFilterSession&);

@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 }
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto maxconn = mxs.open_rwsplit_connection2("test");
     // Advance gtid:s a bit to so gtid variables are updated.
     generate_traffic_and_check(test, maxconn.get(), 10);
@@ -39,13 +39,13 @@ void test_main(TestConnections& test)
         test.repl->stop_node(0);
 
         // Wait until failover is performed
-        test.maxscale->wait_for_monitor(2);
+        test.percona_proxy->wait_for_monitor(2);
         mxs.check_print_servers_status({mxt::ServerInfo::DOWN, mxt::ServerInfo::master_st,
                                         mxt::ServerInfo::slave_st, mxt::ServerInfo::slave_st});
 
         if (test.ok())
         {
-            // Recreate maxscale session
+            // Recreate percona-proxy session
             maxconn = mxs.open_rwsplit_connection2("test");
             test.tprintf("Sending more inserts.");
             generate_traffic_and_check(test, maxconn.get(), 5);
@@ -58,7 +58,7 @@ void test_main(TestConnections& test)
                 mxs.wait_for_monitor(2);
                 test.tprintf("and manually rejoin it to cluster.");
 
-                mxs.maxctrl("call command mariadbmon rejoin MariaDB-Monitor server1");
+                mxs.percona_proxyctl("call command mariadbmon rejoin MariaDB-Monitor server1");
                 mxs.wait_for_monitor(2);
 
                 auto status = mxs.get_servers();
@@ -72,8 +72,8 @@ void test_main(TestConnections& test)
         test.repl->start_node(0);
 
         // Switch master back to server1.
-        mxs.maxctrl("call command mariadbmon switchover MariaDB-Monitor server1 server2");
-        test.maxscale->wait_for_monitor(2);
+        mxs.percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor server1 server2");
+        test.percona_proxy->wait_for_monitor(2);
         mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
 
         if (test.ok())
@@ -96,7 +96,7 @@ void test_main(TestConnections& test)
             test.expect(res.empty(), "server3 gtid is not empty as it should (%s).", res.c_str());
 
             test.tprintf("Rejoining server3.");
-            mxs.maxctrl("call command mysqlmon rejoin MariaDB-Monitor server3");
+            mxs.percona_proxyctl("call command mysqlmon rejoin MariaDB-Monitor server3");
             mxs.wait_for_monitor(2);
             mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
         }

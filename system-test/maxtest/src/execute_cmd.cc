@@ -152,7 +152,7 @@ namespace pam
 void copy_user_map_lib(mxt::Node& source, mxt::Node& dst)
 {
     // Copy the pam_user_map.so-file from one VM to another. This file is installed with the server,
-    // but not with MaxScale. Depending on distro, the file may be in different places. Check both.
+    // but not with Percona Proxy. Depending on distro, the file may be in different places. Check both.
     string lib_source1 = "/usr/lib64/security/pam_user_map.so";
     string lib_source2 = "/usr/lib/security/pam_user_map.so";
 
@@ -160,7 +160,7 @@ void copy_user_map_lib(mxt::Node& source, mxt::Node& dst)
     {
         if (dst.copy_to_node(lib_temp, lib_temp))
         {
-            dst.log().log_msg("pam_user_map.so copied to MaxScale VM.");
+            dst.log().log_msg("pam_user_map.so copied to Percona Proxy VM.");
         }
         else
         {
@@ -177,7 +177,7 @@ void copy_user_map_lib(mxt::Node& source, mxt::Node& dst)
 
 void delete_user_map_lib(mxt::Node& dst)
 {
-    // Delete the library file from both the tester VM and destination VM (likely MaxScale).
+    // Delete the library file from both the tester VM and destination VM (likely Percona Proxy).
     string del_lib_cmd = mxb::string_printf("rm -f %s", lib_temp);
     int rc = system(del_lib_cmd.c_str());
     dst.log().expect(rc == 0, "Command '%s' failed, error %i.", del_lib_cmd.c_str(), rc);

@@ -11,8 +11,8 @@
  * Public License.
  */
 
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 namespace
 {

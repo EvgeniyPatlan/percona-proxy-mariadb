@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection should work: %s", conn.error());
     test.expect(conn.query("SELECT 1"), "SELECT should work: %s", conn.error());
     test.expect(conn.query("SET @a = 1"), "SET should work: %s", conn.error());

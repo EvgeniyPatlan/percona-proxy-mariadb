@@ -13,7 +13,7 @@
  */
 #define MXB_MODULE_NAME "commentfilter"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include "commentconfig.hh"
 
 namespace comment

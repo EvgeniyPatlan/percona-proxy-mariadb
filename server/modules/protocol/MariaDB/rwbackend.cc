@@ -12,14 +12,14 @@
  * Public License.
  */
 
-#include <maxscale/protocol/mariadb/rwbackend.hh>
+#include <percona-proxy/protocol/mariadb/rwbackend.hh>
 
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/router.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/router.hh>
 
 using std::chrono::seconds;
 
-namespace maxscale
+namespace percona_proxy
 {
 
 RWBackend::RWBackend(mxs::Endpoint* ref)

@@ -462,7 +462,7 @@ MariaDBServer* MariaDBMonitor::find_topology_master_server(RequireRunning req_ru
     else if (req_running == RequireRunning::OPTIONAL)
     {
         // If no candidate was found and the caller allows, we get desperate and allow a downed server
-        // to be selected. This is required for the case when MaxScale is started while the master is
+        // to be selected. This is required for the case when Percona Proxy is started while the master is
         // already down. Failover may be able to fix the situation if settings allow it or
         // if activated manually.
         DelimitedPrinter topo_messages_accept_down("\n");
@@ -610,7 +610,7 @@ void MariaDBMonitor::assign_server_roles()
             // Check other master conditions.
             if (master_conds_ok)
             {
-                if (((master_conds & MasterConds::MCOND_COOP_M) && is_slave_maxscale()
+                if (((master_conds & MasterConds::MCOND_COOP_M) && is_slave_percona_proxy()
                      && !m_master->marked_as_master())
                     || ((master_conds & MasterConds::MCOND_DISK_OK) && m_master->is_low_on_disk_space()))
                 {
@@ -666,7 +666,7 @@ void MariaDBMonitor::assign_slave_and_relay_master()
     // 2) Require master set by primary monitor in a co-op situation yet none found.
     // 3) Require running master yet master is down.
     if ((req_writable_master && !m_master->is_master())
-        || (req_coop_master && is_slave_maxscale() && !m_master->marked_as_master())
+        || (req_coop_master && is_slave_percona_proxy() && !m_master->marked_as_master())
         || (req_running_master && m_master->is_down()))
     {
         return;
@@ -804,7 +804,7 @@ bool MariaDBMonitor::master_is_valid(std::string* reason_out)
     string reason;
     // The master server of the cluster needs to be re-calculated in the following cases:
 
-    // 1) There is no master. This typically only applies when MaxScale is first ran.
+    // 1) There is no master. This typically only applies when Percona Proxy is first ran.
     if (!m_master)
     {
         is_valid = false;
@@ -817,7 +817,7 @@ bool MariaDBMonitor::master_is_valid(std::string* reason_out)
         reason = "it is in read-only mode";
     }
     // 3) Master lock status is not properly set.
-    else if (is_slave_maxscale() && m_master->is_running() && !m_master->marked_as_master(&reason))
+    else if (is_slave_percona_proxy() && m_master->is_running() && !m_master->marked_as_master(&reason))
     {
         is_valid = false;
     }
@@ -825,7 +825,7 @@ bool MariaDBMonitor::master_is_valid(std::string* reason_out)
     //    failover fixing the situation. The master is a hopeless one if it has been down for a while and
     //    has no running slaves, not even behind relays.
     //
-    //    This condition should account for the situation when a dba or another MaxScale performs a failover
+    //    This condition should account for the situation when a dba or another Percona Proxy performs a failover
     //    and moves all the running slaves under another master. If even one running slave remains, the switch
     //    will not happen.
     else if (m_master->is_down() && m_master->mon_err_count > m_settings.failcount
@@ -942,7 +942,7 @@ void MariaDBMonitor::update_topology()
     }
 
     if (m_cluster_topology_changed || !m_master || !m_master->is_usable()
-        || (is_slave_maxscale() && !m_master->marked_as_master()))
+        || (is_slave_percona_proxy() && !m_master->marked_as_master()))
     {
         update_master();
     }
@@ -1084,7 +1084,7 @@ void MariaDBMonitor::set_low_disk_slaves_maintenance()
         {
             // TODO: Handle relays somehow, e.g. switch with a slave
             MXB_WARNING("Setting %s to maintenance because it is low on disk space and '%s' is enabled. "
-                        "The maintenance status can be cleared manually with MaxCtrl or REST-API once the "
+                        "The maintenance status can be cleared manually with Percona Proxyctl or REST-API once the "
                         "situation has been resolved.",
                         server->name(), CN_MAINTENANCE_ON_LOW_DISK_SPACE);
             server->set_status(SERVER_MAINT);
@@ -1115,11 +1115,11 @@ bool MariaDBMonitor::is_candidate_valid(MariaDBServer* cand, RequireRunning req_
     }
 
     // Check the following only if the other requirements are fulfilled.
-    if (is_valid && is_slave_maxscale())
+    if (is_valid && is_slave_percona_proxy())
     {
-        // Locks are in use and this is a slave MaxScale. In this case, only a candidate clearly marked as
-        // master by the primary MaxScale is a valid candidate. Both locks must be owned by the primary
-        // MaxScale and by the same connection.
+        // Locks are in use and this is a slave Percona Proxy. In this case, only a candidate clearly marked as
+        // master by the primary Percona Proxy is a valid candidate. Both locks must be owned by the primary
+        // Percona Proxy and by the same connection.
         string reason;
         if (!cand->marked_as_master(&reason))
         {
@@ -1191,9 +1191,9 @@ void MariaDBMonitor::update_cluster_lock_status()
         if (server_locks_free > 0 && (server_locks_held + server_locks_free >= required_for_majority))
         {
             /**
-             *  This MaxScale can obtain or already has lock majority. Try to acquire free locks if
+             *  This Percona Proxy can obtain or already has lock majority. Try to acquire free locks if
              *  1) some time has passed since last locking attempt
-             *  2) or this is the master MaxScale, yet lacks some locks. A secondary MaxScale should not
+             *  2) or this is the master Percona Proxy, yet lacks some locks. A secondary Percona Proxy should not
              *  try to repeatedly acquire locks as this could prevent the primary from getting majority.
              */
             if (had_lock_majority || try_acquire_locks_this_tick())
@@ -1244,7 +1244,7 @@ void MariaDBMonitor::update_cluster_lock_status()
             }
         }
 
-        // Release locks if no majority. This gives another MaxScale the chance to get them. Should be a
+        // Release locks if no majority. This gives another Percona Proxy the chance to get them. Should be a
         // rare occurrence.
         int total_locks = server_locks_held + (master_lock_srv ? 1 : 0);
         if (!have_lock_majority && total_locks > 0)
@@ -1266,7 +1266,7 @@ void MariaDBMonitor::update_cluster_lock_status()
                 }
                 if (server_locks_owned_other > 0)
                 {
-                    msg.append(mxb::string_printf(" %i lock(s) were held by another MaxScale.",
+                    msg.append(mxb::string_printf(" %i lock(s) were held by another Percona Proxy.",
                                                   server_locks_owned_other));
                 }
                 msg.append(" Will try to reacquire locks later if majority is possible.");

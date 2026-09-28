@@ -21,13 +21,13 @@
 #include <maxbase/host.hh>
 #include <maxbase/threadpool.hh>
 #include <maxsql/mariadb_connector.hh>
-#include <maxscale/server.hh>
-#include <maxscale/service.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
-#include <maxscale/config.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/paths.hh>
+#include <percona-proxy/server.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/paths.hh>
 #include "sqlite_strlike.hh"
 
 using std::string;

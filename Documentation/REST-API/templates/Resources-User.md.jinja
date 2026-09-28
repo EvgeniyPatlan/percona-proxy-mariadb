@@ -1,7 +1,7 @@
 # Admin User Resource
 
 Admin users represent administrative users that are able to query and change
-MaxScale's configuration.
+Percona Proxy's configuration.
 
 [TOC]
 
@@ -145,7 +145,7 @@ Here is an example request body enabling the UNIX account _jdoe_ for read-only o
         "id": "jdoe", // Account name
         "type": "unix" // Account type
         "attributes": {
-            "account": "basic" // Type of the user account in MaxScale
+            "account": "basic" // Type of the user account in Percona Proxy
         }
     }
 }

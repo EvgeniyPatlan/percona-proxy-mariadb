@@ -14,7 +14,7 @@ else
 fi
 
 
-cd ./MaxScale || exit 1
+cd ./Percona Proxy || exit 1
 git submodule update --init
 cd ..
 
@@ -27,7 +27,7 @@ fi
 
 mkdir _build
 cd _build || exit 1
-cmake ../MaxScale -DCMAKE_COLOR_MAKEFILE=N $cmake_flags
+cmake ../Percona Proxy -DCMAKE_COLOR_MAKEFILE=N $cmake_flags
 make "-j${NCPU}" || exit 1
 
 if [[ "$cmake_flags" =~ "BUILD_TESTS=Y" ]]
@@ -49,5 +49,5 @@ fi
 sudo rm CMakeCache.txt
 
 echo "Building tarball..."
-cmake ../MaxScale $cmake_flags -DTARBALL=Y
+cmake ../Percona Proxy $cmake_flags -DTARBALL=Y
 sudo make "-j${NCPU}" package

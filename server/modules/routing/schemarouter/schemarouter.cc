@@ -14,7 +14,7 @@
 
 #include "schemarouter.hh"
 
-#include <maxscale/utils.hh>
+#include <percona-proxy/utils.hh>
 
 namespace schemarouter
 {

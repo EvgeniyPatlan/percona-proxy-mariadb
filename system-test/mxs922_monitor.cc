@@ -30,41 +30,41 @@ int main(int argc, char* argv[])
     config.create_monitor("mysql-monitor", "mysqlmon", 500);
     config.reset();
 
-    test->maxscale->wait_for_monitor();
+    test->percona_proxy->wait_for_monitor();
 
-    test->check_maxscale_alive();
+    test->check_percona_proxy_alive();
 
-    test->maxscale->ssh_node("maxctrl unlink monitor mysql-monitor server{0,1,2,3}", true);
+    test->percona_proxy->ssh_node("percona-proxyctl unlink monitor mysql-monitor server{0,1,2,3}", true);
     config.destroy_monitor("mysql-monitor");
 
-    test->check_maxscale_alive();
+    test->check_percona_proxy_alive();
 
-    test->maxscale->ssh_node("for i in 0 1 2 3; do maxctrl clear server server$i running; done", true);
+    test->percona_proxy->ssh_node("for i in 0 1 2 3; do percona-proxyctl clear server server$i running; done", true);
 
-    test->add_result(test->maxscale->connect_maxscale() == 0, "Should not be able to connect");
+    test->add_result(test->percona_proxy->connect_percona_proxy() == 0, "Should not be able to connect");
 
     config.create_monitor("mysql-monitor2", "mysqlmon", 500);
     config.add_created_servers("mysql-monitor2");
 
-    test->maxscale->wait_for_monitor();
-    test->check_maxscale_alive();
+    test->percona_proxy->wait_for_monitor();
+    test->check_percona_proxy_alive();
 
     /** Try to alter the monitor user */
-    test->maxscale->connect_maxscale();
-    execute_query(test->maxscale->conn_rwsplit, "DROP USER 'test'@'%%'");
-    execute_query(test->maxscale->conn_rwsplit, "CREATE USER 'test'@'%%' IDENTIFIED BY 'test'");
-    execute_query(test->maxscale->conn_rwsplit, "GRANT ALL ON *.* TO 'test'@'%%'");
-    test->maxscale->close_maxscale_connections();
+    test->percona_proxy->connect_percona_proxy();
+    execute_query(test->percona_proxy->conn_rwsplit, "DROP USER 'test'@'%%'");
+    execute_query(test->percona_proxy->conn_rwsplit, "CREATE USER 'test'@'%%' IDENTIFIED BY 'test'");
+    execute_query(test->percona_proxy->conn_rwsplit, "GRANT ALL ON *.* TO 'test'@'%%'");
+    test->percona_proxy->close_percona_proxy_connections();
 
     config.alter_monitor("mysql-monitor2", "user", "test");
     config.alter_monitor("mysql-monitor2", "password", "test");
 
-    test->maxscale->wait_for_monitor();
-    test->check_maxscale_alive();
+    test->percona_proxy->wait_for_monitor();
+    test->check_percona_proxy_alive();
 
     /** Remove the user */
-    test->maxscale->connect_maxscale();
-    execute_query(test->maxscale->conn_rwsplit, "DROP USER 'test'@'%%'");
+    test->percona_proxy->connect_percona_proxy();
+    execute_query(test->percona_proxy->conn_rwsplit, "DROP USER 'test'@'%%'");
 
     config.restart_monitors();
 
@@ -73,12 +73,12 @@ int main(int argc, char* argv[])
      * monitor is running if the states have changed and the query is
      * successful.
      */
-    test->maxscale->ssh_node("for i in 0 1 2 3; do maxctrl clear server server$i running; done", true);
+    test->percona_proxy->ssh_node("for i in 0 1 2 3; do percona-proxyctl clear server server$i running; done", true);
 
-    test->maxscale->wait_for_monitor();
-    test->add_result(execute_query_silent(test->maxscale->conn_rwsplit, "SELECT 1") == 0,
+    test->percona_proxy->wait_for_monitor();
+    test->add_result(execute_query_silent(test->percona_proxy->conn_rwsplit, "SELECT 1") == 0,
                      "Query should fail when monitor has wrong credentials");
-    test->maxscale->close_maxscale_connections();
+    test->percona_proxy->close_percona_proxy_connections();
 
     for (int i = 0; i < test->repl->N; i++)
     {
@@ -86,8 +86,8 @@ int main(int argc, char* argv[])
     }
 
     config.restart_monitors();
-    test->maxscale->wait_for_monitor();
-    test->check_maxscale_alive();
+    test->percona_proxy->wait_for_monitor();
+    test->check_percona_proxy_alive();
 
     int rval = test->global_result;
     delete test;

@@ -36,7 +36,7 @@ int main(int argc, char** argv)
         "(╯°□°)╯︵ ┻━┻",
     };
 
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
     Kafka kafka(test);
     kafka.create_topic("test.t1");
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
     auto gtid = conn.field("SELECT @@gtid_binlog_pos");
     test.tprintf("Start GTID: %s", gtid.c_str());
-    test.maxscale->ssh_output("sed -i \"s/REPLACETHIS/" + gtid + "/\" /etc/maxscale.cnf", true);
+    test.percona_proxy->ssh_output("sed -i \"s/REPLACETHIS/" + gtid + "/\" /etc/percona-proxy.cnf", true);
 
     int i = 0;
     for (std::string table : table_names)
@@ -61,14 +61,14 @@ int main(int argc, char** argv)
         conn.query("INSERT INTO `" + table + "` VALUES (" + std::to_string(i++) + ")");
     }
 
-    test.tprintf("Give MaxScale some time to process the events");
-    test.maxscale->start();
+    test.tprintf("Give Percona Proxy some time to process the events");
+    test.percona_proxy->start();
     sleep(5);
 
     read_messages(test, consumer, i);
 
-    test.tprintf("Restart MaxScale and insert more data");
-    test.maxscale->restart();
+    test.tprintf("Restart Percona Proxy and insert more data");
+    test.percona_proxy->restart();
 
     for (std::string table : table_names)
     {

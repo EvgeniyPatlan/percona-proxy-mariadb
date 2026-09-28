@@ -22,7 +22,7 @@ namespace
 
 void init(TestConnections& test)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pMysql, "DROP TABLE IF EXISTS masking_auto_firewall");
     test.try_query(pMysql, "CREATE TABLE masking_auto_firewall (a TEXT, b TEXT)");
@@ -37,7 +37,7 @@ enum class Expect
 
 void test_one(TestConnections& test, const char* zQuery, Expect expect)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     const char* zExpect = (expect == Expect::SUCCESS ? "SHOULD" : "should NOT");
 
@@ -56,7 +56,7 @@ void test_one(TestConnections& test, const char* zQuery, Expect expect)
 
 void test_one_ps(TestConnections& test, const char* zQuery, Expect expect)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     MYSQL_STMT* pPs = mysql_stmt_init(pMysql);
     int rv = mysql_stmt_prepare(pPs, zQuery, strlen(zQuery));
@@ -75,7 +75,7 @@ void test_one_ps(TestConnections& test, const char* zQuery, Expect expect)
 
 void run(TestConnections& test)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     int rv;
 
@@ -116,8 +116,8 @@ void run(TestConnections& test)
     // garbage that causes the returned results of subsequent statements to be
     // out of sync. Instead of figuring out the actual cause, we'll just close
     // and reopen the connection.
-    test.add_result(test.maxscale->disconnect(), "Could NOT close RWS connection.");
-    test.add_result(test.maxscale->connect_rwsplit(), "Could NOT open the RWS connection.");
+    test.add_result(test.percona_proxy->disconnect(), "Could NOT close RWS connection.");
+    test.add_result(test.percona_proxy->connect_rwsplit(), "Could NOT open the RWS connection.");
 
     // This should NOT succeed as a masked column is used in a statement
     // defining a variable.
@@ -157,7 +157,7 @@ void run_ansi_quotes(TestConnections& test)
     // This SHOULD go through as we have 'treat_string_arg_as_field=false"
     test_one(test, "select concat(\"a\") from masking_auto_firewall", Expect::SUCCESS);
 
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     c.connect();
 
     test.expect(c.query("SET @@SQL_MODE = CONCAT(@@SQL_MODE, ',ANSI_QUOTES')"),
@@ -167,18 +167,18 @@ void run_ansi_quotes(TestConnections& test)
     test_one(test, "select concat(\"a\") from masking_auto_firewall", Expect::SUCCESS);
 
     // Let's turn on 'treat_string_arg_as_field=true'
-    test.maxscale->ssh_node(
+    test.percona_proxy->ssh_node(
         "sed -i -e "
         "'s/treat_string_arg_as_field=false/treat_string_arg_as_field=true/' "
-        "/etc/maxscale.cnf",
+        "/etc/percona-proxy.cnf",
         true);
-    // and restart MaxScale
-    test.maxscale->restart();
+    // and restart Percona Proxy
+    test.percona_proxy->restart();
 
     // This should NOT go through as we have 'treat_string_arg_as_field=true" and ANSI_QUOTES.
     test_one(test, "select concat(\"a\") from masking_auto_firewall", Expect::FAILURE);
 
-    // Have to reconnect as we restarted MaxScale.
+    // Have to reconnect as we restarted Percona Proxy.
     c.connect();
     test.expect(c.query("SET @@SQL_MODE = REPLACE(@@SQL_MODE, 'ANSI_QUOTES', '')"),
                 "Could not turn off 'ANSI_QUOTES'");
@@ -187,24 +187,24 @@ void run_ansi_quotes(TestConnections& test)
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
 
     TestConnections test(argc, argv);
 
     std::string json_file("/masking_auto_firewall.json");
     std::string from = mxt::SOURCE_DIR + json_file;
-    std::string to = test.maxscale->access_homedir() + json_file;
+    std::string to = test.percona_proxy->access_homedir() + json_file;
 
-    if (test.maxscale->copy_to_node(from.c_str(), to.c_str()))
+    if (test.percona_proxy->copy_to_node(from.c_str(), to.c_str()))
     {
-        test.maxscale->ssh_node((std::string("chmod a+r ") + to).c_str(), true);
-        test.maxscale->start();
+        test.percona_proxy->ssh_node((std::string("chmod a+r ") + to).c_str(), true);
+        test.percona_proxy->start();
         if (test.ok())
         {
             sleep(2);
-            test.maxscale->wait_for_monitor();
+            test.percona_proxy->wait_for_monitor();
 
-            if (test.maxscale->connect_rwsplit() == 0)
+            if (test.percona_proxy->connect_rwsplit() == 0)
             {
                 init(test);
                 run(test);
@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        test.expect(false, "Could not copy masking file to MaxScale node.");
+        test.expect(false, "Could not copy masking file to Percona Proxy node.");
     }
 
     return test.global_result;

@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <algorithm>
 #include <mutex>
@@ -22,10 +22,10 @@
 #include <unordered_map>
 
 #include <maxbase/jansson.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/users.hh>
-#include <maxscale/http.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/users.hh>
+#include <percona-proxy/http.hh>
+#include <percona-proxy/utils.hh>
 
 namespace
 {
@@ -50,7 +50,7 @@ json_t* date_or_null(time_t date)
 }
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 Users::Users(const Users& rhs)

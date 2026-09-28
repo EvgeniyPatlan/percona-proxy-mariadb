@@ -20,7 +20,7 @@ Without this comment, the pull request will not be accepted.
   branch. For bug fixes or minor improvements, use the default branch (at the
   time of writing `2.1`).  For new features, use the `develop` branch.
 
-* Please ensure that your code follows our [Coding Style](https://github.com/mariadb-corporation/MaxScale/wiki/Coding-Style-and-Guidelines).
+* Please ensure that your code follows our [Coding Style](https://github.com/mariadb-corporation/Percona Proxy/wiki/Coding-Style-and-Guidelines).
   All new code should be formatted with the
-  [Astyle configuration](https://github.com/mariadb-corporation/MaxScale/wiki/Coding-Style-and-Guidelines#tldr)
-  provided with the MaxScale source code.
+  [Astyle configuration](https://github.com/mariadb-corporation/Percona Proxy/wiki/Coding-Style-and-Guidelines#tldr)
+  provided with the Percona Proxy source code.

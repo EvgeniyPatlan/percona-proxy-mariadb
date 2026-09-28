@@ -14,7 +14,7 @@
 #pragma once
 
 #include "nosqlprotocol.hh"
-#include <maxscale/session.hh>
+#include <percona-proxy/session.hh>
 #include "../../filter/cache/cacheconfig.hh"
 #include "../../filter/cache/cachefiltersession.hh"
 #include "nosqlbase.hh"

@@ -15,7 +15,7 @@
 #include "sql.hh"
 
 #include <maxsql/mariadb.hh>
-#include <maxscale/config.hh>
+#include <percona-proxy/config.hh>
 
 SQL::SQL(MYSQL* mysql, const cdc::Server& server)
     : m_mysql(mysql)

@@ -15,11 +15,11 @@ Note that **readconnroute* balances _connections_ and not _statements_.  When a
 client connects, the router selects the server that matches the value of
 `router_options` and has the least number of connections. Once the connection is
 opened, it will not be changed for the duration of the session. If the
-connection between MaxScale and the server breaks, the connection can not be
+connection between Percona Proxy and the server breaks, the connection can not be
 re-established and the client session will be closed. The fact that the server
 is fixed when the client connects also means that routing hints are ignored.
 
-Connections from other MaxScale instances or connections done directly on a
+Connections from other Percona Proxy instances or connections done directly on a
 database are not taken into account. Only connections done through the same
 Maxscale instance are taken into account.
 
@@ -57,10 +57,10 @@ Here is a list of all possible values for the `router_options`.
 
 Role|Description
 ------|---------
-master|A server assigned as a primary by one of MariaDB MaxScale monitors. Depending on the monitor implementation, this could be a primary server of a Primary-Replica replication cluster or a Write-Primary of a Galera cluster.
+master|A server assigned as a primary by one of Percona Proxy for MariaDB monitors. Depending on the monitor implementation, this could be a primary server of a Primary-Replica replication cluster or a Write-Primary of a Galera cluster.
 slave|A server assigned as a replica of a primary. If all replicas are down, but the primary is still available, then the router will use the primary.
 synced| A Galera cluster node which is in a synced state with the cluster.
-running|A server that is up and running. All servers that MariaDB MaxScale can connect to are labeled as running.
+running|A server that is up and running. All servers that Percona Proxy for MariaDB can connect to are labeled as running.
 
 If no `router_options` parameter is configured in the service definition,
 the router will use the default value of `running`. This means that it will

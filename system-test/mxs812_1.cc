@@ -27,7 +27,7 @@ void run_test(TestConnections& test, size_t size, int chunks)
 {
     test.reset_timeout();
     const char* insert_stmt = "INSERT INTO long_blob_table(x, b) VALUES(1, ?)";
-    MYSQL* conn = test.maxscale->conn_rwsplit;
+    MYSQL* conn = test.percona_proxy->conn_rwsplit;
     MYSQL_STMT* stmt = mysql_stmt_init(conn);
 
     test.add_result(mysql_stmt_prepare(stmt, insert_stmt, strlen(insert_stmt)),
@@ -71,14 +71,14 @@ int main(int argc, char* argv[])
     test.try_query(test.repl->nodes[0], "CREATE TABLE long_blob_table(x INT, b LONGBLOB)");
     test.repl->sync_slaves();
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
 
     for (int i = 0; i < 2; i++)
     {
         run_test(test, 500000, 10);
     }
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     test.repl->connect();
     test.try_query(test.repl->nodes[0], "DROP TABLE long_blob_table");

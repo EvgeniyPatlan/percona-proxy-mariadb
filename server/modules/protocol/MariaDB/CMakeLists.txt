@@ -6,7 +6,7 @@ add_library(mariadbprotocol OBJECT
   mariadb_backend.cc
   mariadb_client.cc
   mariadb_common.cc
-  mariadb_maxscale.cc
+  mariadb_percona_proxy.cc
   mariadbparser.cc
   packet_parser.cc
   protocol_module.cc

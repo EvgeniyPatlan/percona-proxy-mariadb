@@ -1,7 +1,7 @@
 # Listener Resource
 
-A listener resource represents a listener of a service in MaxScale. All
-listeners point to a service in MaxScale.
+A listener resource represents a listener of a service in Percona Proxy. All
+listeners point to a service in Percona Proxy.
 
 [TOC]
 
@@ -14,7 +14,7 @@ GET /v1/listeners/:name
 ```
 
 Get a single listener. The _:name_ in the URI must be the name of a listener in
-MaxScale.
+Percona Proxy.
 
 #### Response
 
@@ -40,7 +40,7 @@ MaxScale.
                     "system_time_zone=auto",
                     "time_zone=auto",
                     "tx_isolation=auto",
-                    "maxscale=auto"
+                    "percona-proxy=auto"
                 ],
                 "port": 4006,
                 "protocol": "MariaDBProtocol",
@@ -62,7 +62,7 @@ MaxScale.
                 "user_mapping_file": null
             },
             "source": {
-                "file": "/etc/maxscale.cnf",
+                "file": "/etc/percona-proxy.cnf",
                 "type": "static"
             },
             "state": "Running"
@@ -123,7 +123,7 @@ Get all listeners.
                         "system_time_zone=auto",
                         "time_zone=auto",
                         "tx_isolation=auto",
-                        "maxscale=auto"
+                        "percona-proxy=auto"
                     ],
                     "port": 4006,
                     "protocol": "MariaDBProtocol",
@@ -145,7 +145,7 @@ Get all listeners.
                     "user_mapping_file": null
                 },
                 "source": {
-                    "file": "/etc/maxscale.cnf",
+                    "file": "/etc/percona-proxy.cnf",
                     "type": "static"
                 },
                 "state": "Running"
@@ -185,7 +185,7 @@ Get all listeners.
                         "system_time_zone=auto",
                         "time_zone=auto",
                         "tx_isolation=auto",
-                        "maxscale=auto"
+                        "percona-proxy=auto"
                     ],
                     "port": 4008,
                     "protocol": "MariaDBProtocol",
@@ -207,7 +207,7 @@ Get all listeners.
                     "user_mapping_file": null
                 },
                 "source": {
-                    "file": "/etc/maxscale.cnf",
+                    "file": "/etc/percona-proxy.cnf",
                     "type": "static"
                 },
                 "state": "Running"

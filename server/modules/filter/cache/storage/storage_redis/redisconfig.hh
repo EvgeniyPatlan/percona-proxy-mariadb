@@ -14,7 +14,7 @@
 #pragma once
 
 #include "storage_redis.hh"
-#include <maxscale/config2.hh>
+#include <percona-proxy/config2.hh>
 
 class RedisConfig : public mxs::config::Configuration
 {

@@ -14,13 +14,13 @@
 #define MXB_MODULE_NAME "ldi"
 #include "ldi.hh"
 #include "ldisession.hh"
-#include <maxscale/session.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
-#include <maxscale/threadpool.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/service.hh>
-#include <maxscale/secrets.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/threadpool.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/secrets.hh>
 #include <maxbase/pretty_print.hh>
 #include <libmarias3/marias3.h>
 
@@ -28,14 +28,14 @@
 
 namespace
 {
-const char* CN_S3_KEY = "@maxscale.ldi.s3_key";
-const char* CN_S3_SECRET = "@maxscale.ldi.s3_secret";
-const char* CN_S3_REGION = "@maxscale.ldi.s3_region";
-const char* CN_S3_HOST = "@maxscale.ldi.s3_host";
-const char* CN_S3_PORT = "@maxscale.ldi.s3_port";
-const char* CN_S3_PROTOCOL_VERSION = "@maxscale.ldi.s3_protocol_version";
-const char* CN_IMPORT_USER = "@maxscale.ldi.import_user";
-const char* CN_IMPORT_PASSWORD = "@maxscale.ldi.import_password";
+const char* CN_S3_KEY = "@percona_proxy.ldi.s3_key";
+const char* CN_S3_SECRET = "@percona_proxy.ldi.s3_secret";
+const char* CN_S3_REGION = "@percona_proxy.ldi.s3_region";
+const char* CN_S3_HOST = "@percona_proxy.ldi.s3_host";
+const char* CN_S3_PORT = "@percona_proxy.ldi.s3_port";
+const char* CN_S3_PROTOCOL_VERSION = "@percona_proxy.ldi.s3_protocol_version";
+const char* CN_IMPORT_USER = "@percona_proxy.ldi.import_user";
+const char* CN_IMPORT_PASSWORD = "@percona_proxy.ldi.import_password";
 
 void no_delete(LDISession* ignored)
 {

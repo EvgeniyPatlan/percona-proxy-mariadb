@@ -123,7 +123,7 @@ bool generate_traffic_and_check(TestConnections& test, mxt::MariaDB* conn, int i
                 if (ok && wait_sync)
                 {
                     // Wait for monitor to detect gtid change.
-                    test.maxscale->wait_for_monitor();
+                    test.percona_proxy->wait_for_monitor();
                 }
             }
             else
@@ -138,9 +138,9 @@ bool generate_traffic_and_check(TestConnections& test, mxt::MariaDB* conn, int i
 
 void prepare_log_bin_failover_test(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
-    mxs.stop_maxscale();
+    mxs.stop_percona_proxy();
 
     repl.stop_node(1);
     repl.stash_server_settings(1);
@@ -154,7 +154,7 @@ void prepare_log_bin_failover_test(TestConnections& test)
     repl.disable_server_setting(2, "log_slave_updates");
     repl.start_node(2);
 
-    mxs.start_maxscale();
+    mxs.start_percona_proxy();
     mxs.wait_for_monitor(1);
 }
 
@@ -172,24 +172,24 @@ void cleanup_log_bin_failover_test(TestConnections& test)
     repl.restore_server_settings(2);
     repl.start_node(2);
 
-    test.maxscale->wait_for_monitor(1);
+    test.percona_proxy->wait_for_monitor(1);
 }
 
 void delete_secrets_file(TestConnections& test)
 {
-    test.maxscale->vm_node().delete_from_node("/var/lib/maxscale/.secrets");
+    test.percona_proxy->vm_node().delete_from_node("/var/lib/percona-proxy/.secrets");
 }
 
 void create_test_user(TestConnections& test)
 {
-    auto admin_conn = test.maxscale->open_rwsplit_connection2();
+    auto admin_conn = test.percona_proxy->open_rwsplit_connection2();
     admin_conn->cmd_f("create or replace user '%s' identified by '%s';", test_user, test_pass);
     admin_conn->cmd_f("grant select, update on test.* to %s;", test_user);
 }
 
 void drop_test_user(TestConnections& test)
 {
-    auto admin_conn = test.maxscale->open_rwsplit_connection2();
+    auto admin_conn = test.percona_proxy->open_rwsplit_connection2();
     admin_conn->cmd_f("drop user '%s';", test_user);
 }
 
@@ -501,7 +501,7 @@ bool ClientGroup::prepare()
 void ClientGroup::cleanup()
 {
     m_test.tprintf("Dropping tables.");
-    auto sConn = m_test.maxscale->open_rwsplit_connection2();
+    auto sConn = m_test.percona_proxy->open_rwsplit_connection2();
     if (sConn->is_open())
     {
         for (auto& client : m_clients)
@@ -535,7 +535,7 @@ bool ClientGroup::create_tables()
 {
     m_test.tprintf("Creating %zu tables.", m_clients.size());
     bool rval = false;
-    auto sConn = m_test.maxscale->open_rwsplit_connection2();
+    auto sConn = m_test.percona_proxy->open_rwsplit_connection2();
     if (sConn->is_open())
     {
         rval = true;
@@ -596,7 +596,7 @@ namespace stress_test
 void run_failover_stress_test(TestConnections& test, const BaseSettings& base_sett,
                               const testclient::Settings& client_sett)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
@@ -729,13 +729,13 @@ void run_failover_stress_test(TestConnections& test, const BaseSettings& base_se
         }
         else
         {
-            mxs.maxctrl("call command mariadbmon switchover MySQL-Monitor server1");
+            mxs.percona_proxyctl("call command mariadbmon switchover MySQL-Monitor server1");
         }
     }
     else
     {
         // Replication broken.
-        mxs.maxctrl("call command mariadbmon reset-replication MySQL-Monitor server1");
+        mxs.percona_proxyctl("call command mariadbmon reset-replication MySQL-Monitor server1");
     }
 
     mxs.wait_for_monitor(2);
@@ -876,7 +876,7 @@ const MonitorInfo* get_primary_monitor(TestConnections& test, MonitorInfo* monit
     auto find_primary = [&]() {
         const MonitorInfo* found = nullptr;
         primaries = 0;
-        for (int i = 0; monitors[i].maxscale; i++)
+        for (int i = 0; monitors[i].percona_proxy; i++)
         {
             auto& mon_info = monitors[i];
             if (monitor_is_primary(test, mon_info))
@@ -890,7 +890,7 @@ const MonitorInfo* get_primary_monitor(TestConnections& test, MonitorInfo* monit
 
     // Primary monitor selection can take a few tries. Perhaps a monitor or server was slow to react to
     // freed locks. Or perhaps the locks were split even between the two monitors running in a single
-    // MaxScale. In any case, wait a little and try again, as the situation should eventually get sorted.
+    // Percona Proxy. In any case, wait a little and try again, as the situation should eventually get sorted.
     const MonitorInfo* rval = nullptr;
     for (int i = 0; !rval && i < 4; i++)
     {
@@ -908,9 +908,9 @@ const MonitorInfo* get_primary_monitor(TestConnections& test, MonitorInfo* monit
 bool monitor_is_primary(TestConnections& test, const MonitorInfo& mon_info)
 {
     string cmd = "api get monitors/" + mon_info.name + " data.attributes.monitor_diagnostics.primary";
-    auto res = mon_info.maxscale->maxctrl(cmd);
-    auto& mxs_name = mon_info.maxscale->node_name();
-    // If the MaxCtrl-command failed, assume it's because the target MaxScale machine is down.
+    auto res = mon_info.percona_proxy->percona_proxyctl(cmd);
+    auto& mxs_name = mon_info.percona_proxy->node_name();
+    // If the Percona Proxyctl-command failed, assume it's because the target Percona Proxy machine is down.
     bool rval = false;
     if (res.rc == 0)
     {
@@ -928,7 +928,7 @@ bool monitor_is_primary(TestConnections& test, const MonitorInfo& mon_info)
     }
     else
     {
-        test.tprintf("MaxCtrl command failed, %s  is likely down.", mxs_name.c_str());
+        test.tprintf("Percona Proxyctl command failed, %s  is likely down.", mxs_name.c_str());
     }
     return rval;
 }
@@ -947,8 +947,8 @@ void install_tools(TestConnections& test, int ind)
 
 void copy_ssh_keyfile(TestConnections& test, const std::vector<mxt::MariaDBServer*>& targets)
 {
-    // Copy ssh keyfile to maxscale VM from server1.
-    auto& mxs = *test.maxscale;
+    // Copy ssh keyfile to percona-proxy VM from server1.
+    auto& mxs = *test.percona_proxy;
     mxs.vm_node().delete_from_node(keypath);
     mxt::Node& key_source = test.repl->backend(0)->vm_node();
 
@@ -990,7 +990,7 @@ void copy_ssh_keyfile(TestConnections& test, const std::vector<mxt::MariaDBServe
 
 void delete_ssh_keyfile(TestConnections& test)
 {
-    test.maxscale->vm_node().delete_from_node(keypath);
+    test.percona_proxy->vm_node().delete_from_node(keypath);
 }
 
 void stop_firewall(TestConnections& test, int ind)

@@ -13,7 +13,7 @@
  */
 
 #include <cstdio>
-#include <maxscale/hint.hh>
+#include <percona-proxy/hint.hh>
 
 int main(int argc, char** argv)
 {

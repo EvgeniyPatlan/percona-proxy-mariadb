@@ -54,7 +54,7 @@ bool cdc_com(TestConnections* Test)
 {
     int max_inserted_val = Test->smoke ? 25 : 100;
     int sock = create_tcp_socket();
-    char* ip = get_ip(Test->maxscale->ip4());
+    char* ip = get_ip(Test->percona_proxy->ip4());
 
     if (ip == NULL)
     {
@@ -200,7 +200,7 @@ static TestConnections* Test;
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     Test = new TestConnections(argc, argv);
 
     Test->reset_timeout();
@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
     Test->repl->close_connections();
 
     Test->tprintf("Waiting for binlogs to be processed...");
-    Test->maxscale->start();
+    Test->percona_proxy->start();
     sleep(10);
 
     Test->reset_timeout();

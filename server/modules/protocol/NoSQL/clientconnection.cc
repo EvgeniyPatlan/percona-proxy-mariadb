@@ -16,14 +16,14 @@
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <mysqld_error.h>
-#include <maxscale/dcb.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/session.hh>
-#include <maxscale/service.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
 #include "nosqlconfig.hh"
 #include "nosqldatabase.hh"
 

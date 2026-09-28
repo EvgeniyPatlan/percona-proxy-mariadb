@@ -12,17 +12,17 @@
  * Public License.
  */
 
-#include <maxscale/config2.hh>
+#include <percona-proxy/config2.hh>
 
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include <maxbase/format.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/monitor.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/monitor.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/utils.hh>
 #include "internal/config.hh"
 #include "internal/modules.hh"
 #include "internal/service.hh"
@@ -32,7 +32,7 @@ using namespace std;
 namespace
 {
 
-using namespace maxscale::config;
+using namespace percona_proxy::config;
 
 bool is_core_param(Specification::Kind kind, const std::string& param)
 {
@@ -70,7 +70,7 @@ bool is_core_param(Specification::Kind kind, const std::string& param)
 }
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 namespace config

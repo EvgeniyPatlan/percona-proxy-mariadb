@@ -13,9 +13,9 @@
  */
 #pragma once
 
-#include <maxscale/service.hh>
-#include <maxscale/router.hh>
-#include <maxscale/workerlocal.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/workerlocal.hh>
 
 #include <mutex>
 #include <string>
@@ -23,7 +23,7 @@
 
 #include "filter.hh"
 
-namespace maxscale
+namespace percona_proxy
 {
 class Listener;
 class Monitor;
@@ -31,7 +31,7 @@ class Monitor;
 
 
 /**
- * @file service.h - MaxScale internal service functions
+ * @file service.h - Percona Proxy internal service functions
  */
 
 constexpr char CN_CONNECTION_KEEPALIVE[] = "connection_keepalive";
@@ -474,7 +474,7 @@ private:
 /**
  * Service life cycle management
  *
- * These functions should only be called by the MaxScale core.
+ * These functions should only be called by the Percona Proxy core.
  */
 
 /**
@@ -539,18 +539,18 @@ service_find_listener(Service* service, const std::string& socket, const std::st
                       unsigned short port);
 
 /**
- * @brief Check if a MaxScale service listens on a port
+ * @brief Check if a Percona Proxy service listens on a port
  *
  * @param port The port to check
- * @return True if a MaxScale service uses the port
+ * @return True if a Percona Proxy service uses the port
  */
 bool service_port_is_used(int port);
 
 /**
- * @brief Check if a MaxScale service listens on a Unix domain socket
+ * @brief Check if a Percona Proxy service listens on a Unix domain socket
  *
  * @param path The socket path to check
- * @return True if a MaxScale service uses the socket
+ * @return True if a Percona Proxy service uses the socket
  */
 bool service_socket_is_used(const std::string& socket_path);
 

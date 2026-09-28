@@ -17,8 +17,8 @@
 #include <new>
 #include <maxbase/alloc.hh>
 #include <maxbase/pretty_print.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
 #include <maxsimd/multistmt.hh>
 #include "storage.hh"
 
@@ -42,10 +42,10 @@ inline bool cache_max_resultset_size_exceeded(const CacheConfig& config, int64_t
 namespace
 {
 
-const char SV_MAXSCALE_CACHE_POPULATE[] = "@maxscale.cache.populate";
-const char SV_MAXSCALE_CACHE_USE[] = "@maxscale.cache.use";
-const char SV_MAXSCALE_CACHE_SOFT_TTL[] = "@maxscale.cache.soft_ttl";
-const char SV_MAXSCALE_CACHE_HARD_TTL[] = "@maxscale.cache.hard_ttl";
+const char SV_MAXSCALE_CACHE_POPULATE[] = "@percona_proxy.cache.populate";
+const char SV_MAXSCALE_CACHE_USE[] = "@percona_proxy.cache.use";
+const char SV_MAXSCALE_CACHE_SOFT_TTL[] = "@percona_proxy.cache.soft_ttl";
+const char SV_MAXSCALE_CACHE_HARD_TTL[] = "@percona_proxy.cache.hard_ttl";
 
 const char* NON_CACHEABLE_FUNCTIONS[] =
 {
@@ -281,7 +281,7 @@ CacheFilterSession::CacheFilterSession(MXS_SESSION* pSession,
                                        SERVICE* pService,
                                        std::unique_ptr<SessionCache> sCache,
                                        char* zDefaultDb)
-    : maxscale::FilterSession(pSession, pService)
+    : percona_proxy::FilterSession(pSession, pService)
     , m_sThis(SCacheFilterSession(this, [](auto ptr) {
                                   }))
     , m_state(CACHE_EXPECTING_NOTHING)
@@ -313,7 +313,7 @@ CacheFilterSession::CacheFilterSession(MXS_SESSION* pSession,
     if (!pSession->add_variable(SV_MAXSCALE_CACHE_POPULATE, &CacheFilterSession::set_cache_populate, this))
     {
         MXB_LOG_MESSAGE(msg_level,
-                        "Could not add MaxScale user variable '%s', dynamically "
+                        "Could not add Percona Proxy user variable '%s', dynamically "
                         "enabling/disabling the populating of the cache is not possible for this filter.",
                         SV_MAXSCALE_CACHE_POPULATE);
         warned = true;
@@ -322,7 +322,7 @@ CacheFilterSession::CacheFilterSession(MXS_SESSION* pSession,
     if (!pSession->add_variable(SV_MAXSCALE_CACHE_USE, &CacheFilterSession::set_cache_use, this))
     {
         MXB_LOG_MESSAGE(msg_level,
-                        "Could not add MaxScale user variable '%s', dynamically "
+                        "Could not add Percona Proxy user variable '%s', dynamically "
                         "enabling/disabling the using of the cache not possible for this filter.",
                         SV_MAXSCALE_CACHE_USE);
         warned = true;
@@ -331,7 +331,7 @@ CacheFilterSession::CacheFilterSession(MXS_SESSION* pSession,
     if (!pSession->add_variable(SV_MAXSCALE_CACHE_SOFT_TTL, &CacheFilterSession::set_cache_soft_ttl, this))
     {
         MXB_LOG_MESSAGE(msg_level,
-                        "Could not add MaxScale user variable '%s', dynamically "
+                        "Could not add Percona Proxy user variable '%s', dynamically "
                         "setting the soft TTL not possible for this filter.",
                         SV_MAXSCALE_CACHE_SOFT_TTL);
         warned = true;
@@ -340,7 +340,7 @@ CacheFilterSession::CacheFilterSession(MXS_SESSION* pSession,
     if (!pSession->add_variable(SV_MAXSCALE_CACHE_HARD_TTL, &CacheFilterSession::set_cache_hard_ttl, this))
     {
         MXB_LOG_MESSAGE(msg_level,
-                        "Could not add MaxScale user variable '%s', dynamically "
+                        "Could not add Percona Proxy user variable '%s', dynamically "
                         "setting the hard TTL not possible for this filter.",
                         SV_MAXSCALE_CACHE_HARD_TTL);
         warned = true;

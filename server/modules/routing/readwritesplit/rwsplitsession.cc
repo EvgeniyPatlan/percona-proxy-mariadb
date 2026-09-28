@@ -19,7 +19,7 @@
 #include <maxbase/format.hh>
 #include <maxbase/pretty_print.hh>
 
-using namespace maxscale;
+using namespace percona_proxy;
 using namespace std::chrono;
 using mariadb::QueryClassifier;
 

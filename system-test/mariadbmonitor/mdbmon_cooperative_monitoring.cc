@@ -18,12 +18,12 @@
 #include "mariadbmon_utils.hh"
 
 using std::string;
-using mxt::MaxScale;
+using mxt::PerconaProxy;
 using cooperative_monitoring::MonitorInfo;
 
 namespace
 {
-// The test runs two MaxScales with two monitors each.
+// The test runs two PerconaProxies with two monitors each.
 namespace MonitorID
 {
 const int UNKNOWN = -1;
@@ -45,26 +45,26 @@ const int failover_mon_ticks = 6;
 const int mxs_switch_ticks = 6;
 
 const MonitorInfo* get_primary_monitor(TestConnections& test);
-void test_failover(TestConnections& test, MaxScale& maxscale);
+void test_failover(TestConnections& test, PerconaProxy& percona_proxy);
 bool release_monitor_locks(TestConnections& test, const MonitorInfo& mon_info);
 void ensure_primary_monitor(TestConnections& test, const MonitorInfo& primary_monitor);
 
 void test_main(TestConnections& test)
 {
-    test.expect(test.n_maxscales() >= 2, "At least 2 MaxScales are needed for this test. Exiting");
+    test.expect(test.n_percona_proxies() >= 2, "At least 2 PerconaProxies are needed for this test. Exiting");
     if (!test.ok())
     {
         return;
     }
 
-    auto& mxs1 = *test.maxscale;
-    auto& mxs2 = *test.maxscale2;
-    monitors[0].maxscale = &mxs1;
-    monitors[1].maxscale = &mxs1;
-    monitors[2].maxscale = &mxs2;
-    monitors[3].maxscale = &mxs2;
+    auto& mxs1 = *test.percona_proxy;
+    auto& mxs2 = *test.percona_proxy2;
+    monitors[0].percona_proxy = &mxs1;
+    monitors[1].percona_proxy = &mxs1;
+    monitors[2].percona_proxy = &mxs2;
+    monitors[3].percona_proxy = &mxs2;
 
-    test.tprintf("Starting MaxScales. MariaDB-Monitor1A should acquire server locks.");
+    test.tprintf("Starting PerconaProxies. MariaDB-Monitor1A should acquire server locks.");
     auto* primary_mon1 = &monitors[0];
     ensure_primary_monitor(test, *primary_mon1);
 
@@ -74,41 +74,41 @@ void test_main(TestConnections& test)
     if (test.ok())
     {
         // Test a normal failover.
-        test_failover(test, *primary_mon1->maxscale);
+        test_failover(test, *primary_mon1->percona_proxy);
         mxs1.get_servers().print();
         mxs2.get_servers().print();
     }
 
-    // If ok so far, stop the MaxScale with the current primary monitor.
+    // If ok so far, stop the Percona Proxy with the current primary monitor.
     if (test.ok())
     {
-        auto* previous_primary_maxscale = primary_mon1->maxscale;
-        test.tprintf("Stopping %s.", previous_primary_maxscale->node_name().c_str());
-        previous_primary_maxscale->stop();
-        MaxScale* expect_primary_maxscale = (previous_primary_maxscale == &mxs1) ? &mxs2 : &mxs1;
-        // When swapping from one MaxScale to another, only waiting for monitor does not seem to be
+        auto* previous_primary_percona_proxy = primary_mon1->percona_proxy;
+        test.tprintf("Stopping %s.", previous_primary_percona_proxy->node_name().c_str());
+        previous_primary_percona_proxy->stop();
+        PerconaProxy* expect_primary_percona_proxy = (previous_primary_percona_proxy == &mxs1) ? &mxs2 : &mxs1;
+        // When swapping from one Percona Proxy to another, only waiting for monitor does not seem to be
         // 100% reliable. 1s sleep seems to ensure the switch has happened. A possible reason is that there
         // is some lag between a connection releasing a lock and that lock becoming available for other
         // connections to take.
         sleep(1);
-        expect_primary_maxscale->wait_for_monitor(mxs_switch_ticks);
+        expect_primary_percona_proxy->wait_for_monitor(mxs_switch_ticks);
         const auto* primary_mon2 = get_primary_monitor(test);
         if (test.ok())
         {
-            auto* current_primary_maxscale = primary_mon2->maxscale;
+            auto* current_primary_percona_proxy = primary_mon2->percona_proxy;
             test.expect(primary_mon2 != primary_mon1, "Primary monitor did not change.");
-            test.expect(current_primary_maxscale == expect_primary_maxscale,
-                        "Unexpected primary '%s'.", current_primary_maxscale->node_name().c_str());
+            test.expect(current_primary_percona_proxy == expect_primary_percona_proxy,
+                        "Unexpected primary '%s'.", current_primary_percona_proxy->node_name().c_str());
 
             // Again, check that failover works. Wait a few more intervals since failover is not
-            // immediately enabled on primary MaxScale switch.
-            current_primary_maxscale->sleep_and_wait_for_monitor(2, failover_mon_ticks);
-            test_failover(test, *current_primary_maxscale);
-            current_primary_maxscale->get_servers().print();
+            // immediately enabled on primary Percona Proxy switch.
+            current_primary_percona_proxy->sleep_and_wait_for_monitor(2, failover_mon_ticks);
+            test_failover(test, *current_primary_percona_proxy);
+            current_primary_percona_proxy->get_servers().print();
         }
-        test.tprintf("Starting %s.", previous_primary_maxscale->node_name().c_str());
-        previous_primary_maxscale->start();
-        expect_primary_maxscale->wait_for_monitor(mxs_switch_ticks);
+        test.tprintf("Starting %s.", previous_primary_percona_proxy->node_name().c_str());
+        previous_primary_percona_proxy->start();
+        expect_primary_percona_proxy->wait_for_monitor(mxs_switch_ticks);
     }
 
     // If ok so far, do a rolling sweep through all four monitors by having each monitor release its
@@ -131,8 +131,8 @@ void test_main(TestConnections& test)
                 {
                     visited_monitors.insert(mon_id);
                     // The 'wait_for_monitor'-function causes the target monitor to tick faster than usual.
-                    // This can cause issues when two separate MaxScales are involved, not leaving enough
-                    // time for the next MaxScale to tick. Simply wait on both MaxScales.
+                    // This can cause issues when two separate PerconaProxies are involved, not leaving enough
+                    // time for the next Percona Proxy to tick. Simply wait on both PerconaProxies.
                     sleep(1);
                     mxs1.wait_for_monitor(mxs_switch_ticks);
                     mxs2.wait_for_monitor(mxs_switch_ticks);
@@ -152,7 +152,7 @@ void test_main(TestConnections& test)
     {
         // MXS-4902
         test.tprintf("Test that all manual commands fail on a monitor which does not have locks. Restart "
-                     "both MaxScales to clear any lock release timeouts.");
+                     "both PerconaProxies to clear any lock release timeouts.");
         auto* primary_mon = &monitors[2];
         ensure_primary_monitor(test, *primary_mon);
 
@@ -161,13 +161,13 @@ void test_main(TestConnections& test)
             auto try_manual_command = [&](const char* cmdname, const char* opts) {
                 string total_cmd = mxb::string_printf("call command mariadbmon %s MariaDB-Monitor1A %s 2>&1",
                                                       cmdname, opts);
-                test.tprintf("Testing MaxCtrl command '%s'.", total_cmd.c_str());
-                auto res = monitors[0].maxscale->maxctrl(total_cmd);
+                test.tprintf("Testing Percona Proxyctl command '%s'.", total_cmd.c_str());
+                auto res = monitors[0].percona_proxy->percona_proxyctl(total_cmd);
                 const int expected_rc = 1;
                 test.expect(res.rc == expected_rc, "Command '%s' returned %i when %i was expected.",
                             total_cmd.c_str(), res.rc, expected_rc);
                 bool msg_found =
-                    res.output.find("this MaxScale does not have exclusive locks") != string::npos;
+                    res.output.find("this Percona Proxy does not have exclusive locks") != string::npos;
                 test.expect(msg_found, "Command output did not contain expected phrase. Output: '%s'",
                             res.output.c_str());
             };
@@ -181,7 +181,7 @@ void test_main(TestConnections& test)
                 test.tprintf("Test a manual command on the primary monitor, it should succeed.");
                 string cmd = mxb::string_printf("call command mariadbmon switchover %s",
                                                 primary_mon->name.c_str());
-                auto res = primary_mon->maxscale->maxctrl(cmd);
+                auto res = primary_mon->percona_proxy->percona_proxyctl(cmd);
                 test.tprintf("Command '%s' returned '%s'.", cmd.c_str(), res.output.c_str());
                 test.expect(res.rc == 0, "Command failed on primary monitor");
             }
@@ -194,13 +194,13 @@ void test_main(TestConnections& test)
 
     if (test.ok())
     {
-        // MXS-5955: Master + primary MaxScale shut down during cooperative monitoring.
+        // MXS-5955: Master + primary Percona Proxy shut down during cooperative monitoring.
         ensure_primary_monitor(test, *primary_mon1);
 
         test.tprintf("Switchover to return server1A as master.");
         string cmd = mxb::string_printf("call command mariadbmon switchover %s server1A",
                                         primary_mon1->name.c_str());
-        auto res = primary_mon1->maxscale->maxctrl(cmd);
+        auto res = primary_mon1->percona_proxy->percona_proxyctl(cmd);
         test.tprintf("Command '%s' returned '%s'.", cmd.c_str(), res.output.c_str());
         test.expect(res.rc == 0, "Command failed on primary monitor");
         mxs1.wait_for_monitor();
@@ -211,11 +211,11 @@ void test_main(TestConnections& test)
         test.tprintf("Shut down monitors 2A and 2B.");
         for (int i : {1, 3})
         {
-            monitors[i].maxscale->maxctrlf("stop monitor %s", monitors[i].name.c_str());
+            monitors[i].percona_proxy->percona_proxyctlf("stop monitor %s", monitors[i].name.c_str());
         }
 
         auto* next_expected_primary_mon = &monitors[2];
-        auto* next_expected_mxs = next_expected_primary_mon->maxscale;
+        auto* next_expected_mxs = next_expected_primary_mon->percona_proxy;
         test.tprintf("Increase failcount on %s to delay failover.", next_expected_primary_mon->name.c_str());
         next_expected_mxs->alter_monitor(next_expected_primary_mon->name, "failcount", "5");
 
@@ -227,7 +227,7 @@ void test_main(TestConnections& test)
 
         if (test.ok())
         {
-            test.tprintf("Stop master and primary MaxScale. The other MaxScale should claim primary status.");
+            test.tprintf("Stop master and primary Percona Proxy. The other Percona Proxy should claim primary status.");
             auto* stopped_be = test.repl->backend(0);
             stopped_be->stop_database();
             mxs1.stop();
@@ -254,10 +254,10 @@ void test_main(TestConnections& test)
 
             mxs2.check_print_servers_status(master_down_st);
 
-            test.tprintf("Restart the previous primary MaxScale.");
+            test.tprintf("Restart the previous primary Percona Proxy.");
             mxs1.start_and_check_started();
             mxs1.wait_for_monitor();
-            mxs1.maxctrlf("stop monitor %s", monitors[1].name.c_str());
+            mxs1.percona_proxyctlf("stop monitor %s", monitors[1].name.c_str());
             mxs1.check_print_servers_status(master_down_st);
 
             test.tprintf("Wait for failover...");
@@ -274,7 +274,7 @@ void test_main(TestConnections& test)
                 {slave_st, mxt::ServerInfo::master_st, slave_st, slave_st});
 
             test.tprintf("Switchover back.");
-            next_expected_mxs->maxctrlf("call command mariadbmon switchover %s",
+            next_expected_mxs->percona_proxyctlf("call command mariadbmon switchover %s",
                                         next_expected_primary_mon->name.c_str());
             next_expected_mxs->wait_for_monitor();
             next_expected_mxs->check_print_servers_status(mxt::ServersInfo::default_repl_states());
@@ -295,30 +295,30 @@ const cooperative_monitoring::MonitorInfo* get_primary_monitor(TestConnections& 
 bool release_monitor_locks(TestConnections& test, const MonitorInfo& mon_info)
 {
     string cmd = "call command mariadbmon release-locks " + mon_info.name;
-    auto res = mon_info.maxscale->maxctrl(cmd);
+    auto res = mon_info.percona_proxy->percona_proxyctl(cmd);
     bool success = res.rc == 0 && (res.output == "OK" || res.output == "\"OK\"");
-    test.expect(success, "MaxCtrl command failed.");
+    test.expect(success, "Percona Proxyctl command failed.");
     return success;
 }
 
 void ensure_primary_monitor(TestConnections& test, const MonitorInfo& primary_monitor)
 {
-    auto* mxs1 = test.maxscale;
-    auto* mxs2 = test.maxscale2;
+    auto* mxs1 = test.percona_proxy;
+    auto* mxs2 = test.percona_proxy2;
     mxs1->stop();
     mxs2->stop();
-    auto* primary_mxs = primary_monitor.maxscale;
+    auto* primary_mxs = primary_monitor.percona_proxy;
     auto* other_mxs = primary_mxs == mxs1 ? mxs2 : mxs1;
 
     primary_mxs->start();
     // Ensure the correct monitor gets locks by restarting monitors in order.
     const MonitorInfo* other_monitor = nullptr;
-    for (int i = 0; monitors[i].maxscale; i++)
+    for (int i = 0; monitors[i].percona_proxy; i++)
     {
         auto& mon_info = monitors[i];
-        if (mon_info.maxscale == primary_mxs)
+        if (mon_info.percona_proxy == primary_mxs)
         {
-            primary_mxs->maxctrl(mxb::string_printf("stop monitor %s", mon_info.name.c_str()));
+            primary_mxs->percona_proxyctl(mxb::string_printf("stop monitor %s", mon_info.name.c_str()));
             if (mon_info.id != primary_monitor.id)
             {
                 other_monitor = &mon_info;
@@ -327,12 +327,12 @@ void ensure_primary_monitor(TestConnections& test, const MonitorInfo& primary_mo
     }
     sleep(1);
     const char start_mon_fmt[] = "start monitor %s";
-    primary_mxs->maxctrl(mxb::string_printf(start_mon_fmt, primary_monitor.name.c_str()));
+    primary_mxs->percona_proxyctl(mxb::string_printf(start_mon_fmt, primary_monitor.name.c_str()));
     primary_mxs->sleep_and_wait_for_monitor(1, 1);
-    primary_mxs->maxctrl(mxb::string_printf(start_mon_fmt, other_monitor->name.c_str()));
+    primary_mxs->percona_proxyctl(mxb::string_printf(start_mon_fmt, other_monitor->name.c_str()));
     primary_mxs->wait_for_monitor(1);
 
-    other_mxs->start_maxscale();
+    other_mxs->start_percona_proxy();
     other_mxs->wait_for_monitor(1);
 
     auto primary_mon = get_primary_monitor(test);
@@ -340,18 +340,18 @@ void ensure_primary_monitor(TestConnections& test, const MonitorInfo& primary_mo
                 primary_mon->id, primary_monitor.id);
 }
 
-void test_failover(TestConnections& test, MaxScale& maxscale)
+void test_failover(TestConnections& test, PerconaProxy& percona_proxy)
 {
     // Test a normal failover.
-    mxt::ServerInfo first_master = maxscale.get_servers().get_master();
+    mxt::ServerInfo first_master = percona_proxy.get_servers().get_master();
     test.expect(first_master.server_id > 0, "No master at start of failover");
     if (test.ok())
     {
         test.tprintf("Stopping %s and waiting for failover.", first_master.name.c_str());
         int master_node = first_master.server_id - 1;
         test.repl->stop_node(master_node);
-        maxscale.wait_for_monitor(failover_mon_ticks);
-        mxt::ServerInfo second_master = maxscale.get_servers().get_master();
+        percona_proxy.wait_for_monitor(failover_mon_ticks);
+        mxt::ServerInfo second_master = percona_proxy.get_servers().get_master();
         test.expect(second_master.server_id > 0, "No master after failover");
         if (test.ok())
         {
@@ -361,7 +361,7 @@ void test_failover(TestConnections& test, MaxScale& maxscale)
         }
         test.tprintf("Starting %s.", first_master.name.c_str());
         test.repl->start_node(master_node);
-        maxscale.wait_for_monitor(failover_mon_ticks);      // wait for rejoin, assume it works
+        percona_proxy.wait_for_monitor(failover_mon_ticks);      // wait for rejoin, assume it works
     }
 }
 }
@@ -369,6 +369,6 @@ void test_failover(TestConnections& test, MaxScale& maxscale)
 int main(int argc, char* argv[])
 {
     TestConnections test;
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return test.run_test(argc, argv, test_main);
 }

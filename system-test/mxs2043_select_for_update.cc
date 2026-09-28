@@ -91,7 +91,7 @@ bool set_read_only_on_slaves(TestConnections& test, bool set)
 
     auto& ms = *test.repl;
     ms.update_status();
-    auto master_id = test.maxscale->get_servers().get_master().server_id;
+    auto master_id = test.percona_proxy->get_servers().get_master().server_id;
 
     for (int i = 0; i < ms.N; ++i)
     {
@@ -112,15 +112,15 @@ void select_for_update(TestConnections& test, MYSQL* pMysql)
 void run_test(TestConnections& test)
 {
     // The default user has super privileges, so this should succeed
-    // whether or not MaxScale sends the query to the master or to
+    // whether or not Percona Proxy sends the query to the master or to
     // some slave.
 
     test.tprintf("Running test with default user.");
-    select_for_update(test, test.maxscale->conn_rwsplit);
+    select_for_update(test, test.percona_proxy->conn_rwsplit);
 
-    auto& maxscales = *test.maxscale;
+    auto& percona_proxies = *test.percona_proxy;
 
-    MYSQL* pMysql = open_conn(maxscales.rwsplit_port, maxscales.ip4(),
+    MYSQL* pMysql = open_conn(percona_proxies.rwsplit_port, percona_proxies.ip4(),
                               ZUSER, ZPASSWORD);
     test.expect(pMysql, "Could not open connections for %s.", ZUSER);
 
@@ -129,7 +129,7 @@ void run_test(TestConnections& test)
         test.tprintf("Running test with created user.");
 
         // The created user does not have super privileges, so this should
-        // fail unless MaxScale routes the query to the master.
+        // fail unless Percona Proxy routes the query to the master.
         select_for_update(test, pMysql);
 
         mysql_close(pMysql);
@@ -141,11 +141,11 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    auto& maxscales = *test.maxscale;
+    auto& percona_proxies = *test.percona_proxy;
 
-    maxscales.connect();
+    percona_proxies.connect();
 
-    MYSQL* pMysql = maxscales.conn_rwsplit;
+    MYSQL* pMysql = percona_proxies.conn_rwsplit;
 
     if (create_table(test, pMysql))
     {

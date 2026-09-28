@@ -14,9 +14,9 @@
 #pragma once
 
 #include "postgresprotocol.hh"
-#include <maxscale/protocol2.hh>
-#include <maxscale/session.hh>
-#include <maxscale/queryclassifier.hh>
+#include <percona-proxy/protocol2.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/queryclassifier.hh>
 
 #include <vector>
 #include <variant>

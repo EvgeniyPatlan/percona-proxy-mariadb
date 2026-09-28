@@ -1,35 +1,35 @@
 
 # Contents
 
-## About MariaDB MaxScale
+## About Percona Proxy for MariaDB
 
- - [About MariaDB MaxScale](About/About-MaxScale.md)
+ - [About Percona Proxy for MariaDB](About/About-Percona Proxy.md)
  - [Changelog](Changelog.md)
  - [Limitations](About/Limitations.md)
 
 ## Getting Started
 
- - [MariaDB MaxScale Installation Guide](Getting-Started/MariaDB-MaxScale-Installation-Guide.md)
- - [Building MariaDB MaxScale from Source Code](Getting-Started/Building-MaxScale-from-Source-Code.md)
+ - [Percona Proxy for MariaDB Installation Guide](Getting-Started/MariaDB-Percona Proxy-Installation-Guide.md)
+ - [Building Percona Proxy for MariaDB from Source Code](Getting-Started/Building-Percona Proxy-from-Source-Code.md)
  - [Configuration Guide](Getting-Started/Configuration-Guide.md)
- - [MaxGUI](Getting-Started/MaxGUI.md)
+ - [Percona Proxy GUI](Getting-Started/Percona Proxy GUI.md)
 
-## Upgrading MariaDB MaxScale
+## Upgrading Percona Proxy for MariaDB
 
-- [Upgrading MaxScale](Upgrading/Upgrading-MaxScale.md)
+- [Upgrading Percona Proxy](Upgrading/Upgrading-Percona Proxy.md)
 
 ## Reference
 
- - [MaxCtrl - Command Line Admin Interface](Reference/MaxCtrl.md)
- - [MaxScale REST API](REST-API/API.md)
+ - [Percona Proxyctl - Command Line Admin Interface](Reference/Percona Proxyctl.md)
+ - [Percona Proxy REST API](REST-API/API.md)
  - [Module Commands](Reference/Module-Commands.md)
  - [Routing Hints](Reference/Hint-Syntax.md)
 
 ## Tutorials
 
-The main tutorial for MariaDB MaxScale consist of setting up MariaDB MaxScale for the environment you are using with either a connection-based or a read/write-based configuration.
+The main tutorial for Percona Proxy for MariaDB consist of setting up Percona Proxy for MariaDB for the environment you are using with either a connection-based or a read/write-based configuration.
 
- - [MariaDB MaxScale Tutorial](Tutorials/MaxScale-Tutorial.md)
+ - [Percona Proxy for MariaDB Tutorial](Tutorials/Percona Proxy-Tutorial.md)
 
 These tutorials are for specific use cases and module combinations.
 
@@ -41,13 +41,13 @@ These tutorials are for specific use cases and module combinations.
  - [Read Write Splitting Tutorial](Tutorials/Read-Write-Splitting-Tutorial.md)
  - [Simple Schema Sharding Tutorial](Tutorials/Simple-Sharding-Tutorial.md)
 
-Here are tutorials on monitoring and managing MariaDB MaxScale in cluster environments.
+Here are tutorials on monitoring and managing Percona Proxy for MariaDB in cluster environments.
 
  - [REST API Tutorial](Tutorials/REST-API-Tutorial.md)
 
 ## Routers
 
-The routing module is the core of a MariaDB MaxScale service. The router documentation
+The routing module is the core of a Percona Proxy for MariaDB service. The router documentation
 contains all module specific configuration options and detailed explanations
 of their use.
 
@@ -64,7 +64,7 @@ of their use.
 
 ## Filters
 
-Here are detailed documents about the filters MariaDB MaxScale offers. They contain configuration guides and example use cases. Before reading these, you should have read the filter tutorial so that you know how they work and how to configure them.
+Here are detailed documents about the filters Percona Proxy for MariaDB offers. They contain configuration guides and example use cases. Before reading these, you should have read the filter tutorial so that you know how they work and how to configure them.
 
  - [Binlog Filter](Filters/BinlogFilter.md)
  - [Cache](Filters/Cache.md)
@@ -95,14 +95,14 @@ Module specific documentation.
 
 ## Protocols
 
-Documentation for MaxScale protocol modules.
+Documentation for Percona Proxy protocol modules.
 
  - [MariaDB](Protocols/MariaDB.md)
  - [Change Data Capture (CDC) Protocol](Protocols/CDC.md)
  - [Change Data Capture (CDC) Users](Protocols/CDC_users.md)
  - [NoSQL](Protocols/NoSQL.md)
 
-The MaxScale CDC Connector provides a C++ API for consuming data from a CDC system.
+The Percona Proxy CDC Connector provides a C++ API for consuming data from a CDC system.
 
  - [CDC Connector](Connectors/CDC-Connector.md)
 

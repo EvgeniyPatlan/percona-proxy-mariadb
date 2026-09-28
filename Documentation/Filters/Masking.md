@@ -1,6 +1,6 @@
 # Masking
 
-This filter was introduced in MariaDB MaxScale 2.1.
+This filter was introduced in Percona Proxy for MariaDB 2.1.
 
 [TOC]
 
@@ -44,7 +44,7 @@ attacks.
 
 ## Security
 
-From MaxScale 2.3 onwards, the masking filter will reject statements
+From Percona Proxy 2.3 onwards, the masking filter will reject statements
 that use functions in conjunction with columns that should be masked.
 Allowing function usage provides a way for circumventing the masking,
 unless a firewall filter is separately configured and installed.
@@ -53,7 +53,7 @@ Please see the configuration parameter
 [prevent_function_usage](#prevent_function_usage)
 for how to change the default behaviour.
 
-From MaxScale 2.3.5 onwards, the masking filter will check the
+From Percona Proxy 2.3.5 onwards, the masking filter will check the
 definition of user variables and reject statements that define a user
 variable using a statement that refers to columns that should be masked.
 
@@ -61,7 +61,7 @@ Please see the configuration parameter
 [check_user_variables](#check_user_variables)
 for how to change the default behaviour.
 
-From MaxScale 2.3.5 onwards, the masking filter will examine unions
+From Percona Proxy 2.3.5 onwards, the masking filter will examine unions
 and if the second or subsequent SELECT refer to columns that should
 be masked, the statement will be rejected.
 
@@ -69,7 +69,7 @@ Please see the configuration parameter
 [check_unions](#check_unions)
 for how to change the default behaviour.
 
-From MaxScale 2.3.5 onwards, the masking filter will examine subqueries
+From Percona Proxy 2.3.5 onwards, the masking filter will examine subqueries
 and if a subquery refers to columns that should be masked, the statement
 will be rejected.
 
@@ -88,7 +88,7 @@ SELECT revealed_ssn FROM cheat;
 ```
 to get access to the cleartext version of a masked field `ssn`.
 
-From MaxScale 2.3.5 onwards, the masking filter will, if any of the
+From Percona Proxy 2.3.5 onwards, the masking filter will, if any of the
 `prevent_function_usage`, `check_user_variables`, `check_unions` or
 `check_subqueries` parameters is set to true, block statements that
 cannot be fully parsed.
@@ -97,9 +97,9 @@ Please see the configuration parameter
 [require_fully_parsed](#require_fully_parsed)
 for how to change the default behaviour.
 
-From MaxScale 2.3.7 onwards, the masking filter will treat any strings
+From Percona Proxy 2.3.7 onwards, the masking filter will treat any strings
 passed to functions as if they were fields. The reason is that as the
-MaxScale query classifier is not aware of whether `ANSI_QUOTES` is
+Percona Proxy query classifier is not aware of whether `ANSI_QUOTES` is
 enabled or not, it is possible to bypass the masking by turning that
 option on.
 ```
@@ -160,8 +160,8 @@ The masking filter has one mandatory parameter - `rules`.
 
 Specifies the path of the file where the masking rules are stored.
 A relative path is interpreted relative to the _module configuration directory_
-of MariaDB MaxScale. The default module configuration directory is
-_/etc/maxscale.modules.d_.
+of Percona Proxy for MariaDB. The default module configuration directory is
+_/etc/percona-proxy.modules.d_.
 
 ```
 rules=/path/to/rules-file
@@ -569,10 +569,10 @@ The masking filter supports the following module commands.
 Reload the rules from the rules file. The new rules are taken into use
 only if the loading succeeds without any errors.
 ```
-MaxScale> call command masking reload MyMaskingFilter
+Percona Proxy> call command masking reload MyMaskingFilter
 ```
 `MyMaskingFilter` refers to a particular filter section in the
-MariaDB MaxScale configuration file.
+Percona Proxy for MariaDB configuration file.
 
 ## Example
 

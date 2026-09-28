@@ -460,7 +460,7 @@ private:
 };
 
 /**
- * Enable/disable the logging of all SQL statements MaxScale sends to
+ * Enable/disable the logging of all SQL statements Percona Proxy sends to
  * the servers via ODBC connections.
  *
  * @param enable Whether to log the SQL statements as they are executed or prepared

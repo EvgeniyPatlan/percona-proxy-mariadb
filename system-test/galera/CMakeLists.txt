@@ -27,6 +27,6 @@ add_test_executable_ex(NAME mxs1476 SOURCE mxs1476.cc CONFIG mxs1476.cnf VMS gal
 add_test_executable_ex(NAME mxs1751_available_when_donor_crash SOURCE mxs1751_available_when_donor_crash.cc
         CONFIG mxs1751_available_when_donor_crash.cnf VMS galera_backend LABELS galeramon)
 
-# MXS-1585: Crash in MaxScale 2.1.12
+# MXS-1585: Crash in Percona Proxy 2.1.12
 # https://jira.mariadb.org/browse/MXS-1585
 add_test_executable_ex(NAME mxs1585 SOURCE mxs1585.cc CONFIG mxs1585.cnf VMS galera_backend)

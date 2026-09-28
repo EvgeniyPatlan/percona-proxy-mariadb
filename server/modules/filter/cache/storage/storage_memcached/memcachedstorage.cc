@@ -18,8 +18,8 @@
 #include <libmemcached-1.0/strerror.h>
 #include <maxbase/alloc.hh>
 #include <maxbase/worker.hh>
-#include <maxscale/config_common.hh>
-#include <maxscale/threadpool.hh>
+#include <percona-proxy/config_common.hh>
+#include <percona-proxy/threadpool.hh>
 #include "../../cache.hh"
 
 using std::map;
@@ -368,7 +368,7 @@ private:
         mxs::thread_pool().execute([sThis] () {
                 // We check for an arbitrary key, doesn't matter which. In this context
                 // it is a success if we are told it was not found.
-                static const char key[] = "maxscale_memcachedstorage_ping";
+                static const char key[] = "percona_proxy_memcachedstorage_ping";
                 static const size_t key_length = sizeof(key) - 1;
 
                 memcached_return_t rv = memcached_exist(sThis->m_pMemc, key, key_length);

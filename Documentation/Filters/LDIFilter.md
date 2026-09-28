@@ -2,7 +2,7 @@
 
 [TOC]
 
-The `ldi` (LOAD DATA INFILE) filter was introduced in MaxScale 23.08.0 and it
+The `ldi` (LOAD DATA INFILE) filter was introduced in Percona Proxy 23.08.0 and it
 extends the MariaDB `LOAD DATA INFILE` syntax to support loading data from any
 object storage that supports the S3 API. This includes cloud offerings like AWS
 S3 and Google Cloud Storage as well as locally run services like Minio.
@@ -31,15 +31,15 @@ region=us-east-1
 ```
 
 The first step is to move the file to be loaded into the same region that
-MaxScale and the MariaDB servers are in. One factor in the speed of the upload
+Percona Proxy and the MariaDB servers are in. One factor in the speed of the upload
 is the network latency and minimizing it by moving the source and the
 destination closer improves the data loading speed.
 
-The next step is to connect to MaxScale and prepare the session for an upload by
+The next step is to connect to Percona Proxy and prepare the session for an upload by
 providing the service account access and secret keys.
 
 ```sql
-SET @maxscale.ldi.s3_key='<my-access-key>', @maxscale.ldi.s3_secret='<my-secret-key>';
+SET @percona_proxy.ldi.s3_key='<my-access-key>', @percona_proxy.ldi.s3_secret='<my-secret-key>';
 ```
 
 Once the credentials are configured, the data loading can be started:
@@ -51,21 +51,21 @@ LOAD DATA INFILE 'S3://my-bucket/my-data.csv' INTO TABLE t1;
 ### Data Uploads with MariaDB Xpand
 
 For MariaDB Xpand server, the upload is done using `xpand_import`. In this case,
-`xpand_import` must be installed locally on the MaxScale server and must be in
-the executable path of the `maxscale` user.
+`xpand_import` must be installed locally on the Percona Proxy server and must be in
+the executable path of the `percona-proxy` user.
 
-In addition, the `@maxscale.ldi.import_user` and `@maxscale.ldi.import_password`
+In addition, the `@percona_proxy.ldi.import_user` and `@percona_proxy.ldi.import_password`
 variables must be set to the username and password that are used to load data
 into the Xpand cluster.
 
 ```sql
-SET @maxscale.ldi.import_user='<user>', @maxscale.ldi.import_password='<password>';
+SET @percona_proxy.ldi.import_user='<user>', @percona_proxy.ldi.import_password='<password>';
 ```
 
 If a `LOAD DATA LOCAL INFILE` command is executed with an Xpand cluster,
 the data is redirected into `xpand_import` instead of directly to the
 Xpand nodes. This will speed up data imports into Xpand. For this mode,
-only the `@maxscale.ldi.import_user` and `@maxscale.ldi.import_password`
+only the `@percona_proxy.ldi.import_user` and `@percona_proxy.ldi.import_password`
 variables must be set, the other S3 related variables are ignored.
 
 If `xpand_import` is not installed locally, the `LOAD DATA INFILE` and
@@ -99,8 +99,8 @@ does support it, the filter must be configured with `protocol_version=2`.
 
 The S3 access key used to perform all requests to it.
 
-This must be either configured in the MaxScale configuration file or set with
-`SET @maxscale.ldi.s3_key='<key>'` before starting the data load.
+This must be either configured in the Percona Proxy configuration file or set with
+`SET @percona_proxy.ldi.s3_key='<key>'` before starting the data load.
 
 ### `secret`
 
@@ -110,8 +110,8 @@ This must be either configured in the MaxScale configuration file or set with
 
 The S3 secret key used to perform all requests to it.
 
-This must be either configured in the MaxScale configuration file or set with
-`SET @maxscale.ldi.s3_secret='<secret>'` before starting the data load.
+This must be either configured in the Percona Proxy configuration file or set with
+`SET @percona_proxy.ldi.s3_secret='<secret>'` before starting the data load.
 
 ### `region`
 
@@ -122,7 +122,7 @@ This must be either configured in the MaxScale configuration file or set with
 
 The S3 region where the data is located.
 
-The value can be overridden with `SET @maxscale.ldi.s3_region='<region>'` before
+The value can be overridden with `SET @percona_proxy.ldi.s3_region='<region>'` before
 starting the data load.
 
 ### `host`
@@ -136,7 +136,7 @@ The location of the S3 object storage. By default the original AWS S3 host is
 used. The corresponding value for Google Cloud Storage is
 `storage.googleapis.com`.
 
-The value can be overridden with `SET @maxscale.ldi.s3_host='<host>'` before
+The value can be overridden with `SET @percona_proxy.ldi.s3_host='<host>'` before
 starting the data load.
 
 ### `port`
@@ -149,7 +149,7 @@ starting the data load.
 The port on which the S3 object storage is listening. If unset or set to the
 value of 0, the default S3 port is used.
 
-The value can be overridden with `SET @maxscale.ldi.s3_port=<port>` before
+The value can be overridden with `SET @percona_proxy.ldi.s3_port=<port>` before
 starting the data load. Note that unlike the other values, the value for this
 variable must be an SQL integer and not an SQL string.
 
@@ -199,7 +199,7 @@ the cloud.
 The Xpand user that will be used to import the data. This parameter must be
 defined if the data is being uploaded to an Xpand cluster.
 
-The value can be overridden with `SET @maxscale.ldi.import_user='<user>'` before
+The value can be overridden with `SET @percona_proxy.ldi.import_user='<user>'` before
 starting the data load.
 
 ### `import_password`
@@ -210,7 +210,7 @@ starting the data load.
 
 The password for the Xpand user that will be used to import the data. This
 parameter must be defined if the data is being uploaded to an Xpand cluster. The
-password can be encrypted with `maxpasswd` before use.
+password can be encrypted with `percona-proxy-passwd` before use.
 
 The value can be overridden with `SET
-@maxscale.ldi.import_password='<password>'` before starting the data load.
+@percona_proxy.ldi.import_password='<password>'` before starting the data load.

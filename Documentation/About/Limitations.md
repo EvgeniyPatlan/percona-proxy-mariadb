@@ -1,6 +1,6 @@
-# Limitations and Known Issues within MariaDB MaxScale
+# Limitations and Known Issues within Percona Proxy for MariaDB
 
-This document lists known issues and limitations in MariaDB MaxScale and its
+This document lists known issues and limitations in Percona Proxy for MariaDB and its
 plugins. Since limitations are related to specific plugins, this document is
 divided into several sections.
 
@@ -10,27 +10,27 @@ divided into several sections.
 
 In versions 2.1.2 and earlier, the configuration files are limited to 1024
 characters per line. This limitation was increased to 16384 characters in
-MaxScale 2.1.3. MaxScale 2.3.0 increased this limit to 16777216 characters.
+Percona Proxy 2.1.3. Percona Proxy 2.3.0 increased this limit to 16777216 characters.
 
 In versions 2.2.12 and earlier, the section names in the configuration files
 were limited to 49 characters. This limitation was increased to 1023 characters
-in MaxScale 2.2.13.
+in Percona Proxy 2.2.13.
 
-### Multiple MaxScales on same server
+### Multiple PerconaProxies on same server
 
-Starting with MaxScale 2.4.0, on systems with Linux kernels 3.9 or newer due to
-the addition of SO_REUSEPORT support, it is possible for multiple MaxScale
+Starting with Percona Proxy 2.4.0, on systems with Linux kernels 3.9 or newer due to
+the addition of SO_REUSEPORT support, it is possible for multiple Percona Proxy
 instances to listen on the same network port if the directories used by both
 instances are completely separate and there are no conflicts which can cause
 unexpected splitting of connections. This will only happen if users explicitly
-tell MaxScale to ignore the default directories and will not happen in normal
+tell Percona Proxy to ignore the default directories and will not happen in normal
 use.
 
 ## Security limitiations
 
 ### MariaDB 10.2
 
-The parser of MaxScale correctly parses `WITH` statements, but fails to
+The parser of Percona Proxy correctly parses `WITH` statements, but fails to
 collect columns, functions and tables used in the `SELECT` defining the
 `WITH` clause.
 
@@ -39,7 +39,7 @@ where the `SELECT` of the `WITH` clause refers to forbidden columns.
 
 ## MariaDB Default Values
 
-MaxScale assumes that certain configuration parameters in MariaDB are set to
+Percona Proxy assumes that certain configuration parameters in MariaDB are set to
 their default values. These include but are not limited to:
 
 * `autocommit`: Autocommit is enabled for all new connections.
@@ -49,7 +49,7 @@ their default values. These include but are not limited to:
 
 ### Transaction Boundary Detection
 
-If a module in MaxScale requires tracking of transaction boundaries but does not
+If a module in Percona Proxy requires tracking of transaction boundaries but does not
 require query classification, a custom parser is used to detect them. Currently
 the only situation in which this parser is used is when a `readconnroute`
 service uses the `cache` filter.
@@ -62,31 +62,31 @@ by the custom parser and causes the autocommit modification to not be noticed.
 
 ### XA Transactions
 
-MaxScale will treat statements executed after `XA START` and before `XA END` as
+Percona Proxy will treat statements executed after `XA START` and before `XA END` as
 if they were executed in a normal read-write transaction started with `START
 TRANSACTION`. This means that only XA transactions in the ACTIVE state will be
 routed as transactions and all statements after `XA END` are routed normally.
 
 XA transactions and normal transactions are mutually exclusive in MariaDB. This
 means that a `START TRANSACTION` command will fail if the connection already has
-an open XA transaction. MaxScale currently only inspects the SQL and deduces the
+an open XA transaction. Percona Proxy currently only inspects the SQL and deduces the
 transaction state from that. If a transaction fails to start due to an open XA
-transaction, the state in MaxScale and in MariaDB can be different and MaxScale
+transaction, the state in Percona Proxy and in MariaDB can be different and Percona Proxy
 will keep routing statements as if they were inside of a transaction. However,
 as this is an unlikely scenario, usually no action needs to be taken.
 
 ## Prepared Statements
 
-For its proper functioning, MaxScale needs in general to be aware of the
-transaction state and _autocommit_ mode. In order to be that, MaxScale
+For its proper functioning, Percona Proxy needs in general to be aware of the
+transaction state and _autocommit_ mode. In order to be that, Percona Proxy
 parses statements going through it.
 
 However, if a transaction is commited or rolled back, or the autocommit
-mode is changed using a prepared statement, MaxScale will miss that and its
+mode is changed using a prepared statement, Percona Proxy will miss that and its
 internal state will be incorrect, until the transaction state or autocommit
 mode is changed using an explicit statement.
 
-For instance, after the following sequence of commands, MaxScale will still
+For instance, after the following sequence of commands, Percona Proxy will still
 think _autocommit_ is on:
 ```
 set autocommit=1
@@ -94,7 +94,7 @@ PREPARE hide_autocommit FROM "set autocommit=0"
 EXECUTE hide_autocommit
 ```
 
-To ensure that MaxScale functions properly, do not commit or rollback a
+To ensure that Percona Proxy functions properly, do not commit or rollback a
 transaction or change the autocommit mode using a prepared statement.
 
 ## Protocol limitations
@@ -103,19 +103,19 @@ transaction or change the autocommit mode using a prepared statement.
 
 * Compression is not included in the server handshake.
 
-* If a `KILL [CONNECTION] <ID>` statement is executed, MaxScale will intercept
-  it. If the ID matches a MaxScale session ID, it will be closed by sending
+* If a `KILL [CONNECTION] <ID>` statement is executed, Percona Proxy will intercept
+  it. If the ID matches a Percona Proxy session ID, it will be closed by sending
   modified `KILL` commands of the same type to all backend server to which the
   session in question is connected to. This results in behavior that is similar
   to how MariaDB does it. If the `KILL CONNECTION USER <user>` form is given,
   all connections with a matching username will be closed instead.
 
-* MariaDB MaxScale does not support `KILL QUERY ID <query_id>` type
+* Percona Proxy for MariaDB does not support `KILL QUERY ID <query_id>` type
   statements. If a query by a query ID is to be killed, it needs to be done
   directly on the backend databases.
 
 * Any `KILL` commands executed using a prepared statement are ignored by
-  MaxScale. If any are executed, it is highly likely that the wrong connection
+  Percona Proxy. If any are executed, it is highly likely that the wrong connection
   ends up being killed.
 
 * If a `KILL` connection kills a session that is connected to a readwritesplit
@@ -129,10 +129,10 @@ transaction or change the autocommit mode using a prepared statement.
 * The change user command (COM_CHANGE_USER) only works with standard
   authentication.
 
-* If a COM_CHANGE_USER succeeds on MaxScale yet fails on the server the session
+* If a COM_CHANGE_USER succeeds on Percona Proxy yet fails on the server the session
   ends up in an inconsistent state. This can happen if the password of the
-  target user is changed and MaxScale uses old user account data when processing
-  the change user. In such a situation, MaxScale and server will disagree on the
+  target user is changed and Percona Proxy uses old user account data when processing
+  the change user. In such a situation, Percona Proxy and server will disagree on the
   current user. This can affect e.g. reconnections.
 
 ## Authenticator limitations
@@ -143,9 +143,9 @@ transaction or change the autocommit mode using a prepared statement.
 a new authentication protocol which does not support pre-4.1 style passwords.
 
 * When users have different passwords based on the host from which they connect
-MariaDB MaxScale is unable to determine which password it should use to connect
+Percona Proxy for MariaDB is unable to determine which password it should use to connect
 to the backend database. This results in failed connections and unusable
-usernames in MariaDB MaxScale.
+usernames in Percona Proxy for MariaDB.
 
 ## Filter limitations
 
@@ -178,7 +178,7 @@ Refer to individual router documentation for a list of their limitations.
 
 # ETL Limitations
 
-The ETL feature in MaxScale always uses the MariaDB Connector/ODBC driver to
+The ETL feature in Percona Proxy always uses the MariaDB Connector/ODBC driver to
 perform the data loading into MariaDB. The recommended minimum version of the
 connector is 3.1.18. Older versions of the driver suffer from problems that may
 manifest as crashes or memory leaks. The driver must be installed on the system
@@ -214,6 +214,6 @@ to prevent the driver from consuming too much memory.
 
 It is the responsibility of the end-user to correctly configure the ODBC
 driver. Some drivers read the whole resultset into memory by default which will
-result in MaxScale running out of memory
+result in Percona Proxy running out of memory
 
 * ETL operations that operate on more than one catalog are not supported.

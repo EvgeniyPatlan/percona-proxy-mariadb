@@ -52,16 +52,16 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     test.reset_timeout();
-    test.maxscale->connect();
+    test.percona_proxy->connect();
 
     test.tprintf("MXS-2490: PS direct execution");
     test.tprintf("Testing readwritesplit");
-    mxs2490(test, test.maxscale->conn_rwsplit);
+    mxs2490(test, test.percona_proxy->conn_rwsplit);
     test.tprintf("Testing readconnroute");
-    mxs2490(test, test.maxscale->conn_master);
+    mxs2490(test, test.percona_proxy->conn_master);
 
     test.tprintf("MXS-3392: mariadb_stmt_execute_direct sends send an extra error");
-    mxs3392(test, test.maxscale->conn_rwsplit);
+    mxs3392(test, test.percona_proxy->conn_rwsplit);
 
     return test.global_result;
 }

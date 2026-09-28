@@ -14,10 +14,10 @@
 #pragma once
 
 /**
- * @file core/maxscale/config.h - The private config interface
+ * @file core/percona-proxy/config.h - The private config interface
  */
 
-#include <maxscale/config.hh>
+#include <percona-proxy/config.hh>
 
 #include <sstream>
 #include <initializer_list>
@@ -25,8 +25,8 @@
 
 #include <maxbase/jansson.hh>
 #include <maxbase/ini.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/ssl.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/ssl.hh>
 
 #define DEFAULT_QUERY_RETRIES               1       /**< Number of retries for interrupted queries */
 #define DEFAULT_QUERY_RETRY_TIMEOUT         5       /**< Timeout for query retries */
@@ -71,7 +71,7 @@ struct ConfigSection
 {
     enum class SourceType
     {
-        MAIN       = 0, /**< Main config file, may contain [maxscale] */
+        MAIN       = 0, /**< Main config file, may contain [percona-proxy] */
         ADDITIONAL = 1, /**< Additional config files located in the .d-directory */
         RUNTIME    = 2  /**< Runtime generated files. Can contain any section and will overwrite existing. */
     };
@@ -95,27 +95,27 @@ struct ConfigSection
 using ConfigSectionMap = std::map<std::string, ConfigSection>;
 
 /**
- * Calls mxb::ini::parse_config_file_to_map and handles a possible case-insensitively labeled [maxscale]-
+ * Calls mxb::ini::parse_config_file_to_map and handles a possible case-insensitively labeled [percona-proxy]-
  * section.
  *
  * @param config_file Config file to load
- * @return Tuple of actual parse results and a possible warning message regarding the maxscale-section.
+ * @return Tuple of actual parse results and a possible warning message regarding the percona-proxy-section.
  */
 std::tuple<mxb::ini::map_result::ParseResult, std::string>
 parse_mxs_config_file_to_map(const std::string& config_file);
 
 /**
- * Calls mxb::ini::parse_config_text_to_map and handles a possible case-insensitively labeled [maxscale]-
+ * Calls mxb::ini::parse_config_text_to_map and handles a possible case-insensitively labeled [percona-proxy]-
  * section.
  *
  * @param config_file Config file to load
- * @return Tuple of actual parse results and a possible warning message regarding the maxscale-section.
+ * @return Tuple of actual parse results and a possible warning message regarding the percona-proxy-section.
  */
 std::tuple<mxb::ini::map_result::ParseResult, std::string>
 parse_mxs_config_text_to_map(const std::string& config_text);
 
 /**
- * @brief Load the specified configuration file for MaxScale
+ * @brief Load the specified configuration file for Percona Proxy
  *
  * This function loads and parses the configuration file, checks for duplicate sections,
  * validates the module parameters but does not create any object. Also loads
@@ -141,7 +141,7 @@ bool config_load(const std::string& main_cfg_file,
 bool config_process(ConfigSectionMap& input);
 
 /**
- * @brief Load the specified configuration file for MaxScale
+ * @brief Load the specified configuration file for Percona Proxy
  *
  * This function loads and parses the configuration file, checks for duplicate sections,
  * validates the module parameters and adds the parameter values to the context. Also loads
@@ -158,7 +158,7 @@ bool config_load_and_process(const std::string& main_cfg_file,
                              ConfigSectionMap& output);
 
 /**
- * Apply the [maxscale]-section from the main configuration file.
+ * Apply the [percona-proxy]-section from the main configuration file.
  *
  * @param config Parsed main config file, after variable substitution.
  * @return True on success.

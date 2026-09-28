@@ -36,13 +36,13 @@ string get_my_ip(TestConnections& test, const string& remote_ip);
 void mxs5048_hex_prefix_wildcard(TestConnections& test, const char* my_ip)
 {
     test.tprintf("Add '%s beefburger' to /etc/hosts", my_ip);
-    test.maxscale->ssh_node_f(true, "echo '%s beefburger' >> /etc/hosts", my_ip);
+    test.percona_proxy->ssh_node_f(true, "echo '%s beefburger' >> /etc/hosts", my_ip);
 
-    std::string mxs_ip = test.maxscale->ip4();
-    auto c = test.maxscale->rwsplit();
+    std::string mxs_ip = test.percona_proxy->ip4();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
 
-    // Create a user for the test that on the MaxScale server requires a hostname wildcard to match but on the
+    // Create a user for the test that on the Percona Proxy server requires a hostname wildcard to match but on the
     // MariaDB server it will match an exact IP address.
     c.query("CREATE USER 'bob'@'beef%' IDENTIFIED BY 'bob'");
     c.query("GRANT ALL ON *.* TO 'bob'@'beef%'");
@@ -50,8 +50,8 @@ void mxs5048_hex_prefix_wildcard(TestConnections& test, const char* my_ip)
     c.query("GRANT ALL ON *.* TO 'bob'@'" + mxs_ip + "'");
     test.repl->sync_slaves();
 
-    // The user should be allowed access through MaxScale
-    auto b = test.maxscale->rwsplit();
+    // The user should be allowed access through Percona Proxy
+    auto b = test.percona_proxy->rwsplit();
     b.set_credentials("bob", "bob");
     test.expect(b.connect(), "Connection should work: %s", b.error());
     test.expect(b.query("SELECT 1"), "Query should work: %s", b.error());
@@ -59,7 +59,7 @@ void mxs5048_hex_prefix_wildcard(TestConnections& test, const char* my_ip)
     c.query("DROP USER 'bob'@'beef%'");
     c.query("DROP USER 'bob'@'" + mxs_ip + "'");
 
-    test.maxscale->ssh_node_f(true, "sed -i '/beefburger/ d' /etc/hosts");
+    test.percona_proxy->ssh_node_f(true, "sed -i '/beefburger/ d' /etc/hosts");
 }
 
 int main(int argc, char* argv[])
@@ -72,7 +72,7 @@ namespace
 {
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     string my_ip = get_my_ip(test, mxs.ip4());
     string original_ip = my_ip;
@@ -114,7 +114,7 @@ void test_main(TestConnections& test)
                     }
                     else if (mxs_login)
                     {
-                        test.add_failure("%s logged in to db %s on MaxScale yet query failed.",
+                        test.add_failure("%s logged in to db %s on Percona Proxy yet query failed.",
                                          un, db.c_str());
                     }
                     else
@@ -124,7 +124,7 @@ void test_main(TestConnections& test)
                 }
                 else
                 {
-                    // If expecting failure, then even managing to log in to MaxScale is too much.
+                    // If expecting failure, then even managing to log in to Percona Proxy is too much.
                     if (!mxs_login)
                     {
                         test.tprintf("%s failed to log in to db %s, as expected.", un, db.c_str());
@@ -155,7 +155,7 @@ void test_main(TestConnections& test)
                 test_login(dbname, true);
 
                 admin_conn->cmd_f("REVOKE select on %s.* FROM %s;", dbname, userhostc);
-                // Refresh privs on MaxScale, then try to log in as user1 again. It should fail.
+                // Refresh privs on Percona Proxy, then try to log in as user1 again. It should fail.
                 reload_users();
                 test_login(dbname, false);
             }
@@ -213,7 +213,7 @@ void test_main(TestConnections& test)
                 auto userhost2 = userhost2_str.c_str();
                 test.tprintf("Testing host pattern with netmask by logging in to user account %s.", userhost2);
                 admin_conn->cmd_f("CREATE USER %s identified by '%s';", userhost2, pw);
-                test.check_maxctrl("reload service RW-Split-Router");
+                test.check_percona_proxyctl("reload service RW-Split-Router");
                 auto conn = mxs.try_open_rwsplit_connection("netmask", pw, "");
                 test.expect(conn->is_open(), "Connection failed: %s", conn->error());
                 admin_conn->cmd_f("DROP USER %s;", userhost2);

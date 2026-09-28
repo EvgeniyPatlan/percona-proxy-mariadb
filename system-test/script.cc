@@ -42,7 +42,7 @@
  *  @endverbatim
  * - make script non-executable
  * - block and unblock node1
- * - check error log for 'The file cannot be executed: /home/$maxscales->access_user[0]/script.sh' error
+ * - check error log for 'The file cannot be executed: /home/$percona_proxies->access_user[0]/script.sh' error
  * - check if Maxscale still alive
  */
 
@@ -58,10 +58,10 @@ const int script_delay_ticks = 2;
 void test_script_monitor(TestConnections& test, MariaDBCluster* nodes, const char* expected_filename)
 {
     test.reset_timeout();
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto homedir = mxs.access_homedir();
     mxs.ssh_node_f(true,
-                   "cd %s; truncate -s 0 script_output; chown maxscale:maxscale script_output; "
+                   "cd %s; truncate -s 0 script_output; chown percona-proxy:percona-proxy script_output; "
                    "chmod a+rw script_output",
                    homedir);
 
@@ -128,7 +128,7 @@ void test_main(TestConnections& test);
 int main(int argc, char* argv[])
 {
     TestConnections test;
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return test.run_test(argc, argv, test_main);
 }
 
@@ -157,7 +157,7 @@ void test_main(TestConnections& test)
     auto gal2 = gal2s.c_str();
     auto gal3 = gal3s.c_str();
 
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto mxs_homedir = mxs.access_homedir();
     auto sudo = mxs.access_sudo();
 
@@ -166,7 +166,7 @@ void test_main(TestConnections& test)
                    "%s rm -rf %s/script; mkdir %s/script; "
                    "echo \"echo \\$* >> %s/script_output\" > %s/script/script.sh; "
                    "chmod a+x %s/script/script.sh; chmod a+x %s; "
-                   "%s chown maxscale:maxscale %s/script -R",
+                   "%s chown percona-proxy:percona-proxy %s/script -R",
                    sudo, mxs_homedir, mxs_homedir,
                    mxs_homedir, mxs_homedir,
                    mxs_homedir, mxs_homedir,
@@ -226,5 +226,5 @@ void test_main(TestConnections& test)
     }
 
     test.log_includes("Cannot execute file");
-    test.check_maxscale_alive();
+    test.check_percona_proxy_alive();
 }

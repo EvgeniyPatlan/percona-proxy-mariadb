@@ -4,14 +4,14 @@
 
 ## Overview
 
-The Galera Monitor is a monitoring module for MaxScale that monitors a Galera
+The Galera Monitor is a monitoring module for Percona Proxy that monitors a Galera
 cluster. It detects whether nodes are a part of the cluster and if they are in
 sync with the rest of the cluster. It can also assign primary and replica roles
-inside MaxScale, allowing Galera clusters to be used with modules designed for
+inside Percona Proxy, allowing Galera clusters to be used with modules designed for
 traditional primary-replica clusters.
 
 By default, the Galera Monitor will choose the node with the lowest
-`wsrep_local_index` value as the primary. This will mean that two MaxScales
+`wsrep_local_index` value as the primary. This will mean that two PerconaProxies
 running on different servers will choose the same server as the primary.
 
 ### WSREP Variables and Their Effects
@@ -38,7 +38,7 @@ will be in the `Running` state.
 
 ### Galera clusters and replicas replicating from it
 
-MaxScale 2.4.0 added support for replicas replicating off of Galera nodes. If a
+Percona Proxy 2.4.0 added support for replicas replicating off of Galera nodes. If a
 non-Galera server monitored by galeramon is replicating from a Galera node also
 monitored by galeramon, it will be assigned the `Slave, Running` status as long
 as the replication works. This allows read-scaleout with Galera servers without
@@ -48,18 +48,18 @@ increasing the size of the Galera cluster.
 
 The Galera Monitor requires the `REPLICA MONITOR` grant to work:
 ```
-CREATE USER 'maxscale'@'maxscalehost' IDENTIFIED BY 'maxscale-password';
-GRANT REPLICA MONITOR ON *.* TO 'maxscale-user'@'maxscalehost';
+CREATE USER 'percona-proxy'@'percona_proxy_host' IDENTIFIED BY 'percona-proxy-password';
+GRANT REPLICA MONITOR ON *.* TO 'percona-proxy-user'@'percona_proxy_host';
 ```
 
 With MariaDB Server 10.4 and earlier, `REPLICATION CLIENT` is required instead.
 ```
-GRANT REPLICATION CLIENT ON *.* TO 'maxscale-user'@'maxscalehost';
+GRANT REPLICATION CLIENT ON *.* TO 'percona-proxy-user'@'percona_proxy_host';
 ```
 
 If `set_donor_nodes` is configured, the `SUPER` grant is required:
 ```
-GRANT SUPER ON *.* TO 'maxscale'@'maxscalehost';
+GRANT SUPER ON *.* TO 'percona-proxy'@'percona_proxy_host';
 ```
 
 ## Configuration
@@ -93,13 +93,13 @@ These are optional parameters specific to the Galera Monitor.
 - **Default**: false
 - **Dynamic**: Yes
 
-If a node marked as primary inside MaxScale happens to fail and the primary
-status is assigned to another node MaxScale will normally return the primary
+If a node marked as primary inside Percona Proxy happens to fail and the primary
+status is assigned to another node Percona Proxy will normally return the primary
 status to the original node after it comes back up. With this option enabled, if
 the primary status is assigned to a new node it will not be reassigned to the
 original node for as long as the new primary node is running. In this case the
 `Master Stickiness` status bit is set which will be visible in the
-`maxctrl list servers` output.
+`percona-proxyctl list servers` output.
 
 ### `available_when_donor`
 
@@ -149,12 +149,12 @@ allow for controlled node replacement.
 - **Dynamic**: Yes
 
 This option controls whether the write primary Galera node requires a
-_wsrep_local_index_ value of 0. This option was introduced in MaxScale 2.1.0 and
+_wsrep_local_index_ value of 0. This option was introduced in Percona Proxy 2.1.0 and
 it is disabled by default in versions 2.1.5 and newer. In versions 2.1.4 and
 older, the option was enabled by default.
 
 A Galera cluster will always have a node which has a _wsrep_local_index_ value
-of 0. Based on this information, multiple MaxScale instances can always pick the
+of 0. Based on this information, multiple Percona Proxy instances can always pick the
 same node for writes.
 
 If the `root_node_as_master` option is disabled for galeramon, the node with the
@@ -163,12 +163,12 @@ node with a a _wsrep_local_index_ value of 0 can be chosen as the primary.
 
 This parameter can work with `disable_master_failback` but using them together
 is not advisable: the intention of `root_node_as_master` is to make sure that
-all MaxScale instances that are configured to use the same Galera cluster will
+all Percona Proxy instances that are configured to use the same Galera cluster will
 send writes to the same node. If `disable_master_failback` is enabled, this is
 no longer true if the Galera cluster reorganizes itself in a way that a
 different node gets the node index 0, writes would still be going to the old
-node that previously had the node index 0. A restart of one of the MaxScales or
-a new MaxScale joining the cluster will cause writes to be sent to the wrong
+node that previously had the node index 0. A restart of one of the PerconaProxies or
+a new Percona Proxy joining the cluster will cause writes to be sent to the wrong
 node, thus resulting in an increasing the rate of deadlock errors and
 sub-optimal performance.
 
@@ -196,7 +196,7 @@ SET GLOBAL wsrep_sst_donor = "galera001,galera000"
 **Note**:
 in order to set the global variable _wsrep_sst_donor_, proper privileges are
 required for the monitor user that connects to cluster nodes.
-This option is disabled by default and was introduced in MaxScale 2.1.0.
+This option is disabled by default and was introduced in Percona Proxy 2.1.0.
 
 ## Interaction with Server Priorities
 
@@ -205,7 +205,7 @@ If the `use_priority` option is set and a server is configured with the
 primary node is chosen. This requires the `disable_master_role_setting` to be
 undefined or disabled. The server with the lowest positive value of _priority_
 will be chosen as the primary node when a replacement Galera node is promoted to
-a primary server inside MaxScale. If all candidate servers have the same
+a primary server inside Percona Proxy. If all candidate servers have the same
 priority, the order of the servers in the `servers` parameter dictates which is
 chosen as the primary.
 
@@ -251,7 +251,7 @@ will never be the primary. Nodes without _priority_ parameter are considered as
 having a priority of 0 and will be used only if all nodes with a positive
 _priority_ value are not available.
 
-With priority ranks you can control the order in which MaxScale chooses the
+With priority ranks you can control the order in which Percona Proxy chooses the
 primary node. This will allow for a controlled failure and replacement of nodes.
 
 ### Switchover
@@ -259,13 +259,13 @@ primary node. This will allow for a controlled failure and replacement of nodes.
 Priorities can be used to force a runtime change of the primary server in a
 Galera Cluster. For example, if *server1* has a priority of 1 and *server2*
 a priority of 2 (with *server1* being primary), the roles can be reversed with
-MaxCtrl:
+Percona Proxyctl:
 ```
-maxctrl alter server server1 priority=2
-maxctrl alter server server2 priority=1
+percona-proxyctl alter server server1 priority=2
+percona-proxyctl alter server server2 priority=1
 ```
 
-This does not affect the Galera Cluster itself, just the roles MaxScale assigns
-to the servers. If multiple MaxScales monitor the same Galera Cluster without
+This does not affect the Galera Cluster itself, just the roles Percona Proxy assigns
+to the servers. If multiple PerconaProxies monitor the same Galera Cluster without
 [configuration synchronization](../Getting-Started/Configuration-Guide.md#configuration-synchronization),
-the commands should be run on all MaxScales.
+the commands should be run on all PerconaProxies.

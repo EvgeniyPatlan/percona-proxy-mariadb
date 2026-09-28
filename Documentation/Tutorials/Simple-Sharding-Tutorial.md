@@ -3,35 +3,35 @@
 Sharding is the method of splitting a single logical database server into
 separate physical databases. This tutorial describes a very simple way of
 sharding. Each schema is located on a different database server and MariaDB
-MaxScale's schemarouter module is used to combine them into a single logical
+Percona Proxy's schemarouter module is used to combine them into a single logical
 database server.
 
 ## Environment
 
-This tutorial was written for Ubuntu 22.04, MaxScale 23.08 and
+This tutorial was written for Ubuntu 22.04, Percona Proxy 23.08 and
 [MariaDB 10.11](https://mariadb.com/kb/en/what-is-mariadb-1011/). In addition to
-the MaxScale server, you'll need two MariaDB servers which will be used for the
+the Percona Proxy server, you'll need two MariaDB servers which will be used for the
 sharding. The installation of MariaDB is not covered by this tutorial.
 
-## Installing MaxScale
+## Installing Percona Proxy
 
-The easiest way to install MaxScale is to use the MariaDB repositories.
+The easiest way to install Percona Proxy is to use the MariaDB repositories.
 
 ```
-# Install MaxScale
+# Install Percona Proxy
 apt update
 apt -y install sudo curl
 curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash
-apt -y install maxscale
+apt -y install percona-proxy
 ```
 
 ## Creating Users
 
 This tutorial uses a broader set of grants than is required for the sake of
 brevity and backwards compatibility. For the minimal set of grants, refer to the
-[MaxScale Configuration Guide](../Getting-Started/Configuration-Guide.md).
+[Percona Proxy Configuration Guide](../Getting-Started/Configuration-Guide.md).
 
-All MaxScale configurations require at least two accounts: one for reading
+All Percona Proxy configurations require at least two accounts: one for reading
 authentication data and another for monitoring the state of the
 database. Services will use the first one and monitors will use the second
 one. In addition to this, we want to have a separate account that our
@@ -39,18 +39,18 @@ application will use.
 
 ```
 -- Create the user for the service
--- https://mariadb.com/kb/en/mariadb-maxscale-2308-authentication-modules/#required-grants
+-- https://mariadb.com/kb/en/mariadb-percona-proxy-2308-authentication-modules/#required-grants
 CREATE USER 'service_user'@'%' IDENTIFIED BY 'secret';
 GRANT SELECT ON mysql.* TO 'service_user'@'%';
 GRANT SHOW DATABASES ON *.* TO 'service_user'@'%';
 
 -- Create the user for the monitor
--- https://mariadb.com/kb/en/mariadb-maxscale-2308-galera-monitor/#required-grants
+-- https://mariadb.com/kb/en/mariadb-percona-proxy-2308-galera-monitor/#required-grants
 CREATE USER 'monitor_user'@'%' IDENTIFIED BY 'secret';
 GRANT REPLICATION CLIENT ON *.* TO 'monitor_user'@'%';
 
 -- Create the application user
--- https://mariadb.com/kb/en/mariadb-maxscale-2308-authentication-modules/#limitations-and-troubleshooting
+-- https://mariadb.com/kb/en/mariadb-percona-proxy-2308-authentication-modules/#limitations-and-troubleshooting
 CREATE USER app_user@'%' IDENTIFIED BY 'secret';
 GRANT SELECT, INSERT, UPDATE, DELETE ON *.* TO app_user@'%';
 ```
@@ -89,9 +89,9 @@ CREATE TABLE IF NOT EXISTS shared_info.account_types(account_type INT, type_name
 INSERT INTO shared_info.account_types VALUES (1, 'admin'), (2, 'user');
 ```
 
-## Configuring MaxScale
+## Configuring Percona Proxy
 
-The MaxScale configuration is stored in `/etc/maxscale.cnf`.
+The Percona Proxy configuration is stored in `/etc/percona-proxy.cnf`.
 
 First, we configure two servers we will use to shard our database. The `db-01`
 server has the `customer_01` schema and the `db-02` server has the `customer_02`
@@ -137,7 +137,7 @@ port=4000
 ```
 
 The final step is to configure a monitor which will monitor the state of the
-servers. The monitor will notify MariaDB MaxScale if the servers are down. We
+servers. The monitor will notify Percona Proxy for MariaDB if the servers are down. We
 add the two servers to the monitor and use the `monitor_user` credentials. For
 the sharding use-case, the `galeramon` module is suitable even if we're not
 using a Galera cluster. The `schemarouter` is only interested in whether the
@@ -153,7 +153,7 @@ password=secret
 ```
 
 After this we have a fully working configuration and the contents of
-`/etc/maxscale.cnf` should look like this.
+`/etc/percona-proxy.cnf` should look like this.
 
 ```
 [db-01]
@@ -188,17 +188,17 @@ user=monitor_user
 password=secret
 ```
 
-Then you're ready to start MaxScale.
+Then you're ready to start Percona Proxy.
 
 ```
-systemctl start maxscale.service
+systemctl start percona-proxy.service
 ```
 
 ## Testing the Sharding
 
-MariaDB MaxScale is now ready to start accepting client connections and routing
+Percona Proxy for MariaDB is now ready to start accepting client connections and routing
 them. Queries are routed to the right servers based on the database they target
-and switching between the shards is seamless since MariaDB MaxScale keeps the
+and switching between the shards is seamless since Percona Proxy for MariaDB keeps the
 session state intact between servers.
 
 To test, we query the schema that's located on the local shard and join it to

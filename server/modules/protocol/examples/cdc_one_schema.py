@@ -40,7 +40,7 @@ feed it into the script if you cannot execute the SQL command directly:
 
   # On the database server
   mysql -ss -u <user> -p -h <host> -P <port> -e 'DESCRIBE `<database>`.`<table>`' > schema.tsv
-  # On the MaxScale server
+  # On the Percona Proxy server
   ./cdc_one_schema.py <database> <table> < schema.tsv
 
 """, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -84,7 +84,7 @@ def parse_field(row):
     return res
 
 try:
-    schema = dict(namespace="MaxScaleChangeDataSchema.avro", type="record", name="ChangeRecord", fields=[])
+    schema = dict(namespace="PerconaProxyChangeDataSchema.avro", type="record", name="ChangeRecord", fields=[])
     for line in sys.stdin:
         schema["fields"].append(parse_field(line.split('\t')))
 

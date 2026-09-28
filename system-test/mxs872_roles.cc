@@ -13,7 +13,7 @@
  */
 
 /**
- * MXS-872: MaxScale doesn't understand roles
+ * MXS-872: Percona Proxy doesn't understand roles
  *
  * https://jira.mariadb.org/browse/MXS-872
  */
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 
     test.tprintf("Connect with a user that has a default role");
     MYSQL* conn =
-        open_conn_db(test.maxscale->rwsplit_port, test.maxscale->ip4(), "my_db", "test", "test");
+        open_conn_db(test.percona_proxy->rwsplit_port, test.percona_proxy->ip4(), "my_db", "test", "test");
     test.expect(mysql_errno(conn) == 0, "Connection failed: %s", mysql_error(conn));
     char value[100] {};
     find_field(conn, "SELECT CURRENT_ROLE() AS role", "role", value);
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     mysql_close(conn);
 
     test.tprintf("Connect with a user that doesn't have a default role, expect failure");
-    conn = open_conn_db(test.maxscale->rwsplit_port, test.maxscale->ip4(), "my_db", "test2", "test2");
+    conn = open_conn_db(test.percona_proxy->rwsplit_port, test.percona_proxy->ip4(), "my_db", "test2", "test2");
     test.expect(mysql_errno(conn) != 0, "Connection should fail");
     mysql_close(conn);
 

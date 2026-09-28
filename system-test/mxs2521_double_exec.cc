@@ -96,7 +96,7 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     test.repl->connect();
-    test.maxscale->connect();
+    test.percona_proxy->connect();
 
     // Prepare a table
     test.try_query(test.repl->nodes[0], "DROP TABLE IF EXISTS double_execute;");
@@ -108,7 +108,7 @@ int main(int argc, char** argv)
     do_test(test, test.repl->nodes[0], true);
 
     test.tprintf("Running test through readwritesplit");
-    do_test(test, test.maxscale->conn_rwsplit, false);
+    do_test(test, test.percona_proxy->conn_rwsplit, false);
 
     test.try_query(test.repl->nodes[0], "DROP TABLE IF EXISTS double_execute;");
 

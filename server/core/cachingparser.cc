@@ -11,17 +11,17 @@
  * Public License.
  */
 
-#include <maxscale/cachingparser.hh>
+#include <percona-proxy/cachingparser.hh>
 #include <atomic>
 #include <map>
 #include <random>
 #include <maxbase/checksum.hh>
 #include <maxsimd/canonical.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/routingworker.hh>
 
 namespace
 {
@@ -212,7 +212,7 @@ public:
         mxb_assert(peek(canonical_stmt) == nullptr);
 
         // 0xffffff is the maximum packet size, 4 is for packet header and 1 is for command byte. These are
-        // MariaDB/MySQL protocol specific values that are also defined in <maxscale/protocol/mysql.h> but
+        // MariaDB/MySQL protocol specific values that are also defined in <percona-proxy/protocol/mysql.h> but
         // should not be exposed to the core.
         constexpr int64_t max_entry_size = 0xffffff - 5;
 
@@ -616,7 +616,7 @@ private:
 };
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 CachingParser::CachingParser(std::unique_ptr<Parser> sParser)

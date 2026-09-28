@@ -21,23 +21,23 @@
 
 void run_test(TestConnections& test, const char* query)
 {
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
     std::thread thr([&]() {
                         sleep(5);
                         test.tprintf("block node 0");
                         test.repl->block_node(0);
                         test.tprintf("wait for monitor");
-                        test.maxscale->wait_for_monitor(2);
+                        test.percona_proxy->wait_for_monitor(2);
                         test.tprintf("unblock node 0");
                         test.repl->unblock_node(0);
                     });
 
     test.reset_timeout();
     test.tprintf("%s", query);
-    test.try_query(test.maxscale->conn_rwsplit, "%s", query);
+    test.try_query(test.percona_proxy->conn_rwsplit, "%s", query);
 
     test.tprintf("disconnect");
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
     test.tprintf("join");
     thr.join();
 }

@@ -14,7 +14,7 @@
 #pragma once
 
 #include "storage_memcached.hh"
-#include <maxscale/config2.hh>
+#include <percona-proxy/config2.hh>
 
 class MemcachedConfig : public mxs::config::Configuration
 {

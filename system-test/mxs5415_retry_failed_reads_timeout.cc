@@ -15,7 +15,7 @@
 
 void test_main(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
     auto old_max_connections = "SET GLOBAL max_connections=" + c.field("SELECT @@global.max_connections");
     c.disconnect();
@@ -26,7 +26,7 @@ void test_main(TestConnections& test)
 
     for (int i = 0; i < 20; i++)
     {
-        conns.emplace_back(test.maxscale->rwsplit());
+        conns.emplace_back(test.percona_proxy->rwsplit());
 
         if (!conns.back().connect() || !conns.back().query("SELECT 1"))
         {
@@ -35,7 +35,7 @@ void test_main(TestConnections& test)
     }
 
     test.log_printf("Opening connection");
-    test.expect(c.connect(), "Connection to MaxScale should work: %s", c.error());
+    test.expect(c.connect(), "Connection to Percona Proxy should work: %s", c.error());
     test.expect(!c.query("SELECT 1"), "Query should fail due to connection limit");
 
     conns.clear();

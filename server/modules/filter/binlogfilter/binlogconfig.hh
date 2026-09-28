@@ -13,9 +13,9 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/workerlocal.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/workerlocal.hh>
 
 static constexpr const char REWRITE_SRC[] = "rewrite_src";
 static constexpr const char REWRITE_DEST[] = "rewrite_dest";

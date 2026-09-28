@@ -11,12 +11,12 @@
  * Public License.
  */
 
-#include <maxscale/base_user_manager.hh>
+#include <percona-proxy/base_user_manager.hh>
 #include <maxbase/format.hh>
 #include <maxbase/stopwatch.hh>
 #include <maxbase/threadpool.hh>
-#include <maxscale/config.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/service.hh>
 
 namespace
 {
@@ -34,7 +34,7 @@ const int throttling_start_loads = 5;
 const int user_load_fail_limit = 10;
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 BaseUserManager::BaseUserManager()
     : m_last_update{time(nullptr)}
@@ -227,7 +227,7 @@ void BaseUserManager::updater_thread_function()
         /**
          * Throttling kicks in if users have been loaded a few times, or if loading has failed repeatedly
          * often enough. This allows a few quick user account updates at the beginning. The quick updates
-         * are useful for test situations, where users are often created just after MaxScale has started. */
+         * are useful for test situations, where users are often created just after Percona Proxy has started. */
         throttling = (m_successful_loads > throttling_start_loads
             || m_consecutive_failed_loads > user_load_fail_limit)
             && throttling_enabled;
@@ -246,7 +246,7 @@ void BaseUserManager::updater_thread_function()
     // Possible race here: If throttling=false and m_keep_running=false, m_can_update may be momentarily
     // "true" even when thread is exiting the loop. If a client is logging at that exact moment, the session
     // may be put on standby without ever waking up. This is not an issue if the thread stops only when
-    // MaxScale is shutting down.
+    // Percona Proxy is shutting down.
     m_can_update.store(false, release);
 }
 

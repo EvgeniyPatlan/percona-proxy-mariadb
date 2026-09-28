@@ -18,10 +18,10 @@
 
 #include <maxbase/format.hh>
 #include <maxbase/json.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/threadpool.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/threadpool.hh>
 
 #include "internal/jwt.hh"
 #include "internal/servermanager.hh"
@@ -466,7 +466,7 @@ HttpResponse query(const HttpRequest& request)
         return HttpResponse(MHD_HTTP_BAD_REQUEST, mxs_json_error("No `sql` defined."));
     }
 
-    // Optional row limit. 1000 is default. Can crash if client asks for more data than MaxScale has memory
+    // Optional row limit. 1000 is default. Can crash if client asks for more data than Percona Proxy has memory
     // for.
     int64_t max_rows = 1000;
     json.try_get_int("max_rows", &max_rows);
@@ -723,7 +723,7 @@ HttpResponse run_etl_task(const HttpRequest& request)
         if (!ServerManager::find_by_unique_name(cnf->target))
         {
             return create_error("The target '" + cnf->target + "' of connection '"
-                                + target + "' is not a server in MaxScale.");
+                                + target + "' is not a server in Percona Proxy.");
         }
 
         dest_cc = *cnf;

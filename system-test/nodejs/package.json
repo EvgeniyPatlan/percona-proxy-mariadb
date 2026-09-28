@@ -1,7 +1,7 @@
 {
   "name": "test-mariadb-connector-nodejs",
   "version": "1.0.0",
-  "description": "MaxScale tests that use the MariaDB Node.js connector",
+  "description": "Percona Proxy tests that use the MariaDB Node.js connector",
   "main": "main.js",
   "scripts": {
     "test": "node mxs5527.js"

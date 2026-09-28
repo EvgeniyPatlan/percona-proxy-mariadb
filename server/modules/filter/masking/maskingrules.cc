@@ -21,10 +21,10 @@
 #include <maxbase/assert.hh>
 #include <maxbase/jansson.hh>
 #include <maxbase/string.hh>
-#include <maxscale/pcre2.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/protocol/mariadb/maxscale.hh>
+#include <percona-proxy/pcre2.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/protocol/mariadb/percona-proxy.hh>
 
 using std::unique_ptr;
 using std::string;

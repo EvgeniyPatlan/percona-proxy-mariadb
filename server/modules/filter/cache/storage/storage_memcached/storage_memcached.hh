@@ -13,5 +13,5 @@
  */
 
 #define MXB_MODULE_NAME "storage_memcached"
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include "../../cache_storage_api.hh"

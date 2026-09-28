@@ -92,9 +92,9 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    test.maxscale->connect();
-    test.expect(test_long_data(test.maxscale->conn_rwsplit, 123456), "Test should work");
-    test.maxscale->disconnect();
+    test.percona_proxy->connect();
+    test.expect(test_long_data(test.percona_proxy->conn_rwsplit, 123456), "Test should work");
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

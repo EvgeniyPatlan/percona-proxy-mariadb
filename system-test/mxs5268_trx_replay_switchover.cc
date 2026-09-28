@@ -22,7 +22,7 @@ std::atomic<bool> running {true};
 
 void query_thread(TestConnections& test, int my_id)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.set_credentials("mxs5268", "mxs5268");
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     uint32_t thread_id = c.thread_id();
@@ -78,8 +78,8 @@ void wait_for_progress(TestConnections& test, const std::vector<uint64_t>& old)
 void print_status(TestConnections& test, const std::string& current)
 {
     std::string symbols;
-    test.maxscale->wait_for_monitor();
-    auto servers = test.maxscale->get_servers();
+    test.percona_proxy->wait_for_monitor();
+    auto servers = test.percona_proxy->get_servers();
 
     for (size_t i = 0; i < servers.size(); i++)
     {
@@ -129,7 +129,7 @@ void test_main(TestConnections& test)
             {
                 print_status(test, current);
                 auto cmd = "--timeout=60s call command mariadbmon switchover MariaDB-Monitor " + current;
-                test.check_maxctrl(cmd);
+                test.check_percona_proxyctl(cmd);
             }
 
             previous = current;

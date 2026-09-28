@@ -22,14 +22,14 @@ using RestApi = std::unique_ptr<MaxRest>;
 
 RestApi create_api1(TestConnections& test)
 {
-    auto rval = std::make_unique<MaxRest>(&test, test.maxscale);
+    auto rval = std::make_unique<MaxRest>(&test, test.percona_proxy);
     rval->fail_on_error(false);
     return rval;
 }
 
 RestApi create_api2(TestConnections& test)
 {
-    auto rval = std::make_unique<MaxRest>(&test, test.maxscale2);
+    auto rval = std::make_unique<MaxRest>(&test, test.percona_proxy2);
     rval->fail_on_error(false);
     return rval;
 }
@@ -55,5 +55,5 @@ static inline mxb::Json get(const RestApi& api, const std::string& endpoint, con
 
 static inline int64_t get_version(const RestApi& api)
 {
-    return get(api, "maxscale", "/data/attributes/config_sync/version").get_int();
+    return get(api, "percona-proxy", "/data/attributes/config_sync/version").get_int();
 }

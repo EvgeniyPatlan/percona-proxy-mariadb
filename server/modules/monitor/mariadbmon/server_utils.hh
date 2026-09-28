@@ -19,7 +19,7 @@
 #include <vector>
 #include <maxbase/host.hh>
 #include <maxbase/stopwatch.hh>
-#include <maxscale/server.hh>
+#include <percona-proxy/server.hh>
 
 class MariaDBServer;
 
@@ -334,7 +334,7 @@ public:
         UNKNOWN,        /* Unknown/error */
         FREE,           /* Lock is unclaimed */
         OWNED_SELF,     /* Lock is claimed by current monitor */
-        OWNED_OTHER,    /* Lock is claimed by other monitor/MaxScale */
+        OWNED_OTHER,    /* Lock is claimed by other monitor/Percona Proxy */
     };
 
     void    set_status(Status new_status, int64_t owner_id = CONN_ID_UNKNOWN);

@@ -33,7 +33,7 @@ namespace
 // Options given when running ssh from command line. The first line enables connection multiplexing,
 // allowing repeated ssh-invocations to use an existing connection.
 // Second line disables host ip and key checks.
-const char ssh_opts[] = "-o ControlMaster=auto -o ControlPath=./maxscale-test-%r@%h:%p -o ControlPersist=yes "
+const char ssh_opts[] = "-o ControlMaster=auto -o ControlPath=./percona-proxy-test-%r@%h:%p -o ControlPersist=yes "
                         "-o CheckHostIP=no -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "
                         "-o LogLevel=quiet ";
 

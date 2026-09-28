@@ -13,7 +13,7 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include "cachesimple.hh"
 
 class CacheST : public CacheSimple

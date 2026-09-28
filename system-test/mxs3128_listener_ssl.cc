@@ -24,7 +24,7 @@
 int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     auto conn = mxs.rwsplit();
     conn.ssl(false);
@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     std::string ssl_key = mxs.cert_key_path();
     std::string ssl_cert = mxs.cert_path();
     std::string ssl_ca = mxs.ca_cert_path();
-    test.check_maxctrl("alter listener RW-Split-Listener "
+    test.check_percona_proxyctl("alter listener RW-Split-Listener "
                        "ssl true ssl_key " + ssl_key + " ssl_cert " + ssl_cert + " ssl_ca_cert " + ssl_ca);
 
     test.expect(!conn.connect(), "Connection without SSL should fail");
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     test.expect(conn.connect(), "Connection with SSL should work: %s", conn.error());
     test.expect(conn.query("select 1"), "Query should work: %s", conn.error());
 
-    test.check_maxctrl("alter listener RW-Split-Listener ssl false");
+    test.check_percona_proxyctl("alter listener RW-Split-Listener ssl false");
 
     // TODO: SSL connections will be created but they won't use TLS. Figure out if there's
     // a way to tell Connector-C to reject non-TLS connections.

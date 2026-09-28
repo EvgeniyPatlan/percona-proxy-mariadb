@@ -13,20 +13,20 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <vector>
-#include <maxscale/protocol/mariadb/customparser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/customparser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 
-class SetParser : public maxscale::CustomParser
+class SetParser : public percona_proxy::CustomParser
 {
 public:
     enum status_t
     {
         ERROR,          // Some fatal error occurred; mem alloc failed, parsing failed, etc.
         IS_SET_SQL_MODE,// The COM_QUERY is "set [GLOBAL|SESSION] sql_mode=..."
-        IS_SET_MAXSCALE,// The COM_QUERY is "set @MAXSCALE..."
+        IS_SET_MAXSCALE,// The COM_QUERY is "set @PERCONA_PROXY..."
         NOT_RELEVANT    // Neither of the above.
     };
 
@@ -99,7 +99,7 @@ public:
     {
         status_t rv = NOT_RELEVANT;
 
-        // sizeof(command_byte) + MIN(strlen("SET maxscale"), strlen("SET sql_mode=ORACLE"))
+        // sizeof(command_byte) + MIN(strlen("SET percona-proxy"), strlen("SET sql_mode=ORACLE"))
         if (sql.length() >= 13)
         {
             const char* pStmt = sql.data();
@@ -507,7 +507,7 @@ private:
                 }
                 else if (is_next_alpha('M', 1))
                 {
-                    token = expect_token(MXS_CP_EXPECT_TOKEN("@MAXSCALE"), TK_MAXSCALE_VAR);
+                    token = expect_token(MXS_CP_EXPECT_TOKEN("@PERCONA_PROXY"), TK_MAXSCALE_VAR);
                 }
                 break;
 

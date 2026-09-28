@@ -576,7 +576,7 @@ bool Connection::is_error()
 
     if (m_buffer.size() >= 3 && m_buffer[0] == 'E' && m_buffer[1] == 'R' && m_buffer[2] == 'R')
     {
-        m_error = "MaxScale responded with an error: ";
+        m_error = "Percona Proxy responded with an error: ";
         m_error.append(m_buffer.begin(), m_buffer.end());
         rval = true;
     }

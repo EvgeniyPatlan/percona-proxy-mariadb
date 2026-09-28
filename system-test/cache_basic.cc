@@ -16,7 +16,7 @@
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
     return test.run_test_script("cache_basic.sh", "cache_basic");
 }

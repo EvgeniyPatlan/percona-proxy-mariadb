@@ -15,7 +15,7 @@
 /**
  * MXS-1585: https://jira.mariadb.org/browse/MXS-1585
  *
- * Check that MaxScale doesn't crash when the master is set into maintenance
+ * Check that Percona Proxy doesn't crash when the master is set into maintenance
  * mode when master_failure_mode is fail_on_write.
  */
 
@@ -31,7 +31,7 @@ void* query_thr(void* data)
 
     while (running)
     {
-        MYSQL* mysql = test->maxscale->open_rwsplit_connection();
+        MYSQL* mysql = test->percona_proxy->open_rwsplit_connection();
 
         while (running)
         {
@@ -53,10 +53,10 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     test.log_printf("Creating tables");
-    test.maxscale->connect_maxscale();
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE IF EXISTS test.mxs1585");
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE TABLE test.mxs1585(id INT) ENGINE=MEMORY");
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->connect_percona_proxy();
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE IF EXISTS test.mxs1585");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE TABLE test.mxs1585(id INT) ENGINE=MEMORY");
+    test.percona_proxy->close_percona_proxy_connections();
 
     std::vector<pthread_t> threads;
     threads.resize(100);
@@ -71,10 +71,10 @@ int main(int argc, char** argv)
         for (int x = 1; x <= 2; x++)
         {
             test.log_printf("Set maintenance on server%d", x);
-            test.maxscale->ssh_node_f(true, "maxctrl set server server%d maintenance", x);
+            test.percona_proxy->ssh_node_f(true, "percona-proxyctl set server server%d maintenance", x);
             sleep(1);
             test.log_printf("Clear maintenance on server%d", x);
-            test.maxscale->ssh_node_f(true, "maxctrl clear server server%d maintenance", x);
+            test.percona_proxy->ssh_node_f(true, "percona-proxyctl clear server server%d maintenance", x);
             sleep(2);
         }
     }
@@ -91,9 +91,9 @@ int main(int argc, char** argv)
     }
 
     test.log_printf("Cleanup");
-    test.maxscale->connect_maxscale();
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE test.mxs1585");
-    test.check_maxscale_alive();
+    test.percona_proxy->connect_percona_proxy();
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE test.mxs1585");
+    test.check_percona_proxy_alive();
 
     return test.global_result;
 }

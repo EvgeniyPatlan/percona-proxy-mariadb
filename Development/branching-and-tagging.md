@@ -2,12 +2,12 @@
 
 ## Overview
 
-This document describes how git branches and tags are used in the MaxScale
+This document describes how git branches and tags are used in the Percona Proxy
 development.
 
 ## Release Numbering
 
-The releases of MaxScale are numbered as `YY.MM.N` where `YY` is the year
+The releases of Percona Proxy are numbered as `YY.MM.N` where `YY` is the year
 and `MM` the month when the series in question was first released, and `N` a
 running number that is increased every time a release is made.
 
@@ -21,7 +21,7 @@ At the time of this writing, there are 5 series; `21.06`, `22.08`,
 
 ## Branches
 
-There are two types of series branches in MaxScale; branches named as
+There are two types of series branches in Percona Proxy; branches named as
 `YY.MM`, such  as `21.06` and `22.08`, and the branch `develop`.
 
 The development of the _next_ series takes place in `develop`.
@@ -49,7 +49,7 @@ system tests run, and the packages built. Once everything is ready, the
 release will be tagged and the branch merged back to the series branch.
 ```
 git checkout 21.06.17
-git tag -a maxscale-21.06.17
+git tag -a percona-proxy-21.06.17
 git checkout 21.06
 git merge 21.06.17
 ```

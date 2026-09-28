@@ -57,7 +57,7 @@ extern "C" MXS_MODULE* MXS_CREATE_MODULE()
         mxs::ModuleType::PROTOCOL,
         mxs::ModuleStatus::GA,
         MXS_PROTOCOL_VERSION,
-        "MaxScale NoSQL client protocol implementation",
+        "Percona Proxy NoSQL client protocol implementation",
         "V1.0.0",
         MXS_NO_MODULE_CAPABILITIES,
         &mxs::ProtocolApiGenerator<ProtocolModule>::s_api,

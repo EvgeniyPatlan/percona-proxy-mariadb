@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     test.expect(master.query("GRANT ALL ON *.* TO 'bob'"), "Query failed: %s", master.error());
     master.disconnect();
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     conn.set_credentials("bob", "bob");
     test.expect(conn.connect(), "Connection failed: %s", conn.error());
     test.expect(conn.query("SET @a = (SELECT SLEEP(10))"), "SET failed: %s", conn.error());

@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     const int N_ROWS = 10;
     TestConnections test(argc, argv);
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     auto node1 = test.repl->get_connection(0);
     auto node2 = test.repl->get_connection(1);
 
@@ -27,8 +27,8 @@ int main(int argc, char** argv)
     test.expect(node1.connect(), "Node 1 connection failed: %s", node1.error());
     test.expect(node2.connect(), "Node 2 connection failed: %s", node2.error());
 
-    // We need to stop the monitor as otherwise it'll prevent node2 from being used by MaxScale.
-    test.maxctrl("stop monitor MariaDB-Monitor");
+    // We need to stop the monitor as otherwise it'll prevent node2 from being used by Percona Proxy.
+    test.percona_proxyctl("stop monitor MariaDB-Monitor");
     node2.query("STOP SLAVE");
 
     test.tprintf("Creating table on node 1 and 2");
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     test.tprintf("Do a SELECT to make sure the INSERTs are synced");
     test.expect(conn.query("SELECT 1"), "SELECT should work: %s", conn.error());
 
-    test.tprintf("Disconnect from MaxScale");
+    test.tprintf("Disconnect from Percona Proxy");
     conn.disconnect();
     thr.join();
 

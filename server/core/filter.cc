@@ -13,7 +13,7 @@
  */
 
 /**
- * @file filter.c  - A representation of a filter within MaxScale.
+ * @file filter.c  - A representation of a filter within Percona Proxy.
  */
 
 #include "internal/filter.hh"
@@ -31,11 +31,11 @@
 #include <string>
 #include <vector>
 
-#include <maxscale/paths.hh>
-#include <maxscale/session.hh>
-#include <maxscale/service.hh>
-#include <maxscale/filter.hh>
-#include <maxscale/json_api.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/json_api.hh>
 
 #include "internal/config.hh"
 #include "internal/modules.hh"
@@ -45,7 +45,7 @@ using std::string;
 using std::set;
 using Guard = std::lock_guard<std::mutex>;
 
-using namespace maxscale;
+using namespace percona_proxy;
 
 static struct
 {
@@ -281,7 +281,7 @@ json_t* FilterDef::filter_list_to_json(const char* host)
     return mxs_json_resource(host, MXS_JSON_API_FILTERS, rval);
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 //

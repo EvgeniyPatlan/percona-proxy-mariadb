@@ -36,8 +36,8 @@ private:
         test.expect(master.query("CREATE TABLE test.t1(id INT)"), "CREATE failed: %s", master.error());
         sync_all();
 
-        test.tprintf("Stop replication on the slave and MaxScale");
-        maxscale.query("STOP SLAVE");
+        test.tprintf("Stop replication on the slave and Percona Proxy");
+        percona_proxy.query("STOP SLAVE");
         slave.query("STOP SLAVE");
 
         test.tprintf("Insert the first batch of data and record the GTID position");
@@ -54,20 +54,20 @@ private:
             master.query("INSERT INTO test.t1 VALUES (" + std::to_string(j) + ")");
         }
 
-        test.tprintf("Set MaxScale GTID position");
-        maxscale.query("SET GLOBAL gtid_slave_pos='" + gtid_pos + "'");
-        test.tprintf("START SLAVE on MaxScale");
-        maxscale.query("START SLAVE");
-        test.tprintf("Sync MaxScale");
-        sync(master, maxscale);
+        test.tprintf("Set Percona Proxy GTID position");
+        percona_proxy.query("SET GLOBAL gtid_slave_pos='" + gtid_pos + "'");
+        test.tprintf("START SLAVE on Percona Proxy");
+        percona_proxy.query("START SLAVE");
+        test.tprintf("Sync Percona Proxy");
+        sync(master, percona_proxy);
 
-        // Note that we don't set gtid_slave_pos like we do on MaxScale. This is not done as gtid_pos is not
-        // in the binlogs that are on MaxScale and would be treated as an error.
+        // Note that we don't set gtid_slave_pos like we do on Percona Proxy. This is not done as gtid_pos is not
+        // in the binlogs that are on Percona Proxy and would be treated as an error.
         slave.query("START SLAVE");
         test.tprintf("Sync slave to '%s', currently at '%s'",
-                     maxscale.field("SELECT @@gtid_slave_pos").c_str(),
+                     percona_proxy.field("SELECT @@gtid_slave_pos").c_str(),
                      gtid_pos.c_str());
-        sync(maxscale, slave);
+        sync(percona_proxy, slave);
 
         auto master_rows = master.field("SELECT COUNT(*) FROM test.t1");
         auto slave_rows = slave.field("SELECT COUNT(*) FROM test.t1");

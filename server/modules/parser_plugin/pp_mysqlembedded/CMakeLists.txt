@@ -70,4 +70,4 @@ set_target_properties(pp_mysqlembedded PROPERTIES LINK_FLAGS -Wl,--version-scrip
 #set_target_properties(pp_mysqlembedded PROPERTIES LINK_FLAGS -Wl,-z,defs)
 
 install_module(pp_mysqlembedded libmysqld-parser)
-install(PROGRAMS ${MARIADB_ERRMSG} DESTINATION ${MAXSCALE_VARDIR}/lib/maxscale)
+install(PROGRAMS ${MARIADB_ERRMSG} DESTINATION ${PERCONA_PROXY_VARDIR}/lib/percona-proxy)

@@ -13,7 +13,7 @@
  */
 
 /**
- * MXS-1985: MaxScale hangs on concurrent KILL processing
+ * MXS-1985: Percona Proxy hangs on concurrent KILL processing
  *
  * Regression test for the following bugs:
  *   MXS-1985
@@ -41,7 +41,7 @@ void mxs1985(TestConnections& test)
         threads.emplace_back([&] {
                                  while (running && test.global_result == 0)
                                  {
-                                     MYSQL* c = test.maxscale->open_rwsplit_connection();
+                                     MYSQL* c = test.percona_proxy->open_rwsplit_connection();
 
                                     // It doesn't really matter if the connection ID exists, this is just a
                                     // handy way of generating cross-thread communication.
@@ -63,7 +63,7 @@ void mxs1985(TestConnections& test)
     sleep(10);
     running = false;
 
-    // If MaxScale hangs, at least one thread will not return in time
+    // If Percona Proxy hangs, at least one thread will not return in time
     test.reset_timeout();
     for_each(threads.begin(), threads.end(), mem_fn(&thread::join));
 }
@@ -79,7 +79,7 @@ void mxs3251(TestConnections& test)
             [&] {
                 while (running && test.global_result == 0)
                 {
-                    MYSQL* c = test.maxscale->open_rwsplit_connection();
+                    MYSQL* c = test.percona_proxy->open_rwsplit_connection();
                     string query = "KILL " + to_string(mysql_thread_id(c));
                     execute_query_silent(c, query.c_str());
                     mysql_close(c);
@@ -90,7 +90,7 @@ void mxs3251(TestConnections& test)
     sleep(10);
     running = false;
 
-    // If MaxScale hangs, at least one thread will not return in time
+    // If Percona Proxy hangs, at least one thread will not return in time
     test.reset_timeout();
     for_each(threads.begin(), threads.end(), mem_fn(&thread::join));
 }
@@ -99,8 +99,8 @@ void mxs4209(TestConnections& test)
 {
     for (int i = 1; i <= 4; i++)
     {
-        test.check_maxctrl("alter server server" + std::to_string(i) + " persistpoolmax 10");
-        test.check_maxctrl("alter server server" + std::to_string(i) + " persistmaxtime 300s");
+        test.check_percona_proxyctl("alter server server" + std::to_string(i) + " persistpoolmax 10");
+        test.check_percona_proxyctl("alter server server" + std::to_string(i) + " persistmaxtime 300s");
     }
 
     // Make sure there's connections in the pool
@@ -108,7 +108,7 @@ void mxs4209(TestConnections& test)
 
     for (int i = 0; i < 10; i++)
     {
-        auto conn = test.maxscale->rwsplit();
+        auto conn = test.percona_proxy->rwsplit();
         conn.connect();
         conn.query("SELECT 1");
         conns.push_back(std::move(conn));
@@ -116,11 +116,11 @@ void mxs4209(TestConnections& test)
 
     conns.clear();
 
-    test.check_maxctrl("enable log-priority info");
+    test.check_percona_proxyctl("enable log-priority info");
 
-    MYSQL* conn = test.maxscale->open_rwsplit_connection();
+    MYSQL* conn = test.percona_proxy->open_rwsplit_connection();
     test.expect(conn, "First connection failed");
-    auto other = test.maxscale->rwsplit();
+    auto other = test.percona_proxy->rwsplit();
     other.set_timeout(10);
     test.expect(other.connect(), "Second connection failed: %s", other.error());
 
@@ -150,12 +150,12 @@ void mxs4209(TestConnections& test)
 
     mysql_close(conn);
 
-    test.check_maxctrl("disable log-priority info");
+    test.check_percona_proxyctl("disable log-priority info");
 
     for (int i = 1; i <= 4; i++)
     {
-        test.check_maxctrl("alter server server" + std::to_string(i) + " persistpoolmax 0");
-        test.check_maxctrl("alter server server" + std::to_string(i) + " persistmaxtime 0s");
+        test.check_percona_proxyctl("alter server server" + std::to_string(i) + " persistpoolmax 0");
+        test.check_percona_proxyctl("alter server server" + std::to_string(i) + " persistmaxtime 0s");
     }
 }
 

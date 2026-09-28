@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
      * The monitor needs to be stopped before the slaves are stopped to prevent
      * it from detecting the broken replication.
      */
-    test.maxctrl("stop monitor MySQL-Monitor");
+    test.percona_proxyctl("stop monitor MySQL-Monitor");
     // Stop slaves and drop the user on the master
     test.repl->stop_slaves();
     test.repl->connect();
@@ -43,9 +43,9 @@ int main(int argc, char* argv[])
     test.repl->close_connections();
 
     test.reset_timeout();
-    test.check_maxctrl("reload service RW-Split-Router");
-    MYSQL* conn = open_conn_db(test.maxscale->rwsplit_port,
-                               test.maxscale->ip(),
+    test.check_percona_proxyctl("reload service RW-Split-Router");
+    MYSQL* conn = open_conn_db(test.percona_proxy->rwsplit_port,
+                               test.percona_proxy->ip(),
                                "test",
                                "auth_test",
                                "test",
@@ -53,9 +53,9 @@ int main(int argc, char* argv[])
     test.add_result(mysql_errno(conn) == 0, "Connection with users from master should fail");
     mysql_close(conn);
 
-    test.maxctrl("unlink service RW-Split-Router server1");
-    conn = open_conn_db(test.maxscale->rwsplit_port,
-                        test.maxscale->ip(),
+    test.percona_proxyctl("unlink service RW-Split-Router server1");
+    conn = open_conn_db(test.percona_proxy->rwsplit_port,
+                        test.percona_proxy->ip(),
                         "test",
                         "auth_test",
                         "test",

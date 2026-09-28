@@ -19,7 +19,7 @@
 
 void check_stored_responses(TestConnections& test, uint32_t id)
 {
-    auto res = test.maxctrl("api get sessions/" + std::to_string(id)
+    auto res = test.percona_proxyctl("api get sessions/" + std::to_string(id)
                             + " data.attributes.client.sescmd_history_stored_responses");
     int num_stored = atoi(res.output.c_str());
     test.expect(num_stored > 0 && num_stored <= 50,
@@ -29,7 +29,7 @@ void check_stored_responses(TestConnections& test, uint32_t id)
 // MXS-4921: COM_STMT_PREPARE followed by COM_STMT_CLOSE doesn't remove stored responses
 void mxs4921_ps_history_responses(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
     c.query("SET @a=1");    // This makes it so that there's at least one response
 
@@ -48,12 +48,12 @@ void mxs4921_ps_history_responses(TestConnections& test)
 // MXS-4922: COM_CHANGE_USER doesn't clear out history responses
 void mxs4922_change_user_history_responses(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
 
     for (int i = 0; i < 200; i++)
     {
-        c.change_user(test.maxscale->user_name(), test.maxscale->password());
+        c.change_user(test.percona_proxy->user_name(), test.percona_proxy->password());
         c.query("SET @a=1");
     }
 
@@ -66,7 +66,7 @@ void mxs4969_stmt_close_classification(TestConnections& test)
     test.repl->connect();
     test.repl->execute_query_all_nodes("SET GLOBAL max_prepared_stmt_count=10");
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
 
     for (int i = 0; i < 200 && test.ok(); i++)
@@ -84,7 +84,7 @@ void mxs4969_stmt_close_classification(TestConnections& test)
 
 void mxs5536_early_response(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
 
     // Create a table that gets replicated to all servers
@@ -118,7 +118,7 @@ void mxs5536_early_response(TestConnections& test)
 
 void mxs5897_ps_errors_stored_in_history(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
 
     for (int i = 0; i < 1000; i++)
@@ -130,7 +130,7 @@ void mxs5897_ps_errors_stored_in_history(TestConnections& test)
     }
 
     auto me = std::to_string(c.thread_id());
-    auto output = test.maxctrl("api get --pretty sessions/" + me
+    auto output = test.percona_proxyctl("api get --pretty sessions/" + me
                                + " data.attributes.client.sescmd_history_len").output;
     test.expect(output == "0", "Expected 0 session commands, have %s", output.c_str());
 }
@@ -147,11 +147,11 @@ void sanity_check(TestConnections& test)
         sprintf(server_id[i], "%d", test.repl->get_server_id(i));
     }
 
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
 
     test.reset_timeout();
 
-    MYSQL_STMT* stmt = mysql_stmt_init(test.maxscale->conn_rwsplit);
+    MYSQL_STMT* stmt = mysql_stmt_init(test.percona_proxy->conn_rwsplit);
     const char* write_query = "SELECT @@server_id, @@last_insert_id";
     const char* read_query = "SELECT @@server_id";
     char buffer[100] = "";
@@ -178,7 +178,7 @@ void sanity_check(TestConnections& test)
 
     mysql_stmt_close(stmt);
 
-    stmt = mysql_stmt_init(test.maxscale->conn_rwsplit);
+    stmt = mysql_stmt_init(test.percona_proxy->conn_rwsplit);
 
     // Execute read, should return a slave server ID
     test.add_result(mysql_stmt_prepare(stmt, read_query, strlen(read_query)), "Failed to prepare");
@@ -209,7 +209,7 @@ void sanity_check(TestConnections& test)
 
     mysql_stmt_close(stmt);
 
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 
     // MXS-2266: COM_STMT_CLOSE causes a warning to be logged
     test.log_excludes("Closing unknown prepared statement");

@@ -13,7 +13,7 @@
  */
 
 /**
- * @file bug572.cpp  regression case for bug 572 ( " If reading a user from users table fails, MaxScale fails"
+ * @file bug572.cpp  regression case for bug 572 ( " If reading a user from users table fails, Percona Proxy fails"
  *)
  *
  * - try GRANT with wrong IP using all Maxscale services:
@@ -47,13 +47,13 @@ int main(int argc, char* argv[])
     TestConnections* Test = new TestConnections(argc, argv);
 
     Test->repl->connect();
-    Test->maxscale->connect_maxscale();
+    Test->percona_proxy->connect_percona_proxy();
 
     Test->tprintf("Trying GRANT for with bad IP: RWSplit\n");
-    create_drop_bad_user(Test->maxscale->conn_rwsplit, Test);
+    create_drop_bad_user(Test->percona_proxy->conn_rwsplit, Test);
 
     Test->tprintf("Trying SELECT to check if Maxscale hangs\n");
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "select * from mysql.user");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "select * from mysql.user");
 
     int rval = Test->global_result;
     delete Test;

@@ -30,15 +30,15 @@
 #include <maxbase/atomic.hh>
 #include <maxbase/format.hh>
 #include <maxbase/host.hh>
-#include <maxscale/clock.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/dcb.hh>
-#include <maxscale/http.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/router.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/clock.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/http.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/service.hh>
 
 #include "internal/dcb.hh"
 #include "internal/filter.hh"
@@ -48,7 +48,7 @@
 using std::string;
 using std::stringstream;
 using maxbase::Worker;
-using namespace maxscale;
+using namespace percona_proxy;
 
 namespace
 {
@@ -716,7 +716,7 @@ const char* session_get_close_reason(const MXS_SESSION* session)
         return "";
 
     case SESSION_CLOSE_TIMEOUT:
-        return "Timed out by MaxScale";
+        return "Timed out by Percona Proxy";
 
     case SESSION_CLOSE_HANDLEERROR_FAILED:
         return "Router could not recover from connection errors";
@@ -911,7 +911,7 @@ bool Session::add_variable(const char* name, session_variable_handler_t handler,
 {
     bool added = false;
 
-    static const char PREFIX[] = "@MAXSCALE.";
+    static const char PREFIX[] = "@PERCONA_PROXY.";
 
     if (strncasecmp(name, PREFIX, sizeof(PREFIX) - 1) == 0)
     {
@@ -968,7 +968,7 @@ string Session::set_variable_value(const char* name_begin,
     }
     else
     {
-        const char FORMAT[] = "Attempt to set unknown MaxScale user variable %.*s";
+        const char FORMAT[] = "Attempt to set unknown Percona Proxy user variable %.*s";
         int name_length = name_end - name_begin;
         rv = mxb::string_printf(FORMAT, name_length, name_begin);
         MXB_WARNING("%s", rv.c_str());
@@ -2007,7 +2007,7 @@ void MXS_SESSION::set_host(string&& host)
     m_host = std::move(host);
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 void unexpected_situation(const char* msg)
 {
@@ -2019,8 +2019,8 @@ void unexpected_situation(const char* msg)
         }
         else
         {
-            MXB_WARNING("MaxScale has encountered an unexpected situation: %s. Add 'session_trace=200' "
-                        "under the [maxscale] section to enable session level tracing to make the "
+            MXB_WARNING("Percona Proxy has encountered an unexpected situation: %s. Add 'session_trace=200' "
+                        "under the [percona-proxy] section to enable session level tracing to make the "
                         "debugging of this problem easier.", msg);
         }
     }

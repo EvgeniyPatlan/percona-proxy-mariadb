@@ -21,8 +21,8 @@
 
 void run_one_test(TestConnections& test)
 {
-    auto a = test.maxscale->rwsplit();
-    auto b = test.maxscale->rwsplit();
+    auto a = test.percona_proxy->rwsplit();
+    auto b = test.percona_proxy->rwsplit();
     test.expect(a.connect() && b.connect(), "Connections should work");
     auto id = a.thread_id();
 
@@ -49,7 +49,7 @@ void run_one_test(TestConnections& test)
 int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     test.expect(c.query("CREATE OR REPLACE TABLE t1(id INT) AS SELECT seq FROM seq_0_to_5000"),
                 "CREATE failed: %s", c.error());

@@ -9,9 +9,9 @@ with the new events coming from MariaDB 10.0/10.1 database.
 
 ## Creating Users
 
-The users and their hashed passwords are stored in `/var/cache/maxscale/<service name>/cdcusers` where `<service name>` is the name of the service.
+The users and their hashed passwords are stored in `/var/cache/percona-proxy/<service name>/cdcusers` where `<service name>` is the name of the service.
 
-For example, the following service entry will look into `/var/cache/maxscale/CDC-Service/` for a file called `cdcusers`. If that file is found, the users in that file will be used for authentication.
+For example, the following service entry will look into `/var/cache/percona-proxy/CDC-Service/` for a file called `cdcusers`. If that file is found, the users in that file will be used for authentication.
 
 ```
 [CDC-Service]
@@ -29,7 +29,7 @@ For more details, refer to the [CDC users documentation](CDC_users.md).
 
 ### Connection and Authentication
 
-- Client connects to MaxScale CDC protocol listener.
+- Client connects to Percona Proxy CDC protocol listener.
 - Send the authentication message which includes the user and the SHA1 of the password
 
 In the future, optional flags could be implemented.
@@ -102,5 +102,5 @@ REQUEST-DATA db2.table4 0-11-345
 
 ## Example Client
 
-MaxScale includes an example CDC client application written in Python 3. You can
-find the source code for it [in the MaxScale repository](https://github.com/mariadb-corporation/MaxScale/tree/2.0/server/modules/protocol/examples/cdc.py).
+Percona Proxy includes an example CDC client application written in Python 3. You can
+find the source code for it [in the Percona Proxy repository](https://github.com/mariadb-corporation/Percona Proxy/tree/2.0/server/modules/protocol/examples/cdc.py).

@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
     Test->tprintf("Creating %d connections to RWSplit router\n", TestConnNum);
     for (int i = 0; i < TestConnNum; i++)
     {
-        conn[i] = Test->maxscale->open_rwsplit_connection();
+        conn[i] = Test->percona_proxy->open_rwsplit_connection();
     }
     Test->tprintf("Waiting %d seconds\n", 2 * Test->repl->N);
     sleep(2 * Test->repl->N);
@@ -64,8 +64,8 @@ int main(int argc, char* argv[])
 
     Test->tprintf("Checking connections to Master: should be %d\n", TestConnNum);
     conn_num = get_conn_num(Test->repl->nodes[0],
-                            Test->maxscale->ip(),
-                            Test->maxscale->hostname(),
+                            Test->percona_proxy->ip(),
+                            Test->percona_proxy->hostname(),
                             (char*) "test");
     if (conn_num != TestConnNum)
     {
@@ -79,8 +79,8 @@ int main(int argc, char* argv[])
         Test->reset_timeout();
         conn_num =
             get_conn_num(Test->repl->nodes[i],
-                         Test->maxscale->ip(),
-                         Test->maxscale->hostname(),
+                         Test->percona_proxy->ip(),
+                         Test->percona_proxy->hostname(),
                          (char*) "test");
         TotalConn += conn_num;
         Test->tprintf("Connections to node %d (%s):\t%d\n", i, Test->repl->ip4(i), conn_num);

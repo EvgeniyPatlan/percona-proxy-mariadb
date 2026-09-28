@@ -436,13 +436,13 @@ module.exports = function () {
     },
   };
 
-  this.restartMaxScale = function (done) {
-    if (process.env.MAXSCALE_DIR == null) {
-      throw new Error("MAXSCALE_DIR is not set");
+  this.restartPerconaProxy = function (done) {
+    if (process.env.PERCONA_PROXY_DIR == null) {
+      throw new Error("PERCONA_PROXY_DIR is not set");
     }
 
-    child_process.execFile("./stop_maxscale.sh", function (err, stdout, stderr) {
-      child_process.execFile("./start_maxscale.sh", function (err, stdout, stderr) {
+    child_process.execFile("./stop_percona_proxy.sh", function (err, stdout, stderr) {
+      child_process.execFile("./start_percona_proxy.sh", function (err, stdout, stderr) {
         done();
       });
     });

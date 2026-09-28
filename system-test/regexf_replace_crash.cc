@@ -14,9 +14,9 @@
 
 /**
  * @file bug730.cpp regression case for bug 730 ("Regex filter and shorter than original replacement queries
- * MaxScale")
+ * Percona Proxy")
  *
- * - setup regex filter, add it to all maxscales->routers[0]
+ * - setup regex filter, add it to all percona_proxies->routers[0]
  * @verbatim
  *  [MySetOptionFilter]
  *  type=filter
@@ -26,7 +26,7 @@
  *  replace=SET SQL_QUOTE_SHOW_CREATE
  *
  *  @endverbatim
- * - try SET OPTION SQL_QUOTE_SHOW_CREATE = 1; against all maxscales->routers[0]
+ * - try SET OPTION SQL_QUOTE_SHOW_CREATE = 1; against all percona_proxies->routers[0]
  * - check if Maxscale alive
  */
 
@@ -41,7 +41,7 @@
  *  match=SET OPTION SQL_QUOTE_SHOW_CREATE
  *  replace=SET SQL_QUOTE_SHOW_CREATE
  *
- *  Sending the following query hangs MaxScale:
+ *  Sending the following query hangs Percona Proxy:
  *
  *  SET OPTION SQL_QUOTE_SHOW_CREATE = 1;
  *
@@ -62,21 +62,21 @@ int main(int argc, char* argv[])
     TestConnections* Test = new TestConnections(argc, argv);
     Test->reset_timeout();
 
-    Test->maxscale->connect_maxscale();
+    Test->percona_proxy->connect_percona_proxy();
 
     Test->tprintf("RWSplit: \n");
     fflush(stdout);
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "SET OPTION SQL_QUOTE_SHOW_CREATE = 1;");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "SET OPTION SQL_QUOTE_SHOW_CREATE = 1;");
     Test->tprintf("ReadConn master: \n");
     fflush(stdout);
-    Test->try_query(Test->maxscale->conn_master, (char*) "SET OPTION SQL_QUOTE_SHOW_CREATE = 1;");
+    Test->try_query(Test->percona_proxy->conn_master, (char*) "SET OPTION SQL_QUOTE_SHOW_CREATE = 1;");
     Test->tprintf("readConn slave: \n");
     fflush(stdout);
-    Test->try_query(Test->maxscale->conn_slave, (char*) "SET OPTION SQL_QUOTE_SHOW_CREATE = 1;");
+    Test->try_query(Test->percona_proxy->conn_slave, (char*) "SET OPTION SQL_QUOTE_SHOW_CREATE = 1;");
 
-    Test->maxscale->close_maxscale_connections();
+    Test->percona_proxy->close_percona_proxy_connections();
 
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
 
     int rval = Test->global_result;
     delete Test;

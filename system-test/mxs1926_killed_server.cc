@@ -50,20 +50,20 @@ void tune_rowcount(TestConnections& test)
 {
     milliseconds dur {1};
     test.tprintf("Tuning data size so that an insert takes 10 seconds");
-    test.maxscale->connect();
-    test.try_query(test.maxscale->conn_rwsplit, "SET sql_log_bin=0");
+    test.percona_proxy->connect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "SET sql_log_bin=0");
 
     while (dur < seconds(10))
     {
         std::string filename = create_tmpfile();
 
         auto start = Clock::now();
-        test.try_query(test.maxscale->conn_rwsplit,
+        test.try_query(test.percona_proxy->conn_rwsplit,
                        "LOAD DATA LOCAL INFILE '%s' INTO TABLE test.t1",
                        filename.c_str());
         auto end = Clock::now();
         dur = duration_cast<milliseconds>(end - start);
-        test.try_query(test.maxscale->conn_rwsplit, "TRUNCATE TABLE test.t1");
+        test.try_query(test.percona_proxy->conn_rwsplit, "TRUNCATE TABLE test.t1");
 
         remove(filename.c_str());
 
@@ -75,7 +75,7 @@ void tune_rowcount(TestConnections& test)
                      ROWCOUNT.load());
     }
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 }
 
 int main(int argc, char** argv)
@@ -93,11 +93,11 @@ int main(int argc, char** argv)
 
     std::string filename = create_tmpfile();
 
-    // Connect to MaxScale and load enough data so that we have
-    test.maxscale->connect();
+    // Connect to Percona Proxy and load enough data so that we have
+    test.percona_proxy->connect();
 
     // Disable replication of the LOAD DATA LOCAL INFILE
-    test.try_query(test.maxscale->conn_rwsplit, "SET sql_log_bin=0");
+    test.try_query(test.percona_proxy->conn_rwsplit, "SET sql_log_bin=0");
 
     // This works around a limitation in 2.5 where non-participating connections must not process any queries
     // while the LOAD DATA LOCAL INFILE is in progress.
@@ -108,13 +108,13 @@ int main(int argc, char** argv)
         test.repl->stop_node(3);
         test.repl->start_node(3);
     });
-    test.try_query(test.maxscale->conn_rwsplit,
+    test.try_query(test.percona_proxy->conn_rwsplit,
                    "LOAD DATA LOCAL INFILE '%s' INTO TABLE test.t1",
                    filename.c_str());
     test.tprintf("Load complete");
     thr.join();
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     // Cleanup
     execute_query(test.repl->nodes[0], "DROP TABLE test.t1");

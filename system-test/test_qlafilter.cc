@@ -18,7 +18,7 @@
 
 void query(TestConnections& test, const std::vector<std::string>& queries)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
 
     for (const auto& q : queries)
@@ -29,7 +29,7 @@ void query(TestConnections& test, const std::vector<std::string>& queries)
 
 void send_query(TestConnections& test, const std::vector<std::string>& queries)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
 
     for (const auto& q : queries)
@@ -46,7 +46,7 @@ void send_query(TestConnections& test, const std::vector<std::string>& queries)
 std::vector<std::vector<std::string>> parse_log(TestConnections& test, const std::string& log)
 {
     std::vector<std::vector<std::string>> rval;
-    test.maxscale->copy_from_node(log.c_str(), "./log.txt");
+    test.percona_proxy->copy_from_node(log.c_str(), "./log.txt");
     std::ifstream infile("log.txt");
 
     for (std::string line; std::getline(infile, line);)
@@ -88,21 +88,21 @@ void check_contents(TestConnections& test, const std::string& file,
 
 void test_user_matching(TestConnections& test)
 {
-    test.check_maxctrl("alter filter QLA "
+    test.check_percona_proxyctl("alter filter QLA "
                        "log_type=unified filebase=/tmp/qla.log.user_match  use_canonical_form=false "
                        "user_match=/bob/ user_exclude=/bobby/ log_data=query");
 
-    test.maxscale->restart();
+    test.percona_proxy->restart();
 
     query(test, {"CREATE USER 'alice' IDENTIFIED BY 'alice'", "GRANT ALL ON *.* TO 'alice'",
                  "CREATE USER 'bob' IDENTIFIED BY 'bob'", "GRANT ALL ON *.* TO 'bob'",
                  "CREATE USER 'bobby' IDENTIFIED BY 'bobby'", "GRANT ALL ON *.* TO 'bobby'"});
 
-    // Make sure that the users have replicated over and that MaxScale has loaded them
+    // Make sure that the users have replicated over and that Percona Proxy has loaded them
     test.repl->sync_slaves();
-    test.check_maxctrl("reload service RW-Split-Router");
+    test.check_percona_proxyctl("reload service RW-Split-Router");
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
 
     // Do the query first with the excluded user, this way if it ends up matching it'll be detected
     c.set_credentials("bobby", "bobby");
@@ -125,17 +125,17 @@ void test_source_matching(TestConnections& test)
 {
     auto run_query = [&](int node, int value){
         test.repl->ssh_node_f(node, true, "mariadb -u maxskysql -pskysql -h %s -P 4006 -e \"SELECT %d\"",
-                              test.maxscale->ip(), value);
+                              test.percona_proxy->ip(), value);
     };
 
     auto match = mxb::cat("source_match=/(", test.repl->ip(0), ")|(", test.repl->ip(1), ")/");
     auto exclude = mxb::cat("source_exclude=/", test.repl->ip(0), "/");
 
-    test.check_maxctrl("alter filter QLA log_data=query log_type=unified filebase=/tmp/qla.log.source_match "
+    test.check_percona_proxyctl("alter filter QLA log_data=query log_type=unified filebase=/tmp/qla.log.source_match "
                        "user_match=\"\" user_exclude=\"\" use_canonical_form=false "
                        "\"" + match + "\" \"" + exclude + "\"");
 
-    test.maxscale->restart();
+    test.percona_proxy->restart();
 
     for (int i = 0; i < test.repl->N; i++)
     {
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     // Clean up old files
-    test.maxscale->ssh_node("rm -f /tmp/qla.log.*", true);
+    test.percona_proxy->ssh_node("rm -f /tmp/qla.log.*", true);
 
 
     test.tprintf("Test log_type=session");
@@ -166,7 +166,7 @@ int main(int argc, char** argv)
 
     test.tprintf("Test log_type=unified");
 
-    test.check_maxctrl("alter filter QLA log_type=unified");
+    test.check_percona_proxyctl("alter filter QLA log_type=unified");
 
     query(test, {"SELECT 'unified-log'", "SELECT 'unified-log-2'"});
     check_contents(test, "/tmp/qla.log.unified", {
@@ -177,7 +177,7 @@ int main(int argc, char** argv)
 
     test.tprintf("Test SQL matching");
 
-    test.check_maxctrl("alter filter QLA match=/something\\|anything/ "
+    test.check_percona_proxyctl("alter filter QLA match=/something\\|anything/ "
                        "filebase=/tmp/qla.match.log");
 
     query(test, {"SELECT 'nothing'", "SELECT 'something'", "SELECT 'everything'", "SELECT 'anything'"});
@@ -196,27 +196,27 @@ int main(int argc, char** argv)
         {4, 2, "SELECT 'anything'"}
     });
 
-    test.maxscale->ssh_node("rm -f /tmp/qla.match.log.unified", true);
-    test.check_maxctrl("alter filter QLA match=/.*/");
+    test.percona_proxy->ssh_node("rm -f /tmp/qla.match.log.unified", true);
+    test.check_percona_proxyctl("alter filter QLA match=/.*/");
 
 
     test.tprintf("Test filebase=/tmp/qla.second.log");
 
-    test.check_maxctrl("alter filter QLA filebase=/tmp/qla.second.log");
+    test.check_percona_proxyctl("alter filter QLA filebase=/tmp/qla.second.log");
 
     query(test, {"SELECT 'second-log'"});
     check_contents(test, "/tmp/qla.second.log.unified", {
         {1, 2, "SELECT 'second-log'"}
     });
 
-    test.check_maxctrl("alter filter QLA filebase=/tmp/qla.log");
-    test.maxscale->ssh_node("rm -f /tmp/qla.second.log.unified", true);
+    test.check_percona_proxyctl("alter filter QLA filebase=/tmp/qla.log");
+    test.percona_proxy->ssh_node("rm -f /tmp/qla.second.log.unified", true);
 
 
     test.tprintf("Test use_canonical_form=true");
 
-    test.maxscale->ssh_node("truncate -s 0 /tmp/qla.log.unified", true);
-    test.check_maxctrl("alter filter QLA use_canonical_form=true");
+    test.percona_proxy->ssh_node("truncate -s 0 /tmp/qla.log.unified", true);
+    test.check_percona_proxyctl("alter filter QLA use_canonical_form=true");
 
     query(test, {"SELECT 'canonical'", "SELECT 'canonical' field_name"});
     check_contents(test, "/tmp/qla.log.unified", {
@@ -224,13 +224,13 @@ int main(int argc, char** argv)
         {2, 2, "SELECT ? field_name"}
     });
 
-    test.check_maxctrl("alter filter QLA use_canonical_form=false");
+    test.check_percona_proxyctl("alter filter QLA use_canonical_form=false");
 
 
     test.tprintf("Test log_data=reply_time");
 
-    test.maxscale->ssh_node("truncate -s 0 /tmp/qla.log.unified", true);
-    test.check_maxctrl("alter filter QLA log_data=reply_time");
+    test.percona_proxy->ssh_node("truncate -s 0 /tmp/qla.log.unified", true);
+    test.check_percona_proxyctl("alter filter QLA log_data=reply_time");
 
     query(test, {"SELECT SLEEP(0.1)"});
     auto log = parse_log(test, "/tmp/qla.log.unified");
@@ -252,8 +252,8 @@ int main(int argc, char** argv)
     test_source_matching(test);
 
     // Removes the files that were created
-    test.maxscale->stop();
-    test.maxscale->ssh_node("rm -f /tmp/qla.log.*", true);
+    test.percona_proxy->stop();
+    test.percona_proxy->ssh_node("rm -f /tmp/qla.log.*", true);
 
     return test.global_result;
 }

@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/mainworker.hh>
+#include <percona-proxy/mainworker.hh>
 
 #include <signal.h>
 #include <vector>
@@ -20,11 +20,11 @@
 #ifdef HAVE_SYSTEMD
 #include <systemd/sd-daemon.h>
 #endif
-#include <maxscale/cachingparser.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/config.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/cachingparser.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/routingworker.hh>
 
 #include "internal/admin.hh"
 #include "internal/configmanager.hh"
@@ -38,17 +38,17 @@ namespace
 
 static struct ThisUnit
 {
-    maxscale::MainWorker* pMain = nullptr;
+    percona_proxy::MainWorker* pMain = nullptr;
     int64_t               clock_ticks;
 } this_unit;
 
 thread_local struct ThisThread
 {
-    maxscale::MainWorker* pMain = nullptr;
+    percona_proxy::MainWorker* pMain = nullptr;
 } this_thread;
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 MainWorker::MainWorker(mxb::WatchdogNotifier* pNotifier)
@@ -210,7 +210,7 @@ void MainWorker::post_run()
     // Clearing the storage right after the main loop returns guarantees that both the MainWorker and the
     // RoutingWorkers are alive when stored data is destroyed. Without this, the destruction of filters is
     // delayed until the MainWorker is destroyed which is something that must be avoided. All objects in
-    // MaxScale should be destroyed before the workers are destroyed.
+    // Percona Proxy should be destroyed before the workers are destroyed.
     m_storage.clear();
 
     mxs::CachingParser::thread_finish();

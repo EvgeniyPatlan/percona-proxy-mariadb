@@ -27,15 +27,15 @@ void* thr(void* data)
     while (running && test->global_result == 0)
     {
         test->reset_timeout();
-        if (test->try_query(test->maxscale->conn_rwsplit, "SELECT 1"))
+        if (test->try_query(test->percona_proxy->conn_rwsplit, "SELECT 1"))
         {
             test->tprintf("Failed to select via readwritesplit");
         }
-        if (test->try_query(test->maxscale->conn_master, "SELECT 1"))
+        if (test->try_query(test->percona_proxy->conn_master, "SELECT 1"))
         {
             test->tprintf("Failed to select via readconnroute master");
         }
-        if (test->try_query(test->maxscale->conn_slave, "SELECT 1"))
+        if (test->try_query(test->percona_proxy->conn_slave, "SELECT 1"))
         {
             test->tprintf("Failed to select via readconnroute slave");
         }
@@ -47,33 +47,33 @@ void* thr(void* data)
 int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
 
-    test.tprintf("Connect to MaxScale and continuously execute queries");
+    test.tprintf("Connect to Percona Proxy and continuously execute queries");
     pthread_t thread;
     pthread_create(&thread, NULL, thr, &test);
     sleep(5);
 
     test.tprintf("Remove all servers from all services");
 
-    test.maxctrl("unlink service RW-Split-Router server1 server2 server3 server4");
-    test.maxctrl("unlink service Read-Connection-Router-Slave server1 server2 server3 server4");
-    test.maxctrl("unlink service Read-Connection-Router-Master server1 server2 server3 server4");
+    test.percona_proxyctl("unlink service RW-Split-Router server1 server2 server3 server4");
+    test.percona_proxyctl("unlink service Read-Connection-Router-Slave server1 server2 server3 server4");
+    test.percona_proxyctl("unlink service Read-Connection-Router-Master server1 server2 server3 server4");
 
     sleep(5);
 
     test.tprintf("Stop queries and close the connections");
     running = false;
     pthread_join(thread, NULL);
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 
     test.tprintf("Add all servers to all services");
 
-    test.maxctrl("link service RW-Split-Router server1 server2 server3 server4");
-    test.maxctrl("link service Read-Connection-Router-Slave server1 server2 server3 server4");
-    test.maxctrl("link service Read-Connection-Router-Master server1 server2 server3 server4");
+    test.percona_proxyctl("link service RW-Split-Router server1 server2 server3 server4");
+    test.percona_proxyctl("link service Read-Connection-Router-Slave server1 server2 server3 server4");
+    test.percona_proxyctl("link service Read-Connection-Router-Master server1 server2 server3 server4");
 
-    test.check_maxscale_alive();
+    test.check_percona_proxy_alive();
 
     return test.global_result;
 }

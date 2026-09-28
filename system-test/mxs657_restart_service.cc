@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 
     sht_rst_service();
 
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
     int rval = Test->global_result;
     delete Test;
     return rval;
@@ -102,8 +102,8 @@ void* query_thread1(void* ptr)
 {
     while (!exit_flag)
     {
-        Test->maxctrl(shutdown_cmd);
-        Test->maxctrl(restart_cmd);
+        Test->percona_proxyctl(shutdown_cmd);
+        Test->percona_proxyctl(restart_cmd);
     }
 
     return NULL;

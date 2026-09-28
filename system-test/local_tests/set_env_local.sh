@@ -23,21 +23,21 @@ export curr_dir=`pwd`
 
 export new_dirs="yes"
 
-export maxscale_binlog_dir="/var/lib/maxscale/Binlog_Service"
+export percona_proxy_binlog_dir="/var/lib/percona-proxy/Binlog_Service"
 export maxdir="/usr/bin/"
 export maxdir_bin="/usr/bin/"
-export maxscale_cnf="/etc/maxscale.cnf"
-export maxscale_log_dir="/var/log/maxscale/"
-export maxscale_sshkey=$maxscale_keyfile
+export percona_proxy_cnf="/etc/percona-proxy.cnf"
+export percona_proxy_log_dir="/var/log/percona-proxy/"
+export percona_proxy_sshkey=$percona_proxy_keyfile
 
 cd $mdbci_dir
 
 # Number of nodes
 export node_N=4
 
-export maxscale_IP=127.0.0.1
-export maxscale_network=127.0.0.1
-export maxscale_keyfile=$HOME/.ssh/id_rsa
+export percona_proxy_IP=127.0.0.1
+export percona_proxy_network=127.0.0.1
+export percona_proxy_keyfile=$HOME/.ssh/id_rsa
 
 # User name and Password for Master/Slave replication setup (should have all PRIVILEGES)
 export node_user="skysql"
@@ -47,8 +47,8 @@ export node_password="skysql"
 #export galera_user="skysql"
 #export galera_password="skysql"
 
-export maxscale_user="skysql"
-export maxscale_password="skysql"
+export percona_proxy_user="skysql"
+export percona_proxy_password="skysql"
 
 #for prefix in "node" "galera"
 for prefix in "node"
@@ -87,9 +87,9 @@ do
 done
 
 cd $mdbci_dir
-export maxscale_access_user=`whoami`
-export maxscale_whoami=`whoami`
-export maxscale_access_sudo="sudo "
+export percona_proxy_access_user=`whoami`
+export percona_proxy_whoami=`whoami`
+export percona_proxy_access_sudo="sudo "
 
 # Sysbench directory (should be sysbench >= 0.5)
 export sysbench_dir="$HOME/sysbench_deb7/sysbench/"

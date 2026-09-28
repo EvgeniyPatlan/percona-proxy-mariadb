@@ -22,7 +22,7 @@
  * @class MaxRest
  *
  * MaxRest is a class that (eventually) provides the same functionality as
- * the command line program maxctrl, but for use in programs.
+ * the command line program percona-proxyctl, but for use in programs.
  */
 class MaxRest
 {
@@ -43,7 +43,7 @@ public:
     };
 
     /**
-     * A class corresponding to a row in the output of 'maxctrl list servers'
+     * A class corresponding to a row in the output of 'percona-proxyctl list servers'
      */
     struct Server
     {
@@ -58,7 +58,7 @@ public:
     };
 
     /**
-     * A class corresponding to a row in the output of 'maxctrl show threads'
+     * A class corresponding to a row in the output of 'percona-proxyctl show threads'
      */
     struct Thread
     {
@@ -77,7 +77,7 @@ public:
      *               of the MaxRest instance.
      */
     MaxRest(TestConnections* pTest);
-    MaxRest(TestConnections* pTest, mxt::MaxScale* pMaxscale);
+    MaxRest(TestConnections* pTest, mxt::PerconaProxy* pPerconaProxy);
 
     /**
      * @return  The TestConnections instance used by this instance.
@@ -88,14 +88,14 @@ public:
     }
 
     /**
-     * @return The JSON object corresponding to /v1/maxscale/threads/:id.
+     * @return The JSON object corresponding to /v1/percona-proxy/threads/:id.
      */
-    mxb::Json v1_maxscale_threads(const std::string& id) const;
+    mxb::Json v1_percona_proxy_threads(const std::string& id) const;
 
     /**
-     * @return The JSON object corresponding to /v1/maxscale/threads.
+     * @return The JSON object corresponding to /v1/percona-proxy/threads.
      */
-    mxb::Json v1_maxscale_threads() const;
+    mxb::Json v1_percona_proxy_threads() const;
 
     /**
      * @return The JSON object corresponding to /v1/servers/:id:
@@ -118,14 +118,14 @@ public:
     mxb::Json v1_services() const;
 
     /**
-     * POST request to /v1/maxscale/modules/:module:/:command:?instance[&param...]
+     * POST request to /v1/percona-proxy/modules/:module:/:command:?instance[&param...]
      *
      * @param module    Module name.
      * @param command   The command.
      * @param instance  The object instance to execute it on.
      * @param params    Optional arguments.
      */
-    void v1_maxscale_modules(const std::string& module,
+    void v1_percona_proxy_modules(const std::string& module,
                              const std::string& command,
                              const std::string& instance,
                              const std::vector<std::string>& params = std::vector<std::string>()) const;
@@ -143,7 +143,7 @@ public:
                       const std::string& instance,
                       const std::vector<std::string>& params = std::vector<std::string>()) const
     {
-        return v1_maxscale_modules(module, command, instance, params);
+        return v1_percona_proxy_modules(module, command, instance, params);
     }
 
     class Value : public std::variant<std::string, int64_t, bool>
@@ -185,9 +185,9 @@ public:
      */
     void alter(const std::string& resource, const std::vector<Parameter>& parameters) const;
 
-    void alter_maxscale(const std::vector<Parameter>& parameters) const;
-    void alter_maxscale(const Parameter& parameter) const;
-    void alter_maxscale(const std::string& parameter_name, const Value& parameter_value) const;
+    void alter_percona_proxy(const std::vector<Parameter>& parameters) const;
+    void alter_percona_proxy(const Parameter& parameter) const;
+    void alter_percona_proxy(const std::string& parameter_name, const Value& parameter_value) const;
 
     void alter_service(const std::string& service, const std::vector<Parameter>& parameters) const;
     void alter_service(const std::string& service, const Parameter& parameter) const;
@@ -218,24 +218,24 @@ public:
     void destroy_service(const std::string& name, bool force);
 
     /**
-     * The equivalent of 'maxctrl list servers'
+     * The equivalent of 'percona-proxyctl list servers'
      *
      * @return The JSON resource /v1/servers as a vector of Server objects.
      */
     std::vector<Server> list_servers() const;
 
     /**
-     * The equivalent of 'maxctrl show threads'
+     * The equivalent of 'percona-proxyctl show threads'
      */
     std::vector<Thread> show_threads() const;
 
     /**
-     * The equivalent of 'maxctrl show thread :id'
+     * The equivalent of 'percona-proxyctl show thread :id'
      */
     Thread show_thread(const std::string& id) const;
 
     /**
-     * The equivalent of 'maxctrl show server'
+     * The equivalent of 'percona-proxyctl show server'
      *
      * @return The JSON resource /v1/servers/:id: as a Server object.
      */
@@ -330,7 +330,7 @@ public:
     mxb::Json parse(const std::string& json) const;
 
     /**
-     * Issue a curl DELETE/GET/PATCH/POST/PUT to the REST-API endpoint of MaxScale.
+     * Issue a curl DELETE/GET/PATCH/POST/PUT to the REST-API endpoint of Percona Proxy.
      *
      * The path will be appended to "http://127.0.0.1:8989/v1/".
      *
@@ -399,7 +399,7 @@ private:
     class SystemTestImp;
 
 private:
-    Imp* create_imp(TestConnections* pTest, mxt::MaxScale* pMaxscale = nullptr);
+    Imp* create_imp(TestConnections* pTest, mxt::PerconaProxy* pPerconaProxy = nullptr);
 
     bool                 m_fail_on_error  {true};
     std::unique_ptr<Imp> m_sImp;

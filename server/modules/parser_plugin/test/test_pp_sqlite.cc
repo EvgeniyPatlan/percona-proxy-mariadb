@@ -4,10 +4,10 @@
 
 #include <maxbase/assert.hh>
 #include <maxsimd/multistmt.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 using namespace std::literals::string_literals;
 

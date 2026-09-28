@@ -14,7 +14,7 @@
 #pragma once
 
 #include <maxbase/worker.hh>
-#include <maxscale/filter.hh>
+#include <percona-proxy/filter.hh>
 #include <maxbase/eventcount.hh>
 
 namespace throttle
@@ -22,7 +22,7 @@ namespace throttle
 
 class ThrottleFilter;
 
-class ThrottleSession : public maxscale::FilterSession
+class ThrottleSession : public percona_proxy::FilterSession
 {
 public:
     ThrottleSession(MXS_SESSION* pSession, SERVICE* pService, ThrottleFilter& filter);

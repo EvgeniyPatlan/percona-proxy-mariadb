@@ -12,7 +12,7 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <openssl/sha.h>
 #include <optional>
 #include <array>

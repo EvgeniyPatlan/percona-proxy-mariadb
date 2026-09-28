@@ -17,7 +17,7 @@
 #include <sys/epoll.h>
 #include <maxbase/hexdump.hh>
 #include <maxbase/log.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/routingworker.hh>
 
 #include <iostream>
 #include <iomanip>

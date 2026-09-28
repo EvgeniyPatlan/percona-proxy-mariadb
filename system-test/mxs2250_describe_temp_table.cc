@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    Connection rwsplit = test.maxscale->rwsplit();
+    Connection rwsplit = test.percona_proxy->rwsplit();
 
     test.expect(rwsplit.connect(),
                 "Could not connect to rwsplit.");

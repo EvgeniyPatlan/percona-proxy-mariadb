@@ -13,7 +13,7 @@
  */
 
 #include "maxrows.hh"
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 namespace
 {

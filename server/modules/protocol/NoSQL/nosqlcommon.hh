@@ -24,10 +24,10 @@
 #include <bsoncxx/json.hpp>
 #include <mongoc/mongoc.h>
 #include <maxbase/stopwatch.hh>
-#include <maxscale/protocol2.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/session.hh>
-#include <maxscale/target.hh>
+#include <percona-proxy/protocol2.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/target.hh>
 #include "nosqlbase.hh"
 #include "nosqlconfig.hh"
 #include "nosqlcontext.hh"

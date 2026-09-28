@@ -12,7 +12,7 @@
  * Public License.
  */
 #include "memcachedconfig.hh"
-#include <maxscale/cn_strings.hh>
+#include <percona-proxy/cn_strings.hh>
 
 namespace config = mxs::config;
 

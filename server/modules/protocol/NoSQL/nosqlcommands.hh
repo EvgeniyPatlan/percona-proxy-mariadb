@@ -19,7 +19,7 @@
 #include <sstream>
 #include <utility>
 #include <vector>
-#include <maxscale/buffer.hh>
+#include <percona-proxy/buffer.hh>
 #include "../../filter/masking/mysql.hh"
 #include "nosqldatabase.hh"
 #include "nosqlcommon.hh"

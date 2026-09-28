@@ -22,7 +22,7 @@ namespace
 
 void init(TestConnections& test)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pMysql, "DROP TABLE IF EXISTS MXS_1719");
     test.try_query(pMysql, "CREATE TABLE MXS_1719 (a TEXT, b TEXT)");
@@ -36,12 +36,12 @@ void run(TestConnections& test)
     MYSQL* pMysql = mysql_init(NULL);
     test.expect(pMysql, "Could not create MYSQL handle.");
 
-    const char* zUser = test.maxscale->user_name().c_str();
-    const char* zPassword = test.maxscale->password().c_str();
-    int port = test.maxscale->rwsplit_port;
+    const char* zUser = test.percona_proxy->user_name().c_str();
+    const char* zPassword = test.percona_proxy->password().c_str();
+    int port = test.percona_proxy->rwsplit_port;
 
     if (mysql_real_connect(pMysql,
-                           test.maxscale->ip4(),
+                           test.percona_proxy->ip4(),
                            zUser,
                            zPassword,
                            "test",
@@ -66,7 +66,7 @@ void run(TestConnections& test)
     }
     else
     {
-        test.expect(false, "Could not connect to MaxScale.");
+        test.expect(false, "Could not connect to Percona Proxy.");
     }
 
     mysql_close(pMysql);
@@ -75,22 +75,22 @@ void run(TestConnections& test)
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
 
     TestConnections test(argc, argv);
     std::string src = mxt::SOURCE_DIR;
     src += "/mxs1719.json";
-    std::string dst = std::string(test.maxscale->access_homedir()) + "/mxs1719.json";
+    std::string dst = std::string(test.percona_proxy->access_homedir()) + "/mxs1719.json";
 
-    if (test.maxscale->copy_to_node(src.c_str(), dst.c_str()))
+    if (test.percona_proxy->copy_to_node(src.c_str(), dst.c_str()))
     {
-        test.maxscale->ssh_node((std::string("chmod a+r ") + dst).c_str(), true);
-        test.maxscale->start();
+        test.percona_proxy->ssh_node((std::string("chmod a+r ") + dst).c_str(), true);
+        test.percona_proxy->start();
         if (test.ok())
         {
-            test.maxscale->wait_for_monitor();
+            test.percona_proxy->wait_for_monitor();
 
-            if (test.maxscale->connect_rwsplit() == 0)
+            if (test.percona_proxy->connect_rwsplit() == 0)
             {
                 run(test);
             }
@@ -102,12 +102,12 @@ int main(int argc, char* argv[])
     }
     else
     {
-        test.expect(false, "Could not copy masking file to MaxScale node.");
+        test.expect(false, "Could not copy masking file to Percona Proxy node.");
     }
 
-    test.maxscale->connect();
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE MXS_1719");
-    test.maxscale->disconnect();
+    test.percona_proxy->connect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE MXS_1719");
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

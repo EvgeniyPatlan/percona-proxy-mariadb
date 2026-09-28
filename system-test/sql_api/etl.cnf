@@ -1,4 +1,4 @@
-[maxscale]
+[percona-proxy]
 threads=###threads###
 admin_host=0.0.0.0
 log_info=1

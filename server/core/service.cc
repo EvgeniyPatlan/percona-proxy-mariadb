@@ -13,7 +13,7 @@
  */
 
 /**
- * @file service.c  - A representation of a service within MaxScale
+ * @file service.c  - A representation of a service within Percona Proxy
  */
 
 #include "internal/service.hh"
@@ -38,26 +38,26 @@
 
 #include <maxbase/jansson.hh>
 #include <maxbase/log.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/dcb.hh>
-#include <maxscale/http.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/protocol.hh>
-#include <maxscale/router.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/server.hh>
-#include <maxscale/session.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/users.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/version.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/http.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/protocol.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/server.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/users.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/version.hh>
 
 #include "internal/config.hh"
 #include "internal/config_runtime.hh"
 #include "internal/filter.hh"
-#include "internal/maxscale.hh"
+#include "internal/percona-proxy.hh"
 #include "internal/modules.hh"
 #include "internal/monitormanager.hh"
 #include "internal/servermanager.hh"
@@ -70,7 +70,7 @@
 using std::string;
 using std::set;
 using std::vector;
-using namespace maxscale;
+using namespace percona_proxy;
 using LockGuard = std::lock_guard<std::mutex>;
 using UniqueLock = std::unique_lock<std::mutex>;
 
@@ -615,7 +615,7 @@ Service::Service(const std::string& name, const std::string& router_name)
 
 Service::~Service()
 {
-    mxb_assert((m_refcount == 0 && !active()) || maxscale_teardown_in_progress() || state == State::FAILED);
+    mxb_assert((m_refcount == 0 && !active()) || percona_proxy_teardown_in_progress() || state == State::FAILED);
     mxb_assert(!user_account_manager() || !user_account_manager()->is_running());
 
     if (state != State::FAILED)
@@ -656,7 +656,7 @@ void Service::shutdown()
             // The user account managers must be stopped before the shutdown has proceeded to
             // the point where RoutingWorkers no longer respond to messages. The Service::shutdown()
             // function is called after The REST-API and listeners have been stopped which means
-            // that no new clients will try to connect to MaxScale and existing ones will not
+            // that no new clients will try to connect to Percona Proxy and existing ones will not
             // do user account updates.
             manager->stop();
         }
@@ -691,7 +691,7 @@ bool Service::launch()
     {
         for (const auto& listener : my_listeners)
         {
-            if (maxscale_is_shutting_down())
+            if (percona_proxy_is_shutting_down())
             {
                 break;
             }
@@ -754,7 +754,7 @@ bool Service::launch_all()
             ok = false;
         }
 
-        if (maxscale_is_shutting_down())
+        if (percona_proxy_is_shutting_down())
         {
             break;
         }

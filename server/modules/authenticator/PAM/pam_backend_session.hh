@@ -15,7 +15,7 @@
 
 #include "pam_auth_common.hh"
 #include <maxbase/pam_utils.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
 
 class PamBackendAuthenticator : public mariadb::BackendAuthenticator
 {

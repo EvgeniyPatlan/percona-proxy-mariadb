@@ -15,7 +15,7 @@
 
 void connection_hangs(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     auto master_id = c.field("SELECT @@server_id, @@last_insert_id");
 
@@ -40,8 +40,8 @@ void connection_hangs(TestConnections& test)
 
 void warning_on_sescmd_ps(TestConnections& test)
 {
-    test.maxctrl("stop monitor Monitor");
-    auto c = test.maxscale->rwsplit();
+    test.percona_proxyctl("stop monitor Monitor");
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     test.repl->block_node(1);
 
@@ -59,13 +59,13 @@ void warning_on_sescmd_ps(TestConnections& test)
     test.repl->unblock_node(1);
 
     test.expect(c.query("SELECT @@server_id"), "Failed to execute SELECT: %s", c.error());
-    test.maxctrl("start monitor Monitor");
+    test.percona_proxyctl("start monitor Monitor");
 }
 
 void backend_gets_closed(TestConnections& test)
 {
-    test.maxctrl("stop monitor Monitor");
-    auto c = test.maxscale->rwsplit();
+    test.percona_proxyctl("stop monitor Monitor");
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     c.query("CREATE OR REPLACE TABLE test.t1(id INT)");
     c.disconnect();
@@ -85,7 +85,7 @@ void backend_gets_closed(TestConnections& test)
         test.expect(c.read_query_result(), "Query %d failed: %s", i + 1, c.error());
     }
 
-    test.maxctrl("start monitor Monitor");
+    test.percona_proxyctl("start monitor Monitor");
 }
 
 void test_main(TestConnections& test)

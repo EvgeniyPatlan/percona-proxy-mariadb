@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/protocol/mariadb/client_connection.hh>
+#include <percona-proxy/protocol/mariadb/client_connection.hh>
 #include "../detect_special_query.hh"
 #include <inttypes.h>
 #include <string>

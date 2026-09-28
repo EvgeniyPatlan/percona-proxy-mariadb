@@ -27,29 +27,29 @@ namespace
 {
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     int chunk_size = 2500000;
     int chunk_num = 5;
     int rows = 2;
 
     repl.execute_query_all_nodes("set global max_allowed_packet=200000000");
-    mxs.connect_maxscale();
+    mxs.connect_percona_proxy();
     repl.connect();
     test.tprintf("LONGBLOB: Trying send data via RWSplit");
     test_longblob(test, mxs.conn_rwsplit, "LONGBLOB", chunk_size, chunk_num, rows);
     repl.close_connections();
-    mxs.close_maxscale_connections();
+    mxs.close_percona_proxy_connections();
 
     repl.sync_slaves();
-    mxs.connect_maxscale();
+    mxs.connect_percona_proxy();
     test.tprintf("Checking data via RWSplit");
     check_longblob_data(test, mxs.conn_rwsplit, chunk_size, chunk_num, rows);
     test.tprintf("Checking data via ReadConn master");
     check_longblob_data(test, mxs.conn_master, chunk_size, chunk_num, rows);
     test.tprintf("Checking data via ReadConn slave");
     check_longblob_data(test, mxs.conn_slave, chunk_size, chunk_num, rows);
-    mxs.close_maxscale_connections();
+    mxs.close_percona_proxy_connections();
 }
 }
 

@@ -12,8 +12,8 @@
  * Public License.
  */
 
-#include <maxscale/protocol/mariadb/local_client.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/protocol/mariadb/local_client.hh>
+#include <percona-proxy/routingworker.hh>
 
 LocalClient::~LocalClient()
 {

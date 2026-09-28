@@ -27,7 +27,7 @@ int alter_threads(MaxRest& maxrest, int nCurrent, int nDelta)
 {
     int nThreads = nCurrent + nDelta;
 
-    maxrest.alter_maxscale("threads", nThreads);
+    maxrest.alter_percona_proxy("threads", nThreads);
 
     if (nDelta < 0)
     {
@@ -112,7 +112,7 @@ void test_main(TestConnections& test)
     {
         create_service(test, maxrest);
 
-        maxrest.alter_maxscale("threads", 4);
+        maxrest.alter_percona_proxy("threads", 4);
     }
     catch (const std::exception& x)
     {

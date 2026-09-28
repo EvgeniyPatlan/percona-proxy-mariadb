@@ -7,7 +7,7 @@ This filter adds routing hints to a service. The filter has no parameters.
 # Hint Syntax
 
 **Note:** If a query has more than one comment only the first comment is
-  processed. Always place any MaxScale related comments first before any other
+  processed. Always place any Percona Proxy related comments first before any other
   comments that might appear in the query.
 
 ## Comments and comment types
@@ -19,7 +19,7 @@ if not all, connectors keep all comments intact in executed queries.
 
 ```
 # The --comments flag is needed for the command line client
-mariadb --comments -u my-user -psecret -e "SELECT @@hostname -- maxscale route to server db1"
+mariadb --comments -u my-user -psecret -e "SELECT @@hostname -- percona-proxy route to server db1"
 ```
 
 For comment types, use either `-- ` (notice the whitespace after the double
@@ -30,10 +30,10 @@ after the start tag or before the end tag but adding the whitespace is advised.
 
 ## Hint body
 
-All hints must start with the `maxscale` tag.
+All hints must start with the `percona-proxy` tag.
 
 ```
--- maxscale <hint body>
+-- percona-proxy <hint body>
 ```
 
 The hints have two types, ones that define a server type and others that contain
@@ -45,13 +45,13 @@ These hints will instruct the router to route a query to a certain type of a
 server.
 
 ```
--- maxscale route to [master | slave | server <server name>]
+-- percona-proxy route to [master | slave | server <server name>]
 ```
 
 #### Route to primary
 
 ```
--- maxscale route to master
+-- percona-proxy route to master
 ```
 
 A `master` value in a routing hint will route the query to a primary server. This
@@ -61,7 +61,7 @@ with no replication lag.
 #### Route to replica
 
 ```
--- maxscale route to slave
+-- percona-proxy route to slave
 ```
 
 A `slave` value will route the query to a replica server. Please note that the
@@ -71,17 +71,17 @@ possible to force writes to a replica server.
 #### Route to named server
 
 ```
--- maxscale route to server <server name>
+-- percona-proxy route to server <server name>
 ```
 
 A `server` value will route the query to a named server. The value of
 `<server name>` needs to be the same as the server section name in
-maxscale.cnf. If the server is not used by the service, the hint is ignored.
+percona-proxy.cnf. If the server is not used by the service, the hint is ignored.
 
 #### Route to last used server
 
 ```
--- maxscale route to last
+-- percona-proxy route to last
 ```
 
 A `last` value will route the query to the server that processed the last
@@ -91,7 +91,7 @@ server.
 #### Name-value hints
 
 ```
--- maxscale <param>=<value>
+-- percona-proxy <param>=<value>
 ```
 
 These control the behavior and affect the routing decisions made by the
@@ -107,32 +107,32 @@ named hints, which can be pushed on and off a stack of active hints.
 Defining named hints:
 
 ```
--- maxscale <hint name> prepare <hint content>
+-- percona-proxy <hint name> prepare <hint content>
 ```
 
 Pushing a hint onto the stack:
 
 ```
--- maxscale <hint name> begin
+-- percona-proxy <hint name> begin
 ```
 
 Popping the topmost hint off the stack:
 
 ```
--- maxscale end
+-- percona-proxy end
 ```
 
 You can define and activate a hint in a single command using the following:
 
 ```
--- maxscale <hint name> begin <hint content>
+-- percona-proxy <hint name> begin <hint content>
 ```
 
 You can also push anonymous hints onto the stack which are only used as long as
 they are on the stack:
 
 ```
--- maxscale begin <hint content>
+-- percona-proxy begin <hint content>
 ```
 
 # Prepared Statements
@@ -153,10 +153,10 @@ Connector-C function `mariadb_stmt_prepare` and then executed with
 `mariadb_stmt_execute` the result is always returned from the primary:
 
 ```
-SELECT user FROM accounts WHERE id = ? -- maxscale route to master
+SELECT user FROM accounts WHERE id = ? -- percona-proxy route to master
 ```
 
-Support for binary protocol prepared statements was added in MaxScale 6.0
+Support for binary protocol prepared statements was added in Percona Proxy 6.0
 ([MXS-2838](https://jira.mariadb.org/browse/MXS-2838)).
 
 The protocol commands that the routing hints are applied to are:
@@ -167,7 +167,7 @@ The protocol commands that the routing hints are applied to are:
 * COM_STMT_FETCH
 * COM_STMT_RESET
 
-Support for direct execution of prepared statements was added in MaxScale
+Support for direct execution of prepared statements was added in Percona Proxy
 6.2.0. For example the MariaDB Connector-C uses direct execution when
 `mariadb_stmt_execute_direct` is used.
 
@@ -184,7 +184,7 @@ prepared statements with hints:
 
 ```
 PREPARE my_ps FROM 'SELECT user FROM accounts WHERE id = ?';
-EXECUTE my_ps USING 123; -- maxscale route to master
+EXECUTE my_ps USING 123; -- percona-proxy route to master
 ```
 
 The `PREPARE` is routed normally and will be routed to all servers. The
@@ -195,7 +195,7 @@ master` hint.
 
 ## Routing `SELECT` queries to primary
 
-In this example, MariaDB MaxScale is configured with the readwritesplit router
+In this example, Percona Proxy for MariaDB is configured with the readwritesplit router
 and the hint filter.
 
 ```
@@ -212,14 +212,14 @@ type=filter
 module=hintfilter
 ```
 
-Behind MariaDB MaxScale is a primary server and a replica server. If there is
+Behind Percona Proxy for MariaDB is a primary server and a replica server. If there is
 replication lag between the primary and the replica, read queries sent to the replica
 might return old data. To guarantee up-to-date data, we can add a routing hint
 to the query.
 
 ```
 INSERT INTO table1 VALUES ("John","Doe",1);
-SELECT * from table1; -- maxscale route to master
+SELECT * from table1; -- percona-proxy route to master
 ```
 
 The first INSERT query will be routed to the primary. The following SELECT query

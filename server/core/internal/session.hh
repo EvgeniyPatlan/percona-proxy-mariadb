@@ -13,7 +13,7 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <deque>
 #include <string>
@@ -21,9 +21,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include <maxscale/buffer.hh>
-#include <maxscale/session.hh>
-#include <maxscale/target.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/target.hh>
 
 #include "filter.hh"
 #include "service.hh"
@@ -39,7 +39,7 @@ void dListSessions(DCB*);
 
 void printSession(MXS_SESSION*);
 class Server;
-namespace maxscale
+namespace percona_proxy
 {
 class Listener;
 }

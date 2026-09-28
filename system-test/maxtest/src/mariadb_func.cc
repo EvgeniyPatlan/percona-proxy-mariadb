@@ -512,7 +512,7 @@ int get_conn_num(MYSQL* conn, std::string ip, std::string hostname, std::string 
     {
         // one extra connection is visible in the process list
         // output in case of local test
-        // (when MaxScale is on the same machine as backends)
+        // (when Percona Proxy is on the same machine as backends)
         conn_num--;
     }
     return conn_num;

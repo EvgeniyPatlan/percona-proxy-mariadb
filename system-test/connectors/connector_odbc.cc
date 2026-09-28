@@ -12,7 +12,7 @@
  */
 
 /**
- * Runs the MariaDB Connector/ODBC test suite against MaxScale
+ * Runs the MariaDB Connector/ODBC test suite against Percona Proxy
  */
 #include "connector_common.hh"
 #include <thread>
@@ -33,12 +33,12 @@ void test_main(TestConnections& test)
         ss << "cd mariadb-connector-odbc "
            << " && export TEST_DSN=maodbc_test"
            << " && export TEST_DRIVER=maodbc_test"
-           << " && export TEST_SERVER=" << test.maxscale->ip()
+           << " && export TEST_SERVER=" << test.percona_proxy->ip()
            << " && export TEST_UID=connector"
            << " && export TEST_PASSWORD=connector"
            << " && export TEST_PORT=4006"
            << " && export TEST_SCHEMA=test"
-           << " && export srv=maxscale"
+           << " && export srv=percona-proxy"
            << " && cmake -DWITH_UNIT_TESTS=Y ."
            << " && make -j " << std::thread::hardware_concurrency()
            << " && cd test"

@@ -19,8 +19,8 @@
 #include <mysql.h>
 #include <maxbase/stopwatch.hh>
 #include <maxbase/format.hh>
-#include <maxscale/clock.hh>
-#include <maxscale/protocol/mariadb/maxscale.hh>
+#include <percona-proxy/clock.hh>
+#include <percona-proxy/protocol/mariadb/percona-proxy.hh>
 
 using std::string;
 using std::move;
@@ -37,7 +37,7 @@ namespace
 void print_no_locks_error(mxb::Json& error_out)
 {
     const char locks_taken[] =
-        "Cannot perform cluster operation because this MaxScale does not have exclusive locks "
+        "Cannot perform cluster operation because this Percona Proxy does not have exclusive locks "
         "on a majority of servers. Run \"SELECT IS_USED_LOCK('%s');\" on the servers to find out "
         "which connection id has a lock.";
     auto err_msg = string_printf(locks_taken, SERVER_LOCK_NAME);
@@ -1715,7 +1715,7 @@ MariaDBMonitor::slave_receiving_events(const MariaDBServer* demotion_target, Dur
             && slave_conn->last_data_time >= recent_event_time)
         {
             // The slave is still connected to the correct master and has received events. This means that
-            // while MaxScale can't connect to the master, it's probably still alive.
+            // while Percona Proxy can't connect to the master, it's probably still alive.
             connected_slave = slave;
             auto latest_event_age = current_time - slave_conn->last_data_time;
             *event_age_out = latest_event_age;
@@ -2002,7 +2002,7 @@ bool MariaDBMonitor::check_gtid_replication(Log log_mode, const MariaDBServer* d
     {
         PRINT_ERROR_IF(log_mode, error_out,
                        "Cluster gtid domain is unknown. This is usually caused by the cluster never "
-                       "having a primary server while MaxScale was running.");
+                       "having a primary server while Percona Proxy was running.");
     }
     else
     {

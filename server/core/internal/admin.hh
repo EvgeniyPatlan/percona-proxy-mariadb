@@ -13,13 +13,13 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <unordered_map>
 #include <string>
 #include <string_view>
 
-#include <maxscale/users.hh>
+#include <percona-proxy/users.hh>
 
 #include "httprequest.hh"
 #include "httpresponse.hh"
@@ -171,7 +171,7 @@ bool mxs_admin_init();
  * @brief Shutdown the administrative interface
  *
  * This stops the REST API from accepting new requests but it will still allow existing requests to complete.
- * All connection attempts will be rejected with a HTTP 503 error stating that MaxScale is shutting down.
+ * All connection attempts will be rejected with a HTTP 503 error stating that Percona Proxy is shutting down.
  */
 void mxs_admin_shutdown();
 
@@ -190,7 +190,7 @@ bool mxs_admin_https_enabled();
 /**
  * @brief Enable CORS support
  *
- * CORS support allows browsers to access the REST API without MaxScale being the origin. There is no
+ * CORS support allows browsers to access the REST API without Percona Proxy being the origin. There is no
  * validation of the headers which means this is meant only for testing purposes.
  */
 void mxs_admin_enable_cors();

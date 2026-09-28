@@ -13,7 +13,7 @@
  */
 #pragma once
 
-#include <maxscale/monitor.hh>
+#include <percona-proxy/monitor.hh>
 
 /**
  * This class contains internal monitor management functions that should not be exposed in the public
@@ -203,7 +203,7 @@ public:
      * executed asynchronously by the REST-API.
      *
      * @param servers The connection details from get_connection_settings()
-     * @param host    The hostname of this MaxScale instance
+     * @param host    The hostname of this Percona Proxy instance
      *
      * @return The results as JSON
      */

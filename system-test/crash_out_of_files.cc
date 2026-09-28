@@ -39,8 +39,8 @@ int main(int argc, char* argv[])
     // the backend servers. This will cause test to fail as the test host gets blocked due to too many
     // authentication failures. To prevent this, create one connection to each of the services to make sure
     // the users have been loaded.
-    Test->maxscale->connect_maxscale();
-    Test->maxscale->close_maxscale_connections();
+    Test->percona_proxy->connect_percona_proxy();
+    Test->percona_proxy->close_percona_proxy_connections();
 
     Test->tprintf("Start load\n");
     Test->reset_timeout();
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
     Test->repl->close_connections();
 
     Test->log_excludes("Refresh rate limit exceeded");
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
     int rval = Test->global_result;
     delete Test;
     return rval;

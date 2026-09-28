@@ -40,7 +40,7 @@ struct TestCase
 int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
 
     auto send = [&](string q) {
         test.expect(c.send_query(q), "Failed to send query: %s", c.error());
@@ -78,12 +78,12 @@ int main(int argc, char** argv)
 
     auto block = [&](int node = 0) {
         test.repl->block_node(node);
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
     };
 
     auto unblock = [&](int node = 0) {
         test.repl->unblock_node(node);
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
     };
 
     vector<TestCase> tests(

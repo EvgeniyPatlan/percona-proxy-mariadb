@@ -1,17 +1,17 @@
 add_executable(compare compare.cc testreader.cc)
-target_link_libraries(compare maxscale-common)
+target_link_libraries(compare percona-proxy-common)
 
 add_executable(pp_concurrency pp_concurrency.cc)
-target_link_libraries(pp_concurrency maxscale-common)
+target_link_libraries(pp_concurrency percona-proxy-common)
 
 add_executable(pp_cache pp_cache.cc)
-target_link_libraries(pp_cache maxscale-common)
+target_link_libraries(pp_cache percona-proxy-common)
 
 add_executable(crash_pp_sqlite crash_pp_sqlite.cc)
-target_link_libraries(crash_pp_sqlite maxscale-common)
+target_link_libraries(crash_pp_sqlite percona-proxy-common)
 
 add_executable(test_pp_sqlite test_pp_sqlite.cc)
-target_link_libraries(test_pp_sqlite maxscale-common)
+target_link_libraries(test_pp_sqlite percona-proxy-common)
 
 add_test(test_crash_pp_sqlite crash_pp_sqlite)
 add_test(test_pp_sqlite test_pp_sqlite)
@@ -25,7 +25,7 @@ if (BUILD_PP_MYSQLEMBEDDED)
   add_test(test_pp_compareselect compare -v 2 ${CMAKE_CURRENT_SOURCE_DIR}/select.test)
   add_test(test_pp_compareset compare -v 2 ${CMAKE_CURRENT_SOURCE_DIR}/set.test)
   add_test(test_pp_compareupdate compare -v 2 ${CMAKE_CURRENT_SOURCE_DIR}/update.test)
-  add_test(test_pp_comparemaxscale compare -v 2 ${CMAKE_CURRENT_SOURCE_DIR}/maxscale.test)
+  add_test(test_pp_comparemaxscale compare -v 2 ${CMAKE_CURRENT_SOURCE_DIR}/percona-proxy.test)
   add_test(test_pp_comparewhitespace compare -v 2 -S -s "select user from mysql.user; ")
 
   add_test(test_pp_cte_simple       compare -v 2 ${CMAKE_CURRENT_SOURCE_DIR}/cte_simple.test)

@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/listener.hh>
+#include <percona-proxy/listener.hh>
 
 #include <arpa/inet.h>
 #include <cstdio>
@@ -30,13 +30,13 @@
 #include <unordered_set>
 
 #include <maxbase/log.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/protocol2.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/service.hh>
-#include <maxscale/ssl.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/protocol2.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/ssl.hh>
+#include <percona-proxy/utils.hh>
 
 #include "internal/config.hh"
 #include "internal/modules.hh"
@@ -61,7 +61,7 @@ const char CN_PROXY_PROTOCOL_NETWORKS[] = "proxy_protocol_networks";
 constexpr std::string_view TX_ISOLATION = "tx_isolation";
 constexpr std::string_view TRANSACTION_ISOLATION = "transaction_isolation";
 
-static std::set<std::string, std::less<>> s_fake_metadata_variables = {"maxscale", "threads_connected", "connection_id"};
+static std::set<std::string, std::less<>> s_fake_metadata_variables = {"percona-proxy", "threads_connected", "connection_id"};
 
 namespace cfg = mxs::config;
 
@@ -164,7 +164,7 @@ cfg::ParamStringList s_connection_metadata(
         "system_time_zone=auto",
         "time_zone=auto",
         "tx_isolation=auto",
-        "maxscale=auto",
+        "percona-proxy=auto",
     },
     RUNTIME);
 
@@ -332,7 +332,7 @@ bool is_all_iface(const std::string& a, const std::string& b)
     return is_all_iface(a) || is_all_iface(b);
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 /**
@@ -1580,9 +1580,9 @@ Listener::SMetadata Listener::create_connection_metadata()
     {
         if (auto [key, value] = mxb::split(val, "="); value == "auto")
         {
-            if (key == "maxscale")
+            if (key == "percona-proxy")
             {
-                metadata.emplace(key, MAXSCALE_VERSION);
+                metadata.emplace(key, PERCONA_PROXY_VERSION);
             }
             else if (srv)
             {
@@ -1641,7 +1641,7 @@ bool Listener::post_configure(const mxs::ConfigParameters& protocol_params)
         // whenever they're changed on the source server.
         if (auto [key, value] = mxb::split(val, "="); value == "auto")
         {
-            // Check that this is an actual system variable and not a fake one that MaxScale generates.
+            // Check that this is an actual system variable and not a fake one that Percona Proxy generates.
             if (s_fake_metadata_variables.find(key) == s_fake_metadata_variables.end())
             {
                 for (auto srv : servers)

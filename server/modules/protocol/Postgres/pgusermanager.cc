@@ -15,10 +15,10 @@
 #include "pgusermanager.hh"
 #include <maxbase/format.hh>
 #include <maxbase/threadpool.hh>
-#include <maxscale/config.hh>
-#include <maxscale/protocol/postgresql/module_names.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/protocol/postgresql/module_names.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/service.hh>
 
 using std::string;
 using std::vector;

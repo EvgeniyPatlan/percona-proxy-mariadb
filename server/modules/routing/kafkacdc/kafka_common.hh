@@ -13,9 +13,9 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <maxbase/assert.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/config2.hh>
 
 #include <librdkafka/rdkafkacpp.h>
 

@@ -15,7 +15,7 @@
 
 void test_mxs5231(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
     std::set<std::string> ids_before;
 
@@ -27,8 +27,8 @@ void test_mxs5231(TestConnections& test)
 
     test.expect(ids_before.size() == 3, "Expected 3 servers to be used for reads: %lu", ids_before.size());
 
-    test.check_maxctrl("stop monitor MariaDB-Monitor");
-    test.check_maxctrl("set server server3 maintenance");
+    test.check_percona_proxyctl("stop monitor MariaDB-Monitor");
+    test.check_percona_proxyctl("set server server3 maintenance");
 
     std::set<std::string> ids_after;
 
@@ -40,7 +40,7 @@ void test_mxs5231(TestConnections& test)
 
     test.expect(ids_after.size() == 2, "Expected 2 servers to be used for reads: %lu", ids_after.size());
 
-    auto num_conn = test.maxctrl("api get servers/server3 data.attributes.statistics.connections").output;
+    auto num_conn = test.percona_proxyctl("api get servers/server3 data.attributes.statistics.connections").output;
     test.expect(num_conn == "0", "Expected no connections on server3, found: %s", num_conn.c_str());
 }
 

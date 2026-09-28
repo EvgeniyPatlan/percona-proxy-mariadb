@@ -7,5 +7,5 @@
 
 scriptdir=$(dirname $(realpath $0))
 cd "$scriptdir/../../../"
-docker build -t maxscale-rest-api -f "$scriptdir/Dockerfile" .
+docker build -t percona-proxy-rest-api -f "$scriptdir/Dockerfile" .
 cd "$scriptdir"

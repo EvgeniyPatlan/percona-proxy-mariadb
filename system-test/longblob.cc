@@ -23,20 +23,20 @@ int main(int argc, char* argv[])
     repl.execute_query_all_nodes("set global max_allowed_packet=67108864");
 
     auto run_test_case = [&](const char* blob_type, size_t chunk_size, size_t chunks) {
-        auto& mxs = *test.maxscale;
-        mxs.connect_maxscale();
+        auto& mxs = *test.percona_proxy;
+        mxs.connect_percona_proxy();
         repl.connect();
         test.tprintf("%s, rwsplit, chunk size %lu, chunks %lu", blob_type, chunk_size, chunks);
         test_longblob(test, mxs.conn_rwsplit, blob_type, chunk_size, chunks, 1);
         repl.close_connections();
-        mxs.close_maxscale_connections();
+        mxs.close_percona_proxy_connections();
 
-        mxs.connect_maxscale();
+        mxs.connect_percona_proxy();
         repl.connect();
         test.tprintf("%s, readconn master, chunk size %lu, chunks %lu", blob_type, chunk_size, chunks);
         test_longblob(test, mxs.conn_master, blob_type, chunk_size, chunks, 1);
         repl.close_connections();
-        mxs.close_maxscale_connections();
+        mxs.close_percona_proxy_connections();
     };
 
     run_test_case("BLOB", 1000, 8);

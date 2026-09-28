@@ -24,8 +24,8 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    auto sRws1 = test.maxscale->open_rwsplit_connection2();
-    auto sRws2 = test.maxscale->open_rwsplit_connection2();
+    auto sRws1 = test.percona_proxy->open_rwsplit_connection2();
+    auto sRws2 = test.percona_proxy->open_rwsplit_connection2();
 
     if (sRws1->cmd("CREATE TABLE IF NOT EXISTS mxs3694 (f INT)"))
     {

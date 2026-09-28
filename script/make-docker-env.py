@@ -33,12 +33,12 @@ class HostType(Enum):
 # Types of files to generate
 class File(Enum):
     DockerCompose = 1
-    MaxScaleCnf   = 2
+    PerconaProxyCnf   = 2
     SystemTestCnf = 3
     MasterSql     = 4
     SlaveSql      = 5
 
-# Constants. Currently all maxscale.cnf user and password entries are changed to
+# Constants. Currently all percona-proxy.cnf user and password entries are changed to
 # default_user and default_passwd in order to make life simpler (TODO?).
 default_user="maxskysql"
 default_passwd="skysql"
@@ -46,18 +46,18 @@ db_image="mariadb:10.4"
 root_passwd="mariadb"
 
 help_text = '''
-This script reads a maxscale.cnf file and creates a docker-compose setup
-matching the maxscale configuration. The docker configurations are ready
+This script reads a percona-proxy.cnf file and creates a docker-compose setup
+matching the percona-proxy configuration. The docker configurations are ready
 to be copied and started on their respective hosts. See docker-remote.py.
-A cleaned up maxscale.cnf file, and a maxscale.cnf-systest file are also
+A cleaned up percona-proxy.cnf file, and a percona-proxy.cnf-systest file are also
 generated.
 '''
 
 #### function main
 def main():
     parser = ArgumentParser(help_text)
-    parser.add_argument("maxscale_cnf", nargs='?',
-                        help="The maxscale config file to read. Default ./maxscale.cnf")
+    parser.add_argument("percona_proxy_cnf", nargs='?',
+                        help="The percona-proxy config file to read. Default ./percona-proxy.cnf")
 
     parser.add_argument("-o", "--outdir", type=str, default="docker-env",
                         help="output directory. Default docker-env")
@@ -75,8 +75,8 @@ def main():
         print_examples()
         sys.exit(0)
 
-    if cmd_line_args.maxscale_cnf == None:
-        cmd_line_args.maxscale_cnf = "maxscale.cnf"
+    if cmd_line_args.percona_proxy_cnf == None:
+        cmd_line_args.percona_proxy_cnf = "percona-proxy.cnf"
 
     if os.path.exists(cmd_line_args.outdir):
         if not cmd_line_args.delete_outdir:
@@ -89,32 +89,32 @@ def main():
 
         shutil.rmtree(cmd_line_args.outdir)
 
-    # Parse maxscale.cnf into a Config instance
-    config = Config(cmd_line_args.maxscale_cnf)
+    # Parse percona-proxy.cnf into a Config instance
+    config = Config(cmd_line_args.percona_proxy_cnf)
 
     # Create dictionaries of key-value pairs that are needed for the generated
     # files, e.g. {"password", "skysql"}
-    maxscale_params, systest_params = create_parameter_dicts(config)
+    percona_proxy_params, systest_params = create_parameter_dicts(config)
 
-    # Generate modified maxscale.cnf and maxscale.cnf.systest
-    print(config.template.format(**maxscale_params), file=open_file(File.MaxScaleCnf, None))
+    # Generate modified percona-proxy.cnf and percona-proxy.cnf.systest
+    print(config.template.format(**percona_proxy_params), file=open_file(File.PerconaProxyCnf, None))
     print(config.template.format(**systest_params), file=open_file(File.SystemTestCnf, None))
 
     # Genrate the rest of the files
-    generate_files(config, maxscale_params, systest_params)
+    generate_files(config, percona_proxy_params, systest_params)
 
 
-#### class Config reads the maxscale.cnf file.
-# It creates the Server objects, and a string representation of maxscale.cnf
+#### class Config reads the percona-proxy.cnf file.
+# It creates the Server objects, and a string representation of percona-proxy.cnf
 # with items that will change, replaced with formatting place holders
 # e.g. "threads = auto" => "threads = {threads}".
 class Config(object):
-    def __init__(self, maxscale_cnf):
+    def __init__(self, percona_proxy_cnf):
         cnf = configparser.ConfigParser()
-        cnf.readfp(open(maxscale_cnf))
+        cnf.readfp(open(percona_proxy_cnf))
 
         self.servers = self.read_servers(cnf)
-        self.threads = cnf.get("maxscale", "threads", fallback="1")
+        self.threads = cnf.get("percona-proxy", "threads", fallback="1")
         self.replace_server_sections(cnf, self.servers)
         self.insert_placefolders(cnf)
 
@@ -134,7 +134,7 @@ class Config(object):
 
     @staticmethod
     def insert_placefolders(cnf): # other than those in server sections
-        cnf.set("maxscale", "threads", "{threads}")
+        cnf.set("percona-proxy", "threads", "{threads}")
         for sect in cnf.sections():
             if  cnf.has_option(sect, "user"):
                 cnf.set(sect, "user", "{user}")
@@ -158,8 +158,8 @@ class Config(object):
 
 
 #### class Server
-# In-memory representation of a Server, read from a maxscale.cnf file.
-# The parameters and member config_items contains all items from the maxscale.cnf
+# In-memory representation of a Server, read from a percona-proxy.cnf file.
+# The parameters and member config_items contains all items from the percona-proxy.cnf
 # file for this server, the rest of the members are for replacing specific items.
 class Server(object):
     def __init__(self, server_index, name, config_items):
@@ -178,21 +178,21 @@ class Server(object):
 
 
 #### function generate_files generates the docker yaml and sql files.
-def generate_files(config, maxscale_params, systest_params):
+def generate_files(config, percona_proxy_params, systest_params):
 
     servers = sorted(config.servers, key=lambda server: server.address)
 
     current_ip = servers[0].address
     host_type = None
 
-    docker_file = start_docker_file(current_ip, maxscale_params)
+    docker_file = start_docker_file(current_ip, percona_proxy_params)
 
     for server in servers:
         if current_ip!=server.address:
-            finish_docker_file(current_ip, maxscale_params, host_type)
+            finish_docker_file(current_ip, percona_proxy_params, host_type)
             host_type = None
             current_ip = server.address
-            docker_file = start_docker_file(current_ip, maxscale_params)
+            docker_file = start_docker_file(current_ip, percona_proxy_params)
 
         volume=""
         if server.is_master:
@@ -213,13 +213,13 @@ def generate_files(config, maxscale_params, systest_params):
         % (server.name, db_image, root_passwd, volume, 1000+server.server_index, server.port),
     file=docker_file)
 
-    finish_docker_file(current_ip, maxscale_params, host_type)
+    finish_docker_file(current_ip, percona_proxy_params, host_type)
 
 
 #### function start_docker_file opens a new docker-file, and writes the header into it.
 #### The function finish_docker_file is called once the docker file has been created
 #### to generate the master and slave sql files.
-def start_docker_file(ip, maxscale_params):
+def start_docker_file(ip, percona_proxy_params):
     docker_file = open_file(File.DockerCompose, ip)
     print('''version: "3.3"\nservices:''', file=docker_file);
 
@@ -231,12 +231,12 @@ def start_docker_file(ip, maxscale_params):
 # yaml file is iterating over servers for a specific IP, it
 # also notes if the servers are master, slave or both, which
 # is used here to avoid writing sql files that would not be used.
-def finish_docker_file(ip, maxscale_params, host_type):
+def finish_docker_file(ip, percona_proxy_params, host_type):
     if host_type==HostType.Master or host_type==HostType.Both:
-        create_master_sql(maxscale_params, ip)
+        create_master_sql(percona_proxy_params, ip)
 
     if host_type==HostType.Slave or host_type==HostType.Both:
-        create_slave_sql(maxscale_params, ip)
+        create_slave_sql(percona_proxy_params, ip)
 
 
 #### function open_file, opens the files to be generated for writing
@@ -248,11 +248,11 @@ def open_file(file_enum, ip):
     if file_enum == File.DockerCompose:
         file_name = 'docker-compose.yml'
 
-    elif file_enum == File.MaxScaleCnf:
-        file_name = 'maxscale.cnf'
+    elif file_enum == File.PerconaProxyCnf:
+        file_name = 'percona-proxy.cnf'
 
     elif file_enum == File.SystemTestCnf:
-        file_name = 'maxscale.cnf-systest'
+        file_name = 'percona-proxy.cnf-systest'
 
     elif file_enum == File.MasterSql:
         directory = directory + "/sql/master"
@@ -281,7 +281,7 @@ def open_file(file_enum, ip):
 #### function create_parameter_dicts,
 # Creates parameter dictionaries. key-value pairs, for file genration.
 def create_parameter_dicts(config):
-    maxscale_params={"threads" : config.threads, "user" : default_user, "password" : default_passwd}
+    percona_proxy_params={"threads" : config.threads, "user" : default_user, "password" : default_passwd}
     systest_params={"threads" : "###threads###", "user" : default_user, "password" : default_passwd}
     local_servers_list=""
     tester_servers_list=""
@@ -292,19 +292,19 @@ def create_parameter_dicts(config):
         if len(tester_servers_list): tester_servers_list += ', '
         tester_servers_list += server.test_name
 
-        maxscale_params.update({"server%d" % server.server_index : server.name})
+        percona_proxy_params.update({"server%d" % server.server_index : server.name})
         systest_params.update({"server%d" % server.server_index : server.test_name})
 
-        maxscale_params.update({"address%d" % server.server_index : server.address})
+        percona_proxy_params.update({"address%d" % server.server_index : server.address})
         systest_params.update({"address%d" % server.server_index : server.test_address})
 
-        maxscale_params.update({"port%d" % server.server_index : server.port})
+        percona_proxy_params.update({"port%d" % server.server_index : server.port})
         systest_params.update({"port%d" % server.server_index : server.test_port})
 
-    maxscale_params.update({"server_list" : local_servers_list})
+    percona_proxy_params.update({"server_list" : local_servers_list})
     systest_params.update({"server_list" : tester_servers_list})
 
-    return (maxscale_params, systest_params)
+    return (percona_proxy_params, systest_params)
 
 
 #### function create_master_sql,
@@ -359,11 +359,11 @@ def print_examples():
     print("Other useful docker commands:")
     print("  docker container ls --all  # all existing containers")
     print("  docker exec -i -t <container> <command>  # e.g. docker exec -i -t master /bin/bash")
-    print("  docker cp maxscale.cnf.local to <your-etc-path>.")
-    print("  docker cp maxscale.cnf.systest to maxscale-system-test/cnf if needed.")
+    print("  docker cp percona-proxy.cnf.local to <your-etc-path>.")
+    print("  docker cp percona-proxy.cnf.systest to percona-proxy-system-test/cnf if needed.")
     print("")
-    print("Running local maxscale:")
-    print("  ./maxscale -d --configdir=<your-etc-path>")
+    print("Running local percona-proxy:")
+    print("  ./percona-proxy -d --configdir=<your-etc-path>")
 
 if __name__ == "__main__":
     main()

@@ -13,11 +13,11 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <maxbase/stopwatch.hh>
 #include <maxbase/shareddata.hh>
-#include <maxscale/target.hh>
+#include <percona-proxy/target.hh>
 #include <unordered_map>
 
 /** PerformanceInfo is a class that on the one hand provides routeQuery() with performance/routing

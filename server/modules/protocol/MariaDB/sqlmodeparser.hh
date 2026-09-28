@@ -13,12 +13,12 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/protocol/mariadb/customparser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/protocol/mariadb/customparser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 
-class SqlModeParser : public maxscale::CustomParser
+class SqlModeParser : public percona_proxy::CustomParser
 {
 public:
     enum sql_mode_t

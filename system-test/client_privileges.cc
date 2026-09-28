@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 
 void test_main(TestConnections& test)
 {
-    auto conn = test.maxscale->open_rwsplit_connection2_nodb();
+    auto conn = test.percona_proxy->open_rwsplit_connection2_nodb();
 
     auto maybe_drop_user = [&](const char* user) {
         conn->cmd_f("DROP USER IF EXISTS '%s'@'%%'", user);
@@ -152,10 +152,10 @@ void test_main(TestConnections& test)
             if (test.ok())
             {
                 auto& repl = *test.repl;
-                auto& mxs = *test.maxscale;
+                auto& mxs = *test.percona_proxy;
 
                 // All ok so far. Test user account refreshing. First, generate a user not yet
-                // known to MaxScale.
+                // known to Percona Proxy.
                 auto master_conn = test.repl->backend(0)->open_connection();
                 auto new_scopeuser = master_conn->create_user(new_user, "%", new_pass);
                 new_scopeuser.grant_f("SELECT ON %s.*", db);
@@ -174,7 +174,7 @@ void test_main(TestConnections& test)
                 auto res = test_conn->try_query("select 1;");
                 test.expect(!res, "Query succeeded when it should have failed.");
 
-                // Wait a bit and try connecting again. Now even the connection should fail, as MaxScale
+                // Wait a bit and try connecting again. Now even the connection should fail, as Percona Proxy
                 // updated user accounts.
                 sleep(1);
                 test_conn = mxs.try_open_rwsplit_connection(new_user, new_pass);
@@ -192,8 +192,8 @@ void test_login(TestConnections& test, const string& user, const string& pass, c
 {
     bool login_ok = false;
     bool query_ok = false;
-    int port = test.maxscale->rwsplit_port;
-    auto ip = test.maxscale->ip4();
+    int port = test.percona_proxy->rwsplit_port;
+    auto ip = test.percona_proxy->ip4();
 
     MYSQL* conn = open_conn_db(port, ip, db, user, pass);
     if (mysql_errno(conn) == 0)

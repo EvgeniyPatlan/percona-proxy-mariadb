@@ -20,7 +20,7 @@
 #include "mariadbmon_utils.hh"
 
 using std::string;
-using mxt::MaxScale;
+using mxt::PerconaProxy;
 
 namespace
 {
@@ -43,15 +43,15 @@ void test_main(TestConnections& test)
     const int source_ind = 1;
     const int target_ind = 3;
 
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     auto* source_be = repl.backend(source_ind);
     auto* target_be = repl.backend(target_ind);
     backup::copy_ssh_keyfile(test, {source_be, target_be});
 
-    mxs.ssh_output("maxkeys");
-    auto monpw = mxs.ssh_output("maxpasswd mariadbmon").output;
-    auto replpw = mxs.ssh_output("maxpasswd repl").output;
+    mxs.ssh_output("percona-proxy-keys");
+    auto monpw = mxs.ssh_output("percona-proxy-passwd mariadbmon").output;
+    auto replpw = mxs.ssh_output("percona-proxy-passwd repl").output;
     const char mon_name[] = "MariaDB-Monitor";
     mxs.start_and_check_started();
     mxs.alter_monitor(mon_name, "password", monpw);
@@ -112,7 +112,7 @@ void test_main(TestConnections& test)
 
 void prepare_to_test_rebuild(TestConnections& test, int target_ind, int master_ind)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     const int target_rows = 100;
     const int cluster_rows = 300;
@@ -181,8 +181,8 @@ void prepare_to_test_rebuild(TestConnections& test, int target_ind, int master_i
 
 void run_rebuild(TestConnections& test, const string& rebuild_cmd, int target_ind, int master_ind)
 {
-    auto& mxs = *test.maxscale;
-    auto res = mxs.maxctrl(rebuild_cmd);
+    auto& mxs = *test.percona_proxy;
+    auto res = mxs.percona_proxyctl(rebuild_cmd);
     if (res.rc == 0)
     {
         bool op_success = wait_for_cmd_completion(test);
@@ -214,7 +214,7 @@ bool wait_for_cmd_completion(TestConnections& test)
     mxb::StopWatch timer;
     while (timer.split() < 30s)
     {
-        auto op_status = test.maxscale->maxctrl("call command mariadbmon fetch-cmd-result MariaDB-Monitor");
+        auto op_status = test.percona_proxy->percona_proxyctl("call command mariadbmon fetch-cmd-result MariaDB-Monitor");
         if (op_status.rc != 0)
         {
             test.add_failure("Failed to check backup operation status: %s",
@@ -247,13 +247,13 @@ bool wait_for_cmd_completion(TestConnections& test)
 
 void test_special_characters(TestConnections& test, int target_ind, int master_ind)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     // MXS-5366 Test username/password with special characters. This still does not test
     // a single quote ('), but perhaps that is rare enough to ignore for now. Supporting '
     // would require some extra string processing.
     auto change_monitor_user = [&](const string& user, const string& pw){
-        string cmd = mxb::string_printf("maxctrl alter monitor MariaDB-Monitor "
+        string cmd = mxb::string_printf("percona-proxyctl alter monitor MariaDB-Monitor "
                                         "user='%s' password='%s'",
                                         user.c_str(), pw.c_str());
         auto rc = mxs.vm_node().run_cmd(cmd);
@@ -288,7 +288,7 @@ void test_rebuild_autoselect(TestConnections& test, int target_ind, int master_i
 {
     test.tprintf("Stop server3 and server4. Rebuild server4 without defining source server. "
                  "server2 should be used as source.");
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     int stopped_server_ind = 2;
     repl.backend(stopped_server_ind)->stop_database();
@@ -315,7 +315,7 @@ void test_rebuild_autoselect(TestConnections& test, int target_ind, int master_i
 
 void test_create_restore_backup(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     // Normal rebuild works. Test backup creation and use. Backup storage has been configured for
     // server4. To speed up backup creation, minimize binary logs on all servers.
@@ -328,7 +328,7 @@ void test_create_restore_backup(TestConnections& test)
     }
     // Reset replication to sync gtids.
     const string reset_repl = "call command mariadbmon reset-replication MariaDB-Monitor server1";
-    mxs.maxctrl(reset_repl);
+    mxs.percona_proxyctl(reset_repl);
     mxs.wait_for_monitor(2);
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
 
@@ -375,7 +375,7 @@ void test_create_restore_backup(TestConnections& test)
         for (int i = 1; i <= 3; i++)
         {
             string backup_cmd = mxb::string_printf(create_backup_fmt, i);
-            auto res = mxs.maxctrl(backup_cmd);
+            auto res = mxs.percona_proxyctl(backup_cmd);
             bool bu_ok = wait_for_cmd_completion(test);
 
             if (command_ok(test, res, bu_ok, backup_cmd))
@@ -411,7 +411,7 @@ void test_create_restore_backup(TestConnections& test)
         test.tprintf("Restoring from backup 2.");
         string restore_cmd = "call command mariadbmon async-restore-from-backup "
                              "MariaDB-Monitor server1 bu2";
-        auto res = mxs.maxctrl(restore_cmd);
+        auto res = mxs.percona_proxyctl(restore_cmd);
         bool restore_ok = wait_for_cmd_completion(test);
         mxs.wait_for_monitor();
 
@@ -441,7 +441,7 @@ void test_create_restore_backup(TestConnections& test)
             repl.stop_node(bu_target_ind);
             restore_cmd = "call command mariadbmon async-restore-from-backup "
                           "MariaDB-Monitor server1 bu1";
-            res = mxs.maxctrl(restore_cmd);
+            res = mxs.percona_proxyctl(restore_cmd);
             restore_ok = wait_for_cmd_completion(test);
             mxs.wait_for_monitor();
 
@@ -467,7 +467,7 @@ void test_create_restore_backup(TestConnections& test)
     {
         repl.backend(i)->admin_connection()->cmd("drop database if exists test;");
     }
-    mxs.maxctrl("call command mariadbmon reset-replication MariaDB-Monitor server1");
+    mxs.percona_proxyctl("call command mariadbmon reset-replication MariaDB-Monitor server1");
     mxs.wait_for_monitor(2);
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
 }
@@ -501,7 +501,7 @@ bool command_ok(TestConnections& test, mxt::CmdResult& start_res, bool cmd_succe
     }
     else if (!cmd_success)
     {
-        test.add_failure("Command '%s' failed. Check MaxScale log for more info.", cmd_str.c_str());
+        test.add_failure("Command '%s' failed. Check Percona Proxy log for more info.", cmd_str.c_str());
         rval = false;
     }
     return rval;
@@ -511,6 +511,6 @@ bool command_ok(TestConnections& test, mxt::CmdResult& start_res, bool cmd_succe
 int main(int argc, char* argv[])
 {
     TestConnections test;
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return test.run_test(argc, argv, test_main);
 }

@@ -19,20 +19,20 @@
 
 #define MXB_MODULE_NAME "readwritesplit"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <maxbase/shared_mutex.hh>
 #include <maxbase/small_vector.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/rwbackend.hh>
-#include <maxscale/queryclassifier.hh>
-#include <maxscale/router.hh>
-#include <maxscale/session_stats.hh>
-#include <maxscale/workerlocal.hh>
-#include <maxscale/modulecmd.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/rwbackend.hh>
+#include <percona-proxy/queryclassifier.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/session_stats.hh>
+#include <percona-proxy/workerlocal.hh>
+#include <percona-proxy/modulecmd.hh>
 
-namespace cfg = maxscale::config;
+namespace cfg = percona_proxy::config;
 using namespace std::literals::chrono_literals;
 
 constexpr int SLAVE_MAX = 255;
@@ -61,7 +61,7 @@ typedef uint32_t route_target_t;
  */
 enum select_criteria_t
 {
-    LEAST_GLOBAL_CONNECTIONS,   /**< all connections established by MaxScale */
+    LEAST_GLOBAL_CONNECTIONS,   /**< all connections established by Percona Proxy */
     LEAST_ROUTER_CONNECTIONS,   /**< connections established by this router */
     LEAST_BEHIND_MASTER,
     LEAST_CURRENT_OPERATIONS,
@@ -335,8 +335,8 @@ struct Stats
     uint64_t n_max_sescmd_sz = 0;   /**< Max m_sescmd_list.size() of all sessions */
 };
 
-using maxscale::SessionStats;
-using maxscale::TargetSessionStats;
+using percona_proxy::SessionStats;
+using percona_proxy::TargetSessionStats;
 
 class RWSplitSession;
 
@@ -406,7 +406,7 @@ public:
      * sessions, although it is possible to create configurations where a
      * connection is handled by multiple routers, one after another.
      *
-     * @param session  The MaxScale session (generic connection data)
+     * @param session  The Percona Proxy session (generic connection data)
      *
      * @return New router session or nullptr on error
      */

@@ -16,7 +16,7 @@
  * @file config.c Configuration file processing
  */
 
-#include <maxscale/config.hh>
+#include <percona-proxy/config.hh>
 
 #include <ctype.h>
 #include <ftw.h>
@@ -44,22 +44,22 @@
 #include <maxbase/format.hh>
 #include <maxbase/ini.hh>
 #include <maxbase/pretty_print.hh>
-#include <maxscale/cachingparser.hh>
+#include <percona-proxy/cachingparser.hh>
 #include <maxbase/system.hh>
-#include <maxscale/clock.hh>
+#include <percona-proxy/clock.hh>
 #include <maxbase/watchdognotifier.hh>
-#include <maxscale/http.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/key_manager.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/log.hh>
-#include <maxscale/maxscale.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/pcre2.hh>
-#include <maxscale/router.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/version.hh>
+#include <percona-proxy/http.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/key_manager.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/log.hh>
+#include <percona-proxy/percona-proxy.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/pcre2.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/version.hh>
 
 #include "internal/admin.hh"
 #include "internal/adminusers.hh"
@@ -81,7 +81,7 @@
 using std::move;
 using std::set;
 using std::string;
-using maxscale::Monitor;
+using percona_proxy::Monitor;
 using std::chrono::milliseconds;
 using std::chrono::seconds;
 
@@ -170,11 +170,11 @@ struct ThisUnit
 
     // The type of all created objects
     std::map<std::string, std::set<ConfigSection::SourceType>> object_types {
-        {"maxscale", {ConfigSection::SourceType::MAIN}}
+        {"percona-proxy", {ConfigSection::SourceType::MAIN}}
     };
 
     // The set of objects that were read from the configuration files
-    std::set<std::string> static_objects {"maxscale"};
+    std::set<std::string> static_objects {"percona-proxy"};
 
     // The objects that were created at runtime or read from persisted configuration files
     std::set<std::string> dynamic_objects;
@@ -218,7 +218,7 @@ private:
 };
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 void set_configdir(std::string_view path, config::Origin origin)
@@ -396,7 +396,7 @@ bool Config::Specification::validate(const Configuration* pConfig,
             const auto& name = kv.first;
             const auto& value = kv.second;
 
-            if (maxscale::event::validate(name, value) == maxscale::event::ACCEPTED)
+            if (percona_proxy::event::validate(name, value) == percona_proxy::event::ACCEPTED)
             {
                 found = true;
             }
@@ -614,7 +614,7 @@ bool Config::Specification::do_post_validate(Params& params, const NestedParams&
                 if (rcap_type_required(service->capabilities(), RCAP_TYPE_NO_THREAD_CHANGE))
                 {
                     MXB_ERROR("The service '%s' cannot handle a change in the number of threads. "
-                              "The configuration must manually be updated and MaxScale restarted.",
+                              "The configuration must manually be updated and Percona Proxy restarted.",
                               service->name());
                     rv = false;
                 }
@@ -622,7 +622,7 @@ bool Config::Specification::do_post_validate(Params& params, const NestedParams&
 
             if (rv && (nRequested > nThreads_max))
             {
-                MXB_ERROR("MaxScale can have at most %d routing threads; a request for %d cannot be honored. "
+                MXB_ERROR("Percona Proxy can have at most %d routing threads; a request for %d cannot be honored. "
                           "The maximum can be increased with `threads_max`.", nThreads_max, nRequested);
                 rv = false;
             }
@@ -682,7 +682,7 @@ bool Config::Specification::validate_event(const std::string& name, const std::s
 {
     bool rv = true;
 
-    if (maxscale::event::validate(name, value) == maxscale::event::INVALID)
+    if (percona_proxy::event::validate(name, value) == percona_proxy::event::INVALID)
     {
         MXB_ERROR("'%s' is not a valid value for the event '%s'.", value.c_str(), name.c_str());
         rv = false;
@@ -691,12 +691,12 @@ bool Config::Specification::validate_event(const std::string& name, const std::s
     return rv;
 }
 
-Config::Specification Config::s_specification("maxscale", config::Specification::GLOBAL);
+Config::Specification Config::s_specification("percona-proxy", config::Specification::GLOBAL);
 
 Config::ParamAutoTune Config::s_auto_tune(
     &Config::s_specification,
     CN_AUTO_TUNE,
-    "Specifies whether a MaxScale parameter whose value depends on a specific global server "
+    "Specifies whether a Percona Proxy parameter whose value depends on a specific global server "
     "variable, should automatically be updated to match the variable's current value.",
     ",",    // Delimiter
     {},
@@ -789,7 +789,7 @@ config::ParamBool Config::s_syslog(
 config::ParamBool Config::s_maxlog(
     &Config::s_specification,
     CN_MAXLOG,
-    "Log to MaxScale's own log.",
+    "Log to Percona Proxy's own log.",
     DEFAULT_MAXLOG,
     config::Param::Modifiable::AT_RUNTIME);
 
@@ -824,7 +824,7 @@ config::ParamDeprecated<config::ParamBool> Config::s_skip_permission_checks(
 config::ParamBool Config::s_passive(
     &Config::s_specification,
     CN_PASSIVE,
-    "True if MaxScale is in passive mode.",
+    "True if Percona Proxy is in passive mode.",
     false,
     config::Param::Modifiable::AT_RUNTIME);
 
@@ -1072,22 +1072,22 @@ config::ParamEnum<mxs::JwtAlgo> Config::s_admin_jwt_algorithm(
 config::ParamString Config::s_admin_jwt_key(
     &Config::s_specification,
     "admin_jwt_key",
-    "Encryption key ID for symmetric signature algorithms. If left empty, MaxScale will "
+    "Encryption key ID for symmetric signature algorithms. If left empty, Percona Proxy will "
     "generate a random key that is used to sign the JWT.",
     "");
 
 config::ParamSeconds Config::s_admin_jwt_max_age(
     &Config::s_specification,
     "admin_jwt_max_age",
-    "Maximum age of the JWTs generated by MaxScale",
+    "Maximum age of the JWTs generated by Percona Proxy",
     24h,
     config::Param::Modifiable::AT_RUNTIME);
 
 config::ParamString Config::s_admin_jwt_issuer(
     &Config::s_specification,
     "admin_jwt_issuer",
-    "The issuer claim for all JWTs generated by MaxScale.",
-    "maxscale");
+    "The issuer claim for all JWTs generated by Percona Proxy.",
+    "percona-proxy");
 
 config::ParamString Config::s_admin_oidc_url(
     &Config::s_specification,
@@ -1137,7 +1137,7 @@ config::ParamEnumList<maxbase::http::Method> Config::s_admin_audit_exclude_metho
 config::ParamBool Config::s_core_file(
     &Config::s_specification,
     CN_CORE_FILE,
-    "Write a core-file if MaxScale crashes.",
+    "Write a core-file if Percona Proxy crashes.",
     true,
     config::Param::Modifiable::AT_STARTUP);
 
@@ -1181,7 +1181,7 @@ config::ParamPassword Config::s_config_sync_password(
 config::ParamString Config::s_config_sync_db(
     &Config::s_specification,
     CN_CONFIG_SYNC_DB,
-    "Database where the 'maxscale_config' table is created.",
+    "Database where the 'percona_proxy_config' table is created.",
     "mysql", mxs::config::Param::AT_STARTUP);
 
 config::ParamSeconds Config::s_config_sync_timeout(
@@ -1293,7 +1293,7 @@ static bool get_milliseconds(const char* zName,
 
 static int get_ifaddr(unsigned char* output);
 
-namespace maxscale
+namespace percona_proxy
 {
 
 class Config::ThreadsCount : public config::Native<ParamThreadsCount, Config>
@@ -1595,8 +1595,8 @@ void Config::check_cpu_situation() const
         if (this->n_threads > ceil(vcpu) + 1) // One more than available is still ok.
         {
             MXB_WARNING("Number of threads set to %d, which is significantly more than "
-                        "the %.2f virtual cores available to MaxScale. This may lead "
-                        "to worse performance and MaxScale using more resources than what "
+                        "the %.2f virtual cores available to Percona Proxy. This may lead "
+                        "to worse performance and Percona Proxy using more resources than what "
                         "is available.",
                         (int)this->n_threads, vcpu);
         }
@@ -1617,12 +1617,12 @@ void Config::check_memory_situation() const
         if (this->qc_cache_properties.max_size == DEFAULT_QC_CACHE_SIZE
             || this->qc_cache_properties.max_size > available_memory)
         {
-            MXB_WARNING("It seems MaxScale is running in a constrained environment with "
+            MXB_WARNING("It seems Percona Proxy is running in a constrained environment with "
                         "less memory (%s) available in it than what is installed on the "
                         "machine (%s). In this context, the query classifier cache size "
                         "should be specified explicitly in the configuration file with "
                         "'query_classifier_cache_size' set to 15%% of the available memory. "
-                        "Otherwise MaxScale may use more resources than what is available, "
+                        "Otherwise Percona Proxy may use more resources than what is available, "
                         "which may cause it to crash.",
                         mxb::pretty_size(available_memory).c_str(),
                         mxb::pretty_size(total_memory).c_str());
@@ -1630,7 +1630,7 @@ void Config::check_memory_situation() const
     }
 }
 
-std::ostream& Config::persist_maxscale(std::ostream& os) const
+std::ostream& Config::persist_percona_proxy(std::ostream& os) const
 {
     mxs::config::Configuration::persist(os);
     auto prefix = s_key_manager.to_string(key_manager);
@@ -1655,8 +1655,8 @@ bool Config::post_configure(const std::map<std::string, mxs::ConfigParameters>& 
             const auto& name = "event." + kv.first;
             const auto& value = kv.second;
 
-            MXB_AT_DEBUG(auto result =)maxscale::event::configure(name, value);
-            mxb_assert(result != maxscale::event::INVALID);
+            MXB_AT_DEBUG(auto result =)percona_proxy::event::configure(name, value);
+            mxb_assert(result != percona_proxy::event::INVALID);
         }
     }
 
@@ -1687,7 +1687,7 @@ bool Config::post_configure(const std::map<std::string, mxs::ConfigParameters>& 
         // We should get this far only at startup.
         mxb_assert(!RoutingWorker::is_running());
 
-        MXB_WARNING("MaxScale can have at most %d routing threads; the request for %d "
+        MXB_WARNING("Percona Proxy can have at most %d routing threads; the request for %d "
                     "will be reduced to that. The maximum can be increased with `threads_max`.",
                     (int)this->n_threads_max, (int)this->n_threads);
 
@@ -2315,7 +2315,7 @@ bool config_add_to_context(const std::string& source_file, ConfigSection::Source
                 if (!std::all_of(new_ctxt.m_name.begin(), new_ctxt.m_name.end(), is_url_char))
                 {
                     MXB_WARNING("Configuration section name '%s' in %s file '%s' contains URL-unsafe "
-                                "characters. It cannot be safely used with the REST API or MaxCtrl.",
+                                "characters. It cannot be safely used with the REST API or Percona Proxyctl.",
                                 new_ctxt.name(), type_to_str(source_type), source_file.c_str());
                 }
 
@@ -2326,7 +2326,7 @@ bool config_add_to_context(const std::string& source_file, ConfigSection::Source
 
             if (header_ok && header == CN_MAXSCALE && source_type == Type::ADDITIONAL)
             {
-                MXB_ERROR("Additional configuration file '%s' contains a [maxscale] section. Only the main "
+                MXB_ERROR("Additional configuration file '%s' contains a [percona-proxy] section. Only the main "
                           "configuration file or a runtime file may contain this section.",
                           source_file.c_str());
                 header_ok = false;
@@ -2472,7 +2472,7 @@ bool config_load_dir(const string& dir, ConfigSection::SourceType source_type, C
             {
                 if (!warning.empty())
                 {
-                    // Having a [maxscale]-section in an additional file is always an error. Printing the
+                    // Having a [percona-proxy]-section in an additional file is always an error. Printing the
                     // warning may still be useful.
                     MXB_WARNING("In file '%s': %s", file.total_path.c_str(), warning.c_str());
                 }
@@ -2514,7 +2514,7 @@ bool config_load_dir(const string& dir, ConfigSection::SourceType source_type, C
 }
 
 /**
- * Take into use global ([maxscale]-section) configuration.
+ * Take into use global ([percona-proxy]-section) configuration.
  *
  * @param global_params Text-form parameters
  * @return True on success
@@ -2589,8 +2589,8 @@ bool export_config_file(const char* filename, ConfigSectionMap& config)
     }
 
     std::ostringstream ss;
-    ss << "# Generated by MaxScale " << MAXSCALE_VERSION << '\n';
-    ss << "# Documentation: https://mariadb.com/kb/en/mariadb-enterprise/maxscale/ \n\n";
+    ss << "# Generated by Percona Proxy " << PERCONA_PROXY_VERSION << '\n';
+    ss << "# Documentation: https://mariadb.com/kb/en/mariadb-enterprise/percona-proxy/ \n\n";
 
     for (ConfigSection* ctx : contexts)
     {
@@ -2694,9 +2694,9 @@ bool apply_main_config(const ConfigSectionMap& config)
 
     if (it != config.end())
     {
-        const ConfigSection& maxscale_section = it->second;
+        const ConfigSection& percona_proxy_section = it->second;
 
-        rv = apply_global_config(maxscale_section.m_parameters);
+        rv = apply_global_config(percona_proxy_section.m_parameters);
     }
     else
     {
@@ -3121,7 +3121,7 @@ static bool process_config_context(ConfigSectionMap& context)
     std::vector<ConfigSection*> objects;
     int error_count = 0;
 
-    // Ignore the 'maxscale' section when resolving dependencies.
+    // Ignore the 'percona-proxy' section when resolving dependencies.
     for (auto& elem : context)
     {
         if (elem.first != CN_MAXSCALE)
@@ -3632,19 +3632,19 @@ json_t* mxs::Config::params_to_json() const
     return param;
 }
 
-json_t* mxs::Config::maxscale_to_json(const char* host) const
+json_t* mxs::Config::percona_proxy_to_json(const char* host) const
 {
     json_t* param = params_to_json();
 
     json_t* attr = json_object();
-    time_t started = maxscale_started();
+    time_t started = percona_proxy_started();
     time_t activated = started + MXS_CLOCK_TO_SEC(promoted_at);
     json_object_set_new(attr, CN_PARAMETERS, param);
-    json_object_set_new(attr, "version", json_string(MAXSCALE_VERSION));
-    json_object_set_new(attr, "commit", json_string(maxscale_commit()));
+    json_object_set_new(attr, "version", json_string(PERCONA_PROXY_VERSION));
+    json_object_set_new(attr, "commit", json_string(percona_proxy_commit()));
     json_object_set_new(attr, "started_at", json_string(http_to_date(started).c_str()));
     json_object_set_new(attr, "activated_at", json_string(http_to_date(activated).c_str()));
-    json_object_set_new(attr, "uptime", json_integer(maxscale_uptime()));
+    json_object_set_new(attr, "uptime", json_integer(percona_proxy_uptime()));
     json_object_set_new(attr, "process_datadir", json_string(mxs::process_datadir()));
     json_object_set_new(attr, "encrypted_passwords", json_boolean(mxs::using_encrypted_passwords()));
 
@@ -3687,18 +3687,18 @@ json_t* mxs::Config::system_to_json() const
     json_object_set_new(os, "version", json_string(c.version.c_str()));
     json_object_set_new(os, "machine", json_string(c.machine.c_str()));
 
-    // system.maxscale
-    json_t* maxscale = json_object();
+    // system.percona-proxy
+    json_t* percona_proxy = json_object();
 
-    json_object_set_new(maxscale, "threads", json_integer(config_threadcount()));
-    json_object_set_new(maxscale, "query_classifier_cache_size",
+    json_object_set_new(percona_proxy, "threads", json_integer(config_threadcount()));
+    json_object_set_new(percona_proxy, "query_classifier_cache_size",
                         json_integer(this->qc_cache_properties.max_size));
 
     // system
     json_t* system = json_object();
     json_object_set_new(system, "machine", machine);
     json_object_set_new(system, "os", os);
-    json_object_set_new(system, "maxscale", maxscale);
+    json_object_set_new(system, "percona-proxy", percona_proxy);
 
     return system;
 }
@@ -3794,7 +3794,7 @@ pcre2_code* compile_regex_string(const char* regex_string,
 }
 
 /**
- * Test if the given string is a valid MaxScale regular expression and can be
+ * Test if the given string is a valid Percona Proxy regular expression and can be
  * compiled to a regex machine using PCRE2.
  *
  * @param regex_string The input string
@@ -4149,7 +4149,7 @@ bool config_is_valid_name(const char* zName, std::string* pReason)
             {
                 *pReason = "The name '";
                 *pReason += zName;
-                *pReason += "' starts with '@@', which is a prefix reserved for MaxScale.";
+                *pReason += "' starts with '@@', which is a prefix reserved for Percona Proxy.";
             }
         }
     }
@@ -4211,14 +4211,14 @@ post_process_config(mxb::ini::map_result::ParseResult&& res)
         bool conflict_found = false;
         auto case_fix_iter = res.config.end();
 
-        // Check that the config has only one section name that case-insensitively matches "maxscale".
+        // Check that the config has only one section name that case-insensitively matches "percona-proxy".
         for (auto it = res.config.begin(); it != res.config.end(); ++it)
         {
             const auto& section = *it;
             const string& header = section.first;
             if (strcasecmp(header.c_str(), CN_MAXSCALE) == 0)
             {
-                // Equivalent to "maxscale".
+                // Equivalent to "percona-proxy".
                 if (first_mxs_lineno < 0)
                 {
                     first_mxs_lineno = section.second.lineno;
@@ -4244,7 +4244,7 @@ post_process_config(mxb::ini::map_result::ParseResult&& res)
         {
             // Replace the section name so that later checks don't need to worry about case-insensitivity.
             warning = mxb::string_printf("Section header '%s' at line %i is interpreted as "
-                                         "'maxscale'.", case_fix_iter->first.c_str(), first_mxs_lineno);
+                                         "'percona-proxy'.", case_fix_iter->first.c_str(), first_mxs_lineno);
             auto section_data_temp = std::move(case_fix_iter->second);
             res.config.erase(case_fix_iter);
             res.config.emplace(CN_MAXSCALE, std::move(section_data_temp));
@@ -4316,7 +4316,7 @@ namespace
  * Read various directory paths and log settings from configuration. Variable substitution is
  * assumed to be already performed.
  *
- * @param main_config Parsed [maxscale]-section from the main configuration file.
+ * @param main_config Parsed [percona-proxy]-section from the main configuration file.
  */
 void apply_dir_log_config(const mxb::ini::map_result::ConfigSection& main_config)
 {
@@ -4472,7 +4472,7 @@ SniffResult sniff_configuration(std::tuple<mxb::ini::map_result::ParseResult, st
     if (load_res.errors.empty())
     {
         rval.success = true;
-        // At this point, we are only interested in the "maxscale"-section.
+        // At this point, we are only interested in the "percona-proxy"-section.
         auto& config = load_res.config;
         auto it = config.find(CN_MAXSCALE);
         if (it != config.end())

@@ -26,13 +26,13 @@
 
 #include <maxbase/alloc.hh>
 #include <maxbase/string.hh>
-#include <maxscale/modinfo.hh>
+#include <percona-proxy/modinfo.hh>
 #include <maxsimd/canonical.hh>
 #include <maxsimd/multistmt.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/trxboundaryparser.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/trxboundaryparser.hh>
+#include <percona-proxy/utils.hh>
 
 #include "builtin_functions.hh"
 
@@ -5122,7 +5122,7 @@ public:
     uint32_t get_trx_type_mask(const GWBUF& stmt) const override
     {
         // TODO: This will not work correctly for Postgres.
-        maxscale::TrxBoundaryParser parser;
+        percona_proxy::TrxBoundaryParser parser;
         return parser.type_mask_of(m_helper.get_sql(stmt));
     }
 

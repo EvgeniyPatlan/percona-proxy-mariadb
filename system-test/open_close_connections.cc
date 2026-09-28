@@ -45,9 +45,9 @@ void query_thread(TestConnections& test, int thread_id)
     // Keep running the test until we exhaust all available ports
     while (run && test.global_result == 0 && errno != EADDRNOTAVAIL)
     {
-        validate(test.maxscale->open_rwsplit_connection());
-        validate(test.maxscale->open_readconn_master_connection());
-        validate(test.maxscale->open_readconn_slave_connection());
+        validate(test.percona_proxy->open_rwsplit_connection());
+        validate(test.percona_proxy->open_readconn_master_connection());
+        validate(test.percona_proxy->open_readconn_slave_connection());
         i++;
     }
 }
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 
     // Tuning these kernel parameters removes any system limitations on how many
     // connections can be created within a short period
-    test.maxscale->ssh_node_f(true,
+    test.percona_proxy->ssh_node_f(true,
                               "sysctl net.ipv4.tcp_tw_reuse=1 net.ipv4.tcp_tw_recycle=1 "
                               "net.core.somaxconn=10000 net.ipv4.tcp_max_syn_backlog=10000");
 
@@ -88,6 +88,6 @@ int main(int argc, char* argv[])
         a.join();
     }
 
-    test.check_maxscale_alive();
+    test.check_percona_proxy_alive();
     return test.global_result;
 }

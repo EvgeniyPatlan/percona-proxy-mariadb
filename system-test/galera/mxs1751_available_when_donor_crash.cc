@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
         test.galera->stop_node(1);
         test.galera->start_node(1);
         test.galera->start_node(0);
-        test.maxscale->wait_for_monitor(2);
+        test.percona_proxy->wait_for_monitor(2);
     }
 
     return test.global_result;

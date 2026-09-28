@@ -20,7 +20,7 @@
 #include <cstring>
 #include "commentconfig.hh"
 
-// This declares a module in MaxScale
+// This declares a module in Percona Proxy
 extern "C" MXS_MODULE* MXS_CREATE_MODULE()
 {
     static MXS_MODULE info =

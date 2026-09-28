@@ -22,11 +22,11 @@
 
 #include <maxbase/alloc.hh>
 #include <maxbase/string.hh>
-#include <maxscale/config.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/protocol/mariadb/maxscale.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/session.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/protocol/mariadb/percona-proxy.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/session.hh>
 
 #include "cachefilter.hh"
 

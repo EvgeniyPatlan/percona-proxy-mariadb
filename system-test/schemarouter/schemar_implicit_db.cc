@@ -24,7 +24,7 @@
 
 void mxs4947(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
 
     const char* query = "SELECT TABLE_NAME FROM information_schema.tables "
@@ -72,28 +72,28 @@ int main(int argc, char* argv[])
     test.repl->sync_slaves();
 
     test.tprintf("Run test with sharded database as active database");
-    test.maxscale->connect_rwsplit();
-    test.try_query(test.maxscale->conn_rwsplit, "USE db2");
-    execute_query_check_one(test.maxscale->conn_rwsplit, "SELECT @@server_id, id FROM t2", server_id[1]);
-    execute_query_check_one(test.maxscale->conn_rwsplit,
+    test.percona_proxy->connect_rwsplit();
+    test.try_query(test.percona_proxy->conn_rwsplit, "USE db2");
+    execute_query_check_one(test.percona_proxy->conn_rwsplit, "SELECT @@server_id, id FROM t2", server_id[1]);
+    execute_query_check_one(test.percona_proxy->conn_rwsplit,
                             "SELECT @@server_id, id FROM db1.t1",
                             server_id[0]);
-    execute_query_check_one(test.maxscale->conn_rwsplit,
+    execute_query_check_one(test.percona_proxy->conn_rwsplit,
                             "SELECT @@server_id, a.id FROM t2 as a JOIN db1.t1 as b",
                             server_id[1]);
-    test.maxscale->close_rwsplit();
+    test.percona_proxy->close_rwsplit();
 
     test.tprintf("Run test with a common database as active database");
-    test.maxscale->connect_rwsplit();
-    test.try_query(test.maxscale->conn_rwsplit, "USE db1");
-    execute_query_check_one(test.maxscale->conn_rwsplit, "SELECT @@server_id, id FROM t1", server_id[0]);
-    execute_query_check_one(test.maxscale->conn_rwsplit,
+    test.percona_proxy->connect_rwsplit();
+    test.try_query(test.percona_proxy->conn_rwsplit, "USE db1");
+    execute_query_check_one(test.percona_proxy->conn_rwsplit, "SELECT @@server_id, id FROM t1", server_id[0]);
+    execute_query_check_one(test.percona_proxy->conn_rwsplit,
                             "SELECT @@server_id, id FROM db2.t2",
                             server_id[1]);
-    execute_query_check_one(test.maxscale->conn_rwsplit,
+    execute_query_check_one(test.percona_proxy->conn_rwsplit,
                             "SELECT @@server_id, a.id FROM t1 as a JOIN db1.t1 as b",
                             server_id[0]);
-    test.maxscale->close_rwsplit();
+    test.percona_proxy->close_rwsplit();
 
     // MXS-4947: Tables in information_schema are treated as a normal tables
     // https://jira.mariadb.org/browse/MXS-4947

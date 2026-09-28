@@ -1,13 +1,13 @@
 # REST API Tutorial
 
-This tutorial is a quick overview of what the MaxScale REST API offers, how it
-can be used to inspect the state of MaxScale and how to use it to modify the
-runtime configuration of MaxScale. The tutorial uses the `curl` command line
+This tutorial is a quick overview of what the Percona Proxy REST API offers, how it
+can be used to inspect the state of Percona Proxy and how to use it to modify the
+runtime configuration of Percona Proxy. The tutorial uses the `curl` command line
 client to demonstrate how the API is used.
 
 ## Configuration and Hardening
 
-The MaxScale REST API listens on port 8989 on the local host. The `admin_port`
+The Percona Proxy REST API listens on port 8989 on the local host. The `admin_port`
 and `admin_host` parameters control which port and address the REST API listens
 on. Note that for security reasons the API only listens for local connections
 with the default configuration. It is critical that the default credentials are
@@ -15,13 +15,13 @@ changed and TLS/SSL encryption is configured before exposing the REST API to a
 network.
 
 The default user for the REST API is `admin` and the password is `mariadb`. The
-easiest way to secure the REST API is to use the `maxctrl` command line client
+easiest way to secure the REST API is to use the `percona-proxyctl` command line client
 to create a new admin user and delete the default one. To do this, run the
 following commands:
 
 ```
-maxctrl create user my_user my_password --type=admin
-maxctrl destroy user admin
+percona-proxyctl create user my_user my_password --type=admin
+percona-proxyctl destroy user admin
 ```
 
 This will create the user `my_user` with the password `my_password` that is an
@@ -30,8 +30,8 @@ account is removed with the next command.
 
 The next step is to enable TLS encryption. To do this, you need a CA
 certificate, a private key and a public certificate file all in PEM format. Add
-the following three parameters under the `[maxscale]` section of the MaxScale
-configuration file and restart MaxScale.
+the following three parameters under the `[percona-proxy]` section of the Percona Proxy
+configuration file and restart Percona Proxy.
 
 ```
 admin_ssl_key=/certs/server-key.pem
@@ -39,12 +39,12 @@ admin_ssl_cert=/certs/server-cert.pem
 admin_ssl_ca_cert=/certs/ca-cert.pem
 ```
 
-Use `maxctrl` to verify that the TLS encryption is enabled. In this tutorial our
+Use `percona-proxyctl` to verify that the TLS encryption is enabled. In this tutorial our
 server certificates are self-signed so the `--tls-verify-server-cert=false`
 option is required.
 
 ```
-maxctrl --user=my_user --password=my_password --secure --tls-ca-cert=/certs/ca-cert.pem --tls-verify-server-cert=false show maxscale
+percona-proxyctl --user=my_user --password=my_password --secure --tls-ca-cert=/certs/ca-cert.pem --tls-verify-server-cert=false show percona-proxy
 ```
 
 If no errors are raised, this means that the communication via the REST API is
@@ -56,7 +56,7 @@ now secure and can be used across networks.
 TLS/SSL options from the `curl` command line. For more information, refer to the
 `curl` manpage.
 
-The most basic task to do with the REST API is to see whether MaxScale is up and
+The most basic task to do with the REST API is to see whether Percona Proxy is up and
 running. To do this, we do a HTTP request on the root resource (the `-i` option
 shows the HTTP headers).
 
@@ -71,7 +71,7 @@ Date: Mon, 04 Mar 19 08:29:41 GMT
 ```
 
 To query a resource collection endpoint, append it to the URL. The `/v1/filters/`
-endpoint shows the list of filters configured in MaxScale. This is a _resource
+endpoint shows the list of filters configured in Percona Proxy. This is a _resource
 collection_ endpoint: it contains the list of all resources of a particular
 type.
 
@@ -148,7 +148,7 @@ type.
 
 The `data` holds the actual list of resources: the `Hint` and `Logger`
 filters. Each object has the `id` field which is the unique name of that
-object. It is the same as the section name in `maxscale.cnf`.
+object. It is the same as the section name in `percona-proxy.cnf`.
 
 Each resource in the list has a `relationships` object. This shows the
 relationship links between resources. In our example, the `Hint` filter is used
@@ -210,11 +210,11 @@ previous example.
 
 ## Creating Objects
 
-One of the uses of the REST API is to create new objects in MaxScale at
+One of the uses of the REST API is to create new objects in Percona Proxy at
 runtime. This allows new servers, services, filters, monitor and listeners to be
-created without restarting MaxScale.
+created without restarting Percona Proxy.
 
-For example, to create a new server in MaxScale the JSON definition of a server
+For example, to create a new server in Percona Proxy the JSON definition of a server
 must be sent to the REST API at the `/v1/servers/` endpoint. The request body
 defines the server name as well as the parameters for it.
 
@@ -353,20 +353,20 @@ objects.
 
 ## Further Reading
 
-The full list of all available endpoints in MaxScale can be found in the
+The full list of all available endpoints in Percona Proxy can be found in the
 [REST API documentation](../REST-API/API.md).
 
-The `maxctrl` command line client is self-documenting and the `maxctrl help`
+The `percona-proxyctl` command line client is self-documenting and the `percona-proxyctl help`
 command is a good tool for exploring the various commands that are available in
-it. The `maxctrl api get` command can be useful way to explore the REST API as
+it. The `percona-proxyctl api get` command can be useful way to explore the REST API as
 it provides a way to easily extract values out of the JSON data generated by the
 REST API.
 
 There is a multitude of REST API clients readily available and most of them are
 far more convenient to use than `curl`. We recommend investigating what you need
-and how you intend to either integrate or use the MaxScale REST API. Most modern
+and how you intend to either integrate or use the Percona Proxy REST API. Most modern
 languages either have a built-in HTTP library or there exists a de facto
 standard library.
 
-The MaxScale REST API follows the JSON API specification and there exist
+The Percona Proxy REST API follows the JSON API specification and there exist
 libraries that are built specifically for these sorts of APIs

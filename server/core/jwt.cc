@@ -25,8 +25,8 @@
 #include <maxbase/assert.hh>
 #include <maxbase/http.hh>
 #include <maxbase/filesystem.hh>
-#include <maxscale/config.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/utils.hh>
 
 namespace
 {
@@ -180,7 +180,7 @@ std::string ec_jwk_to_pem(std::string curve, std::string x_coord, std::string y_
 }
 
 // Simple wrapper for the jwt-cpp types. Since the library uses template types and has a similar-ish
-// namespace, this class hides it from the rest of MaxScale to avoid any problems.
+// namespace, this class hides it from the rest of Percona Proxy to avoid any problems.
 template<class LibraryJwt>
 class RealImp : public mxs::jwt::Claims::Imp
 {
@@ -564,7 +564,7 @@ std::optional<mxs::jwt::Claims> verify_extra(const std::string& issuer, const st
 }
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 namespace jwt
 {

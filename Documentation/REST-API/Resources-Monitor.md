@@ -1,13 +1,13 @@
 # Monitor Resource
 
-A monitor resource represents a monitor inside MaxScale that monitors one or
+A monitor resource represents a monitor inside Percona Proxy that monitors one or
 more servers.
 
 [TOC]
 
 ## Resource Operations
 
-The _:name_ in all of the URIs must be the name of a monitor in MaxScale.
+The _:name_ in all of the URIs must be the name of a monitor in Percona Proxy.
 
 ### Get a monitor
 
@@ -126,7 +126,7 @@ Get a single monitor.
                 "verify_master_failure": true
             },
             "source": {
-                "file": "/etc/maxscale.cnf",
+                "file": "/etc/percona-proxy.cnf",
                 "type": "static"
             },
             "state": "Running",
@@ -292,7 +292,7 @@ Get all monitors.
                     "verify_master_failure": true
                 },
                 "source": {
-                    "file": "/etc/maxscale.cnf",
+                    "file": "/etc/percona-proxy.cnf",
                     "type": "static"
                 },
                 "state": "Running",

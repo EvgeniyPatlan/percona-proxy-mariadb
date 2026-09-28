@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <condition_variable>
 #include <map>
@@ -22,11 +22,11 @@
 #include <thread>
 #include <maxsql/mariadb_connector.hh>
 #include <maxbase/queryresult.hh>
-#include <maxscale/base_user_manager.hh>
-#include <maxscale/protocol2.hh>
-#include <maxscale/protocol/mariadb/authenticator.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
-#include <maxscale/server.hh>
+#include <percona-proxy/base_user_manager.hh>
+#include <percona-proxy/protocol2.hh>
+#include <percona-proxy/protocol/mariadb/authenticator.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/server.hh>
 
 /**
  * This class contains user data retrieved from the mysql-database.

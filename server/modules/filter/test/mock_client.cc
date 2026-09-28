@@ -12,9 +12,9 @@
  * Public License.
  */
 
-#include "maxscale/mock/client.hh"
+#include "percona-proxy/mock/client.hh"
 
-namespace maxscale
+namespace percona_proxy
 {
 
 namespace mock
@@ -91,7 +91,7 @@ int32_t Client::write(GWBUF&& response)
 
     if (m_pHandler)
     {
-        rv = m_pHandler->maxscale_reply(std::move(response));
+        rv = m_pHandler->percona_proxy_reply(std::move(response));
     }
 
     return rv;

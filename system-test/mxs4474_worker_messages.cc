@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
     test.repl->execute_query_all_nodes("SET GLOBAL max_connections = 10000");
 
-    auto idle = test.maxscale->rwsplit();
+    auto idle = test.percona_proxy->rwsplit();
     test.expect(idle.connect(), "Failed to create first connection: %s", idle.error());
     uint32_t id = idle.thread_id();
 
@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     // to keep it at a reasonable level.
     for (int i = 0; i < 9000; i++)
     {
-        auto c = test.maxscale->rwsplit();
+        auto c = test.percona_proxy->rwsplit();
 
         if (c.connect() && c.query("SELECT @@last_insert_id"))
         {
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
         }
     }
 
-    test.tprintf("Managed to create %lu connections through MaxScale", connections.size());
+    test.tprintf("Managed to create %lu connections through Percona Proxy", connections.size());
 
     for (auto& c : connections)
     {

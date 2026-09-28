@@ -31,9 +31,9 @@ int main(int argc, char* argv[])
 
     char sys1[4096];
 
-    Test->maxscale->ssh_node("maxscale --version-full", false);
+    Test->percona_proxy->ssh_node("percona-proxy --version-full", false);
     fflush(stdout);
-    auto mxs_ip = Test->maxscale->ip4();
+    auto mxs_ip = Test->percona_proxy->ip4();
     Test->tprintf("Connecting to RWSplit %s\n", mxs_ip);
 
     sprintf(&sys1[0], SYSBENCH_PREPARE_SHORT, mxs_ip);
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     Test->reset_timeout();
     Test->add_result(system(sys1), "Error executing sysbench prepare\n");
 
-    sprintf(&sys1[0], SYSBENCH_COMMAND_SHORT, mxs_ip, Test->maxscale->rwsplit_port);
+    sprintf(&sys1[0], SYSBENCH_COMMAND_SHORT, mxs_ip, Test->percona_proxy->rwsplit_port);
     Test->set_log_copy_interval(300);
     Test->tprintf("Executing sysbench \n%s\n", sys1);
     if (system(sys1) != 0)
@@ -50,31 +50,31 @@ int main(int argc, char* argv[])
         Test->tprintf("Error executing sysbench test\n");
     }
 
-    Test->maxscale->connect_maxscale();
+    Test->percona_proxy->connect_percona_proxy();
 
     printf("Dropping sysbanch tables!\n");
     fflush(stdout);
 
     /*
-     *  Test->try_query(Test->maxscales->conn_rwsplit, (char *) "DROP TABLE sbtest1");
+     *  Test->try_query(Test->percona_proxies->conn_rwsplit, (char *) "DROP TABLE sbtest1");
      *  if (!Test->smoke)
      *  {
-     *   Test->try_query(Test->maxscales->conn_rwsplit, (char *) "DROP TABLE sbtest2");
-     *   Test->try_query(Test->maxscales->conn_rwsplit, (char *) "DROP TABLE sbtest3");
-     *   Test->try_query(Test->maxscales->conn_rwsplit, (char *) "DROP TABLE sbtest4");
+     *   Test->try_query(Test->percona_proxies->conn_rwsplit, (char *) "DROP TABLE sbtest2");
+     *   Test->try_query(Test->percona_proxies->conn_rwsplit, (char *) "DROP TABLE sbtest3");
+     *   Test->try_query(Test->percona_proxies->conn_rwsplit, (char *) "DROP TABLE sbtest4");
      *  }
      */
 
-    Test->global_result += execute_query(Test->maxscale->conn_rwsplit, (char*) "DROP TABLE sbtest1");
+    Test->global_result += execute_query(Test->percona_proxy->conn_rwsplit, (char*) "DROP TABLE sbtest1");
 
-    printf("closing connections to MaxScale!\n");
+    printf("closing connections to Percona Proxy!\n");
     fflush(stdout);
 
-    Test->maxscale->close_maxscale_connections();
+    Test->percona_proxy->close_percona_proxy_connections();
 
-    Test->tprintf("Checking if MaxScale is still alive!\n");
+    Test->tprintf("Checking if Percona Proxy is still alive!\n");
     fflush(stdout);
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
 
     int rval = Test->global_result;
     delete Test;

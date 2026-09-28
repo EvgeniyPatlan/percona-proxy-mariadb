@@ -37,7 +37,7 @@ void test_main(TestConnections& test)
     auto table = server_conn->create_table("test.t1", "x1 int, fl int");
 
     repl.sync_slaves();
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     mxs.connect();
     test.tprintf("Testing readwritesplit");
@@ -53,7 +53,7 @@ void test_main(TestConnections& test)
                 "changing user without CLIENT_CONNECT_WITH_DB-flag failed: %s", mysql_error(rwsplit_conn));
     mxs.disconnect();
 
-    // Log in as userA. Change password of userB on backend, then try "change user". MaxScale is using old
+    // Log in as userA. Change password of userB on backend, then try "change user". Percona Proxy is using old
     // user account data and accepts the command. In the end, change user should fail but session should
     // remain open.
     const string unA = "userA";
@@ -112,5 +112,5 @@ void test_connection(TestConnections& test, MYSQL* conn)
                 "Wrong error message returned on failed authentication");
 
     test.expect(execute_query_silent(conn, "INSERT INTO t1 VALUES (77, 11);") == 0,
-                "MaxScale should not disconnect on COM_CHANGE_USER failure");
+                "Percona Proxy should not disconnect on COM_CHANGE_USER failure");
 }

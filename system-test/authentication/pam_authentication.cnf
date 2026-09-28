@@ -1,4 +1,4 @@
-[maxscale]
+[percona-proxy]
 threads=###threads###
 admin_pam_readwrite_service=pam_config_msg
 log_info=1

@@ -8,7 +8,7 @@ ${scriptdir}/install_build_deps.sh "3.25.1" 20
 
 function install_mariadb_repo() {
     # A few system tests need mariadb-test which is not available in all OS repositories
-    curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version=10.11 --skip_maxscale --skip-check-installed
+    curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version=10.11 --skip_percona_proxy --skip-check-installed
 }
 
 if command -v apt-get

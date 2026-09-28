@@ -21,8 +21,8 @@
 
 #include <maxbase/atomic.hh>
 #include <maxbase/alloc.hh>
-#include <maxscale/protocol/mariadb/resultset.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/resultset.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 #include <mysqld_error.h>
 

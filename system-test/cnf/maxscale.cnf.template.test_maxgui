@@ -1,3 +1,0 @@
-[maxscale]
-threads=###threads###
-admin_secure_gui=false

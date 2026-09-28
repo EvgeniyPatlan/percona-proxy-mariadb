@@ -13,9 +13,9 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/key_manager.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/key_manager.hh>
+#include <percona-proxy/config2.hh>
 
 class KMIPKey : public mxs::KeyManager::MasterKey
 {

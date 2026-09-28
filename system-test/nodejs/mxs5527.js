@@ -5,11 +5,11 @@ const assert = require("assert").strict;
 
 async function asyncFunction() {
   const conn = await mariadb.createConnection({
-    host: process.env.MAXSCALE_HOST,
-    port: process.env.MAXSCALE_PORT,
-    user: process.env.MAXSCALE_USER,
-    password: process.env.MAXSCALE_PASSWORD,
-    database: process.env.MAXSCALE_DB,
+    host: process.env.PERCONA_PROXY_HOST,
+    port: process.env.PERCONA_PROXY_PORT,
+    user: process.env.PERCONA_PROXY_USER,
+    password: process.env.PERCONA_PROXY_PASSWORD,
+    database: process.env.PERCONA_PROXY_DB,
   });
   try {
     await conn.query("INSERT INTO t1 VALUES (1) RETURNING id");

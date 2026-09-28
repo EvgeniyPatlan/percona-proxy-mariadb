@@ -55,8 +55,8 @@ void test_main(TestConnections& test)
     const char pam_config_name[] = "twofactor_conf";
 
     // The authenticator secret file needs to be owned by the process doing the authentication (either
-    // "maxscale" or "mysql". Also, the user to change to needs to be set in pam config.
-    const char maxscale_user[] = "maxscale";
+    // "percona-proxy" or "mysql". Also, the user to change to needs to be set in pam config.
+    const char percona_proxy_user[] = "percona-proxy";
     const char mysql_user[] = "mysql";
 
     const string add_user_cmd = "useradd "s + pam_user;
@@ -76,7 +76,7 @@ auth            required        pam_google_authenticator.so nullok user=%s allow
 account         required        pam_unix.so
 )";
 
-    const string pam_config_mxs_contents = string_printf(pam_config_contents_fmt, maxscale_user);
+    const string pam_config_mxs_contents = string_printf(pam_config_contents_fmt, percona_proxy_user);
     const string pam_config_srv_contents = string_printf(pam_config_contents_fmt, mysql_user);
 
     const string gauth_secret_key = "3C7OP37ONKJOELVIMNZ67AADSY";
@@ -107,17 +107,17 @@ systemctl restart mariadb;)";
 
     const string create_2fa_secret_cmd = string_printf(write_file_fmt,
                                                        gauth_keyfile_contents.c_str(), gauth_secret_path);
-    const string chown_2fa_secret_mxs_cmd = string_printf("chown %s %s", maxscale_user, gauth_secret_path);
+    const string chown_2fa_secret_mxs_cmd = string_printf("chown %s %s", percona_proxy_user, gauth_secret_path);
     const string chown_2fa_secret_srv_cmd = string_printf("chown %s %s", mysql_user, gauth_secret_path);
     const string delete_2fa_secret_cmd = (string)"rm -f " + gauth_secret_path;
 
     const int N = 2;
     auto cleanup = [&]() {
-            // Cleanup: remove linux user and files from the MaxScale node.
-            test.maxscale->ssh_node_f(true, "%s", remove_user_cmd.c_str());
-            test.maxscale->ssh_node_f(true, "%s", read_shadow_off.c_str());
-            test.maxscale->ssh_node_f(true, "%s", delete_pam_conf_cmd.c_str());
-            test.maxscale->ssh_node_f(true, "%s", delete_2fa_secret_cmd.c_str());
+            // Cleanup: remove linux user and files from the Percona Proxy node.
+            test.percona_proxy->ssh_node_f(true, "%s", remove_user_cmd.c_str());
+            test.percona_proxy->ssh_node_f(true, "%s", read_shadow_off.c_str());
+            test.percona_proxy->ssh_node_f(true, "%s", delete_pam_conf_cmd.c_str());
+            test.percona_proxy->ssh_node_f(true, "%s", delete_2fa_secret_cmd.c_str());
 
             // Cleanup: remove the linux users on the backends, unload pam plugin.
             for (int i = 0; i < N; i++)
@@ -132,7 +132,7 @@ systemctl restart mariadb;)";
         };
 
     auto initialize = [&]() {
-            // Setup pam 2fa on the MaxScale node + on two MariaDB-nodes. The configs are slightly different
+            // Setup pam 2fa on the Percona Proxy node + on two MariaDB-nodes. The configs are slightly different
             // on the two machine types.
             for (int i = 0; i < N; i++)
             {
@@ -148,15 +148,15 @@ systemctl restart mariadb;)";
                 test.repl->ssh_node_f(i, true, "%s", chown_2fa_secret_srv_cmd.c_str());
             }
 
-            test.maxscale->ssh_node_f(true, "%s", install_google_auth);
-            // Create the user on the node running MaxScale, as the MaxScale PAM plugin compares against
+            test.percona_proxy->ssh_node_f(true, "%s", install_google_auth);
+            // Create the user on the node running Percona Proxy, as the Percona Proxy PAM plugin compares against
             // local users.
-            test.maxscale->ssh_node_f(true, "%s", add_user_cmd.c_str());
-            test.maxscale->ssh_node_f(true, "%s", add_pw_cmd.c_str());
-            test.maxscale->ssh_node_f(true, "%s", read_shadow.c_str());
-            test.maxscale->ssh_node_f(true, "%s", create_pam_conf_mxs_cmd.c_str());
-            test.maxscale->ssh_node_f(true, "%s", create_2fa_secret_cmd.c_str());
-            test.maxscale->ssh_node_f(true, "%s", chown_2fa_secret_mxs_cmd.c_str());
+            test.percona_proxy->ssh_node_f(true, "%s", add_user_cmd.c_str());
+            test.percona_proxy->ssh_node_f(true, "%s", add_pw_cmd.c_str());
+            test.percona_proxy->ssh_node_f(true, "%s", read_shadow.c_str());
+            test.percona_proxy->ssh_node_f(true, "%s", create_pam_conf_mxs_cmd.c_str());
+            test.percona_proxy->ssh_node_f(true, "%s", create_2fa_secret_cmd.c_str());
+            test.percona_proxy->ssh_node_f(true, "%s", chown_2fa_secret_mxs_cmd.c_str());
         };
 
     cleanup();      // remove conflicting usernames and files, just in case.
@@ -165,7 +165,7 @@ systemctl restart mariadb;)";
     if (test.ok())
     {
         test.tprintf("PAM-plugin installed and users created on all servers.");
-        auto& mxs = *test.maxscale;
+        auto& mxs = *test.percona_proxy;
         auto expected_states = {ServerInfo::master_st, ServerInfo::slave_st};
         mxs.check_servers_status(expected_states);
 
@@ -184,12 +184,12 @@ systemctl restart mariadb;)";
                 auto twofa_token = generate_2fa_token(test, gauth_secret_key);
                 if (!twofa_token.empty())
                 {
-                    auto succ = test_pam_login(test, test.maxscale->port(), pam_user, pam_pw, twofa_token);
+                    auto succ = test_pam_login(test, test.percona_proxy->port(), pam_user, pam_pw, twofa_token);
                     test.expect(succ, "Two-factor login failed");
                     if (test.ok())
                     {
                         test.tprintf("Try an invalid 2FA-code");
-                        succ = test_pam_login(test, test.maxscale->port(), pam_user, pam_pw,
+                        succ = test_pam_login(test, test.percona_proxy->port(), pam_user, pam_pw,
                                               twofa_token + "1");
                         test.expect(!succ, "Two-factor login succeeded when it should have failed");
                     }
@@ -213,7 +213,7 @@ systemctl restart mariadb;)";
 bool test_pam_login(TestConnections& test, int port, const string& user, const string& pass,
                     const string& pass2)
 {
-    const char* host = test.maxscale->ip4();
+    const char* host = test.percona_proxy->ip4();
 
     test.tprintf("Trying to log in to [%s]:%i as %s, with passwords '%s' and '%s'.\n",
                  host, port, user.c_str(), pass.c_str(), pass2.c_str());

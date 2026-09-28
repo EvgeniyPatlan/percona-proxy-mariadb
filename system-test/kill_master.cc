@@ -30,8 +30,8 @@ int main(int argc, char* argv[])
     TestConnections* Test = new TestConnections(argc, argv);
     Test->reset_timeout();
 
-    Test->tprintf("Connecting to RWSplit %s\n", Test->maxscale->ip4());
-    Test->maxscale->connect_rwsplit();
+    Test->tprintf("Connecting to RWSplit %s\n", Test->percona_proxy->ip4());
+    Test->percona_proxy->connect_rwsplit();
 
     Test->reset_timeout();
     Test->tprintf("Setup firewall to block mysql on master\n");
@@ -39,21 +39,21 @@ int main(int argc, char* argv[])
 
     Test->tprintf("Trying query to RWSplit, expecting failure, but not a crash\n");
     Test->reset_timeout();
-    execute_query(Test->maxscale->conn_rwsplit, (char*) "show processlist;");
+    execute_query(Test->percona_proxy->conn_rwsplit, (char*) "show processlist;");
 
     Test->reset_timeout();
     Test->tprintf("Setup firewall back to allow mysql\n");
     Test->repl->unblock_node(0);
 
-    Test->maxscale->wait_for_monitor();
+    Test->percona_proxy->wait_for_monitor();
 
     Test->reset_timeout();
     Test->tprintf("Reconnecting and trying query to RWSplit\n");
-    Test->maxscale->connect_rwsplit();
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "show processlist;");
-    Test->maxscale->close_rwsplit();
+    Test->percona_proxy->connect_rwsplit();
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "show processlist;");
+    Test->percona_proxy->close_rwsplit();
 
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
     int rval = Test->global_result;
     delete Test;
     return rval;

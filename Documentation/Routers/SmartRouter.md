@@ -10,13 +10,13 @@ handle it.
 
 For workloads where both transactional and analytical queries are needed,
 SmartRouter unites the Transactional (OLTP) and Analytical (OLAP) workloads into
-a single entry point in MaxScale. This allows a MaxScale client to freely mix
+a single entry point in Percona Proxy. This allows a Percona Proxy client to freely mix
 transactional and analytical queries using the same connection. This is known
 as Hybrid Transactional and Analytical Processing, HTAP.
 
 ## Configuration
 
-SmartRouter is configured as a service that either routes to other MaxScale
+SmartRouter is configured as a service that either routes to other Percona Proxy
 routers or plain servers. Although one can configure SmartRouter to use a plain
 server directly, we refer to the configured "servers" as clusters.
 
@@ -101,9 +101,9 @@ response is sent to the client once all clusters have responded to the query
 or the cancel.
 
 There is obviously overhead when a new canonical is seen. This means that
-queries after a MaxScale start will be slightly slower than normal. The
+queries after a Percona Proxy start will be slightly slower than normal. The
 execution time of a query depends on the database engine, and on the contents
-of the tables being queried. As a result, MaxScale will periodically re-measure
+of the tables being queried. As a result, Percona Proxy will periodically re-measure
 queries.
 
 The performance behavior of queries under dynamic conditions, and their effect
@@ -119,7 +119,7 @@ anew after each startup.
 
 ## Complete configuration example
 ```
-[maxscale]
+[percona-proxy]
 
 [row_server_1]
 type = server

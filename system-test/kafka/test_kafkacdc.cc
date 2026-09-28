@@ -51,7 +51,7 @@ void read_messages(TestConnections& test, Consumer& consumer, int n_expected, in
         {
             int seq = js.get_int("sequence");
 
-            if (js.get_string("namespace") == "MaxScaleChangeDataSchema.avro")
+            if (js.get_string("namespace") == "PerconaProxyChangeDataSchema.avro")
             {
                 auto gtid = js.get_string("gtid");
                 seq = get_sequence(gtid);
@@ -76,10 +76,10 @@ void test_read_gtid_from_kafka(TestConnections& test,
 {
     test.log_printf("Test read_gtid_from_kafka=false");
     test.log_printf("GTID: %s -> %s", first_gtid.c_str(), gtid_end.c_str());
-    test.maxscale->stop();
-    test.maxscale->ssh_output("rm /var/lib/maxscale/Kafka-CDC/current_gtid.txt");
-    test.maxscale->ssh_output("sed -i -e \"$ a read_gtid_from_kafka=false\" /etc/maxscale.cnf", true);
-    test.maxscale->start();
+    test.percona_proxy->stop();
+    test.percona_proxy->ssh_output("rm /var/lib/percona-proxy/Kafka-CDC/current_gtid.txt");
+    test.percona_proxy->ssh_output("sed -i -e \"$ a read_gtid_from_kafka=false\" /etc/percona-proxy.cnf", true);
+    test.percona_proxy->start();
 
     sleep(5);
     read_messages(test, consumer, 12, get_sequence(first_gtid), get_sequence(gtid_end));
@@ -87,7 +87,7 @@ void test_read_gtid_from_kafka(TestConnections& test,
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
     Kafka kafka(test);
     kafka.create_topic("kafkacdc");
@@ -95,8 +95,8 @@ int main(int argc, char** argv)
     auto conn = test.repl->get_connection(0);
     conn.connect();
     auto gtid = conn.field("SELECT @@gtid_binlog_pos");
-    test.maxscale->ssh_output("sed -i -e \"/Kafka-CDC/ a gtid=" + gtid + "\" /etc/maxscale.cnf");
-    test.maxscale->start();
+    test.percona_proxy->ssh_output("sed -i -e \"/Kafka-CDC/ a gtid=" + gtid + "\" /etc/percona-proxy.cnf");
+    test.percona_proxy->start();
 
     // Connect to Kafka
     Consumer consumer(test, "kafkacdc");
@@ -111,7 +111,7 @@ int main(int argc, char** argv)
     auto gtid_end = conn.field("SELECT @@gtid_binlog_pos");
     test.log_printf("GTID: %s -> %s", gtid_start.c_str(), gtid_end.c_str());
 
-    test.log_printf("Give MaxScale some time to process the events");
+    test.log_printf("Give Percona Proxy some time to process the events");
     sleep(5);
 
     read_messages(test, consumer, 7, get_sequence(gtid_start), get_sequence(gtid_end));
@@ -124,10 +124,10 @@ int main(int argc, char** argv)
 
     read_messages(test, consumer, 3, get_sequence(gtid_start), get_sequence(gtid_end));
 
-    test.log_printf("Restarting MaxScale and inserting data");
-    test.maxscale->stop();
-    test.maxscale->ssh_output("rm /var/lib/maxscale/Kafka-CDC/current_gtid.txt");
-    test.maxscale->start();
+    test.log_printf("Restarting Percona Proxy and inserting data");
+    test.percona_proxy->stop();
+    test.percona_proxy->ssh_output("rm /var/lib/percona-proxy/Kafka-CDC/current_gtid.txt");
+    test.percona_proxy->start();
 
     gtid_start = conn.field("SELECT @@gtid_binlog_pos");
     conn.query("INSERT INTO t1 VALUES (7), (8), (9)");
@@ -138,9 +138,9 @@ int main(int argc, char** argv)
     read_messages(test, consumer, 3, get_sequence(gtid_start), get_sequence(gtid_end));
 
     test.log_printf("Enable match and exclude");
-    test.maxscale->stop();
+    test.percona_proxy->stop();
     gtid_start = conn.field("SELECT @@gtid_binlog_pos");
-    test.maxscale->ssh_output("sed -i -e \"$ a match=cat\" -e \"$ a exclude=bob\" /etc/maxscale.cnf", true);
+    test.percona_proxy->ssh_output("sed -i -e \"$ a match=cat\" -e \"$ a exclude=bob\" /etc/percona-proxy.cnf", true);
     conn.query("CREATE TABLE bob(id INT)");
     conn.query("INSERT INTO bob VALUES (10)");
     conn.query("CREATE TABLE bobcat(id INT)");
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
     gtid_end = conn.field("SELECT @@gtid_binlog_pos");
     test.log_printf("GTID: %s -> %s", gtid_start.c_str(), gtid_end.c_str());
 
-    test.maxscale->start();
+    test.percona_proxy->start();
     sleep(5);
 
     auto js = get_json(test, consumer);
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
                 "Expected data event: %s", js.to_string().c_str());
     test.expect(js.get_int("id") == 12,
                 "Expected data to be 12: %s", js.to_string().c_str());
-    test.maxscale->ssh_output("sed -i -e \"/match=/ d\" -e \"/exclude=/ d\" /etc/maxscale.cnf", true);
+    test.percona_proxy->ssh_output("sed -i -e \"/match=/ d\" -e \"/exclude=/ d\" /etc/percona-proxy.cnf", true);
 
     test_read_gtid_from_kafka(test, consumer, first_gtid, gtid_end);
 

@@ -13,7 +13,7 @@ std::unique_ptr<RdKafka::Conf> create_config(const Config& config)
     // https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
     std::unordered_map<std::string, std::string> values;
     values["bootstrap.servers"] = config.bootstrap_servers.get();
-    values["group.id"] = "maxscale-KafkaImporter";
+    values["group.id"] = "percona-proxy-KafkaImporter";
     values["enable.auto.commit"] = "false";
     values["enable.auto.offset.store"] = "true";
     values["auto.offset.reset"] = "smallest";

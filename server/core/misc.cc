@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/maxscale.hh>
+#include <percona-proxy/percona-proxy.hh>
 
 #include <ctime>
 #include <sys/sysinfo.h>
@@ -22,13 +22,13 @@
 #include <fstream>
 
 #include <maxbase/pretty_print.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/build_details.hh>
-#include <maxscale/config.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/version.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/build_details.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/version.hh>
 
-#include "internal/maxscale.hh"
+#include "internal/percona-proxy.hh"
 
 namespace
 {
@@ -37,27 +37,27 @@ sig_atomic_t n_shutdowns {0};
 bool teardown_in_progress {false};
 }
 
-void maxscale_reset_starttime()
+void percona_proxy_reset_starttime()
 {
     started = time(nullptr);
 }
 
-time_t maxscale_started()
+time_t percona_proxy_started()
 {
     return started;
 }
 
-int maxscale_uptime()
+int percona_proxy_uptime()
 {
     return time(nullptr) - started;
 }
 
-bool maxscale_is_shutting_down()
+bool percona_proxy_is_shutting_down()
 {
     return n_shutdowns != 0;
 }
 
-int maxscale_shutdown()
+int percona_proxy_shutdown()
 {
     int n = n_shutdowns++;
 
@@ -69,37 +69,37 @@ int maxscale_shutdown()
     return n + 1;
 }
 
-bool maxscale_teardown_in_progress()
+bool percona_proxy_teardown_in_progress()
 {
     return teardown_in_progress;
 }
 
-void maxscale_start_teardown()
+void percona_proxy_start_teardown()
 {
     teardown_in_progress = true;
 }
 
-const char* maxscale_commit()
+const char* percona_proxy_commit()
 {
-    return MAXSCALE_COMMIT;
+    return PERCONA_PROXY_COMMIT;
 }
 
-const char* maxscale_source()
+const char* percona_proxy_source()
 {
-    return MAXSCALE_SOURCE;
+    return PERCONA_PROXY_SOURCE;
 }
 
-const char* maxscale_cmake_flags()
+const char* percona_proxy_cmake_flags()
 {
-    return MAXSCALE_CMAKE_FLAGS;
+    return PERCONA_PROXY_CMAKE_FLAGS;
 }
 
-const char* maxscale_jenkins_build_tag()
+const char* percona_proxy_jenkins_build_tag()
 {
-    return MAXSCALE_JENKINS_BUILD_TAG;
+    return PERCONA_PROXY_JENKINS_BUILD_TAG;
 }
 
-void maxscale_log_info_blurb(LogBlurbAction action)
+void percona_proxy_log_info_blurb(LogBlurbAction action)
 {
     const char* verb = action == LogBlurbAction::STARTUP ? "started " : "";
     struct sysinfo info;
@@ -114,8 +114,8 @@ void maxscale_log_info_blurb(LogBlurbAction action)
     MXB_NOTICE("Total main memory: %s (%s usable).",
                mxb::pretty_size(get_total_memory()).c_str(),
                mxb::pretty_size(get_available_memory()).c_str());
-    MXB_NOTICE("MaxScale is running in process %i", getpid());
-    MXB_NOTICE("MariaDB MaxScale %s %s(Commit: %s)", MAXSCALE_VERSION, verb, maxscale_commit());
+    MXB_NOTICE("Percona Proxy is running in process %i", getpid());
+    MXB_NOTICE("Percona Proxy for MariaDB %s %s(Commit: %s)", PERCONA_PROXY_VERSION, verb, percona_proxy_commit());
 
     const char* thp_enable_path = "/sys/kernel/mm/transparent_hugepage/enabled";
     std::string line;
@@ -123,7 +123,7 @@ void maxscale_log_info_blurb(LogBlurbAction action)
 
     if (line.find("[always]") != std::string::npos)
     {
-        MXB_NOTICE("Transparent hugepages are set to 'always', MaxScale may end up using more memory "
+        MXB_NOTICE("Transparent hugepages are set to 'always', Percona Proxy may end up using more memory "
                    "than it needs. To disable it, set '%s' to 'madvise' ", thp_enable_path);
     }
 }

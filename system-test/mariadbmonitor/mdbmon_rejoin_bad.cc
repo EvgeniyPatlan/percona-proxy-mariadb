@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     repl.ping_or_open_admin_connections();
@@ -40,8 +40,8 @@ void test_main(TestConnections& test)
     status.print();
     string gtid_begin = status.get(0).gtid;
 
-    test.tprintf("Stopping MaxScale...");
-    // Mess with the slaves to fix situation such that only one slave can be rejoined. Stop maxscale.
+    test.tprintf("Stopping Percona Proxy...");
+    // Mess with the slaves to fix situation such that only one slave can be rejoined. Stop percona-proxy.
     mxs.stop_and_check_stopped();
 
     if (test.ok())
@@ -77,7 +77,7 @@ void test_main(TestConnections& test)
             test.expect(gtid_begin == gtid_node2, "Unexpected gtid: %s", gtid_node2.c_str());
             test.expect(gtid_node2 < gtid_node3, "Gtid:s have not advanced correctly.");
 
-            test.tprintf("Restarting MaxScale. Server 4 should not rejoin the cluster.");
+            test.tprintf("Restarting Percona Proxy. Server 4 should not rejoin the cluster.");
             if (mxs.start_and_check_started())
             {
                 mxs.wait_for_monitor(2);
@@ -100,7 +100,7 @@ void test_main(TestConnections& test)
                                         mxt::ServerInfo::slave_st, mxt::ServerInfo::master_st});
 
         test.tprintf("Reseting cluster...");
-        mxs.maxctrl("call command mariadbmon reset-replication MariaDB-Monitor server1");
+        mxs.percona_proxyctl("call command mariadbmon reset-replication MariaDB-Monitor server1");
         mxs.wait_for_monitor(1);
         mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
     }

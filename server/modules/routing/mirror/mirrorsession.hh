@@ -17,8 +17,8 @@
 #include "mirror.hh"
 #include "mirrorbackend.hh"
 
-#include <maxscale/backend.hh>
-#include <maxscale/buffer.hh>
+#include <percona-proxy/backend.hh>
+#include <percona-proxy/buffer.hh>
 
 #include <deque>
 

@@ -1,13 +1,13 @@
 # Service Resource
 
-A service resource represents a service inside MaxScale. A service is a
+A service resource represents a service inside Percona Proxy. A service is a
 collection of network listeners, filters, a router and a set of backend servers.
 
 [TOC]
 
 ## Resource Operations
 
-The _:name_ in all of the URIs must be the name of a service in MaxScale.
+The _:name_ in all of the URIs must be the name of a service in Percona Proxy.
 
 ### Get a service
 
@@ -45,7 +45,7 @@ Get a single service.
                                 "system_time_zone=auto",
                                 "time_zone=auto",
                                 "tx_isolation=auto",
-                                "maxscale=auto"
+                                "percona-proxy=auto"
                             ],
                             "port": 4008,
                             "protocol": "MariaDBProtocol",
@@ -67,7 +67,7 @@ Get a single service.
                             "user_mapping_file": null
                         },
                         "source": {
-                            "file": "/etc/maxscale.cnf",
+                            "file": "/etc/percona-proxy.cnf",
                             "type": "static"
                         },
                         "state": "Running"
@@ -130,7 +130,7 @@ Get a single service.
                 "server_query_statistics": []
             },
             "source": {
-                "file": "/etc/maxscale.cnf",
+                "file": "/etc/percona-proxy.cnf",
                 "type": "static"
             },
             "started": "Fri, 25 Jul 2025 14:19:42 GMT",
@@ -323,7 +323,7 @@ Get all services.
                                     "system_time_zone=auto",
                                     "time_zone=auto",
                                     "tx_isolation=auto",
-                                    "maxscale=auto"
+                                    "percona-proxy=auto"
                                 ],
                                 "port": 4006,
                                 "protocol": "MariaDBProtocol",
@@ -345,7 +345,7 @@ Get all services.
                                 "user_mapping_file": null
                             },
                             "source": {
-                                "file": "/etc/maxscale.cnf",
+                                "file": "/etc/percona-proxy.cnf",
                                 "type": "static"
                             },
                             "state": "Running"
@@ -458,7 +458,7 @@ Get all services.
                     "trx_max_size_exceeded": 0
                 },
                 "source": {
-                    "file": "/etc/maxscale.cnf",
+                    "file": "/etc/percona-proxy.cnf",
                     "type": "static"
                 },
                 "started": "Fri, 25 Jul 2025 14:19:42 GMT",
@@ -610,7 +610,7 @@ Get all services.
                                     "system_time_zone=auto",
                                     "time_zone=auto",
                                     "tx_isolation=auto",
-                                    "maxscale=auto"
+                                    "percona-proxy=auto"
                                 ],
                                 "port": 4008,
                                 "protocol": "MariaDBProtocol",
@@ -632,7 +632,7 @@ Get all services.
                                 "user_mapping_file": null
                             },
                             "source": {
-                                "file": "/etc/maxscale.cnf",
+                                "file": "/etc/percona-proxy.cnf",
                                 "type": "static"
                             },
                             "state": "Running"
@@ -695,7 +695,7 @@ Get all services.
                     "server_query_statistics": []
                 },
                 "source": {
-                    "file": "/etc/maxscale.cnf",
+                    "file": "/etc/percona-proxy.cnf",
                     "type": "static"
                 },
                 "started": "Fri, 25 Jul 2025 14:19:42 GMT",

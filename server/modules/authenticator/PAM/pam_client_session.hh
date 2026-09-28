@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 #include <maxbase/pam_utils.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
 
 namespace maxbase
 {

@@ -13,11 +13,11 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
-#include <maxscale/filter.hh>
-#include <maxscale/protocol/mariadb/local_client.hh>
-#include <maxscale/pcre2.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/protocol/mariadb/local_client.hh>
+#include <percona-proxy/pcre2.hh>
 
 class Tee;
 

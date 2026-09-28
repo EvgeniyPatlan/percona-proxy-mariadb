@@ -23,7 +23,7 @@ namespace
 {
 void expect_maintenance(TestConnections& test, int node, bool expected)
 {
-    auto server_info = test.maxscale->get_servers().get(node);
+    auto server_info = test.percona_proxy->get_servers().get(node);
     bool in_maint = server_info.status & mxt::ServerInfo::MAINT;
     test.expect(in_maint == expected, "Wrong maintenance status on node %i. Got %i, expected %i.",
                 node, in_maint, expected);
@@ -31,7 +31,7 @@ void expect_maintenance(TestConnections& test, int node, bool expected)
 
 void expect_running(TestConnections& test, int node, bool expected)
 {
-    auto server_info = test.maxscale->get_servers().get(node);
+    auto server_info = test.percona_proxy->get_servers().get(node);
     bool running = server_info.status & mxt::ServerInfo::RUNNING;
     test.expect(running == expected, "Wrong running status on node %i. Got %i, expected %i.",
                 node, running, expected);
@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     auto conn = mxs.open_rwsplit_connection2();
     generate_traffic_and_check(test, conn.get(), 5);
@@ -79,7 +79,7 @@ void test_main(TestConnections& test)
 
         if (test.ok())
         {
-            mxs.maxctrl("set server " + maint_srv_name + " maintenance");
+            mxs.percona_proxyctl("set server " + maint_srv_name + " maintenance");
             mxs.wait_for_monitor();
             expect_running(test, maint_ind, true);
             expect_maintenance(test, maint_ind, true);
@@ -109,7 +109,7 @@ void test_main(TestConnections& test)
             }
 
             // Remove maintenance.
-            mxs.maxctrl("clear server " + maint_srv_name + " maintenance");
+            mxs.percona_proxyctl("clear server " + maint_srv_name + " maintenance");
         }
 
         // Restore normal settings.

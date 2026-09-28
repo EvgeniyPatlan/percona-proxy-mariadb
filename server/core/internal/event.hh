@@ -13,10 +13,10 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/event.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/event.hh>
 
-namespace maxscale
+namespace percona_proxy
 {
 
 namespace event
@@ -32,7 +32,7 @@ enum result_t
 /**
  * @brief Configure an event
  *
- * @param zName    A MaxScale event configuration item name,
+ * @param zName    A Percona Proxy event configuration item name,
  *                 such as "event.authentication_failure.facility"
  * @param zValue   The value it should be set to, e.g. "LOG_ERROR".
  *
@@ -50,7 +50,7 @@ inline result_t configure(const std::string& name, const std::string& value)
 /**
  * @brief Validate an event
  *
- * @param zName    A MaxScale event configuration item name,
+ * @param zName    A Percona Proxy event configuration item name,
  *                 such as "event.authentication_failure.facility"
  * @param zValue   The value it should be set to, e.g. "LOG_ERROR".
  *

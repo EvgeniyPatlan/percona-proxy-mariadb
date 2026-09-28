@@ -24,14 +24,14 @@
 void test_main(TestConnections& test)
 {
     // Stop replication on all servers
-    test.check_maxctrl("unlink service RW-Split-Router server2 server3 server4");
+    test.check_percona_proxyctl("unlink service RW-Split-Router server2 server3 server4");
     test.repl->execute_query_all_nodes("STOP SLAVE;SET GLOBAL rpl_semi_sync_slave_enabled=1;");
 
     // Start replication on server2 and make it go through readwritesplit
     std::ostringstream ss;
     ss << "STOP SLAVE;"
-       << "CHANGE MASTER TO MASTER_PORT=" << test.maxscale->port(mxt::MaxScale::RWSPLIT) << ","
-       << "  MASTER_HOST='" << test.maxscale->ip() << "';"
+       << "CHANGE MASTER TO MASTER_PORT=" << test.percona_proxy->port(mxt::PerconaProxy::RWSPLIT) << ","
+       << "  MASTER_HOST='" << test.percona_proxy->ip() << "';"
        << "START SLAVE;";
 
     auto replica = test.repl->get_connection(1);

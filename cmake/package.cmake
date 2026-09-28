@@ -19,35 +19,35 @@ endif()
 set(CPACK_SET_DESTDIR ON)
 set(CPACK_PACKAGE_RELOCATABLE FALSE)
 set(CPACK_STRIP_FILES FALSE)
-set(CPACK_PACKAGE_VERSION_MAJOR "${MAXSCALE_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${MAXSCALE_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${MAXSCALE_VERSION_PATCH}")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PERCONA_PROXY_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PERCONA_PROXY_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${PERCONA_PROXY_VERSION_PATCH}")
 set(CPACK_PACKAGE_CONTACT "MariaDB plc")
 set(CPACK_PACKAGE_VENDOR "MariaDB plc")
 set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
 # Descriptions for the main packages
-set(core_PACKAGE_SUMMARY "MaxScale - An intelligent database proxy")
+set(core_PACKAGE_SUMMARY "Percona Proxy - An intelligent database proxy")
 set(core_PACKAGE_DESCRIPTION "
-MariaDB MaxScale is an intelligent proxy that allows forwarding of
+Percona Proxy for MariaDB is an intelligent proxy that allows forwarding of
 database statements to one or more database servers using complex rules,
 a semantic understanding of the database statements and the roles of
 the various servers within the backend cluster of databases.
 
-MaxScale is designed to provide load balancing and high availability
+Percona Proxy is designed to provide load balancing and high availability
 functionality transparently to the applications. In addition it provides
 a highly scalable and flexible architecture, with plugin components to
 support different protocols and routing decisions.")
 
-set(devel_PACKAGE_SUMMARY "MaxScale plugin development headers")
+set(devel_PACKAGE_SUMMARY "Percona Proxy plugin development headers")
 set(devel_PACKAGE_DESCRIPTION "
 This package contains header files required for plugin module development for
-MariaDB MaxScale. The source of MariaDB MaxScale is not required.")
+Percona Proxy for MariaDB. The source of Percona Proxy for MariaDB is not required.")
 
-set(experimental_PACKAGE_SUMMARY "MaxScale experimental modules")
+set(experimental_PACKAGE_SUMMARY "Percona Proxy experimental modules")
 set(experimental_PACKAGE_DESCRIPTION "
 This package contains experimental and community contributed modules for MariaDB
-MaxScale. The packages are not fully supported parts of MaxScale and should be
+Percona Proxy. The packages are not fully supported parts of Percona Proxy and should be
 considered as alpha quality software.")
 
 set(all_PACKAGE_SUMMARY ${core_PACKAGE_SUMMARY})
@@ -73,9 +73,9 @@ else()
 endif()
 
 if(DISTRIB_SUFFIX)
-  set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${MAXSCALE_VERSION}-${MAXSCALE_BUILD_NUMBER}.${DISTRIB_SUFFIX}.${CMAKE_SYSTEM_PROCESSOR}")
+  set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${PERCONA_PROXY_VERSION}-${PERCONA_PROXY_BUILD_NUMBER}.${DISTRIB_SUFFIX}.${CMAKE_SYSTEM_PROCESSOR}")
 else()
-  set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${MAXSCALE_VERSION}-${MAXSCALE_BUILD_NUMBER}.${CMAKE_SYSTEM_PROCESSOR}")
+  set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${PERCONA_PROXY_VERSION}-${PERCONA_PROXY_BUILD_NUMBER}.${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
 # See if we are on a RPM-capable or DEB-capable system
@@ -106,6 +106,6 @@ else()
     include(cmake/package_deb.cmake)
   endif()
 
-  message(STATUS "You can install startup scripts and system configuration files for MaxScale by running the 'postinst' shell script located at ${CMAKE_INSTALL_PREFIX}.")
+  message(STATUS "You can install startup scripts and system configuration files for Percona Proxy by running the 'postinst' shell script located at ${CMAKE_INSTALL_PREFIX}.")
   message(STATUS "To remove these installed files, run the 'prerm' shell script located in the same folder.")
 endif()

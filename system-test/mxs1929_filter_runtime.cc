@@ -29,46 +29,46 @@ using namespace std;
 void create_all(TestConnections& test)
 {
     auto& repl = *test.repl;
-    test.check_maxctrl("create server server1 " + string(repl.ip(0)) + " "
+    test.check_percona_proxyctl("create server server1 " + string(repl.ip(0)) + " "
                        + to_string(repl.port(0)));
-    test.check_maxctrl("create server server2 " + string(repl.ip(1)) + " "
+    test.check_percona_proxyctl("create server server2 " + string(repl.ip(1)) + " "
                        + to_string(repl.port(1)));
-    test.check_maxctrl("create server server3 " + string(repl.ip(2)) + " "
+    test.check_percona_proxyctl("create server server3 " + string(repl.ip(2)) + " "
                        + to_string(repl.port(2)));
-    test.check_maxctrl(
+    test.check_percona_proxyctl(
         "create service svc1 readwritesplit user=skysql password=skysql --servers server1 server2 server3");
-    test.check_maxctrl("create listener svc1 listener1 4006");
-    test.check_maxctrl(
+    test.check_percona_proxyctl("create listener svc1 listener1 4006");
+    test.check_percona_proxyctl(
         "create monitor mon1 mariadbmon user=skysql password=skysql --servers server1 server2 server3");
 }
 
 void destroy_all(TestConnections& test)
 {
-    test.check_maxctrl("unlink monitor mon1 server1 server2 server3");
-    test.check_maxctrl("unlink service svc1 server1 server2 server3");
-    test.check_maxctrl("destroy listener svc1 listener1");
-    test.check_maxctrl("destroy service svc1");
-    test.check_maxctrl("destroy monitor mon1");
-    test.check_maxctrl("destroy server server1");
-    test.check_maxctrl("destroy server server2");
-    test.check_maxctrl("destroy server server3");
+    test.check_percona_proxyctl("unlink monitor mon1 server1 server2 server3");
+    test.check_percona_proxyctl("unlink service svc1 server1 server2 server3");
+    test.check_percona_proxyctl("destroy listener svc1 listener1");
+    test.check_percona_proxyctl("destroy service svc1");
+    test.check_percona_proxyctl("destroy monitor mon1");
+    test.check_percona_proxyctl("destroy server server1");
+    test.check_percona_proxyctl("destroy server server2");
+    test.check_percona_proxyctl("destroy server server3");
 }
 
 void basic(TestConnections& test)
 {
-    test.check_maxctrl("create filter test1 regexfilter \"match=SELECT 1\" \"replace=SELECT 2\"");
-    test.check_maxctrl("alter service-filters svc1 test1");
+    test.check_percona_proxyctl("create filter test1 regexfilter \"match=SELECT 1\" \"replace=SELECT 2\"");
+    test.check_percona_proxyctl("alter service-filters svc1 test1");
 
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     c.connect();
     test.expect(c.check("SELECT 1", "2"), "The regex filter did not replace the query");
 
 
-    auto res = test.maxctrl("destroy filter test1");
+    auto res = test.percona_proxyctl("destroy filter test1");
     test.expect(res.rc != 0, "Destruction should fail when filter is in use");
 
-    test.check_maxctrl("alter service-filters svc1");
-    test.check_maxctrl("destroy filter test1");
+    test.check_percona_proxyctl("alter service-filters svc1");
+    test.check_percona_proxyctl("destroy filter test1");
 
     test.expect(c.check("SELECT 1", "2"), "The filter should not yet be destroyed");
 
@@ -81,27 +81,27 @@ void basic(TestConnections& test)
 void visibility(TestConnections& test)
 {
     auto in_list_filters = [&](std::string value) {
-            auto res = test.maxctrl("list filters --tsv");
+            auto res = test.percona_proxyctl("list filters --tsv");
             return res.output.find(value) != string::npos;
         };
 
-    test.check_maxctrl("create filter test1 hintfilter");
+    test.check_percona_proxyctl("create filter test1 hintfilter");
     test.expect(in_list_filters("test1"), "The filter should be visible after creation");
 
-    test.check_maxctrl("destroy filter test1");
+    test.check_percona_proxyctl("destroy filter test1");
     test.expect(!in_list_filters("test1"), "The filter should not be visible after destruction");
 
-    test.check_maxctrl("create filter test1 hintfilter");
+    test.check_percona_proxyctl("create filter test1 hintfilter");
     test.expect(in_list_filters("test1"), "The filter should again be visible after recreation");
     test.expect(!in_list_filters("svc1"), "Filter should not be in use");
 
-    test.check_maxctrl("alter service-filters svc1 test1");
+    test.check_percona_proxyctl("alter service-filters svc1 test1");
     test.expect(in_list_filters("svc1"), "Service should use the filter");
 
-    test.check_maxctrl("alter service-filters svc1");
+    test.check_percona_proxyctl("alter service-filters svc1");
     test.expect(!in_list_filters("svc1"), "Service should not use the filter");
 
-    test.check_maxctrl("destroy filter test1");
+    test.check_percona_proxyctl("destroy filter test1");
     test.expect(!in_list_filters("test1"), "The filter should not be visible after destruction");
 }
 
@@ -134,16 +134,16 @@ void do_load_test(TestConnections& test,
 void load(TestConnections& test)
 {
     auto tester = [&]() {
-            test.check_maxctrl("create filter test1 regexfilter \"match=SELECT 1\" \"replace=SELECT 2\"");
-            test.check_maxctrl("alter service-filters svc1 test1");
-            test.check_maxctrl("alter service-filters svc1");
-            test.check_maxctrl("destroy filter test1");
+            test.check_percona_proxyctl("create filter test1 regexfilter \"match=SELECT 1\" \"replace=SELECT 2\"");
+            test.check_percona_proxyctl("alter service-filters svc1 test1");
+            test.check_percona_proxyctl("alter service-filters svc1");
+            test.check_percona_proxyctl("destroy filter test1");
         };
 
     auto worker = [&](std::atomic<bool>& running) {
             while (running && test.global_result == 0)
             {
-                Connection c = test.maxscale->rwsplit();
+                Connection c = test.percona_proxy->rwsplit();
                 c.connect();
 
                 while (running && test.global_result == 0)
@@ -158,18 +158,18 @@ void load(TestConnections& test)
 
 void filter_swap(TestConnections& test)
 {
-    test.check_maxctrl("create filter test1 regexfilter \"match=SELECT 1\" \"replace=SELECT 2\"");
-    test.check_maxctrl("create filter test2 regexfilter \"match=SELECT 1\" \"replace=SELECT 3\"");
+    test.check_percona_proxyctl("create filter test1 regexfilter \"match=SELECT 1\" \"replace=SELECT 2\"");
+    test.check_percona_proxyctl("create filter test2 regexfilter \"match=SELECT 1\" \"replace=SELECT 3\"");
 
     auto tester = [&]() {
-            test.check_maxctrl("alter service-filters svc1 test1");
-            test.check_maxctrl("alter service-filters svc1 test2");
+            test.check_percona_proxyctl("alter service-filters svc1 test1");
+            test.check_percona_proxyctl("alter service-filters svc1 test2");
         };
 
     auto worker = [&](std::atomic<bool>& running) {
             while (running && test.global_result == 0)
             {
-                Connection c = test.maxscale->rwsplit();
+                Connection c = test.percona_proxy->rwsplit();
                 c.connect();
 
                 while (running && test.global_result == 0)
@@ -181,9 +181,9 @@ void filter_swap(TestConnections& test)
 
     do_load_test(test, tester, worker);
 
-    test.check_maxctrl("alter service-filters svc1");
-    test.check_maxctrl("destroy filter test1");
-    test.check_maxctrl("destroy filter test2");
+    test.check_percona_proxyctl("alter service-filters svc1");
+    test.check_percona_proxyctl("destroy filter test1");
+    test.check_percona_proxyctl("destroy filter test2");
 }
 
 int main(int argc, char** argv)

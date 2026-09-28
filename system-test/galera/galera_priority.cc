@@ -19,7 +19,7 @@
  * node3 > node1 > node4 > node2
  *
  * The test executes a SELECT @@server_id to get the server id of each
- * node. The same query is executed in a transaction through MaxScale
+ * node. The same query is executed in a transaction through Percona Proxy
  * and the server id should match the expected output depending on which
  * of the nodes are available. The simple test blocks nodes from highest priority
  * to lowest priority.
@@ -34,7 +34,7 @@ namespace
 void check_server_id(TestConnections& test, const std::string& id)
 {
     test.tprintf("Expecting '%s'...", id.c_str());
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection should work: %s", conn.error());
     test.expect(conn.query("BEGIN"), "BEGIN should work: %s", conn.error());
     auto f = conn.field("SELECT @@server_id");
@@ -45,22 +45,22 @@ void check_server_id(TestConnections& test, const std::string& id)
 void restore_priorities(TestConnections& test)
 {
     test.log_printf("Restore original priorities");
-    test.check_maxctrl("alter server server1 priority 2");
-    test.check_maxctrl("alter server server2 priority 4");
-    test.check_maxctrl("alter server server3 priority 1");
-    test.check_maxctrl("alter server server4 priority 3");
+    test.check_percona_proxyctl("alter server server1 priority 2");
+    test.check_percona_proxyctl("alter server server2 priority 4");
+    test.check_percona_proxyctl("alter server server3 priority 1");
+    test.check_percona_proxyctl("alter server server4 priority 3");
 }
 
 void mxs4165_zero_priority(TestConnections& test, const std::vector<std::string>& ids)
 {
     auto& galera = *test.galera;
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     test.log_printf("Alter servers with new priorities");
-    test.check_maxctrl("alter server server1 priority 1");
-    test.check_maxctrl("alter server server2 priority 2");
-    test.check_maxctrl("alter server server3 priority 0");
-    test.check_maxctrl("alter server server4 priority -1");
+    test.check_percona_proxyctl("alter server server1 priority 1");
+    test.check_percona_proxyctl("alter server server2 priority 2");
+    test.check_percona_proxyctl("alter server server3 priority 0");
+    test.check_percona_proxyctl("alter server server4 priority -1");
 
     test.log_printf("server1 with priority 1 is Master");
     check_server_id(test, ids[0]);
@@ -88,7 +88,7 @@ void mxs4165_zero_priority(TestConnections& test, const std::vector<std::string>
     check_server_id(test, ids[2]);
 
     test.log_printf("server3 loses Master when altered with priority=-1");
-    test.check_maxctrl("alter server server3 priority -1");
+    test.check_percona_proxyctl("alter server server3 priority -1");
     mxs.wait_for_monitor();
     id = mxs.get_master_server_id();
     test.expect(id == -1, "Expected no master but found one with ID %d", id);
@@ -105,13 +105,13 @@ void mxs4165_zero_priority(TestConnections& test, const std::vector<std::string>
 void mxs5096_switchover(TestConnections& test)
 {
     auto& galera = *test.galera;
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto master = mxt::ServerInfo::master_st | mxt::ServerInfo::SYNCED;
     auto slave = mxt::ServerInfo::slave_st | mxt::ServerInfo::SYNCED;
 
     auto set_prio = [&](int server_num, int prio) {
         std::string cmd = mxb::string_printf("alter server server%i priority %i", server_num, prio);
-        mxs.maxctrl(cmd);
+        mxs.percona_proxyctl(cmd);
     };
     test.log_printf("Alter servers with new priorities, 1 to 4.");
     set_prio(1, 1);
@@ -148,7 +148,7 @@ void mxs5096_switchover(TestConnections& test)
 void test_main(TestConnections& test)
 {
     auto& galera = *test.galera;
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     galera.connect();
     auto ids = galera.get_all_server_ids_str();
@@ -183,7 +183,7 @@ void test_main(TestConnections& test)
     mxs.wait_for_monitor(2);
     check_server_id(test, ids[2]);
 
-    /** Restart MaxScale check that states are the same */
+    /** Restart Percona Proxy check that states are the same */
     mxs.restart();
     mxs.wait_for_monitor(2);
     check_server_id(test, ids[2]);
@@ -210,7 +210,7 @@ void test_main(TestConnections& test)
         {
             test.tprintf("Set master to maintenance, check that monitor changes master.");
             auto cmd = mxb::string_printf(set_maint, orig_master.name.c_str());
-            mxs.maxctrl(cmd);
+            mxs.percona_proxyctl(cmd);
             mxs.wait_for_monitor(2);
             auto second_info = mxs.get_servers();
             second_info.print();
@@ -223,7 +223,7 @@ void test_main(TestConnections& test)
             {
                 test.tprintf("Again...");
                 cmd = mxb::string_printf(set_maint, second_master.name.c_str());
-                mxs.maxctrl(cmd);
+                mxs.percona_proxyctl(cmd);
                 mxs.wait_for_monitor(2);
                 auto third_info = mxs.get_servers();
                 third_info.print();
@@ -234,11 +234,11 @@ void test_main(TestConnections& test)
                             && (third_master.server_id != orig_master.server_id), no_change);
 
                 cmd = mxb::string_printf(clear_maint, second_master.name.c_str());
-                mxs.maxctrl(cmd);
+                mxs.percona_proxyctl(cmd);
             }
 
             cmd = mxb::string_printf(clear_maint, orig_master.name.c_str());
-            mxs.maxctrl(cmd);
+            mxs.percona_proxyctl(cmd);
         }
 
         if (test.ok())
@@ -251,7 +251,7 @@ void test_main(TestConnections& test)
                 test.tprintf("Trying to set %s to drain, it should fail.", master.name.c_str());
                 const char set_drain[] = "set server %s drain";
                 auto cmd = mxb::string_printf(set_drain, master.name.c_str());
-                auto res = mxs.maxctrl(cmd);
+                auto res = mxs.percona_proxyctl(cmd);
                 test.expect(res.rc != 0, "Command '%s' succeeded when it should have failed.", cmd.c_str());
                 mxs.wait_for_monitor(2);
                 auto info_after = mxs.get_servers();
@@ -277,14 +277,14 @@ void test_main(TestConnections& test)
                     if (!slave_name.empty())
                     {
                         cmd = mxb::string_printf(set_drain, slave_name.c_str());
-                        mxs.maxctrl(cmd);
+                        mxs.percona_proxyctl(cmd);
                         mxs.wait_for_monitor(1);
                         info_after = mxs.get_servers();
                         info_after.print();
                         auto slave_status = info_after.get(slave_name).status;
                         test.expect(slave_status & drain_bits,
                                     "%s is not draining/drained when it should be.", slave_name.c_str());
-                        mxs.maxctrl(mxb::string_printf("clear server %s drain", slave_name.c_str()));
+                        mxs.percona_proxyctl(mxb::string_printf("clear server %s drain", slave_name.c_str()));
                     }
                     else
                     {

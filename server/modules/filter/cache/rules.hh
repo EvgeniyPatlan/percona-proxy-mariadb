@@ -13,14 +13,14 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <stdbool.h>
 #include <memory>
 #include <vector>
 #include <maxbase/jansson.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/session.hh>
-#include <maxscale/pcre2.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/pcre2.hh>
 #include "cacheconfig.hh"
 
 

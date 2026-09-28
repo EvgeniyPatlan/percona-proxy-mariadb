@@ -19,44 +19,44 @@ namespace
 {
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
-    // Start MaxScale in a shell in a separate thread.
-    std::thread maxscale_thread;
+    // Start Percona Proxy in a shell in a separate thread.
+    std::thread percona_proxy_thread;
 
-    auto run_maxscale = [&](bool secure_gui) {
+    auto run_percona_proxy = [&](bool secure_gui) {
         // Give environment variables in the command. Disable ASAN leak detection as it fails due to internal
-        // error, causing MaxScale to return an error value.
+        // error, causing Percona Proxy to return an error value.
         auto res = mxs.vm_node().run_cmd_output_sudof(
             "monitor_servers=server1,server2 monitor_user=maxskysql monitor_password=skysql secure_gui=%s "
             "ASAN_OPTIONS=detect_leaks=0 "
-            "maxscale -d --user=maxscale --piddir=/tmp", secure_gui ? "true" : "false");
+            "percona-proxy -d --user=percona-proxy --piddir=/tmp", secure_gui ? "true" : "false");
         if (res.rc == 0)
         {
-            test.tprintf("MaxScale process exited with code 0.");
+            test.tprintf("Percona Proxy process exited with code 0.");
         }
         else
         {
-            test.add_failure("MaxScale exited with error %i. Output: %s", res.rc, res.output.c_str());
+            test.add_failure("Percona Proxy exited with error %i. Output: %s", res.rc, res.output.c_str());
         }
     };
 
-    auto start_maxscale = [&](bool secure_gui) {
-        test.tprintf("Starting MaxScale.");
-        maxscale_thread = std::thread(run_maxscale, secure_gui);
+    auto start_percona_proxy = [&](bool secure_gui) {
+        test.tprintf("Starting Percona Proxy.");
+        percona_proxy_thread = std::thread(run_percona_proxy, secure_gui);
         sleep(1);
         mxs.expect_running_status(true);
     };
 
-    auto stop_maxscale = [&]() {
-        test.tprintf("Shutting down MaxScale with kill.");
-        mxs.vm_node().run_cmd_output_sudof("kill $(pidof maxscale)");
+    auto stop_percona_proxy = [&]() {
+        test.tprintf("Shutting down Percona Proxy with kill.");
+        mxs.vm_node().run_cmd_output_sudof("kill $(pidof percona-proxy)");
         sleep(1);
         mxs.expect_running_status(false);
-        maxscale_thread.join();
+        percona_proxy_thread.join();
     };
 
-    start_maxscale(true);
+    start_percona_proxy(true);
 
     auto servers = mxs.get_servers();
     mxs.check_print_servers_status({mxt::ServerInfo::master_st, mxt::ServerInfo::slave_st,
@@ -69,7 +69,7 @@ void test_main(TestConnections& test)
         test.tprintf("Testing admin_secure_gui=true, fetching GUI should give a message.");
 
         const string curl_fetch_gui = "curl --silent -u admin:mariadb http://localhost:8989";
-        const string insecure_gui = "The MaxScale GUI requires HTTPS to work, "
+        const string insecure_gui = "The Percona Proxy GUI requires HTTPS to work, "
                                     "please enable it by configuring";
 
         auto res = mxs.vm_node().run_cmd_output_sudo(curl_fetch_gui);
@@ -89,10 +89,10 @@ void test_main(TestConnections& test)
 
         if (test.ok())
         {
-            stop_maxscale();
+            stop_percona_proxy();
 
             test.tprintf("Testing admin_secure_gui=false, fetching GUI should work.");
-            start_maxscale(false);
+            start_percona_proxy(false);
 
             res = mxs.vm_node().run_cmd_output_sudo(curl_fetch_gui);
             if (res.rc == 0)
@@ -112,13 +112,13 @@ void test_main(TestConnections& test)
         }
     }
 
-    stop_maxscale();
+    stop_percona_proxy();
 }
 }
 
 int main(int argc, char* argv[])
 {
     TestConnections test;
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return test.run_test(argc, argv, test_main);
 }

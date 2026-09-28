@@ -167,7 +167,7 @@ then
 
     # The storage_memcached can only be built on RHEL 8 where the .so files are
     # in the main repositories. On RHEL 9, the .so files are only available in
-    # the Code Ready Builder repositories which means that MaxScale could not be
+    # the Code Ready Builder repositories which means that Percona Proxy could not be
     # installed without enabling them.
     if grep "release 8" /etc/redhat-release
     then
@@ -290,7 +290,7 @@ then
 fi
 
 
-# Install NPM for MaxCtrl and the GUI
+# Install NPM for Percona Proxyctl and the GUI
 $scriptdir/install_npm.sh $nodejs_version
 
 rm -rf $tmpdir

@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     int fd = mkstemp(filename);
     write(fd, data, sizeof(data) - 1);
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connect failed: %s", conn.error());
 
     test.expect(conn.query("CREATE OR REPLACE TABLE test.t1(id INT)"),

@@ -1,0 +1,1 @@
+add_java_test(simplejavatest SimpleConnectorJTest.java percona-proxy.java.test1.SimpleConnectorJTest simplejavatest)

@@ -11,9 +11,9 @@
  * Public License.
  */
 
-#include <maxscale/log.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/parser.hh>
+#include <percona-proxy/log.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/parser.hh>
 #include <atomic>
 #include <iostream>
 #include <thread>

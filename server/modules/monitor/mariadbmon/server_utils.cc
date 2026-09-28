@@ -356,7 +356,7 @@ Gtid Gtid::from_string(const char* str, char** endptr)
 {
     /* Error checking the gtid string is a bit questionable, as having an error means that the server is
      *  buggy or network has faults, in which case nothing can be trusted. But without error checking
-     *  MaxScale may crash if string is wrong. */
+     *  Percona Proxy may crash if string is wrong. */
     mxb_assert(endptr);
     const char* ptr = str;
     char* strtoull_endptr = nullptr;

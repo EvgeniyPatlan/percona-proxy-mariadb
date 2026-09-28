@@ -13,8 +13,8 @@
  */
 
 #include "pam_backend_session.hh"
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
 
 using std::string;
 
@@ -116,7 +116,7 @@ PamBackendAuthenticator::exchange(GWBUF&& input)
     /**
      * The server PAM plugin sends data usually once, at the moment it gets a prompt-type message
      * from the api. The "message"-segment may contain multiple messages from the api separated by \n.
-     * MaxScale should ignore this text and search for "Password: " near the end of the message. See
+     * Percona Proxy should ignore this text and search for "Password: " near the end of the message. See
      * https://github.com/MariaDB/server/blob/10.3/plugin/auth_pam/auth_pam.c
      * for how communication is handled on the other side.
      *

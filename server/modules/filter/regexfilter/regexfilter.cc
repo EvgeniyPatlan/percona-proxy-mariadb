@@ -26,15 +26,15 @@
 
 #define MXB_MODULE_NAME "regexfilter"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <maxbase/format.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/filter.hh>
-#include <maxscale/session.hh>
-#include <maxscale/workerlocal.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/workerlocal.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 #include <fstream>
 
@@ -65,7 +65,7 @@ cfg::ParamString s_log_file(
     cfg::Param::AT_RUNTIME);
 
 cfg::ParamBool s_log_trace(
-    &s_spec, "log_trace", "Log matching information to the MaxScale log on the info level", false,
+    &s_spec, "log_trace", "Log matching information to the Percona Proxy log on the info level", false,
     cfg::Param::AT_RUNTIME);
 
 cfg::ParamEnum<uint32_t> s_options(&s_spec, "options", "Regular expression options",

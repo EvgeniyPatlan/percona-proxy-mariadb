@@ -22,7 +22,7 @@
 // TODO: Move this to a common place.
 #include "../../../parser_plugin/test/testreader.hh"
 
-using maxscale::TestReader;
+using percona_proxy::TestReader;
 using namespace std;
 
 //

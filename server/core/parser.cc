@@ -11,10 +11,10 @@
  * Public License.
  */
 #include <algorithm>
-#include <maxscale/parser.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/json_api.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/json_api.hh>
 #include "internal/modules.hh"
 
 namespace
@@ -272,7 +272,7 @@ struct type_name_info type_to_type_name_info(sql::Type type)
 
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 const char* parser::to_string(Parser::Result result)
@@ -388,7 +388,7 @@ const char* sql::to_string(sql::OpCode op)
     {
 #undef PP_SQL_OPCODE
 #define PP_SQL_OPCODE(X) case X: return "sql::" #X ;
-#include <maxscale/parser_opcode.hh>
+#include <percona-proxy/parser_opcode.hh>
 
     default:
         mxb_assert(!true);

@@ -8,7 +8,7 @@ This router is intended to be used in tandem with the
 [Binlog Server](Binlogrouter.md).
 The Binlog Server can connect to a primary server and request binlog records.
 These records can then consumed by the avrorouter directly from the binlog cache
-of the Binlog Server. This allows MariaDB MaxScale to automatically transform
+of the Binlog Server. This allows Percona Proxy for MariaDB to automatically transform
 binlog events on the primary to local Avro format files.
 
 ![Binlog-Avro Translator](images/Binlog-Avro.png)
@@ -26,7 +26,7 @@ streams from a database table.
 
 ## Direct Replication Mode
 
-MaxScale 2.4.0 added a direct replication mode that connects the avrorouter
+Percona Proxy 2.4.0 added a direct replication mode that connects the avrorouter
 directly to a MariaDB server. This mode is an improvement over the binlogrouter
 based replication as it provides a more space-efficient and faster conversion
 process. This is the recommended method of using the avrorouter as it is faster,
@@ -39,7 +39,7 @@ servers as the replication source.
 Here is a minimal avrorouter direct replication configuration:
 
 ```
-[maxscale]
+[percona-proxy]
 threads=auto
 
 [server1]
@@ -63,7 +63,7 @@ port=4001
 
 In direct replication mode, the avrorouter stores the latest replicated GTID in
 the `last_gtid.txt` file located in the `avrodir` (defaults to
-`/var/lib/maxscale`). To reset the replication process, stop MaxScale and remove
+`/var/lib/percona-proxy`). To reset the replication process, stop Percona Proxy and remove
 the file.
 
 Additionally, the avrorouter will attempt to automatically create any missing
@@ -141,7 +141,7 @@ them: `match=(^test[.]t1$)|(^test[.]t2$)`.
 - **Type**: path
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `/var/lib/maxscale/`
+- **Default**: `/var/lib/percona-proxy/`
 
 The location of the binary log files. This is the first mandatory parameter
 and it defines where the module will read binlog files from. Read access to
@@ -152,18 +152,18 @@ this directory is required.
 - **Type**: path
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `/var/lib/maxscale/`
+- **Default**: `/var/lib/percona-proxy/`
 
 The location where the Avro files are stored. This is the second mandatory
 parameter and it governs where the converted files are stored. This directory
 will be used to store the Avro files, plain-text Avro schemas and other files
-needed by the avrorouter. The user running MariaDB MaxScale will need both read and
+needed by the avrorouter. The user running Percona Proxy for MariaDB will need both read and
 write access to this directory.
 
 The avrorouter will also use the _avrodir_ to store various internal
 files. These files are named _avro.index_ and _avro-conversion.ini_. By default,
-the default data directory, _/var/lib/maxscale/_, is used. Before version 2.1 of
-MaxScale, the value of _binlogdir_ was used as the default value for _avrodir_.
+the default data directory, _/var/lib/percona-proxy/_, is used. Before version 2.1 of
+Percona Proxy, the value of _binlogdir_ was used as the default value for _avrodir_.
 
 ##### `filestem`
 
@@ -209,14 +209,14 @@ beginning of the binary log file.
 
 Controls whether multiple instances cooperatively replicate from the same
 cluster. This is a boolean parameter and is disabled by default. It was
-added in MaxScale 6.0.
+added in Percona Proxy 6.0.
 
 When this parameter is enabled and the monitor pointed to by the `cluster`
 parameter supports cooperative monitoring (currently only `mariadbmon`),
 the replication is only active if the monitor owns the cluster it is
 monitoring.
 
-With this feature, multiple MaxScale instances can replicate from the same set
+With this feature, multiple Percona Proxy instances can replicate from the same set
 of servers and only one of them actively processes the replication stream. This
 allows the avrorouter instances to be made highly-available without having to
 have them all process the events at the same time.
@@ -331,7 +331,7 @@ type=service
 router=avrorouter
 binlogdir=/var/lib/mysql
 filestem=binlog
-avrodir=/var/lib/maxscale
+avrodir=/var/lib/percona-proxy
 ```
 
 ## Module commands
@@ -353,7 +353,7 @@ This command will delete all files created by the avrorouter. This includes all
 .avsc schema files and .avro data files as well as the internal state tracking
 files. Use this to completely reset the conversion process.
 
-**Note:** Once the command has completed, MaxScale must be restarted to restart
+**Note:** Once the command has completed, Percona Proxy must be restarted to restart
 the conversion process. Issuing a `convert start` command **will not work**.
 
 **WARNING:** You will lose any and all converted data when this command is
@@ -365,15 +365,15 @@ The avrorouter creates two files in the location pointed by _avrodir_:
 _avro.index_ and _avro-conversion.ini_. The _avro.index_ file is used to store
 the locations of the GTIDs in the .avro files. The _avro-conversion.ini_ contains
 the last converted position and GTID in the binlogs. If you need to reset the
-conversion process, delete these two files and restart MaxScale.
+conversion process, delete these two files and restart Percona Proxy.
 
 ## Resetting the Conversion Process
 
 To reset the binlog conversion process, issue the `purge` module command by
-executing it via MaxCtrl and stop MaxScale. If manually created schema files
-were used, they need to be recreated once MaxScale is stopped. After stopping
-MaxScale and optionally creating the schema files, the conversion process can be
-started by starting MaxScale.
+executing it via Percona Proxyctl and stop Percona Proxy. If manually created schema files
+were used, they need to be recreated once Percona Proxy is stopped. After stopping
+Percona Proxy and optionally creating the schema files, the conversion process can be
+started by starting Percona Proxy.
 
 ## Stopping the Avrorouter
 
@@ -382,7 +382,7 @@ follow the following steps:
 
 * Issue `STOP SLAVE` on the binlogrouter
 * Wait for the avrorouter to process all files
-* Stop MaxScale with `systemctl stop maxscale`
+* Stop Percona Proxy with `systemctl stop percona-proxy`
 
 This guarantees that the conversion process halts at a known good position in
 the latest binlog file.
@@ -390,7 +390,7 @@ the latest binlog file.
 ## Example Client
 
 The avrorouter comes with an example client program, _cdc.py_, written in Python 3.
-This client can connect to a MaxScale configured with the CDC protocol and the
+This client can connect to a Percona Proxy configured with the CDC protocol and the
 avrorouter.
 
 Before using this client, you will need to install the Python 3 interpreter and
@@ -449,7 +449,7 @@ feed it into the script if you cannot execute the SQL command directly:
 ```
 # On the database server
 mysql -ss -u <user> -p -h <host> -P <port> -e 'DESCRIBE `<database>`.`<table>`' > schema.tsv
-# On the MaxScale server
+# On the Percona Proxy server
 ./cdc_one_schema.py <database> <table> < schema.tsv
 ```
 
@@ -464,7 +464,7 @@ the Python interpreter (both Python 2 and Python 3 can be used).
 usage: cdc_schema.py [--help] [-h HOST] [-P PORT] [-u USER] [-p PASSWORD] DATABASE
 ```
 
-The _cdc_schema.py_ executable is installed as a part of MaxScale. This is a
+The _cdc_schema.py_ executable is installed as a part of Percona Proxy. This is a
 Python 3 script that generates Avro schema files from an existing database.
 
 The script will generate the .avsc schema files into the current directory. Run
@@ -473,10 +473,10 @@ directory where the avrorouter stores the .avro files (the value of `avrodir`).
 
 ### Go Schema Generator
 
-The _cdc_schema.go_ example Go program is provided with MaxScale. This file
+The _cdc_schema.go_ example Go program is provided with Percona Proxy. This file
 can be used to create Avro schemas for the avrorouter by connecting to a
-database and reading the table definitions. You can find the file in MaxScale's
-share directory in `/usr/share/maxscale/`.
+database and reading the table definitions. You can find the file in Percona Proxy's
+share directory in `/usr/share/percona-proxy/`.
 
 You'll need to install the Go compiler and run `go get` to resolve Go
 dependencies before you can use the _cdc_schema_ program. After resolving the
@@ -495,7 +495,7 @@ the Avrorouter works with the Binlog Server to convert binlogs from a primary se
 into easy to process Avro data.
 
 Here is a simple configuration example which reads binary logs locally from
-`/var/lib/mysql/` and stores them as Avro files in `/var/lib/maxscale/avro/`.
+`/var/lib/mysql/` and stores them as Avro files in `/var/lib/percona-proxy/avro/`.
 The service has one listener listening on port 4001 for CDC protocol clients.
 
 ```
@@ -506,7 +506,7 @@ user=myuser
 password=mypasswd
 router_options=binlogdir=/var/lib/mysql/,
         filestem=binlog,
-        avrodir=/var/lib/maxscale/avro/
+        avrodir=/var/lib/percona-proxy/avro/
 
 [avro-listener]
 type=listener
@@ -538,7 +538,7 @@ and `cdc_kafka_producer.py -h`.
 To build the avrorouter from source, you will need the
 [Avro C](https://avro.apache.org/docs/current/api/c/) library, liblzma,
 [the Jansson library](http://www.digip.org/jansson/) and sqlite3 development
-headers. When configuring MaxScale with CMake, you will need to add
+headers. When configuring Percona Proxy with CMake, you will need to add
 `-DBUILD_CDC=Y` to build the CDC module set.
 
 The Avro C library needs to be build with position independent code enabled. You
@@ -549,8 +549,8 @@ configuring the Avro C library.
 -DCMAKE_C_FLAGS=-fPIC -DCMAKE_CXX_FLAGS=-fPIC
 ```
 
-For more details about building MaxScale from source, please refer to the
-[Building MaxScale from Source Code](../Getting-Started/Building-MaxScale-from-Source-Code.md)
+For more details about building Percona Proxy from source, please refer to the
+[Building Percona Proxy from Source Code](../Getting-Started/Building-Percona Proxy-from-Source-Code.md)
 document.
 
 ## Router Diagnostics

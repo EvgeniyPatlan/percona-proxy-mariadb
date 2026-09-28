@@ -59,7 +59,7 @@ void* test_thr(void* data)
 
     while (running)
     {
-        auto rws = Test->maxscale->rwsplit();
+        auto rws = Test->percona_proxy->rwsplit();
 
         if (rws.connect())
         {
@@ -96,10 +96,10 @@ int main(int argc, char* argv[])
     {
         Test->tprintf("Blocking master");
         Test->repl->block_node(0);
-        Test->maxscale->wait_for_monitor();
+        Test->percona_proxy->wait_for_monitor();
         Test->tprintf("Unblocking master");
         Test->repl->unblock_node(0);
-        Test->maxscale->wait_for_monitor();
+        Test->percona_proxy->wait_for_monitor();
     }
 
     running = false;
@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
         pthread_join(thr[i], NULL);
     }
 
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
     Test->check_current_operations(0);
 
     int rval = Test->global_result;

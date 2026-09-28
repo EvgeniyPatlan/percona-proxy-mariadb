@@ -19,8 +19,8 @@ fi
 
 chmod 777 /tmp/
 echo 2 > /proc/sys/fs/suid_dumpable
-sed -i "s/start() {/start() { \n export DAEMON_COREFILE_LIMIT='unlimited'; ulimit -c unlimited; /" /etc/init.d/maxscale
-sed -i "s/log_daemon_msg \"Starting MaxScale\"/export DAEMON_COREFILE_LIMIT='unlimited'; ulimit -c unlimited; log_daemon_msg \"Starting MaxScale\" /" /etc/init.d/maxscale
+sed -i "s/start() {/start() { \n export DAEMON_COREFILE_LIMIT='unlimited'; ulimit -c unlimited; /" /etc/init.d/percona-proxy
+sed -i "s/log_daemon_msg \"Starting Percona Proxy\"/export DAEMON_COREFILE_LIMIT='unlimited'; ulimit -c unlimited; log_daemon_msg \"Starting Percona Proxy\" /" /etc/init.d/percona-proxy
 echo /tmp/core-%e-%s-%u-%g-%p-%t > /proc/sys/kernel/core_pattern
 
 echo "kernel.core_pattern = /tmp/core-%e-sig%s-user%u-group%g-pid%p-time%t" >> /etc/sysctl.d/core.conf

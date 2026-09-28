@@ -12,10 +12,10 @@
  * Public License.
  */
 
-#include <maxscale/cn_strings.hh>
-#include <maxscale/config.hh>
-#include <maxscale/ssl.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/ssl.hh>
+#include <percona-proxy/routingworker.hh>
 
 #ifdef OPENSSL_1_1
 #include <openssl/x509v3.h>
@@ -47,7 +47,7 @@ static const char* get_ssl_errors()
 }
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 // static

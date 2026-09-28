@@ -32,11 +32,11 @@ void test_main(TestConnections& test)
     // Test uses 2 slaves, stop the last one to prevent it from replicating anything.
     test.repl->stop_node(3);
 
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     auto mon_wait = [&test](int ticks) {
-        test.maxscale->wait_for_monitor(ticks);
+        test.percona_proxy->wait_for_monitor(ticks);
     };
 
     auto crash_node = [&test](int node) {
@@ -109,7 +109,7 @@ void test_main(TestConnections& test)
     {
         // Some of the following tests depend on manipulating backends during the same monitor tick or
         // between ticks. Slow down the monitor to make this more likely. Not fool-proof in the slightest.
-        test.check_maxctrl("alter monitor MariaDB-Monitor monitor_interval 4000ms");
+        test.check_percona_proxyctl("alter monitor MariaDB-Monitor monitor_interval 4000ms");
 
         test.tprintf("Step 5: Master crashes but comes back during the next loop,"
                      " slave 1 should be promoted, old master rejoined.");
@@ -162,7 +162,7 @@ void test_main(TestConnections& test)
         auto conn = repl.backend(i)->open_connection();
         repl.backend(i)->admin_connection()->cmd(drop_query);
     }
-    test.maxctrl("call command mariadbmon reset-replication MariaDB-Monitor server1");
+    test.percona_proxyctl("call command mariadbmon reset-replication MariaDB-Monitor server1");
     mon_wait(1);
     mxs.check_print_servers_status({master, slave, slave});
 }

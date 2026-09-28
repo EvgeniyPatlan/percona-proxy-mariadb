@@ -23,7 +23,7 @@ void multistmt_sescmd(TestConnections& test)
                 "Failed to set up test: %s", r.error());
     test.repl->sync_slaves();
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.set_credentials("bob", "bob");
 
     c.connect();

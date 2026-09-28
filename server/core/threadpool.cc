@@ -11,7 +11,7 @@
  * of this software will be governed by version 2 or later of the General
  * Public License.
  */
-#include <maxscale/threadpool.hh>
+#include <percona-proxy/threadpool.hh>
 
 namespace
 {
@@ -25,7 +25,7 @@ ThisUnit this_unit;
 
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 mxb::ThreadPool& thread_pool()

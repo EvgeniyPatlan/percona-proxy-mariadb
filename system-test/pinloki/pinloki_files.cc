@@ -30,13 +30,13 @@ public:
         master.query("FLUSH LOGS");
         master.query("CREATE TABLE test.t1(id INT)");
         master.query("DROP TABLE test.t1");
-        sync(master, maxscale);
+        sync(master, percona_proxy);
     }
 
     void run() override
     {
         auto orig = master.rows("SHOW BINARY LOGS");
-        auto mxs = maxscale.rows("SHOW BINARY LOGS");
+        auto mxs = percona_proxy.rows("SHOW BINARY LOGS");
 
         for (size_t i = 0; i < orig.size() && i < mxs.size(); i++)
         {
@@ -46,13 +46,13 @@ public:
                         orig[i][0].c_str(), mxs[i][0].c_str());
         }
 
-        auto index = test.maxscale->ssh_output("cat /var/lib/maxscale/binlogs/binlog.index");
+        auto index = test.percona_proxy->ssh_output("cat /var/lib/percona-proxy/binlogs/binlog.index");
         test.expect(index.rc == 0, "binlog.index should exist");
         test.expect(!index.output.empty(), "binlog.index should not be empty");
 
         for (const auto& a : mxb::strtok(index.output, "\n"))
         {
-            auto file = test.maxscale->ssh_output("test -f " + a);
+            auto file = test.percona_proxy->ssh_output("test -f " + a);
             test.expect(file.rc == 0, "File '%s' does not exist.", a.c_str());
         }
     }

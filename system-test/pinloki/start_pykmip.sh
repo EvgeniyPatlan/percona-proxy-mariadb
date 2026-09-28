@@ -32,6 +32,6 @@ with open('.pykmip-key', 'w') as f:
     f.write(uid)
 EOF
 
-# The key ID in MaxScale is the UID of the key returned by the KMIP server.
+# The key ID in Percona Proxy is the UID of the key returned by the KMIP server.
 KEY_UID=$(cat .pykmip-key)
-sudo sed -i "s/encryption_key_id.*/encryption_key_id=$KEY_UID/" /etc/maxscale.cnf
+sudo sed -i "s/encryption_key_id.*/encryption_key_id=$KEY_UID/" /etc/percona-proxy.cnf

@@ -13,15 +13,15 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <maxbase/json.hh>
-#include <maxscale/mainworker.hh>
+#include <percona-proxy/mainworker.hh>
 #include <maxsql/mariadb_connector.hh>
 
 #include <stdexcept>
 
-namespace maxscale
+namespace percona_proxy
 {
 
 class ConfigManager : public mxb::Worker::Callable
@@ -91,15 +91,15 @@ public:
      * Process the cached configuration from disk
      *
      * @return Startup::OK if the configuration was processed successfully. Startup::RESTART if the cached
-     *         configuration was discarded and MaxScale should restart. Startup::ERROR on fatal error,
-     *         MaxScale should exit with an error code.
+     *         configuration was discarded and Percona Proxy should restart. Startup::ERROR on fatal error,
+     *         Percona Proxy should exit with an error code.
      */
     Startup process_cached_config();
 
     /**
      * Start a configuration change
      *
-     * This starts a configuration change that will be synchronized with all the MaxScales that use the same
+     * This starts a configuration change that will be synchronized with all the PerconaProxies that use the same
      * cluster for synchronization. If this phase of the configuration change fails, the internal state is not
      * updated. An attempt to synchronize with the cluster should be made when a failure occurs.
      *
@@ -144,7 +144,7 @@ public:
     /**
      * Get the configuration version
      *
-     * This effectively tells you how many changes have been made to MaxScale over the lifetime of the
+     * This effectively tells you how many changes have been made to Percona Proxy over the lifetime of the
      * configured cluster. If the returned value is 0, no changes have been made and the configuration has
      * been read only from the static file.
      *
@@ -164,7 +164,7 @@ private:
 
     enum class Type
     {
-        SERVERS, MONITORS, SERVICES, LISTENERS, FILTERS, MAXSCALE, UNKNOWN
+        SERVERS, MONITORS, SERVICES, LISTENERS, FILTERS, PERCONA_PROXY, UNKNOWN
     };
 
     template<class T>

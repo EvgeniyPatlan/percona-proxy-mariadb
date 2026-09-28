@@ -15,7 +15,7 @@
 /**
  * @file monitor.c  - The monitor module management routines
  */
-#include <maxscale/monitor.hh>
+#include <percona-proxy/monitor.hh>
 
 #include <atomic>
 #include <fcntl.h>
@@ -36,15 +36,15 @@
 #include <maxbase/externcmd.hh>
 #include <maxbase/format.hh>
 #include <maxbase/json.hh>
-#include <maxscale/diskspace.hh>
-#include <maxscale/http.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/protocol/mariadb/diskspace.hh>
-#include <maxscale/protocol/mariadb/maxscale.hh>
-#include <maxscale/secrets.hh>
+#include <percona-proxy/diskspace.hh>
+#include <percona-proxy/http.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/protocol/mariadb/diskspace.hh>
+#include <percona-proxy/protocol/mariadb/percona-proxy.hh>
+#include <percona-proxy/secrets.hh>
 
 #include "internal/config.hh"
 #include "internal/modules.hh"
@@ -56,9 +56,9 @@ using std::set;
 using std::unique_ptr;
 using std::vector;
 using Guard = std::lock_guard<std::mutex>;
-using maxscale::Monitor;
-using maxscale::MonitorServer;
-using ConnectResult = maxscale::MonitorServer::ConnectResult;
+using percona_proxy::Monitor;
+using percona_proxy::MonitorServer;
+using ConnectResult = percona_proxy::MonitorServer::ConnectResult;
 using namespace std::literals::chrono_literals;
 using std::chrono::duration_cast;
 using std::chrono::seconds;
@@ -350,7 +350,7 @@ const char journal_template[] = "%s/%s/%s";
 
 bool check_disk_space_exhausted(MonitorServer* pMs,
                                 const std::string& path,
-                                const maxscale::disk::SizesAndName& san,
+                                const percona_proxy::disk::SizesAndName& san,
                                 int32_t max_percentage)
 {
     bool disk_space_exhausted = false;
@@ -474,7 +474,7 @@ void log_output(const std::string& cmd, const std::string& str)
 }
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 Monitor::Monitor(const string& name, const string& module)
     : m_name(name)
@@ -1802,7 +1802,7 @@ namespace journal_fields
 {
 const char FIELD_CONFIG_PATH[] = "config_path";
 const char FIELD_MODULE[] = "module";
-const char FIELD_MXSVERSION[] = "maxscale_version";
+const char FIELD_MXSVERSION[] = "percona_proxy_version";
 const char FIELD_NAME[] = "name";
 const char FIELD_SERVERS[] = "servers";
 const char FIELD_STATUS[] = "status";
@@ -1871,8 +1871,8 @@ void Monitor::read_journal()
                 }
                 else if (version != mod->mxs_version)
                 {
-                    fail_reason = mxb::string_printf("File is for MaxScale version %li. Current "
-                                                     "MaxScale version is %i.", version, mod->mxs_version);
+                    fail_reason = mxb::string_printf("File is for Percona Proxy version %li. Current "
+                                                     "Percona Proxy version is %i.", version, mod->mxs_version);
                 }
                 else if (age > max_age)
                 {
@@ -2459,7 +2459,7 @@ void MonitorServer::read_journal_data(const mxb::Json& data)
 {
     uint64_t status = data.get_int(journal_fields::FIELD_STATUS);
 
-    // Ignoring the AUTH_ERROR status causes the authentication error message to be logged every time MaxScale
+    // Ignoring the AUTH_ERROR status causes the authentication error message to be logged every time Percona Proxy
     // is restarted. This should make it easier to spot authentication related problems during startup.
     status &= ~SERVER_AUTH_ERROR;
 
@@ -2558,7 +2558,7 @@ void MariaServer::check_permissions(bool new_connection)
 std::unique_ptr<mxb::QueryResult>
 MariaServer::execute_query(const string& query, std::string* errmsg_out, unsigned int* errno_out)
 {
-    return maxscale::execute_query(con, query, errmsg_out, errno_out);
+    return percona_proxy::execute_query(con, query, errmsg_out, errno_out);
 }
 
 const std::string& MariaServer::permission_test_query() const

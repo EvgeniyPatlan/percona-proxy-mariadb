@@ -24,11 +24,11 @@ TestConnections* global_test;
 void change_master(int next, int current)
 {
     TestConnections& test = *global_test;
-    test.maxctrl("stop monitor MySQL-Monitor");
+    test.percona_proxyctl("stop monitor MySQL-Monitor");
     test.repl->connect();
     test.repl->change_master(current, next);
     test.repl->close_connections();
-    test.maxctrl("start monitor MySQL-Monitor");
+    test.percona_proxyctl("start monitor MySQL-Monitor");
 }
 
 struct Test
@@ -47,30 +47,30 @@ void do_test(Test pre, Test post)
 {
     TestConnections& test = *global_test;
     int rc;
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
 
     if (pre.query)
     {
-        rc = execute_query_silent(test.maxscale->conn_rwsplit, pre.query);
+        rc = execute_query_silent(test.percona_proxy->conn_rwsplit, pre.query);
         test.expect((rc == 0) == pre.should_work,
                     "Expected query '%s' to %s: %s",
                     pre.query,
                     pre.should_work ? "succeed" : "fail",
-                    mysql_error(test.maxscale->conn_rwsplit));
+                    mysql_error(test.percona_proxy->conn_rwsplit));
     }
 
     change_master(1, 0);
     sleep(5);
 
-    rc = execute_query_silent(test.maxscale->conn_rwsplit, post.query);
+    rc = execute_query_silent(test.percona_proxy->conn_rwsplit, post.query);
     test.expect((rc == 0) == post.should_work,
                 "Expected query '%s' to %s: %s",
                 post.query,
                 post.should_work ? "succeed" : "fail",
-                mysql_error(test.maxscale->conn_rwsplit));
+                mysql_error(test.percona_proxy->conn_rwsplit));
 
     change_master(0, 1);
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     sleep(5);
 }
@@ -81,10 +81,10 @@ int main(int argc, char** argv)
     global_test = &test;
 
     // Prepare a table for testing
-    test.maxscale->connect_rwsplit();
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id INT)");
+    test.percona_proxy->connect_rwsplit();
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id INT)");
     test.repl->sync_slaves();
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     test.tprintf("Check that write after change works");
     do_test({}, {"INSERT INTO test.t1 VALUES (1)"});
@@ -98,9 +98,9 @@ int main(int argc, char** argv)
     test.tprintf("Check that write right after autocommit=0 works");
     do_test({"SET autocommit=0"}, {"INSERT INTO test.t1 VALUES (1)"});
 
-    test.maxscale->connect_rwsplit();
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE test.t1");
-    test.maxscale->disconnect();
+    test.percona_proxy->connect_rwsplit();
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE test.t1");
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

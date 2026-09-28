@@ -23,10 +23,10 @@
 
 #include <maxbase/assert.hh>
 #include <maxsql/mariadb.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/protocol/mariadb/binlog.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/protocol/mariadb/binlog.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 #include "sql.hh"
 
@@ -1514,7 +1514,7 @@ json_t* Table::to_json() const
     json_error_t err;
     memset(&err, 0, sizeof(err));
     json_t* schema = json_object();
-    json_object_set_new(schema, "namespace", json_string("MaxScaleChangeDataSchema.avro"));
+    json_object_set_new(schema, "namespace", json_string("PerconaProxyChangeDataSchema.avro"));
     json_object_set_new(schema, "type", json_string("record"));
     json_object_set_new(schema, "name", json_string("ChangeRecord"));
     json_object_set_new(schema, "table", json_string(table.c_str()));

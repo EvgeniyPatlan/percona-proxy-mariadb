@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
         test.try_query(test.repl->nodes[i], "INSERT INTO partially_shared.t1 VALUES(@@server_id)");
     }
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection should work: %s", conn.error());
 
     // Queries that target a shared and unique dataase should be routed to the node that has it.

@@ -15,9 +15,9 @@
 #include "producer.hh"
 
 #include <maxbase/assert.hh>
-#include <maxscale/service.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/secrets.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/secrets.hh>
 #include <maxsql/mariadb.hh>
 
 namespace kafkaimporter

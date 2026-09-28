@@ -15,7 +15,7 @@
 
 void duplicate_ps(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     MXT_EXPECT(c.connect());
     MXT_EXPECT(c.query("DROP USER IF EXISTS duplicate_ps"));
     MXT_EXPECT(c.query("CREATE USER duplicate_ps IDENTIFIED BY 'duplicate_ps'"));
@@ -61,7 +61,7 @@ void duplicate_ps(TestConnections& test)
         mysql_stmt_close(stmt);
     }
 
-    c = test.maxscale->rwsplit();
+    c = test.percona_proxy->rwsplit();
     c.connect();
     MXT_EXPECT(c.query("DROP USER IF EXISTS duplicate_ps"));
 }

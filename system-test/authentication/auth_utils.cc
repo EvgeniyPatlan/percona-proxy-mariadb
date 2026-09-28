@@ -36,7 +36,7 @@ void try_conn(TestConnections& test, int port, Ssl ssl, const string& user, cons
     sett.password = pass;
     sett.ssl.enabled = ssl == Ssl::ON;
 
-    const string& host = test.maxscale->ip4();
+    const string& host = test.percona_proxy->ip4();
 
     test.tprintf("Trying to log in to [%s]:%i as '%s' using password '%s'.", host.c_str(), port,
                  user.c_str(), pass.c_str());
@@ -53,16 +53,16 @@ void try_conn(TestConnections& test, int port, Ssl ssl, const string& user, cons
         }
         else
         {
-            test.add_failure("Connection to MaxScale succeeded when failure was expected.");
+            test.add_failure("Connection to Percona Proxy succeeded when failure was expected.");
         }
     }
     else if (expect_success)
     {
-        test.add_failure("Connection to MaxScale failed: %s", maxconn.error());
+        test.add_failure("Connection to Percona Proxy failed: %s", maxconn.error());
     }
     else
     {
-        test.tprintf("Connection to MaxScale failed as expected.");
+        test.tprintf("Connection to Percona Proxy failed as expected.");
     }
 }
 
@@ -101,16 +101,16 @@ void uninstall_pam_plugin(mxt::MariaDBServer* server)
     server->admin_connection()->cmd("UNINSTALL SONAME 'auth_pam';");
 }
 
-void prepare_basic_pam_user(const string& user, const string& pw, mxt::MaxScale* mxs,
+void prepare_basic_pam_user(const string& user, const string& pw, mxt::PerconaProxy* mxs,
                             mxt::MariaDBServer* master, const std::vector<mxt::MariaDBServer*>& slaves)
 {
     prepare_pam_user(user, pw, basic_pam_cfg, mxs, master, slaves);
 }
 
-void prepare_pam_user(const string& user, const string& pw, const string& service, mxt::MaxScale* mxs,
+void prepare_pam_user(const string& user, const string& pw, const string& service, mxt::PerconaProxy* mxs,
                       mxt::MariaDBServer* master, const std::vector<mxt::MariaDBServer*>& slaves)
 {
-    // Create Linux user on every server vm + MaxScale vm. Create MariaDB user on master.
+    // Create Linux user on every server vm + Percona Proxy vm. Create MariaDB user on master.
     if (mxs)
     {
         mxs->vm_node().add_linux_user(user, pw);
@@ -127,7 +127,7 @@ void prepare_pam_user(const string& user, const string& pw, const string& servic
     }
 }
 
-void remove_pam_user(const string& user, mxt::MaxScale* mxs, mxt::MariaDBServer* master,
+void remove_pam_user(const string& user, mxt::PerconaProxy* mxs, mxt::MariaDBServer* master,
                      const std::vector<mxt::MariaDBServer*>& slaves)
 {
     for (auto& srv : slaves)

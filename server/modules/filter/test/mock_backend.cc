@@ -12,17 +12,17 @@
  * Public License.
  */
 
-#include "maxscale/mock/backend.hh"
+#include "percona-proxy/mock/backend.hh"
 #include <algorithm>
 #include <iostream>
 #include <vector>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/resultset.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/resultset.hh>
 
 using namespace std;
 
-namespace maxscale
+namespace percona_proxy
 {
 
 namespace mock
@@ -304,4 +304,4 @@ void ResultSetBackend::handle_statement(RouterSession* pSession, GWBUF&& stateme
     }
 }
 }   // mock
-}   // maxscale
+}   // percona-proxy

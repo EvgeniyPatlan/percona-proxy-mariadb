@@ -23,18 +23,18 @@
 void readonly_trx_test(TestConnections& test)
 {
     // Create a table and insert some data into it
-    auto first = test.maxscale->rwsplit();
+    auto first = test.percona_proxy->rwsplit();
     test.expect(first.connect(), "Connection should work");
     first.query("CREATE OR REPLACE TABLE test.t1(id INT)");
     first.query("INSERT INTO test.t1 VALUES (1)");
 
     // Open a second connection and start a read-only transaction
-    auto second = test.maxscale->rwsplit();
+    auto second = test.percona_proxy->rwsplit();
     test.expect(second.connect(), "Connection should work");
     second.query("START TRANSACTION READ ONLY");
 
     // Stop the monitor and stop replication on all the slave servers
-    test.maxctrl("stop monitor MySQL-Monitor");
+    test.percona_proxyctl("stop monitor MySQL-Monitor");
     test.repl->execute_query_all_nodes("STOP SLAVE");
 
     // Insert a row to generate the next GTID
@@ -64,13 +64,13 @@ int main(int argc, char** argv)
     test.repl->execute_query_all_nodes("SET GLOBAL session_track_system_variables='last_gtid'");
     test.repl->set_replication_delay(1);
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     conn.connect();
     test.expect(conn.query("CREATE OR REPLACE TABLE test.t1 (a INT)"),
                 "Table creation should work: %s", conn.error());
     conn.disconnect();
 
-    auto secondary = test.maxscale->rwsplit();
+    auto secondary = test.percona_proxy->rwsplit();
     secondary.connect();
 
     for (int i = 0; i < 20 && test.ok(); i++)
@@ -94,7 +94,7 @@ int main(int argc, char** argv)
         conn.disconnect();
     }
 
-    auto res = test.maxctrl("api get services/RW-Split-Router data.attributes.router_diagnostics.last_gtid");
+    auto res = test.percona_proxyctl("api get services/RW-Split-Router data.attributes.router_diagnostics.last_gtid");
     auto gtid_pos = res.output;
 
     conn.connect();
@@ -107,8 +107,8 @@ int main(int argc, char** argv)
 
     test.repl->set_replication_delay(0);
 
-    test.check_maxctrl("call command readwritesplit reset-gtid RW-Split-Router");
-    res = test.maxctrl("api get services/RW-Split-Router data.attributes.router_diagnostics.last_gtid");
+    test.check_percona_proxyctl("call command readwritesplit reset-gtid RW-Split-Router");
+    res = test.percona_proxyctl("api get services/RW-Split-Router data.attributes.router_diagnostics.last_gtid");
     test.expect(gtid_pos != res.output, "Global GTID state should be reset: %s != %s",
                 gtid_pos.c_str(), res.output.c_str());
     test.expect(res.output == "null", "Global GTID state should be null: %s", res.output.c_str());

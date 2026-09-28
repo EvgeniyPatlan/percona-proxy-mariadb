@@ -12,10 +12,10 @@
  * Public License.
  */
 
-#include "maxscale/queryclassifiermodule.hh"
+#include "percona-proxy/queryclassifiermodule.hh"
 #include "../../../core/internal/modules.hh"
 
-namespace maxscale
+namespace percona_proxy
 {
 
 // static

@@ -14,7 +14,7 @@
 
 #define MXB_MODULE_NAME "masking"
 #include "maskingfilterconfig.hh"
-#include <maxscale/cachingparser.hh>
+#include <percona-proxy/cachingparser.hh>
 #include "maskingfilter.hh"
 #include "maskingrules.hh"
 

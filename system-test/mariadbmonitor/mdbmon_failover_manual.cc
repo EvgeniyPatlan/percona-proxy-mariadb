@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     auto master = mxt::ServerInfo::master_st;
@@ -43,7 +43,7 @@ void test_main(TestConnections& test)
         test.tprintf("Part 1: Stop master and run manual failover.");
         repl.stop_node(0);
         mxs.wait_for_monitor(1);
-        mxs.maxctrl(failover);
+        mxs.percona_proxyctl(failover);
         mxs.wait_for_monitor(2);
         mxs.check_print_servers_status({down, master, slave, slave});
         auto maxconn = mxs.open_rwsplit_connection2();
@@ -68,9 +68,9 @@ void test_main(TestConnections& test)
         mxs.wait_for_monitor(1);
 
         // Instead of normal manual failover, check that async-failover works.
-        mxs.maxctrl("call command mariadbmon async-failover MariaDB-Monitor");
+        mxs.percona_proxyctl("call command mariadbmon async-failover MariaDB-Monitor");
         mxs.wait_for_monitor(2);
-        auto res = mxs.maxctrl("call command mariadbmon fetch-cmd-result MariaDB-Monitor");
+        auto res = mxs.percona_proxyctl("call command mariadbmon fetch-cmd-result MariaDB-Monitor");
         if (res.rc == 0)
         {
             // The output is a json string. Check that it includes the success-message.
@@ -92,7 +92,7 @@ void test_main(TestConnections& test)
         repl.replicate_from(old_master_ind, 2);
         mxs.wait_for_monitor(1);
         mxs.check_print_servers_status({slave, slave, master, slave});
-        mxs.maxctrl(switchover);
+        mxs.percona_proxyctl(switchover);
         mxs.wait_for_monitor(1);
         mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
     }
@@ -105,7 +105,7 @@ void test_main(TestConnections& test)
 
         int old_master_ind = 0;
         repl.stop_node(old_master_ind);
-        mxs.maxctrl(failover);
+        mxs.percona_proxyctl(failover);
         mxs.wait_for_monitor(2);
         mxs.check_print_servers_status({down, slave, slave, master});
 
@@ -117,7 +117,7 @@ void test_main(TestConnections& test)
         mxs.check_print_servers_status({running, slave, slave, master});
         repl.replicate_from(old_master_ind, 3);
         mxs.wait_for_monitor(1);
-        mxs.maxctrl(switchover);
+        mxs.percona_proxyctl(switchover);
         mxs.wait_for_monitor(1);
         mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
     }

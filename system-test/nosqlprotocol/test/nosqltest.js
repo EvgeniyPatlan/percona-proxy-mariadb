@@ -12,14 +12,14 @@
  * Public License.
  */
 
-var maxscale_host = process.env.maxscale_000_network;
+var percona_proxy_host = process.env.percona_proxy_000_network;
 var nosql_port;
 var nosql_cache_port;
 
-if (!maxscale_host) {
-    console.log("The environment variable 'maxscale_000_network' is not set, " +
+if (!percona_proxy_host) {
+    console.log("The environment variable 'percona_proxy_000_network' is not set, " +
                 "assuming 127.0.0.1.");
-    maxscale_host="127.0.0.1"
+    percona_proxy_host="127.0.0.1"
     nosql_port = 17017;
     nosql_cache_port = 17018;
 }
@@ -33,7 +33,7 @@ else
 
 var timeout;
 
-if (maxscale_host == "127.0.0.1") {
+if (percona_proxy_host == "127.0.0.1") {
     // We are debugging, so let's set the timeout to an hour.
     timeout = 60 * 60 * 1000;
 }
@@ -44,7 +44,7 @@ else {
 }
 
 var config = {
-    host: maxscale_host,
+    host: percona_proxy_host,
     mariadb_port: 4008,
     nosql_port: nosql_port,
     nosql_cache_port: nosql_cache_port,

@@ -6,7 +6,7 @@ A server resource represents a backend database server.
 
 ## Resource Operations
 
-The _:name_ in all of the URIs must be the name of a server in MaxScale.
+The _:name_ in all of the URIs must be the name of a server in Percona Proxy.
 
 ### Get a server
 
@@ -62,7 +62,7 @@ Get a single server.
             "server_id": 3000,
             "slave_connections": [],
             "source": {
-                "file": "/etc/maxscale.cnf",
+                "file": "/etc/percona-proxy.cnf",
                 "type": "static"
             },
             "state": "Master, Running",
@@ -315,7 +315,7 @@ Response contains a resource collection with all servers.
                 "server_id": 3000,
                 "slave_connections": [],
                 "source": {
-                    "file": "/etc/maxscale.cnf",
+                    "file": "/etc/percona-proxy.cnf",
                     "type": "static"
                 },
                 "state": "Master, Running",
@@ -561,7 +561,7 @@ Response contains a resource collection with all servers.
                     }
                 ],
                 "source": {
-                    "file": "/etc/maxscale.cnf",
+                    "file": "/etc/percona-proxy.cnf",
                     "type": "static"
                 },
                 "state": "Running",

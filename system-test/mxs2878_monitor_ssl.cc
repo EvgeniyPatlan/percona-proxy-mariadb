@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     const std::string DROP_IN_DIR = "/etc/systemd/system/mariadb.service.d";
     mxs.check_servers_status(mxt::ServersInfo::default_repl_states());

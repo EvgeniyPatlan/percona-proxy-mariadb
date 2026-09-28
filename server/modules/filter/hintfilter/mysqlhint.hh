@@ -13,11 +13,11 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/hint.hh>
-#include <maxscale/filter.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/hint.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 
 class HintSession;
 
@@ -60,7 +60,7 @@ enum TOKEN_VALUE
     TOK_END
 };
 
-// Class that parses text into MaxScale hints
+// Class that parses text into Percona Proxy hints
 class HintParser
 {
 public:

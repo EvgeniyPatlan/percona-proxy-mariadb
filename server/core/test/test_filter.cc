@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <maxscale/paths.hh>
+#include <percona-proxy/paths.hh>
 
 #include "../internal/filter.hh"
 #include "test_utils.hh"

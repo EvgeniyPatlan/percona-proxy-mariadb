@@ -35,7 +35,7 @@ void test_main(TestConnections& test);
 int main(int argc, char** argv)
 {
     TestConnections test;
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return test.run_test(argc, argv, test_main);
 }
 
@@ -48,11 +48,11 @@ void test_main(TestConnections& test)
     auto ext_master = mxt::ServerInfo::EXT_MASTER;
 
     const string secondary_slave_conn = "b";
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     auto mon_wait = [&test](int ticks) {
-        test.maxscale->wait_for_monitor(ticks);
+        test.percona_proxy->wait_for_monitor(ticks);
     };
 
     mxs.ssh_output("maxkeys");
@@ -119,7 +119,7 @@ void test_main(TestConnections& test)
         mon_wait(2);
         mxs.check_print_servers_status({slave, master | ext_master});
 
-        mxs.maxctrl("call command mariadbmon switchover MariaDB-Monitor");
+        mxs.percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor");
         mon_wait(2);
 
         // Generate traffic and check again.
@@ -149,7 +149,7 @@ void test_main(TestConnections& test)
         {
             repl.backend(i)->admin_connection()->cmd("DROP TABLE IF EXISTS test.t1;");
         }
-        mxs.maxctrl("call command mariadbmon reset-replication MariaDB-Monitor server1");
+        mxs.percona_proxyctl("call command mariadbmon reset-replication MariaDB-Monitor server1");
     }
     delete_secrets_file(test);
 }

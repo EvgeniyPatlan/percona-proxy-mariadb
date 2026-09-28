@@ -24,7 +24,7 @@ void test_main(TestConnections& test)
     r.query("GRANT ALL ON *.* TO " + USER);
     test.repl->sync_slaves();
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.set_credentials(USER, PASSWORD);
     MXT_EXPECT(c.connect());
     MXT_EXPECT(c.query("SELECT GET_LOCK('mxs5356_get_lock', 1)"));

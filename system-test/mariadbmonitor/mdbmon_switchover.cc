@@ -28,7 +28,7 @@ void test_missing_privs(TestConnections& test);
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     mxs.wait_for_monitor();
     mxs.check_servers_status(normal_status);
@@ -45,7 +45,7 @@ void test_main(TestConnections& test)
     conn->cmd("COMMIT");
 
     test.tprintf("Trying to do manual switchover to server2");
-    test.maxctrl("call command mysqlmon switchover MySQL-Monitor server2 server1");
+    test.percona_proxyctl("call command mysqlmon switchover MySQL-Monitor server2 server1");
 
     mxs.wait_for_monitor();
     mxs.check_servers_status({slave, master, slave, slave});
@@ -53,10 +53,10 @@ void test_main(TestConnections& test)
     if (test.ok())
     {
         test.tprintf("Switchover success. Resetting situation using async-switchover.");
-        test.maxctrl("call command mariadbmon async-switchover MySQL-Monitor server1");
+        test.percona_proxyctl("call command mariadbmon async-switchover MySQL-Monitor server1");
         // Wait a bit so switch completes, then fetch results.
         mxs.wait_for_monitor(2);
-        auto res = test.maxctrl("call command mariadbmon fetch-cmd-result MySQL-Monitor");
+        auto res = test.percona_proxyctl("call command mariadbmon fetch-cmd-result MySQL-Monitor");
         test.expect(res.rc == 0, "fetch-cmd-result failed: %s", res.output.c_str());
         if (test.ok())
         {
@@ -82,7 +82,7 @@ void test_main(TestConnections& test)
 void test_connector_timeout(TestConnections& test)
 {
     test.tprintf("Lock a table on master, and start switchover.");
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     const string lock_cmd = "lock table test.t1 write;";
     const string unlock_cmd = "unlock tables;";
@@ -95,13 +95,13 @@ void test_connector_timeout(TestConnections& test)
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
     auto master_conn = repl.backend(0)->open_connection();
     master_conn->cmd(lock_cmd);
-    auto res = test.maxctrl(async_switchover);
+    auto res = test.percona_proxyctl(async_switchover);
     test.expect(res.rc == 0, so_not_started, res.output.c_str());
 
     if (test.ok())
     {
         auto so_running = [&mxs, &fetch_results](){
-            auto fetch_res = mxs.maxctrl(fetch_results);
+            auto fetch_res = mxs.percona_proxyctl(fetch_results);
             return fetch_res.output.find("running") != string::npos;
         };
 
@@ -129,7 +129,7 @@ void test_connector_timeout(TestConnections& test)
         sleep(7);
         test.expect(!so_running(), "Switchover should have timed out.");
 
-        res = mxs.maxctrl(fetch_results);
+        res = mxs.percona_proxyctl(fetch_results);
         test.expect(res.output.find("failed") != string::npos, "Switchover should have failed.");
 
         if (test.ok())
@@ -137,7 +137,7 @@ void test_connector_timeout(TestConnections& test)
             test.tprintf("Table lock is still held. Start async switchover again. Check that it completes "
                          "once lock is released.");
             mxs.delete_log();
-            res = test.maxctrl(async_switchover);
+            res = test.percona_proxyctl(async_switchover);
             test.expect(res.rc == 0, so_not_started, res.output.c_str());
 
             test.tprintf("Sleep 4 seconds, then check log.");
@@ -149,10 +149,10 @@ void test_connector_timeout(TestConnections& test)
             master_conn->cmd(unlock_cmd);
             sleep(2);
             test.expect(!so_running(), "Switchover should no longer be running.");
-            res = mxs.maxctrl(fetch_results);
+            res = mxs.percona_proxyctl(fetch_results);
             test.expect(res.output.find("successfully") != string::npos, "Switchover should have succeeded.");
 
-            res = mxs.maxctrl("call command mariadbmon switchover MySQL-Monitor server1");
+            res = mxs.percona_proxyctl("call command mariadbmon switchover MySQL-Monitor server1");
             test.expect(res.rc == 0, "Switchover to standard config failed: %s", res.output.c_str());
         }
     }
@@ -162,7 +162,7 @@ void test_connector_timeout(TestConnections& test)
 
 void test_missing_privs(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     test.tprintf("MXS-4605: Monitor should reconnect if command fails due to missing privileges.");
@@ -185,7 +185,7 @@ void test_missing_privs(TestConnections& test)
         auto try_switchover = [&](const string& expected_errmsg,
                                   mxt::ServerInfo::bitfield expected_server2_state) {
             const string switch_cmd = "call command mysqlmon switchover MySQL-Monitor server2";
-            auto res = test.maxctrl(switch_cmd);
+            auto res = test.percona_proxyctl(switch_cmd);
             if (expected_errmsg.empty())
             {
                 if (res.rc == 0)
@@ -236,7 +236,7 @@ void test_missing_privs(TestConnections& test)
             // server2 ends up with replication stopped, not an ideal situation. If auto-rejoin is on,
             // this is not an issue.
             test.tprintf("Rejoining server2");
-            mxs.maxctrl("call command mariadbmon rejoin MySQL-Monitor server2");
+            mxs.percona_proxyctl("call command mariadbmon rejoin MySQL-Monitor server2");
             mxs.wait_for_monitor(1);
             mxs.check_print_servers_status({master, slave, slave, slave});
 

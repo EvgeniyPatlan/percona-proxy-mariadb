@@ -20,14 +20,14 @@
 #include <sstream>
 #include <fstream>
 #include <uuid/uuid.h>
-#include <maxscale/utils.hh>
+#include <percona-proxy/utils.hh>
 #include <dirent.h>
 #include <sys/inotify.h>
 #include "pinloki.hh"
 
 namespace
 {
-namespace cfg = maxscale::config;
+namespace cfg = percona_proxy::config;
 using namespace std::literals::chrono_literals;
 
 cfg::Specification s_spec("pinloki", cfg::Specification::ROUTER);
@@ -70,7 +70,7 @@ cfg::ParamDuration<wall_time::Duration> s_expire_log_duration(
 
 /* Undocumented config items (for test purposes) */
 cfg::ParamDuration<wall_time::Duration> s_purge_startup_delay(
-    &s_spec, "purge_startup_delay", "Purge waits this long after a MaxScale startup",
+    &s_spec, "purge_startup_delay", "Purge waits this long after a Percona Proxy startup",
     2min);
 
 cfg::ParamDuration<wall_time::Duration> s_purge_poll_timeout(

@@ -13,11 +13,11 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <limits.h>
-#include <maxscale/config2.hh>
-#include <maxscale/filter.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 #include "rules.hh"
 #include "cache.hh"
 #include "cachefiltersession.hh"

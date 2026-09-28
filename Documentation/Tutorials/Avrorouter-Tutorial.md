@@ -28,7 +28,7 @@ binlog_row_image=full
 _You can find out more about replication formats from the
 [MariaDB Knowledge Base](https://mariadb.com/kb/en/mariadb/binary-log-formats/)_
 
-## Configuring MaxScale
+## Configuring Percona Proxy
 
 We start by adding two new services into the configuration file. The first
 service is the binlogrouter service which will read the binary logs from the
@@ -84,7 +84,7 @@ Documentation](../Routers/Avrorouter.md).
 
 # Preparing the data in the primary server
 
-Before starting the MaxScale process, we need to make sure that the binary logs
+Before starting the Percona Proxy process, we need to make sure that the binary logs
 of the primary server contain the DDL statements that define the table
 layouts. What this means is that the `CREATE TABLE` statements need to be in the
 binary logs before the conversion process is started.
@@ -94,7 +94,7 @@ created in the binary logs, the Avro schema of the table needs to be manually
 created. There are multiple ways to do this:
 
 - Dump the database to a replica, configure it to replicate from the primary and
-  point MaxScale to this replica (this is the recommended method as it requires no
+  point Percona Proxy to this replica (this is the recommended method as it requires no
   extra steps)
 
 - Use the [_cdc_schema_ Go utility](../Routers/Avrorouter.md#avro-schema-generator)
@@ -109,9 +109,9 @@ _avrodir_ parameter. The files use the following naming:
 `<database>.<table>.<schema_version>.avsc`. For example, the schema file name of
 the _test.t1_ table would be `test.t1.0000001.avsc`.
 
-# Starting MariaDB MaxScale
+# Starting Percona Proxy for MariaDB
 
-The next step is to start MariaDB MaxScale and set up the binlogrouter. We do
+The next step is to start Percona Proxy for MariaDB and set up the binlogrouter. We do
 that by connecting to the MySQL listener of the _replication_router_ service and
 executing a few commands.
 
@@ -151,10 +151,10 @@ INSERT INTO test.t1 VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10);
 ```
 
 To use the _cdc.py_ command line client to connect to the CDC service, we must first
-create a user. This can be done via maxctrl by executing the following command.
+create a user. This can be done via percona-proxyctl by executing the following command.
 
 ```
-maxctrl call command cdc add_user avro-service maxuser maxpwd
+percona-proxyctl call command cdc add_user avro-service maxuser maxpwd
 ```
 
 This will create the _maxuser:maxpwd_ credentials which can then be used to
@@ -168,7 +168,7 @@ The output is a stream of JSON events describing the changes done to the
 database.
 
 ```
-{"namespace": "MaxScaleChangeDataSchema.avro", "type": "record", "name": "ChangeRecord", "fields": [{"name": "domain", "type": "int"}, {"name": "server_id", "type": "int"}, {"name": "sequence", "type": "int"}, {"name": "event_number", "type": "int"}, {"name": "timestamp", "type": "int"}, {"name": "event_type", "type": {"type": "enum", "name": "EVENT_TYPES", "symbols": ["insert", "update_before", "update_after", "delete"]}}, {"name": "id", "type": "int", "real_type": "int", "length": -1}]}
+{"namespace": "PerconaProxyChangeDataSchema.avro", "type": "record", "name": "ChangeRecord", "fields": [{"name": "domain", "type": "int"}, {"name": "server_id", "type": "int"}, {"name": "sequence", "type": "int"}, {"name": "event_number", "type": "int"}, {"name": "timestamp", "type": "int"}, {"name": "event_type", "type": {"type": "enum", "name": "EVENT_TYPES", "symbols": ["insert", "update_before", "update_after", "delete"]}}, {"name": "id", "type": "int", "real_type": "int", "length": -1}]}
 {"domain": 0, "server_id": 3000, "sequence": 11, "event_number": 1, "timestamp": 1537429419, "event_type": "insert", "id": 1}
 {"domain": 0, "server_id": 3000, "sequence": 11, "event_number": 2, "timestamp": 1537429419, "event_type": "insert", "id": 2}
 {"domain": 0, "server_id": 3000, "sequence": 11, "event_number": 3, "timestamp": 1537429419, "event_type": "insert", "id": 3}

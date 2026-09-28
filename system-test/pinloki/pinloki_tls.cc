@@ -26,7 +26,7 @@ public:
     {
         master.ssl(true);
         slave.ssl(true);
-        test.expect(maxscale.connect(), "Pinloki connection should work: %s", maxscale.error());
+        test.expect(percona_proxy.connect(), "Pinloki connection should work: %s", percona_proxy.error());
         test.expect(master.connect(), "Master connection should work: %s", master.error());
         test.expect(slave.connect(), "Slave connection should work: %s", slave.error());
 
@@ -34,33 +34,33 @@ public:
 
         auto change_master = change_master_sql(test.repl->ip(0), test.repl->port(0));
         change_master += ", MASTER_SSL=1, MASTER_SSL_CA='"s
-            + test.maxscale->access_homedir()
+            + test.percona_proxy->access_homedir()
             + "/certs/ca.crt'";
 
         auto gtid = master.field("SELECT @@gtid_current_pos");
-        maxscale.query("SET GLOBAL gtid_slave_pos = '" + gtid + "'");
+        percona_proxy.query("SET GLOBAL gtid_slave_pos = '" + gtid + "'");
 
-        test.expect(maxscale.query(change_master), "CHANGE MASTER failed: %s", maxscale.error());
-        test.expect(maxscale.query("START SLAVE"), "START SLAVE failed: %s", maxscale.error());
-        sync(master, maxscale);
+        test.expect(percona_proxy.query(change_master), "CHANGE MASTER failed: %s", percona_proxy.error());
+        test.expect(percona_proxy.query("START SLAVE"), "START SLAVE failed: %s", percona_proxy.error());
+        sync(master, percona_proxy);
 
-        std::string slave_change_master = change_master_sql(test.maxscale->ip(), test.maxscale->rwsplit_port);
+        std::string slave_change_master = change_master_sql(test.percona_proxy->ip(), test.percona_proxy->rwsplit_port);
         slave_change_master += ", MASTER_SSL=1";
         slave.query(slave_change_master);
         slave.query("START SLAVE");
-        sync(maxscale, slave);
+        sync(percona_proxy, slave);
     }
 
     void run() override
     {
-        test.expect(master.query("CREATE TABLE test.t1(id INT)"), "CREATE failed: %s", maxscale.error());
-        test.expect(master.query("INSERT INTO test.t1 VALUES(1)"), "INSERT failed: %s", maxscale.error());
-        test.expect(master.query("DROP TABLE test.t1"), "DROP failed: %s", maxscale.error());
+        test.expect(master.query("CREATE TABLE test.t1(id INT)"), "CREATE failed: %s", percona_proxy.error());
+        test.expect(master.query("INSERT INTO test.t1 VALUES(1)"), "INSERT failed: %s", percona_proxy.error());
+        test.expect(master.query("DROP TABLE test.t1"), "DROP failed: %s", percona_proxy.error());
         sync_all();
         check_gtid();
 
         // MXS-4096: SSL values in SHOW SLAVE STATUS are empty
-        auto c = test.maxscale->open_rwsplit_connection2();
+        auto c = test.percona_proxy->open_rwsplit_connection2();
 
         for (auto query : {"SHOW SLAVE STATUS", "SHOW ALL SLAVES STATUS"})
         {
@@ -76,7 +76,7 @@ public:
         }
 
         // Make sure the diagnostics work with SSL enabled
-        test.check_maxctrl("show services");
+        test.check_percona_proxyctl("show services");
     }
 };
 

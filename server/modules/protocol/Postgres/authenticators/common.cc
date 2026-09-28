@@ -12,7 +12,7 @@
  */
 
 #include "common.hh"
-#include <maxscale/utils.hh>
+#include <percona-proxy/utils.hh>
 
 std::optional<ScramUser> parse_scram_password(std::string_view pw)
 {

@@ -14,13 +14,13 @@
 
 #define MXB_MODULE_NAME "rewitefilter"
 #include "rewritesession.hh"
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 #include "rewritefilter.hh"
 
 RewriteFilterSession::RewriteFilterSession(MXS_SESSION* pSession,
                                            SERVICE* pService,
                                            const std::shared_ptr<const SessionData>& sSettings)
-    : maxscale::FilterSession(pSession, pService)
+    : percona_proxy::FilterSession(pSession, pService)
     , m_sSession_data(sSettings)
 {
 }

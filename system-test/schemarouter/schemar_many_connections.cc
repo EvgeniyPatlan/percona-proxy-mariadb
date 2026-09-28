@@ -16,7 +16,7 @@
  * @file mxs431.cpp Bug regression test case for MXS-431: ("Backend authentication fails with schemarouter")
  *
  * - Create database 'testdb' on one node
- * - Connect repeatedly to MaxScale with 'testdb' as the default database and execute SELECT 1
+ * - Connect repeatedly to Percona Proxy with 'testdb' as the default database and execute SELECT 1
  */
 
 #include <maxtest/testconnections.hh>
@@ -45,12 +45,12 @@ int main(int argc, char* argv[])
             char str[256];
             sprintf(str, "shard_db%d", i);
             test.reset_timeout();
-            MYSQL* conn = open_conn_db(test.maxscale->rwsplit_port,
-                                       test.maxscale->ip4(),
+            MYSQL* conn = open_conn_db(test.percona_proxy->rwsplit_port,
+                                       test.percona_proxy->ip4(),
                                        str,
-                                       test.maxscale->user_name(),
-                                       test.maxscale->password(),
-                                       test.maxscale_ssl);
+                                       test.percona_proxy->user_name(),
+                                       test.percona_proxy->password(),
+                                       test.percona_proxy_ssl);
             test.reset_timeout();
             test.add_result(execute_query(conn, "SELECT 1"), "Trying DB %d failed at %d", i, j);
             mysql_close(conn);

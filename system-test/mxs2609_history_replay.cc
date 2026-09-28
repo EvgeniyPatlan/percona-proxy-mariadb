@@ -31,11 +31,11 @@ int main(int argc, char** argv)
 
     auto block = [&test](int n) {
             test.repl->block_node(n);
-            test.maxscale->wait_for_monitor();
+            test.percona_proxy->wait_for_monitor();
             test.repl->unblock_node(n);
-            test.maxscale->wait_for_monitor();
+            test.percona_proxy->wait_for_monitor();
         };
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
 
     test.log_printf("Test 1: Master failure mid-reconnect should trigger query replay");
 
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 
     test.log_printf("Test 2: Exceed history limit and trigger a master reconnection");
 
-    test.maxctrl("alter service RW-Split-Router max_sescmd_history 2 prune_sescmd_history false");
+    test.percona_proxyctl("alter service RW-Split-Router max_sescmd_history 2 prune_sescmd_history false");
     test.expect(conn.connect(), "Second should work: %s", conn.error());
 
     for (int i = 0; i < 5; i++)

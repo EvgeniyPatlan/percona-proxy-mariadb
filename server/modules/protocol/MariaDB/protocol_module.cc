@@ -11,17 +11,17 @@
  * of this software will be governed by version 2 or later of the General
  * Public License.
  */
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 #define MXB_MODULE_NAME MXS_MARIADB_PROTOCOL_NAME
 
 #include "protocol_module.hh"
 #include <maxbase/format.hh>
-#include <maxscale/built_in_modules.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/protocol/mariadb/backend_connection.hh>
-#include <maxscale/protocol/mariadb/client_connection.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/built_in_modules.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/protocol/mariadb/backend_connection.hh>
+#include <percona-proxy/protocol/mariadb/client_connection.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
 #include "user_data.hh"
 
 using std::string;
@@ -467,7 +467,7 @@ MXS_MODULE* mariadbprotocol_info()
         mxs::ModuleType::PROTOCOL,
         mxs::ModuleStatus::GA,
         MXS_PROTOCOL_VERSION,
-        "The client to MaxScale MySQL protocol implementation",
+        "The client to Percona Proxy MySQL protocol implementation",
         "V1.1.0",
         MXS_NO_MODULE_CAPABILITIES,
         &mxs::ProtocolApiGenerator<MySQLProtocolModule>::s_api,

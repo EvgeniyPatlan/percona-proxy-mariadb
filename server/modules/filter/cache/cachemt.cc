@@ -14,7 +14,7 @@
 
 #define MXB_MODULE_NAME "cache"
 #include "cachemt.hh"
-#include <maxscale/mainworker.hh>
+#include <percona-proxy/mainworker.hh>
 #include "storage.hh"
 #include "storagefactory.hh"
 

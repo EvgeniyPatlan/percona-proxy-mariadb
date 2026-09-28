@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
     std::string slave = test.repl->get_server_id_str(1);
     test.repl->close_connections();
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
     std::string res = c.field("SELECT @@server_id");
     test.add_result(res != slave, "The slave should respond to the first query: %s", res.c_str());
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
     c.send_query("SELECT @@server_id, SLEEP(5)");
     sleep(1);
     test.repl->block_node(1);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     res = c.read_query_result_field().value_or("");
     test.add_result(res != master, "The master should respond to the second query: %s", res.c_str());
     test.repl->unblock_node(1);

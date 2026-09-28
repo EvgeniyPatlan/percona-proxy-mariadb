@@ -15,7 +15,7 @@
 #include <maxbase/assert.hh>
 #include <maxbase/checksum.hh>
 #include <maxbase/externcmd.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/utils.hh>
 #include <maxbase/random.hh>
 #include <string.h>
 #include <iostream>

@@ -1,0 +1,509 @@
+/*
+ * Copyright (c) 2016 MariaDB Corporation Ab
+ * Copyright (c) 2023 MariaDB plc, Finnish Branch
+ *
+ * Use of this software is governed by the Business Source License included
+ * in the LICENSE.TXT file and at www.mariadb.com/bsl11.
+ *
+ * Change Date: 2026-09-21
+ *
+ * On the date above, in accordance with the Business Source License, use
+ * of this software will be governed by version 2 or later of the General
+ * Public License.
+ */
+
+var fs = require("fs");
+var ini = require("ini");
+var os = require("os");
+var yargs = require("yargs");
+const { percona_proxyctl, error, doRequest } = require("./common.js");
+
+// Note: The version.js file is generated at configuation time. If you are
+// building in-source, it'll be created automatically. Make sure to remove
+// it if you want to refresh the contents of it.
+const constants = require("./version.js");
+const percona_proxyctl_version = constants.version;
+
+// Global options given at startup
+var base_opts = {};
+
+// These options can only be given at startup
+const base_opts_keys = [
+  "--user",
+  "--password",
+  "--hosts",
+  "--timeout",
+  "--tsv",
+  "--secure",
+  "--tls-verify-server-cert",
+  "--tls-key",
+  "--tls-cert",
+  "--tls-passphrase",
+  "--tls-ca-cert",
+  "--config",
+  "--skip-sync",
+];
+
+// These are only used to check that the options aren't used in interactive mode
+const base_opts_short_keys = ["-u", "-p", "-h", "-c", "-t", "-s", "-n"];
+
+const default_filename = "~/.percona-proxyctl.cnf";
+const expanded_default_filename = os.homedir() + "/.percona-proxyctl.cnf";
+
+function createDefaultConfig() {
+  let ret = {};
+
+  if (process.env["MAXCTRL_USER"] !== undefined) {
+    ret.user = process.env["MAXCTRL_USER"];
+  }
+
+  if (process.env["MAXCTRL_PASSWORD"] !== undefined) {
+    ret.password = process.env["MAXCTRL_PASSWORD"];
+  }
+
+  return ret;
+}
+
+function configParser(filename) {
+  // Yargs does not understand ~ and unless the default filename starts
+  // with a /, Yargs prepends it with the CWD, so some work is needed to
+  // figure out whether the filename is the default.
+  var prefix = process.cwd() + "/~/";
+
+  // Remove duplicated slashes to make sure the literal string comparison
+  // of the prefix works. This would happen when Percona Proxyctl is executed from
+  // the root directory and the prefix would end up being //~/.
+  prefix = prefix.replace("//", "/");
+
+  if (filename.indexOf(prefix) == 0) {
+    // Replace "${CWD}/~/" with "${HOME}/"
+    filename = os.homedir() + "/" + filename.slice(-(filename.length - prefix.length));
+  }
+
+  // We require a .cnf suffix because 1) it makes the format clear and
+  // 2) it makes it easy to introduce other formats.
+  if (filename.slice(-4) != ".cnf") {
+    throw Error("Error: " + filename + " does not have a '.cnf' suffix");
+  }
+
+  var stats;
+  try {
+    stats = fs.statSync(filename);
+  } catch (x) {
+    if (filename == expanded_default_filename) {
+      // We do not require the presence of the default config file.
+      return {};
+    } else {
+      // But if a different has been specified, we do.
+      throw x;
+    }
+  }
+
+  // As the file may contain a password, we are picky about the bits.
+  if ((stats.mode & 31) != 0) {
+    const mode = (stats.mode & 0o777).toString(8);
+    throw Error(
+      "Error: " +
+        filename +
+        " exists, but can be accessed by group and world (mode 0" +
+        mode +
+        "). Only the owner and the group should have read access to it (mode 0640)."
+    );
+  }
+
+  var content = fs.readFileSync(filename, "utf-8");
+  var config = ini.parse(content);
+
+  if (!config.percona_proxyctl) {
+    throw Error("Error: " + filename + " does not have a [percona-proxyctl] section");
+  }
+
+  const bad_values = Object.keys(config.percona_proxyctl).filter((k) => k.startsWith("-"));
+
+  if (bad_values.length > 0) {
+    throw Error("Error: Option names must be defined without hyphens: " + bad_values.join(", "));
+  }
+
+  return config.percona_proxyctl;
+}
+
+function readOneLine() {
+  var res = "";
+
+  do {
+    var buffer = Buffer.alloc(1);
+    if (fs.readSync(0, buffer, 0, 1) == 0) {
+      break;
+    }
+    res += buffer.toString();
+  } while (!res.endsWith(os.EOL));
+
+  if (res.endsWith(os.EOL)) {
+    res = res.slice(0, res.length - os.EOL.length);
+  }
+
+  return res;
+}
+
+function program() {
+  return yargs()
+    .version(percona_proxyctl_version)
+    .strict()
+    .exitProcess(false)
+    .showHelpOnFail(false)
+    .group(["c", "u", "p", "k", "h", "t", "q", "tsv", "skip-sync"], "Global Options:")
+    .option("c", {
+      alias: "config",
+      global: true,
+      default: default_filename,
+      describe: "Percona Proxyctl configuration file",
+      type: "string",
+      config: true,
+      configParser: configParser,
+    })
+    .option("u", {
+      alias: "user",
+      global: true,
+      default: "admin",
+      describe: "Username to use",
+      type: "string",
+      requiresArg: true,
+    })
+    .option("p", {
+      alias: "password",
+      describe: "Password for the user. To input the password manually, use -p '' or --password=''",
+      default: "mariadb",
+      type: "string",
+      requiresArg: true,
+    })
+    .option("h", {
+      alias: "hosts",
+      describe:
+        "List of Percona Proxy hosts. The hosts must be in " +
+        "HOST:PORT format and each value must be separated by a comma.",
+      default: "127.0.0.1:8989",
+      type: "string",
+      requiresArg: true,
+    })
+    .option("t", {
+      alias: "timeout",
+      describe:
+        "Request timeout in plain milliseconds, e.g '-t 1000', " +
+        "or as duration with suffix [h|m|s|ms], e.g. '-t 10s'",
+      default: "10000",
+      type: "string",
+    })
+    .coerce("t", (opt) => {
+      if (typeof opt == "string") {
+        var pos = opt.search(/[^\d]/);
+        var duration = parseInt(pos == -1 ? opt : opt.substring(0, pos));
+        if (isNaN(duration)) {
+          throw Error("'" + opt + "' is not a valid duration.");
+        }
+        if (pos != -1) {
+          var suffix = opt.substr(pos);
+          switch (suffix) {
+            case "h":
+              duration *= 24;
+            //fallthrough
+            case "m":
+              duration *= 60;
+            //fallthrough
+            case "s":
+              duration *= 1000;
+            //fallthrough
+            case "ms":
+              break;
+
+            default:
+              throw Error("'" + suffix + "' in '" + opt + "' is not a valid duration suffix.");
+          }
+        }
+        opt = duration;
+      }
+      return opt;
+    })
+    .option("q", {
+      alias: "quiet",
+      describe: "Silence all output. Ignored while in interactive mode.",
+      default: false,
+      type: "boolean",
+    })
+    .option("k", {
+      alias: "secretsdir",
+      describe: "Directory where the .secrets file is stored for passwords encrypted with percona-proxy-passwd.",
+      default: constants.datadir,
+      type: "string",
+      requiresArg: true,
+    })
+    .option("tsv", {
+      describe: "Print tab separated output",
+      default: false,
+      type: "boolean",
+    })
+    .group(["s", "tls-key", "tls-passphrase", "tls-cert", "tls-ca-cert", "n"], "HTTPS/TLS Options:")
+    .option("s", {
+      alias: "secure",
+      describe: "Enable HTTPS requests",
+      default: false,
+      type: "boolean",
+    })
+    .option("tls-key", {
+      describe: "Path to TLS private key",
+      type: "string",
+      implies: "tls-cert",
+    })
+    .option("tls-cert", {
+      describe: "Path to TLS public certificate",
+      type: "string",
+      implies: "tls-key",
+    })
+    .option("tls-passphrase", {
+      describe: "Password for the TLS private key",
+      type: "string",
+    })
+    .option("tls-ca-cert", {
+      describe: "Path to TLS CA certificate",
+      type: "string",
+    })
+    .option("n", {
+      alias: "tls-verify-server-cert",
+      describe: "Whether to verify server TLS certificates",
+      default: true,
+      type: "boolean",
+    })
+    .option("skip-sync", {
+      describe: "Disable configuration synchronization for this command",
+      default: false,
+      type: "boolean",
+    })
+    .config(createDefaultConfig())
+
+    .command(require("./list.js"))
+    .command(require("./show.js"))
+    .command(require("./set.js"))
+    .command(require("./clear.js"))
+    .command(require("./enable.js"))
+    .command(require("./disable.js"))
+    .command(require("./create.js"))
+    .command(require("./destroy.js"))
+    .command(require("./link.js"))
+    .command(require("./unlink.js"))
+    .command(require("./start.js"))
+    .command(require("./stop.js"))
+    .command(require("./alter.js"))
+    .command(require("./rotate.js"))
+    .command(require("./reload.js"))
+    .command(require("./call.js"))
+    .command(require("./api.js"))
+    .command(require("./classify.js"))
+    .command(require("./debug.js"))
+    .epilog(
+      `
+Percona Proxyctl supports passwords encrypted with percona-proxy-passwd. By default, percona-proxyctl assumes
+that the encryption keys are located in '${constants.datadir}' and that the
+current user can read them. Usually this means that you need to run percona-proxyctl as
+the root user or with sudo in order for the default path to work.
+
+To use encrypted passwords with a non-root user, the encryption key used by
+Percona Proxy must be copied to a directory where it can be access and the ownership
+of the file must be changed to the current user. The file must be readable by
+only the owner of the file.
+
+For example, to copy the encryption key from the default location to
+the current user's home directory, the following commands can be used:
+
+  sudo cp /var/lib/percona-proxy/.secrets $HOME/.secrets
+  sudo chown $(whoami) $HOME/.secrets
+
+To hide all warnings from percona-proxyctl, run:
+
+    export MAXCTRL_WARNINGS=0
+
+If no commands are given, percona-proxyctl is started in interactive mode.
+Use 'exit' to exit the interactive mode.
+
+The credentials can also be defined using the MAXCTRL_USER and MAXCTRL_PASSWORD
+environment variables:
+
+   MAXCTRL_USER=my-user MAXCTRL_PASSWORD=my-secret percona-proxyctl list servers
+
+The use of the -p,--password options is discouraged as the process arguments are
+visible to other users. Environment variables are not visible and thus they are
+more secure.
+`
+    )
+    .help()
+    .scriptName("percona-proxyctl")
+    .command("*", false, {}, function (argv) {
+      if (argv._.length == 0) {
+        // No password given, ask it from the command line
+        // TODO: Combine this into the one in common.js
+        if (argv.password == "") {
+          if (process.stdin.isTTY) {
+            var readlineSync = require("readline-sync");
+            argv.password = readlineSync.question("Enter password: ", {
+              hideEchoBack: true,
+            });
+          } else {
+            // As it's possible for both the password and the commands to be sent over the same input,
+            // we must only read the first line of input, otherwise the commands are interpreted as
+            // a part of the password. Unfortunately, this isn't trivial to do in NodeJS as it
+            // doesn't have the equivalent of the std::getline C++ function.
+            argv.password = argv.p = readOneLine();
+          }
+        }
+
+        // Only set the string options if they are defined, otherwise we'll end up with the value as
+        // the string 'undefined'
+        for (var i of base_opts_keys) {
+          const key = i.replace(/-*/, "");
+          if (argv[key] !== undefined) {
+            base_opts[key] = argv[key];
+          }
+        }
+
+        return askQuestion(argv);
+      } else {
+        percona_proxyctl(argv, function () {
+          let msg = "Unknown command " + JSON.stringify(argv._);
+          return error(msg + ". See output of `--help` for a list of commands.");
+        });
+      }
+    });
+}
+
+function doCommand(argv) {
+  return new Promise(function (resolve, reject) {
+    try {
+      program().parse(argv, { resolve: resolve, reject: reject }, function (err, argv, output) {
+        // This callback only receives input if no command was called and Yargs encountered some sort of
+        // an error or auto-generated the output. The promise will be resolved or rejected via the reject
+        // and resolve values stored in argv.
+        if (err) {
+          reject(err.message);
+        } else if (output) {
+          resolve(output);
+        }
+      });
+    } catch (err) {
+      reject(err.message);
+    }
+  });
+}
+
+module.exports.execute = function (argv, opts) {
+  if (opts && opts.extra_args) {
+    // Add extra options to the end of the argument list
+    argv = opts.extra_args.concat(argv);
+  }
+
+  return doCommand(argv);
+};
+
+async function runCommands(argv, options, input) {
+  var rval = [];
+
+  for (const line of input) {
+    try {
+      rval.push(await doCommand(options + " " + line));
+    } catch (e) {
+      rval.push(e);
+    }
+  }
+
+  return argv.quiet ? undefined : rval.join(os.EOL);
+}
+
+async function readCommands(argv, options) {
+  var data = null;
+
+  process.stdin.on("readable", function () {
+    var chunk = process.stdin.read();
+
+    while (chunk) {
+      if (data) {
+        data = Buffer.concat([data, chunk]);
+      } else {
+        data = chunk;
+      }
+
+      chunk = process.stdin.read();
+    }
+  });
+
+  process.stdin.on("end", async function () {
+    const input = data
+      .toString()
+      .split(os.EOL)
+      .map((str) => str.trim())
+      .filter((val) => val);
+
+    argv.resolve(await runCommands(argv, options, input));
+  });
+}
+
+async function askQuestion(argv) {
+  // All short and long form options, for checking if they are used.
+  const keys = base_opts_keys.concat(base_opts_short_keys);
+
+  // The actual base options given during startup, joined into one string.
+  const options = Object.keys(base_opts)
+    .map((k) => "--" + k + "=" + base_opts[k])
+    .join(" ");
+
+  if (!process.stdin.isTTY) {
+    return readCommands(argv, options);
+  } else {
+    // Ping the hosts to make sure the credentials are correct
+    argv.quiet = true;
+    await percona_proxyctl(argv, function (host) {
+      return doRequest(host, "/");
+    });
+    argv.quiet = false;
+  }
+
+  const inquirer = require("inquirer");
+  inquirer.registerPrompt("command", require("inquirer-command-prompt"));
+
+  var question = [
+    {
+      name: "percona-proxyctl",
+      prefix: "",
+      suffix: "",
+      type: "command",
+      message: "percona-proxyctl",
+    },
+  ];
+
+  const _ = require("lodash");
+  const parse = require("shell-quote").parse;
+
+  let running = true;
+
+  while (running) {
+    try {
+      const answers = await inquirer.prompt(question);
+      let cmd = answers.percona_proxyctl;
+
+      const opts = parse(cmd).map((v) => v.replace(/=.*/, ""));
+      const conflicting = _.intersection(opts, keys);
+
+      if (conflicting.length > 0) {
+        console.log("Global options cannot be redefined in interactive mode: " + conflicting.join(", "));
+        continue;
+      }
+
+      if (cmd.toLowerCase() == "exit" || cmd.toLowerCase() == "quit") {
+        running = false;
+      } else {
+        const output = await doCommand(options + " " + cmd);
+        if (output) {
+          console.log(output);
+        }
+      }
+    } catch (err) {
+      console.log(err ? err : "An undefined error has occurred");
+    }
+  }
+}

@@ -14,7 +14,7 @@
 
 #include "rwsplitsession.hh"
 
-using namespace maxscale;
+using namespace percona_proxy;
 
 void RWSplitSession::continue_large_session_write(GWBUF&& querybuf, uint32_t type)
 {

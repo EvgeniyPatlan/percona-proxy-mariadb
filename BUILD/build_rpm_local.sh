@@ -13,7 +13,7 @@ sudo chmod a+x /usr/bin/strip
 
 "$scriptdir"/build_package.sh || exit 1
 
-mkdir -p MaxScale/_build
-cp _build/*.rpm -t MaxScale/_build/
-cp _build/*.gz -t MaxScale/_build/
-cp _build/*.sha256 -t MaxScale/_build/
+mkdir -p Percona Proxy/_build
+cp _build/*.rpm -t Percona Proxy/_build/
+cp _build/*.gz -t Percona Proxy/_build/
+cp _build/*.sha256 -t Percona Proxy/_build/

@@ -14,8 +14,8 @@
 
 #include "gssapi_backend_auth.hh"
 
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
 
 /**
  * Generate packet with client password in cleartext.

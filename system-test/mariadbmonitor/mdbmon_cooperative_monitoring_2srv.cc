@@ -23,7 +23,7 @@ namespace
 
 void test_main(TestConnections& test)
 {
-    test.expect(test.n_maxscales() >= 2, "At least 2 MaxScales are needed for this test. Exiting");
+    test.expect(test.n_percona_proxies() >= 2, "At least 2 PerconaProxies are needed for this test. Exiting");
     if (!test.ok())
     {
         return;
@@ -31,14 +31,14 @@ void test_main(TestConnections& test)
 
     const auto master_slave = {mxt::ServerInfo::master_st, mxt::ServerInfo::slave_st};
     const auto slave_master = {mxt::ServerInfo::slave_st, mxt::ServerInfo::master_st};
-    auto& mxs1 = *test.maxscale;
-    auto& mxs2 = *test.maxscale2;
+    auto& mxs1 = *test.percona_proxy;
+    auto& mxs2 = *test.percona_proxy2;
     auto& repl = *test.repl;
 
-    mxs1.start_maxscale();
-    // Ensure MaxScale1 gets locks.
+    mxs1.start_percona_proxy();
+    // Ensure PerconaProxy1 gets locks.
     mxs1.wait_for_monitor(1);
-    mxs2.start_maxscale();
+    mxs2.start_percona_proxy();
     mxs2.wait_for_monitor(1);
 
     MonitorInfo monitors[] = {
@@ -47,26 +47,26 @@ void test_main(TestConnections& test)
         {-1, "none"           },
     };
 
-    monitors[0].maxscale = &mxs1;
-    monitors[1].maxscale = &mxs2;
+    monitors[0].percona_proxy = &mxs1;
+    monitors[1].percona_proxy = &mxs2;
 
     auto wait_both = [&monitors](int ticks) {
         for (int i = 0; i < ticks; i++)
         {
-            monitors[0].maxscale->wait_for_monitor(1);
-            monitors[1].maxscale->wait_for_monitor(1);
+            monitors[0].percona_proxy->wait_for_monitor(1);
+            monitors[1].percona_proxy->wait_for_monitor(1);
         }
     };
 
     const auto* primary_mon = get_primary_monitor(test, monitors);
-    test.expect(primary_mon && primary_mon->id == 1, "MaxScale1 does not have exclusive lock.");
+    test.expect(primary_mon && primary_mon->id == 1, "PerconaProxy1 does not have exclusive lock.");
 
     mxs1.check_print_servers_status(master_slave);
     mxs2.check_print_servers_status(master_slave);
 
     if (test.ok())
     {
-        test.tprintf("Stop master for 2 seconds, then bring it back. Primary MaxScale and master should "
+        test.tprintf("Stop master for 2 seconds, then bring it back. Primary Percona Proxy and master should "
                      "not change.");
         auto* srv1 = repl.backend(0);
         srv1->stop_database();
@@ -77,7 +77,7 @@ void test_main(TestConnections& test)
 
         primary_mon = get_primary_monitor(test, monitors);
         test.expect(primary_mon && primary_mon->id == 1,
-                    "MaxScale1 does not have exclusive locks after server1 restart.");
+                    "PerconaProxy1 does not have exclusive locks after server1 restart.");
         mxs1.check_print_servers_status(master_slave);
         mxs2.check_print_servers_status(master_slave);
 
@@ -100,7 +100,7 @@ void test_main(TestConnections& test)
 
         primary_mon = get_primary_monitor(test, monitors);
         test.expect(primary_mon && primary_mon->id == 1,
-                    "MaxScale1 does not have exclusive lock after server1 failover.");
+                    "PerconaProxy1 does not have exclusive lock after server1 failover.");
         mxs1.check_print_servers_status(slave_master);
         mxs2.check_print_servers_status(slave_master);
 
@@ -114,7 +114,7 @@ void test_main(TestConnections& test)
 
             auto get_lock_owner = [&]() {
                 auto* srv2 = repl.backend(block_server_ind);
-                string query = R"(SELECT IS_USED_LOCK(\"maxscale_mariadbmonitor_master\"))";
+                string query = R"(SELECT IS_USED_LOCK(\"percona_proxy_mariadbmonitor_master\"))";
                 auto res = srv2->vm_node().run_sql_query(query);
                 test.tprintf("Query '%s' returned %i: '%s'", query.c_str(), res.rc, res.output.c_str());
                 test.expect(res.rc == 0, "Query failed.");
@@ -130,7 +130,7 @@ void test_main(TestConnections& test)
             {
                 wait_both(1);
                 test.expect(monitor_is_primary(test, mon1),
-                            "MaxScale %i does not have exclusive lock after server2 was blocked.",
+                            "Percona Proxy %i does not have exclusive lock after server2 was blocked.",
                             mon1.id);
 
                 if (mxs1.get_servers().get(0).status == mxt::ServerInfo::master_st)
@@ -154,7 +154,7 @@ void test_main(TestConnections& test)
                 test.tprintf("Lock is free on server2.");
             }
 
-            // MaxScale2 may need some extra time to detect the new master as it's waiting for server1 to
+            // PerconaProxy2 may need some extra time to detect the new master as it's waiting for server1 to
             // become invalid.
             for (int i = 0; i < 5; i++)
             {
@@ -170,11 +170,11 @@ void test_main(TestConnections& test)
 
             mxs2.check_print_servers_status(master_down);
 
-            test.tprintf("Unblock server2. MaxScale1 should remain primary as it already had one lock.");
+            test.tprintf("Unblock server2. PerconaProxy1 should remain primary as it already had one lock.");
             repl.unblock_node(block_server_ind);
             sleep(1);
             wait_both(1);
-            test.expect(monitor_is_primary(test, mon1), "MaxScale1 is not primary");
+            test.expect(monitor_is_primary(test, mon1), "PerconaProxy1 is not primary");
 
             mxs1.check_print_servers_status(master_slave);
             mxs2.check_print_servers_status(master_slave);
@@ -186,6 +186,6 @@ void test_main(TestConnections& test)
 int main(int argc, char* argv[])
 {
     TestConnections test;
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return test.run_test(argc, argv, test_main);
 }

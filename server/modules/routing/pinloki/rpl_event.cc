@@ -15,7 +15,7 @@
 #include "rpl_event.hh"
 #include "dbconnection.hh"
 
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 #include <zlib.h>
 #include <chrono>
@@ -23,8 +23,8 @@
 #include <iomanip>
 
 #include <openssl/rand.h>
-#include <maxscale/utils.hh>
-#include <maxscale/key_manager.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/key_manager.hh>
 
 using namespace std::literals::chrono_literals;
 using namespace std::literals::string_literals;

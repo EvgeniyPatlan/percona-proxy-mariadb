@@ -13,7 +13,7 @@
  */
 
 #include <iostream>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/routingworker.hh>
 #include <maxtest/maxrest.hh>
 #include <maxtest/testconnections.hh>
 #include <maxbase/stacktrace.hh>
@@ -33,7 +33,7 @@ namespace
 void make_deaf(MaxRest& maxrest, const string& id)
 {
     ostringstream path;
-    path << "maxscale/debug/threads/" << id << "/unlisten";
+    path << "percona-proxy/debug/threads/" << id << "/unlisten";
 
     maxrest.curl_put(path.str());
 }
@@ -51,7 +51,7 @@ void make_deaf(MaxRest& maxrest, const MaxRest::Thread& thread)
 void make_listening(MaxRest& maxrest, const string& id)
 {
     ostringstream path;
-    path << "maxscale/debug/threads/" << id << "/listen";
+    path << "percona-proxy/debug/threads/" << id << "/listen";
 
     maxrest.curl_put(path.str());
 }
@@ -160,12 +160,12 @@ void wait_for_threads(MaxRest& maxrest, size_t to_workers)
 
 void wait_until_not_terminating(MaxRest& maxrest)
 {
-    string url {"maxscale/debug/termination_in_process"};
+    string url {"percona-proxy/debug/termination_in_process"};
     bool tim;
 
     do
     {
-        auto json = maxrest.curl_get("maxscale/debug/termination_in_process");
+        auto json = maxrest.curl_get("percona-proxy/debug/termination_in_process");
         MXB_AT_DEBUG(bool rv = ) json.try_get_bool("termination_in_process", &tim);
         mxb_assert(rv);
     }
@@ -188,13 +188,13 @@ void smoke_test1(TestConnections& test, MaxRest& maxrest)
     threads = maxrest.show_threads();
     test.expect(threads.size() == 4, "1: Expected 4 initial threads, but found %d.", (int)threads.size());
 
-    maxrest.alter_maxscale("threads", 8);
+    maxrest.alter_percona_proxy("threads", 8);
     wait_for_threads(maxrest, 8);
 
     threads = maxrest.show_threads();
     test.expect(threads.size() == 8, "2: Expected 8 threads, but found %d.", (int)threads.size());
 
-    maxrest.alter_maxscale("threads", 4);
+    maxrest.alter_percona_proxy("threads", 4);
     wait_for_threads(maxrest, 4);
 
     threads = maxrest.show_threads();
@@ -224,7 +224,7 @@ void smoke_test2(TestConnections& test, MaxRest& maxrest)
 
     try
     {
-        maxrest.alter_maxscale("threads", 0);
+        maxrest.alter_percona_proxy("threads", 0);
         test.expect(false, "Setting the threads to 0 succeeded.");
     }
     catch (const std::exception& x)
@@ -234,7 +234,7 @@ void smoke_test2(TestConnections& test, MaxRest& maxrest)
 
     try
     {
-        maxrest.alter_maxscale("threads", 1024);
+        maxrest.alter_percona_proxy("threads", 1024);
         test.expect(false, "Setting the threads to 1024 succeeded.");
     }
     catch (const std::exception& x)
@@ -317,10 +317,10 @@ void smoke_test4(TestConnections& test, MaxRest& maxrest)
     vector<Connection> connections;
     for (int i = 0; i < 4; ++i)
     {
-        connections.emplace_back(test.maxscale->ip(), 4006, "maxskysql", "skysql");
+        connections.emplace_back(test.percona_proxy->ip(), 4006, "maxskysql", "skysql");
         // Make particular worker listening when connecting => each connection to different worker.
         make_listening(maxrest, i);
-        test.expect(connections[i].connect(), "1: Could not connect to MaxScale.");
+        test.expect(connections[i].connect(), "1: Could not connect to Percona Proxy.");
         make_deaf(maxrest, i);
     }
 
@@ -335,7 +335,7 @@ void smoke_test4(TestConnections& test, MaxRest& maxrest)
     check_value(test, threads, &MaxRest::Thread::state, string("Active"));
 
     // Tuning the number of threads to 1; as they all have connections, none should disappear.
-    maxrest.alter_maxscale("threads", 1);
+    maxrest.alter_percona_proxy("threads", 1);
 
     // Check that the threads remain alive for at least five seconds
     for (int i = 0; i < 5; i++)
@@ -350,7 +350,7 @@ void smoke_test4(TestConnections& test, MaxRest& maxrest)
     check_value(test, ++threads.begin(), threads.end(), &MaxRest::Thread::state, string("Draining"));
 
     // Tuning the number of threads to 5.
-    maxrest.alter_maxscale("threads", 5);
+    maxrest.alter_percona_proxy("threads", 5);
     wait_for_threads(maxrest, 5);
     threads = maxrest.show_threads();
     test.expect(threads.size() == 5, "3: Expected 5 threads but found %d.", (int)threads.size());
@@ -359,7 +359,7 @@ void smoke_test4(TestConnections& test, MaxRest& maxrest)
     check_value(test, threads, &MaxRest::Thread::state, string("Active"));
 
     // Tuning the number of threads to 1.
-    maxrest.alter_maxscale("threads", 1);
+    maxrest.alter_percona_proxy("threads", 1);
     wait_for_threads(maxrest, 4);
     threads = maxrest.show_threads();
     // The fifth thread should go down, as there are no connections.
@@ -395,9 +395,9 @@ namespace
 
 void stress_test1_setup(TestConnections& test)
 {
-    Connection c(test.maxscale->ip(), 4006, "maxskysql", "skysql");
+    Connection c(test.percona_proxy->ip(), 4006, "maxskysql", "skysql");
 
-    test.expect(c.connect(), "Could not connect to MaxScale.");
+    test.expect(c.connect(), "Could not connect to Percona Proxy.");
     test.expect(c.query("CREATE TABLE IF NOT EXISTS test.rworker (f INT)"),
                 "Could not CREATE test.rworker");
     test.expect(c.query("INSERT INTO test.rworker VALUES (1)"),
@@ -406,9 +406,9 @@ void stress_test1_setup(TestConnections& test)
 
 void stress_test1_finish(TestConnections& test)
 {
-    Connection c(test.maxscale->ip(), 4006, "maxskysql", "skysql");
+    Connection c(test.percona_proxy->ip(), 4006, "maxskysql", "skysql");
 
-    test.expect(c.connect(), "Could not connect to MaxScale.");
+    test.expect(c.connect(), "Could not connect to Percona Proxy.");
     test.expect(c.query("DROP TABLE IF EXISTS test.rworker"),
                 "Could not DROP test.rworker");
 }
@@ -423,7 +423,7 @@ void stress_test1_client(TestConnections* pTest, bool* pTerminate, int i)
 
     while (!terminate)
     {
-        Connection c(test.maxscale->ip(), 4006, "maxskysql", "skysql");
+        Connection c(test.percona_proxy->ip(), 4006, "maxskysql", "skysql");
 
         if (c.connect())
         {
@@ -485,7 +485,7 @@ void stress_test1(TestConnections& test, MaxRest& maxrest)
     const int64_t nWorkers = 13;
     const int nClients = 17;
 
-    STACKTRACE_ON_EXCEPTION(maxrest.alter_maxscale("threads", nWorkers));
+    STACKTRACE_ON_EXCEPTION(maxrest.alter_percona_proxy("threads", nWorkers));
     wait_for_threads(maxrest, nWorkers);
 
     vector<std::thread> client_threads;
@@ -509,7 +509,7 @@ void stress_test1(TestConnections& test, MaxRest& maxrest)
                 break;
             }
 
-            STACKTRACE_ON_EXCEPTION(maxrest.alter_maxscale("threads", i));
+            STACKTRACE_ON_EXCEPTION(maxrest.alter_percona_proxy("threads", i));
 
 
             // When the while-loop ends, all threads are active, i.e. the Draining one
@@ -531,7 +531,7 @@ void stress_test1(TestConnections& test, MaxRest& maxrest)
                 break;
             }
 
-            STACKTRACE_ON_EXCEPTION(maxrest.alter_maxscale("threads", i));
+            STACKTRACE_ON_EXCEPTION(maxrest.alter_percona_proxy("threads", i));
             wait_for_stable_state(maxrest, threads, state);
         }
 
@@ -568,7 +568,7 @@ void test_main(TestConnections& test)
 
         stress_test1(test, maxrest);
 
-        STACKTRACE_ON_EXCEPTION(maxrest.alter_maxscale("threads", 4));
+        STACKTRACE_ON_EXCEPTION(maxrest.alter_percona_proxy("threads", 4));
     }
     catch (const std::exception& x)
     {

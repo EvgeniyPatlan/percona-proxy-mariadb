@@ -28,11 +28,11 @@ using namespace std;
 
 bool query(TestConnections& test)
 {
-    test.maxscale->connect_rwsplit();
-    execute_query_silent(test.maxscale->conn_rwsplit, "SET @a = 1");
+    test.percona_proxy->connect_rwsplit();
+    execute_query_silent(test.percona_proxy->conn_rwsplit, "SET @a = 1");
     sleep(5);
-    Row row = get_row(test.maxscale->conn_rwsplit, "SELECT @a");
-    test.maxscale->disconnect();
+    Row row = get_row(test.percona_proxy->conn_rwsplit, "SELECT @a");
+    test.percona_proxy->disconnect();
     return !row.empty() && row[0] == "1";
 }
 

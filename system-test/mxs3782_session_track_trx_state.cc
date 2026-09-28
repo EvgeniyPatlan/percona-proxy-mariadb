@@ -20,7 +20,7 @@ int main(int argc, char** argv)
     test.repl->execute_query_all_nodes("SET GLOBAL session_track_transaction_info=CHARACTERISTICS");
 
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
     test.tprintf("Disable autocommit and sleep for a while to make sure all servers have executed it");
     c.query("SET autocommit=0");

@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
     Test->repl->close_connections();
 
 
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
 
     int rval = Test->global_result;
     delete Test;

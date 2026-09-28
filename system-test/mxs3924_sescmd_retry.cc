@@ -24,10 +24,10 @@ void do_test(TestConnections& test, Connection& c)
     test.expect(c.send_query("SET @a=(SELECT SLEEP(2))"), "Sending SET failed: %s", c.error());
     test.log_printf("=> Blocking all nodes");
     test.repl->block_all_nodes();
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     test.log_printf("=> Unblocking all nodes");
     test.repl->unblock_all_nodes();
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     test.expect(c.read_query_result(), "SET should succeed even if all nodes are blocked: %s", c.error());
     test.log_printf("=> Executing SELECT 1");
     test.expect(c.query("SELECT 1"), "SELECT failed: %s", c.error());
@@ -47,17 +47,17 @@ void mxs4289(TestConnections& test, Connection& c)
         test.repl->block_node(i);
     }
 
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     sleep(2);
 
     test.log_printf("Blocking final node");
     test.repl->block_node(3);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     sleep(5);
 
     test.log_printf("Unblocking all nodes");
     test.repl->unblock_all_nodes();
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.expect(c.read_query_result(), "SET failed: %s", c.error());
 
     test.log_printf("Executing SELECT 1");
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.set_timeout(60);
     test.expect(c.connect(), "Failed to connect: %s", c.error());
 

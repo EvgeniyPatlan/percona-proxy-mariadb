@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <condition_variable>
 #include <map>
@@ -21,9 +21,9 @@
 #include <thread>
 #include <maxbase/queryresult.hh>
 #include <maxpgsql/pg_connector.hh>
-#include <maxscale/protocol2.hh>
-#include <maxscale/server.hh>
-#include <maxscale/base_user_manager.hh>
+#include <percona-proxy/protocol2.hh>
+#include <percona-proxy/server.hh>
+#include <percona-proxy/base_user_manager.hh>
 #include "pgprotocoldata.hh"
 #include "pgauthenticatormodule.hh"
 

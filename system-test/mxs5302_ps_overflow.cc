@@ -61,7 +61,7 @@ void test_mxs5302(TestConnections& test)
     r.query("GRANT ALL ON *.* TO " + USER);
     test.repl->sync_slaves();
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.set_credentials(USER, PASSWORD);
     c.connect();
     std::vector<MYSQL_STMT*> stmts;

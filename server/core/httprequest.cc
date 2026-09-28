@@ -15,8 +15,8 @@
 #include "internal/httprequest.hh"
 #include "internal/admin.hh"
 
-#include <maxscale/config_common.hh>
-#include <maxscale/paths.hh>
+#include <percona-proxy/config_common.hh>
+#include <percona-proxy/paths.hh>
 
 #include <ctype.h>
 #include <string.h>

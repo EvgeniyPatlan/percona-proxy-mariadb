@@ -15,8 +15,8 @@
 #include "smartrouter.hh"
 #include "smartsession.hh"
 
-#include <maxscale/cn_strings.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/routingworker.hh>
 
 namespace
 {
@@ -124,7 +124,7 @@ uint64_t SmartRouter::getCapabilities() const
 
 // Eviction schedule
 // Two reasons to evict, and re-measure canonicals.
-//   1. When connections are initially created there is more overhead in maxscale and at the server,
+//   1. When connections are initially created there is more overhead in percona-proxy and at the server,
 //      which can (and does) lead to the wrong performance conclusions.
 //   2. Depending on the contents and number of rows in tables, different database engines
 //      have different performance advantages (InnoDb is always very fast for small tables).

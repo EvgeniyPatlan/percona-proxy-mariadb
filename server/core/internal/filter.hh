@@ -14,14 +14,14 @@
 #pragma once
 
 /**
- * @file core/maxscale/filter.h - The private filter interface
+ * @file core/percona-proxy/filter.h - The private filter interface
  */
 
-#include <maxscale/filter.hh>
+#include <percona-proxy/filter.hh>
 
 #include <memory>
 #include <mutex>
-#include <maxscale/config_common.hh>
+#include <percona-proxy/config_common.hh>
 
 /**
  * The definition of a filter from the configuration file.

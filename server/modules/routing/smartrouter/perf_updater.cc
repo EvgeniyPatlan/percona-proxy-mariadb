@@ -13,7 +13,7 @@
  */
 
 #include "perf_updater.hh"
-#include <maxscale/config.hh>
+#include <percona-proxy/config.hh>
 
 PerformanceInfoUpdater::PerformanceInfoUpdater()
     : GCUpdater(new PerformanceInfoContainer(),
@@ -25,14 +25,14 @@ PerformanceInfoUpdater::PerformanceInfoUpdater()
     Data::initialize_workers();
 }
 
-void PerformanceInfoUpdater::init_for(maxscale::RoutingWorker* pWorker)
+void PerformanceInfoUpdater::init_for(percona_proxy::RoutingWorker* pWorker)
 {
     increase_client_count(pWorker->index());
     auto pShared = get_shared_data_by_index(pWorker->index());
     pWorker->register_epoll_tick_func(std::bind(&SharedPerformanceInfo::reader_ready, pShared));
 }
 
-void PerformanceInfoUpdater::finish_for(maxscale::RoutingWorker* pWorker)
+void PerformanceInfoUpdater::finish_for(percona_proxy::RoutingWorker* pWorker)
 {
     decrease_client_count(pWorker->index());
 }

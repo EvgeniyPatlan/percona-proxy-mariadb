@@ -12,16 +12,16 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <unistd.h>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <maxbase/alloc.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/testparser.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/testparser.hh>
 #include "../../../parser_plugin/test/testreader.hh"
 
 using namespace std;
@@ -120,11 +120,11 @@ public:
     {
         int rc = EXIT_SUCCESS;
 
-        maxscale::TestReader reader(in);
+        percona_proxy::TestReader reader(in);
 
         string stmt;
 
-        while (reader.get_statement(stmt) == maxscale::TestReader::RESULT_STMT)
+        while (reader.get_statement(stmt) == percona_proxy::TestReader::RESULT_STMT)
         {
             if (run(stmt.c_str()) == EXIT_FAILURE)
             {

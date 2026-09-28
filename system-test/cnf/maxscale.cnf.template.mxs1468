@@ -1,9 +1,0 @@
-[maxscale]
-threads=###threads###
-
-[rwsplit-service]
-type=service
-router=readwritesplit
-user=maxskysql
-password=skysql
-

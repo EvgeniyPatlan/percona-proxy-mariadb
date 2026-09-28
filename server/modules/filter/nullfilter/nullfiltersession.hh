@@ -13,12 +13,12 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/filter.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/filter.hh>
 
 class NullFilter;
 
-class NullFilterSession : public maxscale::FilterSession
+class NullFilterSession : public percona_proxy::FilterSession
 {
 public:
     ~NullFilterSession();

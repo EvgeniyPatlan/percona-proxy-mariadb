@@ -15,10 +15,10 @@
 #define MXB_MODULE_NAME "masking"
 #include "maskingfilter.hh"
 
-#include <maxscale/json_api.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/utils.hh>
 
 #include "maskingrules.hh"
 

@@ -51,22 +51,22 @@ function start_service
 
 function install_redis_on_maxscale_000
 {
-    install_package ${maxscale_000_keyfile} ${maxscale_000_whoami} ${maxscale_000_network} redis
+    install_package ${percona_proxy_000_keyfile} ${percona_proxy_000_whoami} ${percona_proxy_000_network} redis
 }
 
 function start_redis_on_maxscale_000
 {
-    start_service ${maxscale_000_keyfile} ${maxscale_000_whoami} ${maxscale_000_network} redis
+    start_service ${percona_proxy_000_keyfile} ${percona_proxy_000_whoami} ${percona_proxy_000_network} redis
 }
 
 function install_memcached_on_maxscale_000
 {
-    install_package ${maxscale_000_keyfile} ${maxscale_000_whoami} ${maxscale_000_network} memcached
+    install_package ${percona_proxy_000_keyfile} ${percona_proxy_000_whoami} ${percona_proxy_000_network} memcached
 }
 
 function start_memcached_on_maxscale_000
 {
-    start_service ${maxscale_000_keyfile} ${maxscale_000_whoami} ${maxscale_000_network} memcached
+    start_service ${percona_proxy_000_keyfile} ${percona_proxy_000_whoami} ${percona_proxy_000_network} memcached
 }
 
 install_memcached_on_maxscale_000

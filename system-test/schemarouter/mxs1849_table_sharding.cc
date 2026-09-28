@@ -37,12 +37,12 @@ int main(int argc, char* argv[])
                             "shard_db",
                             test.repl->user_name(),
                             test.repl->password(),
-                            test.maxscale_ssl);
+                            test.percona_proxy_ssl);
         execute_query(conn, "CREATE TABLE table%d (x1 int, fl int)", i);
         mysql_close(conn);
     }
 
-    conn = test.maxscale->open_rwsplit_connection();
+    conn = test.percona_proxy->open_rwsplit_connection();
     // Check that queries are routed to the right shards
     for (int i = 0; i < test.repl->N; i++)
     {

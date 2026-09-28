@@ -39,13 +39,13 @@
 #include <string>
 
 #include <maxbase/format.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/service.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
 
 using std::string;
 

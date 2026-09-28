@@ -22,8 +22,8 @@ void test_main(TestConnections& test);
 
 int main(int argc, char** argv)
 {
-    // Before starting MaxScale, need to write the connection initialization file on the MaxScale machine.
-    TestConnections::skip_maxscale_start(true);
+    // Before starting Percona Proxy, need to write the connection initialization file on the Percona Proxy machine.
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test;
     return test.run_test(argc, argv, test_main);
 }
@@ -36,7 +36,7 @@ void test_main(TestConnections& test)
     string prom_file_path_dest = "/tmp/sql_promotion.txt";
     string dem_file_path_dest = "/tmp/sql_demotion.txt";
 
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     mxs.copy_to_node(prom_file_path_src.c_str(), prom_file_path_dest.c_str());
     mxs.copy_to_node(dem_file_path_src.c_str(), dem_file_path_dest.c_str());
     mxs.start();
@@ -113,7 +113,7 @@ void test_main(TestConnections& test)
             int demoted_ind = 0;
             int promoted_ind = 1;
             auto* promote_srv = repl.backend(promoted_ind);
-            mxs.maxctrl("call command mariadbmon switchover MariaDB-Monitor " + promote_srv->cnf_name());
+            mxs.percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor " + promote_srv->cnf_name());
             mxs.wait_for_monitor(3);
             mxs.check_print_servers_status({slave, master, slave, slave});
 

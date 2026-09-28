@@ -13,10 +13,10 @@
 
 #include "pgprotocolmodule.hh"
 
-#include <maxscale/cn_strings.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/service.hh>
 #include "pgauthenticatormodule.hh"
 #include "pgclientconnection.hh"
 #include "pgbackendconnection.hh"

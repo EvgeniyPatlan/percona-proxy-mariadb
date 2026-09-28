@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/log.hh>
+#include <percona-proxy/log.hh>
 
 #include <sys/time.h>
 #include <syslog.h>
@@ -32,12 +32,12 @@
 #include <maxbase/logger.hh>
 #include <maxbase/string.hh>
 
-#include <maxscale/cn_strings.hh>
-#include <maxscale/config.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/session.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/session.hh>
 
-#include "internal/maxscale.hh"
+#include "internal/percona-proxy.hh"
 
 namespace
 {
@@ -49,7 +49,7 @@ struct ThisUnit
 };
 ThisUnit this_unit;
 
-const char* LOGFILE_NAME = "maxscale.log";
+const char* LOGFILE_NAME = "percona-proxy.log";
 
 size_t mxs_get_context(char* buffer, size_t len)
 {
@@ -87,7 +87,7 @@ bool mxs_should_log(int priority)
 
 bool mxs_log_init(const char* ident, const char* logdir, mxb_log_target_t target)
 {
-    mxb::Logger::set_ident("MariaDB MaxScale");
+    mxb::Logger::set_ident("Percona Proxy for MariaDB");
 
     return mxb_log_init(ident, logdir, LOGFILE_NAME, target,
                         mxs_get_context, mxs_log_in_memory, mxs_should_log);
@@ -124,9 +124,9 @@ sd_journal* open_journal(const std::string& cursor)
     }
     else
     {
-        sd_journal_add_match(j, "_COMM=maxscale", 0);
+        sd_journal_add_match(j, "_COMM=percona-proxy", 0);
         sd_journal_add_conjunction(j);
-        sd_journal_add_match(j, "SYSLOG_IDENTIFIER=maxscale", 0);
+        sd_journal_add_match(j, "SYSLOG_IDENTIFIER=percona-proxy", 0);
 
         if (cursor.empty())
         {
@@ -182,8 +182,8 @@ json_t* entry_to_json(sd_journal* j, const std::set<std::string>& priorities)
 
     json_t* obj = nullptr;
 
-    // MaxScale 2.5 and older did not have the TIMESTAMP field in the log messages. If we don't find it, we
-    // know this is from an older version of MaxScale and we shouldn't return it.
+    // Percona Proxy 2.5 and older did not have the TIMESTAMP field in the log messages. If we don't find it, we
+    // know this is from an older version of Percona Proxy and we shouldn't return it.
     if (values.find("timestamp") != values.end())
     {
         obj = json_object();
@@ -297,11 +297,11 @@ std::pair<json_t*, Cursors> get_syslog_data(const std::string& cursor, int rows,
             {
                 warned = true;
                 MXB_NOTICE("Failed to read any data from the systemd journal when fetching log events. "
-                           "Make sure that the user that MaxScale is running as has the required permissions "
-                           "to read the log data. On most systems, this means that the 'maxscale' user must "
+                           "Make sure that the user that Percona Proxy is running as has the required permissions "
+                           "to read the log data. On most systems, this means that the 'percona-proxy' user must "
                            "be a part of the 'systemd-journal' or 'wheel' groups. Alternatively, switch the "
                            "log source to 'maxlog' by configuring 'maxlog=true' and 'syslog=false' under the "
-                           "'[maxscale]' section.");
+                           "'[percona-proxy]' section.");
             }
         }
     }
@@ -733,7 +733,7 @@ std::function<std::string()> mxs_logs_stream(const std::string& cursor,
                    };
         }
 #else
-	MXB_ERROR("MaxScale was built without SystemD support.");
+	MXB_ERROR("Percona Proxy was built without SystemD support.");
 #endif
     }
     else if (cnf.maxlog.get())
@@ -759,7 +759,7 @@ bool mxs_log_rotate()
     if (rotated)
     {
         this_unit.rotation_count.fetch_add(1, std::memory_order_relaxed);
-        maxscale_log_info_blurb(LogBlurbAction::LOG_ROTATION);
+        percona_proxy_log_info_blurb(LogBlurbAction::LOG_ROTATION);
     }
     return rotated;
 }

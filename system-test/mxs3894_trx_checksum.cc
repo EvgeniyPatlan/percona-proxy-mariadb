@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     auto user = admin->create_user("bob", "%", "bob");
     user.grant("ALL ON *.*");
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.set_credentials("bob", "bob");
     test.expect(c.connect(), "Connection failed: %s", c.error());
 
@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     OK("COMMIT");
 
     c.disconnect();
-    test.check_maxctrl("alter service RW-Split-Router transaction_replay_checksum=result_only");
+    test.check_percona_proxyctl("alter service RW-Split-Router transaction_replay_checksum=result_only");
     test.expect(c.connect(), "Second connection failed: %s", c.error());
 
     test.tprintf("transaction_replay_checksum=result_only");
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
     KILL();
     ERR("COMMIT");
 
-    test.check_maxctrl("alter service RW-Split-Router transaction_replay_checksum=full");
+    test.check_percona_proxyctl("alter service RW-Split-Router transaction_replay_checksum=full");
     test.expect(c.connect(), "Third connection failed: %s", c.error());
 
     test.tprintf("transaction_replay_checksum=full");

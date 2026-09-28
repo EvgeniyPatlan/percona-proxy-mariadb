@@ -291,5 +291,5 @@ describe("Monitor", function () {
     });
   });
 
-  after(restartMaxScale);
+  after(restartPerconaProxy);
 });

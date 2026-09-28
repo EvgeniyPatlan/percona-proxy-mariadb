@@ -15,7 +15,7 @@
 #include "nosqlcursor.hh"
 #include <sstream>
 #include <maxbase/worker.hh>
-#include <maxscale/mainworker.hh>
+#include <percona-proxy/mainworker.hh>
 #include "nosqlcommand.hh"
 
 using std::set;

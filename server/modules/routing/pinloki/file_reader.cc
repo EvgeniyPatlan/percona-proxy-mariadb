@@ -28,13 +28,13 @@
 #include <unistd.h>
 #include <string.h>
 
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 using namespace std::literals::chrono_literals;
 
 // TODO: case with no files. Can't setup inotify because the file name is not
 //       known yet. Don't know if it can happen in a real system. It would mean
-//       maxscale and slaves are brought up before the master is ever connected to.
+//       percona-proxy and slaves are brought up before the master is ever connected to.
 //       FileReader's constructor could do nothing, and fetch would look for the file
 //       and return an empty event if the file is not there yet. Meanwhile, Reader
 //       would have to poll FileReader.

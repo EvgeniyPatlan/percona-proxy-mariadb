@@ -15,7 +15,7 @@
 #include "perf_info.hh"
 #include <mysqld_error.h>
 #include <maxbase/pretty_print.hh>
-#include <maxscale/protocol/mariadb/client_connection.hh>
+#include <percona-proxy/protocol/mariadb/client_connection.hh>
 
 SmartRouterSession::SmartRouterSession(SmartRouter* pRouter,
                                        MXS_SESSION* pSession,

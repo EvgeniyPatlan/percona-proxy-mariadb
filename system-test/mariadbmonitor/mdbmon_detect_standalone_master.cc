@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto repl = test.repl;
     mxs.wait_for_monitor();
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
@@ -96,7 +96,7 @@ void test_main(TestConnections& test)
         repl->replicate_from(1, 3);
         repl->replicate_from(2, 3);
         mxs.wait_for_monitor();
-        mxs.maxctrl("call command mariadbmon switchover MySQL-Monitor server1");
+        mxs.percona_proxyctl("call command mariadbmon switchover MySQL-Monitor server1");
         mxs.wait_for_monitor();
         mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
     }

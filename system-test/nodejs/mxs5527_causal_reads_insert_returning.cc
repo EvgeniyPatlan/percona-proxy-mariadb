@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
     c.query("CREATE OR REPLACE TABLE test.t1(id INT)");
 
@@ -31,11 +31,11 @@ int main(int argc, char** argv)
     std::ostringstream ss;
     ss << " cp -t " << mxt::BUILD_DIR << "/nodejs/ " << mxt::SOURCE_DIR << "/nodejs/* && "
        << " cd " << mxt::BUILD_DIR << "/nodejs/ && npm i &&"
-       << " MAXSCALE_HOST=" << test.maxscale->ip()
-       << " MAXSCALE_PORT=4006"
-       << " MAXSCALE_USER=" << test.maxscale->user_name()
-       << " MAXSCALE_PASSWORD=" << test.maxscale->password()
-       << " MAXSCALE_DB=test"
+       << " PERCONA_PROXY_HOST=" << test.percona_proxy->ip()
+       << " PERCONA_PROXY_PORT=4006"
+       << " PERCONA_PROXY_USER=" << test.percona_proxy->user_name()
+       << " PERCONA_PROXY_PASSWORD=" << test.percona_proxy->password()
+       << " PERCONA_PROXY_DB=test"
        << " npm run test";
 
     int rc = system(ss.str().c_str());

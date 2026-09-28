@@ -13,8 +13,8 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/modinfo.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/modinfo.hh>
 
 #define MODULE_FILTER           "Filter"
 #define MODULE_QUERY_CLASSIFIER "QueryClassifier"
@@ -64,7 +64,7 @@ const MXS_MODULE* get_module(const std::string& name, mxs::ModuleType type);
  *
  * @param name Name of the module
  *
- * @return True if the module exists and is a valid module for this version of MaxScale
+ * @return True if the module exists and is a valid module for this version of Percona Proxy
  */
 bool is_mxs_module(const std::string& name);
 
@@ -116,12 +116,12 @@ json_t* module_list_to_json(const char* host);
 std::string module_get_effective_name(const std::string& name);
 
 /**
- * @brief Convert configuration specification to a MaxScale module in JSON format
+ * @brief Convert configuration specification to a Percona Proxy module in JSON format
  *
  * @param host Hostname of this server
  * @param spec The configuration specification to convert
  *
- * @return The specification as a MaxScale module in JSON format
+ * @return The specification as a Percona Proxy module in JSON format
  */
 json_t* spec_module_to_json(const char* host, const mxs::config::Specification& spec);
 

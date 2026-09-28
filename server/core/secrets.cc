@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/secrets.hh>
+#include <percona-proxy/secrets.hh>
 
 #include <cctype>
 #include <fstream>
@@ -26,9 +26,9 @@
 #include <openssl/evp.h>
 
 #include <maxbase/format.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/version.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/version.hh>
 #include <maxbase/secrets.hh>
 
 #include "internal/secrets.hh"
@@ -48,10 +48,10 @@ struct ThisUnit
 ThisUnit this_unit;
 
 const char field_desc[] = "description";
-const char field_version[] = "maxscale_version";
+const char field_version[] = "percona_proxy_version";
 const char field_cipher[] = "encryption_cipher";
 const char field_key[] = "encryption_key";
-const char desc[] = "MaxScale encryption/decryption key";
+const char desc[] = "Percona Proxy encryption/decryption key";
 
 // Note: this must be EVP_aes_256_cbc, otherwise the code discards the key as invalid.
 const char CIPHER_NAME[] = "EVP_aes_256_cbc";
@@ -123,8 +123,8 @@ ReadKeyResult secrets_readkeys(const string& filepath)
     if (old_format)
     {
         MXB_ERROR("File format of '%s' is using a pre-2.5 format that is no longer suported. "
-                  "Please generate a new encryption key ('maxkeys') and re-encrypt "
-                  "passwords ('maxpasswd').", filepathc);
+                  "Please generate a new encryption key ('percona-proxy-keys') and re-encrypt "
+                  "passwords ('percona-proxy-passwd').", filepathc);
         return rval;
     }
     else
@@ -169,7 +169,7 @@ ReadKeyResult secrets_readkeys(const string& filepath)
     return rval;
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 string decrypt_password(const string& input)
 {
@@ -321,7 +321,7 @@ bool secrets_write_keys(const ByteVec& key, const string& filepath, const string
 
     json_t* obj = json_object();
     json_object_set_new(obj, field_desc, json_string(desc));
-    json_object_set_new(obj, field_version, json_string(MAXSCALE_VERSION));
+    json_object_set_new(obj, field_version, json_string(PERCONA_PROXY_VERSION));
     json_object_set_new(obj, field_cipher, json_string(CIPHER_NAME));
     json_object_set_new(obj, field_key, json_string(key_hex));
 

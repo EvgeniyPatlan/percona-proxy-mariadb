@@ -13,9 +13,9 @@
  */
 
 /**
- * @backend_auth_fail.cpp Repeatedly connect to maxscale while the backends reject all connections
+ * @backend_auth_fail.cpp Repeatedly connect to percona-proxy while the backends reject all connections
  *
- * MaxScale should not crash
+ * Percona Proxy should not crash
  */
 
 #include <maxtest/testconnections.hh>
@@ -32,7 +32,7 @@ int main(int argc, char** argv)
         Test->tprintf("Creating 100 connections...\n");
         for (int i = 0; i < 100; i++)
         {
-            mysql[i] = Test->maxscale->open_readconn_master_connection();
+            mysql[i] = Test->percona_proxy->open_readconn_master_connection();
             execute_query_silent(mysql[i], "select 1");
         }
 
@@ -42,7 +42,7 @@ int main(int argc, char** argv)
         }
     }
 
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
     int rval = Test->global_result;
     delete Test;
     return rval;

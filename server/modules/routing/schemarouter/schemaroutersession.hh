@@ -19,8 +19,8 @@
 #include <list>
 
 #include <maxbase/string.hh>
-#include <maxscale/router.hh>
-#include <maxscale/protocol/mariadb/client_connection.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/protocol/mariadb/client_connection.hh>
 
 #include "shard_map.hh"
 

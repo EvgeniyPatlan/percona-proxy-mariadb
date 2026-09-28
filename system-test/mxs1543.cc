@@ -22,7 +22,7 @@
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
     test.repl->connect();
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     execute_query(test.repl->nodes[0], "INSERT INTO t1 VALUES ('ROW2')");
 
     // Wait for the avrorouter to process the data
-    test.maxscale->start();
+    test.percona_proxy->start();
     bool found = false;
 
     for (int i = 0; i < 10 && !found; i++)

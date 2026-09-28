@@ -14,10 +14,10 @@
 #pragma once
 
 /**
- * @file core/maxscale/secrets.h - MaxScale config file password encryption/decryption
+ * @file core/percona-proxy/secrets.h - Percona Proxy config file password encryption/decryption
  */
 
-#include <maxscale/secrets.hh>
+#include <percona-proxy/secrets.hh>
 #include <maxbase/secrets.hh>
 #include <memory>
 
@@ -25,7 +25,7 @@ using ByteVec = std::vector<uint8_t>;
 
 extern const char* const SECRETS_FILENAME;
 
-// Don't change these: they must be 256-bit AES CBC to support passwords created with MaxScale 2.5.
+// Don't change these: they must be 256-bit AES CBC to support passwords created with Percona Proxy 2.5.
 constexpr auto SECRETS_CIPHER_MODE = mxb::Cipher::AES_CBC;
 constexpr size_t SECRETS_CIPHER_BITS = 256;
 

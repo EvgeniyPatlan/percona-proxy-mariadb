@@ -17,7 +17,7 @@
 #include <string.h>
 #include <maxbase/assert.hh>
 #include <maxbase/string.hh>
-#include <maxscale/log.hh>
+#include <percona-proxy/log.hh>
 #include <zlib.h>
 
 static bool maxavro_read_sync(FILE* file, uint8_t* sync)

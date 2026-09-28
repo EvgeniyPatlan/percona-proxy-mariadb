@@ -17,17 +17,17 @@
 
 namespace
 {
-// watchdog_interval 60 seconds, make sure it is the same in maxscale.service
+// watchdog_interval 60 seconds, make sure it is the same in percona-proxy.service
 const maxbase::Duration watchdog_interval = mxb::from_secs(60.0);
 
-// Return true if maxscale stays alive for the duration dur.
+// Return true if percona-proxy stays alive for the duration dur.
 bool staying_alive(TestConnections& test, const maxbase::Duration& dur)
 {
     bool alive = true;
     maxbase::StopWatch sw_loop_start;
     while (alive && sw_loop_start.split() < dur)
     {
-        if (execute_query_silent(test.maxscale->conn_rwsplit, "select 1"))
+        if (execute_query_silent(test.percona_proxy->conn_rwsplit, "select 1"))
         {
             alive = false;
             break;
@@ -48,22 +48,22 @@ void test_watchdog(TestConnections& test, int argc, char* argv[])
     test.reset_timeout();
 
     test.log_printf("Make the first thread sleep for 24 hours");
-    auto res = test.maxctrl("api get maxscale/debug/hang");
+    auto res = test.percona_proxyctl("api get percona-proxy/debug/hang");
 
     if (res.rc != 0)
     {
-        test.tprintf("Call to maxscale/debug/hang failed, skipping test as this "
+        test.tprintf("Call to percona-proxy/debug/hang failed, skipping test as this "
                      "is most likely a release build: %s", res.output.c_str());
         return;
     }
 
-    test.log_printf("MaxScale should get killed by systemd in less than duration(interval - epsilon).");
-    bool maxscale_alive = staying_alive(test, mxb::from_secs(2 * mxb::to_secs(watchdog_interval)));
+    test.log_printf("Percona Proxy should get killed by systemd in less than duration(interval - epsilon).");
+    bool percona_proxy_alive = staying_alive(test, mxb::from_secs(2 * mxb::to_secs(watchdog_interval)));
 
-    if (maxscale_alive)
+    if (percona_proxy_alive)
     {
         test.add_result(true, "Although the systemd watchdog is enabled, "
-                              "systemd did not terminate maxscale!");
+                              "systemd did not terminate percona-proxy!");
     }
     else
     {
@@ -74,15 +74,15 @@ void test_watchdog(TestConnections& test, int argc, char* argv[])
 
             for (int i = 0; i < 30; i++)
             {
-                if (test.maxscale->ssh_output("rm /tmp/core*", true).rc == 0)
+                if (test.percona_proxy->ssh_output("rm /tmp/core*", true).rc == 0)
                 {
                     break;
                 }
             }
 
             // Replace the 'fatal signal' log line so that it doesn't trigger a test failure
-            test.maxscale->ssh_node_f(true, "sed -i 's/fatal signal/REDACTED/' "
-                                            "/var/log/maxscale/maxscale.log");
+            test.percona_proxy->ssh_node_f(true, "sed -i 's/fatal signal/REDACTED/' "
+                                            "/var/log/percona-proxy/percona-proxy.log");
         }
     }
 }
@@ -91,8 +91,8 @@ void test_watchdog(TestConnections& test, int argc, char* argv[])
 int main(int argc, char* argv[])
 {
     TestConnections test {argc, argv};
-    test.maxscale->leak_check(false);
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->leak_check(false);
+    test.percona_proxy->connect_rwsplit();
 
     if (!test.global_result)
     {

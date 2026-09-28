@@ -13,7 +13,7 @@
  */
 
 #include <maxbase/semaphore.hh>
-#include <maxscale/log.hh>
+#include <percona-proxy/log.hh>
 #include <cstdio>
 #include <stdint.h>
 #include <cstdlib>
@@ -39,7 +39,7 @@ using namespace std::chrono_literals;
 namespace
 {
 
-const char LOGNAME[] = "maxscale.log";
+const char LOGNAME[] = "percona-proxy.log";
 string logfile;
 const size_t N_THREADS = 67;    // A nice prime number of threads
 std::chrono::milliseconds s_test_time {0};
@@ -229,7 +229,7 @@ int main(int argc, char* argv[])
     std::ios::sync_with_stdio();
     mxb::set_log_throttling_clock(test_clock);
 
-    char tmpbuf[] = "/tmp/maxscale_test_logthrottling_XXXXXX";
+    char tmpbuf[] = "/tmp/percona_proxy_test_logthrottling_XXXXXX";
     char* logdir = mkdtemp(tmpbuf);
     ensure(logdir);
     logfile = string(logdir) + '/' + LOGNAME;

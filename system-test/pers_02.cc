@@ -41,11 +41,11 @@ int main(int argc, char* argv[])
 
     // Increase connection limits and wait a few seconds for the server to catch up
     test.repl->execute_query_all_nodes("set global max_connections = 2000;");
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     test.add_result(test.create_connections(70, true, true, true, false),
                     "Connections creation error \n");
 
-    test.check_maxscale_alive();
+    test.check_percona_proxy_alive();
     return test.global_result;
 }

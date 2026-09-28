@@ -73,26 +73,26 @@ int main(int argc, char* argv[])
                             "shard_db",
                             test.repl->user_name(),
                             test.repl->password(),
-                            test.maxscale_ssl);
+                            test.percona_proxy_ssl);
         execute_query(conn, "CREATE TABLE table%d (x1 int, fl int)", i);
         execute_query(conn, "INSERT INTO table%d VALUES(%d, %d)", i, i, i);
         mysql_close(conn);
     }
 
-    test.maxscale->connect_maxscale();
-    conn = test.maxscale->conn_rwsplit;
+    test.percona_proxy->connect_percona_proxy();
+    conn = test.percona_proxy->conn_rwsplit;
 
     test.tprintf("Running text protocol test");
     test_text_protocol(test, conn);
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
-    test.maxscale->connect_maxscale();
-    conn = test.maxscale->conn_rwsplit;
+    test.percona_proxy->connect_percona_proxy();
+    conn = test.percona_proxy->conn_rwsplit;
 
     test.tprintf("Running binary protocol test");
     test_binary_protocol(test, conn);
 
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
     test.repl->execute_query_all_nodes("DROP DATABASE IF EXISTS shard_db");
     test.repl->execute_query_all_nodes("START SLAVE");
     sleep(1);

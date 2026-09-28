@@ -13,14 +13,14 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <deque>
 #include <unordered_set>
-#include <maxscale/buffer.hh>
-#include <maxscale/filter.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/filter.hh>
 #include "sessioncache.hh"
 
-class CacheFilterSession : public maxscale::FilterSession
+class CacheFilterSession : public percona_proxy::FilterSession
 {
     CacheFilterSession(const CacheFilterSession&);
     CacheFilterSession& operator=(const CacheFilterSession&);

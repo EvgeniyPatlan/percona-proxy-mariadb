@@ -48,12 +48,12 @@ int main(int argc, char* argv[])
     Test->repl->execute_query_all_nodes((char*) "set global max_connect_errors=1000;");
     Test->repl->execute_query_all_nodes((char*) "set global max_connections=1000;");
 
-    Test->maxscale->connect_maxscale();
+    Test->percona_proxy->connect_percona_proxy();
     Test->tprintf("Creating one user 'user@%%'");
-    execute_query_silent(Test->maxscale->conn_rwsplit, (char*) "DROP USER user@'%'");
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "CREATE USER user@'%%' identified by 'pass2'");
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "GRANT SELECT ON test.* TO user@'%%';");
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "FLUSH PRIVILEGES;");
+    execute_query_silent(Test->percona_proxy->conn_rwsplit, (char*) "DROP USER user@'%'");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "CREATE USER user@'%%' identified by 'pass2'");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "GRANT SELECT ON test.* TO user@'%%';");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "FLUSH PRIVILEGES;");
 
     Test->tprintf("Starting parallel thread which opens/closes session in the loop");
 
@@ -63,18 +63,18 @@ int main(int argc, char* argv[])
     }
 
     Test->tprintf("Doing change_user in the loop");
-    auto mxs_user = Test->maxscale->user_name().c_str();
-    auto mxs_pw = Test->maxscale->password().c_str();
+    auto mxs_user = Test->percona_proxy->user_name().c_str();
+    auto mxs_pw = Test->percona_proxy->password().c_str();
 
     for (int i = 0; i < iterations; i++)
     {
-        Test->add_result(mysql_change_user(Test->maxscale->conn_rwsplit, "user", "pass2", (char*) "test"),
-                         "change_user failed! %s", mysql_error(Test->maxscale->conn_rwsplit));
-        Test->add_result(mysql_change_user(Test->maxscale->conn_rwsplit,
+        Test->add_result(mysql_change_user(Test->percona_proxy->conn_rwsplit, "user", "pass2", (char*) "test"),
+                         "change_user failed! %s", mysql_error(Test->percona_proxy->conn_rwsplit));
+        Test->add_result(mysql_change_user(Test->percona_proxy->conn_rwsplit,
                                            mxs_user,
                                            mxs_pw,
                                            (char*) "test"), "change_user failed! %s",
-                         mysql_error(Test->maxscale->conn_rwsplit));
+                         mysql_error(Test->percona_proxy->conn_rwsplit));
     }
 
     Test->tprintf("Waiting for all threads to finish");
@@ -86,16 +86,16 @@ int main(int argc, char* argv[])
     Test->tprintf("All threads are finished");
 
     Test->tprintf("Change user to '%s' in order to be able to DROP user", mxs_user);
-    mysql_change_user(Test->maxscale->conn_rwsplit,
+    mysql_change_user(Test->percona_proxy->conn_rwsplit,
                       mxs_user,
                       mxs_pw,
                       NULL);
 
     Test->tprintf("Dropping user");
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "DROP USER user@'%%';");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "DROP USER user@'%%';");
 
     Test->set_verbose(true);
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
     Test->set_verbose(false);
 
     int rval = Test->global_result;
@@ -107,7 +107,7 @@ void* parall_traffic(void* ptr)
 {
     while (exit_flag == 0)
     {
-        MYSQL* conn = Test->maxscale->open_rwsplit_connection();
+        MYSQL* conn = Test->percona_proxy->open_rwsplit_connection();
 
         while (exit_flag == 0 && mysql_query(conn, "DO 1") == 0)
         {

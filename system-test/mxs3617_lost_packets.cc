@@ -17,7 +17,7 @@
 int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
-    MYSQL* conn = test.maxscale->open_readconn_master_connection();
+    MYSQL* conn = test.percona_proxy->open_readconn_master_connection();
 
     int rc = mysql_query(conn, "CREATE OR REPLACE TABLE test.t1(data varchar(128)) CHARSET utf8mb4");
     test.expect(rc == 0, "CREATE failed: %s", mysql_error(conn));

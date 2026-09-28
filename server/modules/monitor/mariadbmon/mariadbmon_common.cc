@@ -21,8 +21,8 @@ const int64_t GTID_DOMAIN_UNKNOWN = -1;
 /** Default port */
 const int PORT_UNKNOWN = 0;
 /** Server lock names */
-const char* SERVER_LOCK_NAME = "maxscale_mariadbmonitor";
-const char* MASTER_LOCK_NAME = "maxscale_mariadbmonitor_master";
+const char* SERVER_LOCK_NAME = "percona_proxy_mariadbmonitor";
+const char* MASTER_LOCK_NAME = "percona_proxy_mariadbmonitor_master";
 
 using std::string;
 

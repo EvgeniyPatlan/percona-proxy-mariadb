@@ -15,7 +15,7 @@
 
 #include "config.hh"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <unordered_map>
 
 #include "table.hh"

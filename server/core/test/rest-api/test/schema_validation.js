@@ -1,4 +1,4 @@
-// These tests use the server/test/maxscale_test.cnf configuration
+// These tests use the server/test/percona-proxy-test.cnf configuration
 
 require("../utils.js")();
 const mariadb = require("mariadb");
@@ -28,8 +28,8 @@ describe("Schema Validation", function () {
       "/monitors",
       "/filters",
       "/listeners",
-      "/maxscale/threads",
-      "/maxscale/modules",
+      "/percona-proxy/threads",
+      "/percona-proxy/modules",
       "/users",
       "/users/inet",
       "/users/unix",
@@ -56,12 +56,12 @@ describe("Schema Validation", function () {
       "/monitors/MariaDB-Monitor",
       "/filters/Hint",
       "/sessions/1",
-      "/maxscale/",
-      "/maxscale/query_classifier/cache",
-      "/maxscale/threads/0",
-      "/maxscale/logs",
-      "/maxscale/memory",
-      "/maxscale/modules/readwritesplit",
+      "/percona-proxy/",
+      "/percona-proxy/query_classifier/cache",
+      "/percona-proxy/threads/0",
+      "/percona-proxy/logs",
+      "/percona-proxy/memory",
+      "/percona-proxy/modules/readwritesplit",
     ];
 
     tests.forEach(function (endpoint) {
@@ -83,9 +83,9 @@ describe("Schema Validation", function () {
       "/monitors",
       "/filters",
       "/listeners",
-      "/maxscale/query_classifier/cache",
-      "/maxscale/threads",
-      "/maxscale/modules",
+      "/percona-proxy/query_classifier/cache",
+      "/percona-proxy/threads",
+      "/percona-proxy/modules",
       "/servers/server1",
       "/servers/server2",
       "/services/RW-Split-Router",
@@ -95,10 +95,10 @@ describe("Schema Validation", function () {
       "/monitors/MariaDB-Monitor",
       "/filters/Hint",
       "/sessions/1",
-      "/maxscale/",
-      "/maxscale/threads/0",
-      "/maxscale/logs",
-      "/maxscale/modules/readwritesplit",
+      "/percona-proxy/",
+      "/percona-proxy/threads/0",
+      "/percona-proxy/logs",
+      "/percona-proxy/modules/readwritesplit",
     ];
 
     tests.forEach(function (endpoint) {

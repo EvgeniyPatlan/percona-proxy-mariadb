@@ -1,6 +1,6 @@
-# maxscale-system-test
+# percona-proxy-system-test
 
-System level tests for MaxScale
+System level tests for Percona Proxy
 
 ## Basics
 
@@ -17,4 +17,4 @@ System level tests for MaxScale
 
   - `GALERA_BACKEND` creates a 4 node Galera cluster
 
-  - `SECOND_MAXSCALE` creates a second MaxScale node (`maxscale_001`)
+  - `SECOND_MAXSCALE` creates a second Percona Proxy node (`percona_proxy_001`)

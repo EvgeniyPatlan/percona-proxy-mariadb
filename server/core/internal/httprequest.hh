@@ -13,7 +13,7 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <algorithm>
 #include <deque>
@@ -27,7 +27,7 @@
 
 #include <maxbase/alloc.hh>
 #include <maxbase/jansson.hh>
-#include <maxscale/http.hh>
+#include <percona-proxy/http.hh>
 
 // The API version part of the URL
 #define MXS_REST_API_VERSION "v1"

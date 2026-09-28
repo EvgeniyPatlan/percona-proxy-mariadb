@@ -73,9 +73,9 @@ void test_main(TestConnections& test)
     // Test pre-emptive pooling.
     if (test.ok())
     {
-        // First, check idle connection count. Restart MaxScale to get rid of any previously pooled
+        // First, check idle connection count. Restart Percona Proxy to get rid of any previously pooled
         // connections.
-        auto& mxs = *test.maxscale;
+        auto& mxs = *test.percona_proxy;
         mxs.stop();
         mxs.start();
         sleep(2);
@@ -119,7 +119,7 @@ void test_main(TestConnections& test)
 
 void check_conn_pool_size(TestConnections& test, const IntVector& expected)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto info = mxs.get_servers();
     info.check_pool_connections(expected);
 }

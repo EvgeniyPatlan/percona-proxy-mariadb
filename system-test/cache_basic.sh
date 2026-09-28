@@ -16,11 +16,11 @@
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 
-user=$maxscale_user
-password=$maxscale_password
+user=$percona_proxy_user
+password=$percona_proxy_password
 
 # Ensure that these are EXACTLY like the corresponding values
-# in cnf/maxscale.cnf.template.cache_basic
+# in cnf/percona-proxy.cnf.template.cache_basic
 soft_ttl=5
 hard_ttl=10
 
@@ -33,7 +33,7 @@ function run_test
     logdir=log_$test_name
     mkdir -p $logdir
     mariadb-test --no-defaults \
-              --host=${maxscale_000_network} --port=$port \
+              --host=${percona_proxy_000_network} --port=$port \
               --user=$user --password=$password \
               --ssl-verify-server-cert=0 \
               --logdir=$logdir \
@@ -56,24 +56,24 @@ function run_test
 export dir="$src_dir/cache/$1"
 
 source=$src_dir/cache/$1/cache_rules.json
-target=${maxscale_000_whoami}@${maxscale_000_network}:/home/${maxscale_000_whoami}/cache_rules.json
+target=${percona_proxy_000_whoami}@${percona_proxy_000_network}:/home/${percona_proxy_000_whoami}/cache_rules.json
 
-if [ ${maxscale_000_network} != "127.0.0.1" ] ; then
-   scp -i ${maxscale_000_keyfile} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $source $target
-   ssh -i $maxscale_000_keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${maxscale_000_whoami}@${maxscale_000_network} chmod a+r /home/${maxscale_000_whoami}/cache_rules.json
+if [ ${percona_proxy_000_network} != "127.0.0.1" ] ; then
+   scp -i ${percona_proxy_000_keyfile} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $source $target
+   ssh -i $percona_proxy_000_keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${percona_proxy_000_whoami}@${percona_proxy_000_network} chmod a+r /home/${percona_proxy_000_whoami}/cache_rules.json
 else
-   cp $source /home/${maxscale_000_whoami}/cache_rules.json
+   cp $source /home/${percona_proxy_000_whoami}/cache_rules.json
 fi
 
 if [ $? -ne 0 ]
 then
-    echo "error: Could not copy rules file to maxscale host."
+    echo "error: Could not copy rules file to percona-proxy host."
     exit 1
 fi
 
 echo $source copied to $target, restarting Maxscale
 
-ssh  -i $maxscale_000_keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${maxscale_000_whoami}@${maxscale_000_network} 'sudo systemctl restart maxscale'
+ssh  -i $percona_proxy_000_keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${percona_proxy_000_whoami}@${percona_proxy_000_network} 'sudo systemctl restart percona-proxy'
 
 # We sleep slightly longer than the TTL to ensure that the TTL mechanism
 # kicks in.
@@ -123,7 +123,7 @@ function run_tests
 # Install memcached and redis
 ${SCRIPTPATH}/cache_install_and_start_storages.sh
 
-# See cnf/maxscale.cnf.template.cache_basic for the ports
+# See cnf/percona-proxy.cnf.template.cache_basic for the ports
 
 echo Testing with local storage
 let seconds=$soft_ttl+2

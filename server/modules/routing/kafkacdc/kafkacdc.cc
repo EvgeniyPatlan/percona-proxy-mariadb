@@ -15,13 +15,13 @@
 #include "kafkacdc.hh"
 
 #include <maxbase/alloc.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/utils.hh>
 
 namespace
 {
 
-namespace cfg = maxscale::config;
+namespace cfg = percona_proxy::config;
 
 constexpr const uint32_t PATH_FLAGS = cfg::ParamPath::C | cfg::ParamPath::W;
 
@@ -166,7 +166,7 @@ public:
         if (auto cnf = create_config(m_config))
         {
             std::string err;
-            cnf->set("group.id", "maxscale-kafkacdc", err);
+            cnf->set("group.id", "percona-proxy-kafkacdc", err);
             cnf->set("enable.auto.commit", "false", err);
 
             if (auto consumer = RdKafka::KafkaConsumer::create(cnf.get(), err))

@@ -15,7 +15,7 @@
 /**
  * @file bug471.cpp bug471 regression case ( Routing Hints route to server sometimes doesn't work )
  *
- * - try "select @@server_id; -- maxscale route to server server%d" (where %d - server number) and compares
+ * - try "select @@server_id; -- percona-proxy route to server server%d" (where %d - server number) and compares
  * result
  * with "select @@server_id;" sent directly to backend node.
  * - do it 25 times.
@@ -25,9 +25,9 @@
  *  Massimiliano 2014-08-06 13:27:05 UTC
  *  I found using basic routing hints such as:
  *
- *  select @@server_id; -- maxscale route to server server4
- *  select @@server_id; -- maxscale route to server server3
- *  select @@server_id; -- maxscale route to server server2
+ *  select @@server_id; -- percona-proxy route to server server4
+ *  select @@server_id; -- percona-proxy route to server server3
+ *  select @@server_id; -- percona-proxy route to server server2
  *
  *  server3 is the current master
  *
@@ -61,7 +61,7 @@
  *
  *
  *
- *  MaxScale configuration:
+ *  Percona Proxy configuration:
  *
  *  [gateway]
  *  threads=4
@@ -138,7 +138,7 @@
  #
  #
  # mysql -c -h 127.0.0.1 -P 4606 -umassi -pmassi
- #  MariaDB> select @@server_id; -- maxscale route to server server4
+ #  MariaDB> select @@server_id; -- percona-proxy route to server server4
  #
  #
  #
@@ -168,7 +168,7 @@ int main(int argc, char* argv[])
     Test->reset_timeout();
 
     Test->repl->connect();
-    Test->add_result(Test->maxscale->connect_maxscale(), "Failed to connect to MaxScale\n");
+    Test->add_result(Test->percona_proxy->connect_percona_proxy(), "Failed to connect to Percona Proxy\n");
 
     char server_id[256];
     char server_id_d[256];
@@ -182,9 +182,9 @@ int main(int argc, char* argv[])
             if (j != 1)
             {
                 Test->reset_timeout();
-                sprintf(hint_sql, "select @@server_id; -- maxscale route to server server%d", j + 1);
+                sprintf(hint_sql, "select @@server_id; -- percona-proxy route to server server%d", j + 1);
 
-                find_field(Test->maxscale->conn_rwsplit, hint_sql, (char*) "@@server_id", &server_id[0]);
+                find_field(Test->percona_proxy->conn_rwsplit, hint_sql, (char*) "@@server_id", &server_id[0]);
                 find_field(Test->repl->nodes[j],
                            (char*) "select @@server_id;",
                            (char*) "@@server_id",
@@ -200,10 +200,10 @@ int main(int argc, char* argv[])
 
     Test->reset_timeout();
 
-    Test->maxscale->close_maxscale_connections();
+    Test->percona_proxy->close_percona_proxy_connections();
     Test->repl->close_connections();
 
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
 
     int rval = Test->global_result;
     delete Test;

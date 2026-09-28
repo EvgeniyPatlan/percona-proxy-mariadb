@@ -39,7 +39,7 @@ int main(int argc, char** argv)
         threads.emplace_back([&, i]() {
                                  while (running)
                                  {
-                                     Connection c = i % 2 == 0 ? test.maxscale->rwsplit() : test.maxscale->readconn_master();
+                                     Connection c = i % 2 == 0 ? test.percona_proxy->rwsplit() : test.percona_proxy->readconn_master();
                                      c.set_timeout(30);
                                      if (c.connect())
                                      {
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
         for (const auto& cmd : commands)
         {
             test.reset_timeout();
-            test.check_maxctrl(cmd);
+            test.check_percona_proxyctl(cmd);
         }
 
         test.tprintf("Completed round %d", i + 1);

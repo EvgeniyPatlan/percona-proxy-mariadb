@@ -22,9 +22,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <maxscale/paths.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/users.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/users.hh>
 #include "../internal/adminusers.hh"
 
 using mxs::USER_ACCOUNT_ADMIN;

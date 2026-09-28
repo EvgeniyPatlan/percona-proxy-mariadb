@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
     for (int i = 0; i < 1000; i++)
     {
         test.reset_timeout();
-        auto c = test.maxscale->rwsplit();
+        auto c = test.percona_proxy->rwsplit();
         c.set_credentials("wrong-user", "wrong-pw");
         test.expect(!c.connect(), "Connection should fail");
 
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
             // returned.
             for (int j = 0; j < 100; j++)
             {
-                auto c2 = test.maxscale->rwsplit();
+                auto c2 = test.percona_proxy->rwsplit();
 
                 if (!c2.connect())
                 {

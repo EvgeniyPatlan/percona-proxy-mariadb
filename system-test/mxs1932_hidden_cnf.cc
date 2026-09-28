@@ -27,31 +27,31 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
     // Create a file with a guaranteed bad configuration (turbochargers are not yet supported)
     ofstream cnf("hidden.cnf");
     cnf << "[something]" << endl;
     cnf << "type=turbocharger" << endl;
-    cnf << "target=maxscale" << endl;
+    cnf << "target=percona-proxy" << endl;
     cnf << "speed=maximum" << endl;
     cnf.close();
 
-    // Copy the configuration to MaxScale
-    test.maxscale->copy_to_node("hidden.cnf", test.maxscale->access_homedir());
+    // Copy the configuration to Percona Proxy
+    test.percona_proxy->copy_to_node("hidden.cnf", test.percona_proxy->access_homedir());
 
-    // Move it into the maxscale.cnf.d directory and make it a hidden file
-    test.maxscale->ssh_node_f(true,
-                              "mkdir -p /etc/maxscale.cnf.d/;"
-                              "mv %s/hidden.cnf /etc/maxscale.cnf.d/.hidden.cnf;"
-                              "chown -R maxscale:maxscale /etc/maxscale.cnf.d/",
-                              test.maxscale->access_homedir());
+    // Move it into the percona-proxy.cnf.d directory and make it a hidden file
+    test.percona_proxy->ssh_node_f(true,
+                              "mkdir -p /etc/percona-proxy.cnf.d/;"
+                              "mv %s/hidden.cnf /etc/percona-proxy.cnf.d/.hidden.cnf;"
+                              "chown -R percona-proxy:percona-proxy /etc/percona-proxy.cnf.d/",
+                              test.percona_proxy->access_homedir());
 
-    // Make sure the hidden configuration is not read and that MaxScale starts up
-    test.expect(test.maxscale->restart_maxscale() == 0, "Starting MaxScale should succeed");
+    // Make sure the hidden configuration is not read and that Percona Proxy starts up
+    test.expect(test.percona_proxy->restart_percona_proxy() == 0, "Starting Percona Proxy should succeed");
 
-    test.maxscale->ssh_node_f(true, "rm -r /etc/maxscale.cnf.d/");
+    test.percona_proxy->ssh_node_f(true, "rm -r /etc/percona-proxy.cnf.d/");
     remove("hidden.cnf");
 
     return test.global_result;

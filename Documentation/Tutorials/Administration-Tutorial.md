@@ -1,15 +1,15 @@
-# MariaDB MaxScale Administration Tutorial
+# Percona Proxy for MariaDB Administration Tutorial
 
-The purpose of this tutorial is to introduce the MariaDB MaxScale Administrator
+The purpose of this tutorial is to introduce the Percona Proxy for MariaDB Administrator
 to a few of the common administration tasks. This is intended to be an
-introduction for administrators who are new to MariaDB MaxScale and not a
+introduction for administrators who are new to Percona Proxy for MariaDB and not a
 reference to all the tasks that may be performed.
 
 [TOC]
 
 ## Administration audit file
 
-The REST API calls that MaxCtrl and MaxGui issue to MaxScale can be logged
+The REST API calls that Percona Proxyctl and MaxGui issue to Percona Proxy can be logged
 by enabling [admin_audit](../Getting-Started/Configuration-Guide.md#admin_audit).
 
 The generated file is a csv file that can be opened in most spread sheet programs.
@@ -20,37 +20,37 @@ regular log file (in case a rotate is issued, but the file name has not been mov
 There is also the option to change the audit file name, which effectively rotates it
 independently of the regular log file.
 
-For e.g. `maxctrl alter maxscale admin_audit_file=/var/log/maxscale/admin_audit.march.csv`.
+For e.g. `percona-proxyctl alter percona-proxy admin_audit_file=/var/log/percona-proxy/admin_audit.march.csv`.
 
-## Starting and Stopping MariaDB MaxScale
+## Starting and Stopping Percona Proxy for MariaDB
 
-MaxScale uses systemd for managing the process. This means that normal
-`systemctl` commands can be used to start and stop MaxScale. To start MaxScale,
-use `systemctl start maxscale`. To stop it, use `systemctl stop maxscale`.
+Percona Proxy uses systemd for managing the process. This means that normal
+`systemctl` commands can be used to start and stop Percona Proxy. To start Percona Proxy,
+use `systemctl start percona-proxy`. To stop it, use `systemctl stop percona-proxy`.
 
-The systemd service file for MaxScale is located in
-`/lib/systemd/system/maxscale.service`.
+The systemd service file for Percona Proxy is located in
+`/lib/systemd/system/percona-proxy.service`.
 
-### Additional Options for MaxScale
+### Additional Options for Percona Proxy
 
 Additional command line options and other systemd configuration options
-can be given to MariaDB MaxScale by creating a drop-in file for the
-service unit file. You can do this with the `systemctl edit maxscale.service`
+can be given to Percona Proxy for MariaDB by creating a drop-in file for the
+service unit file. You can do this with the `systemctl edit percona-proxy.service`
 command. For more information about systemd drop-in
 files, refer to
 [the systemctl man page](https://www.freedesktop.org/software/systemd/man/systemctl.html)
 and
 [the systemd documentation](https://www.freedesktop.org/software/systemd/man/systemd.unit.html).
 
-## Checking The Status Of The MariaDB MaxScale Services
+## Checking The Status Of The Percona Proxy for MariaDB Services
 
-It is possible to use the maxctrl command to obtain statistics about the
-services that are running within MaxScale. The maxctrl command `list services`
+It is possible to use the percona-proxyctl command to obtain statistics about the
+services that are running within Percona Proxy. The percona-proxyctl command `list services`
 will give very basic information regarding services. This command may be either
-run in interactive mode or passed on the maxctrl command line.
+run in interactive mode or passed on the percona-proxyctl command line.
 
 ```
-$ maxctrl list services
+$ percona-proxyctl list services
 ┌────────────────────────┬────────────────┬─────────────┬───────────────────┬────────────────────────────────────┐
 │ Service                │ Router         │ Connections │ Total Connections │ Servers                            │
 ├────────────────────────┼────────────────┼─────────────┼───────────────────┼────────────────────────────────────┤
@@ -71,16 +71,16 @@ Network listeners count as a user of the service, therefore there will always be
 one user per network port in which the service listens. More details can be
 obtained by using the "show service" command.
 
-## What Clients Are Connected To MariaDB MaxScale
+## What Clients Are Connected To Percona Proxy for MariaDB
 
-To determine what client are currently connected to MariaDB MaxScale, you can
-use the `list sessions` command within maxctrl. This will give you IP address
-and the ID of the session for that connection. As with any maxctrl
+To determine what client are currently connected to Percona Proxy for MariaDB, you can
+use the `list sessions` command within percona-proxyctl. This will give you IP address
+and the ID of the session for that connection. As with any percona-proxyctl
 command this can be passed on the command line or typed interactively in
-maxctrl.
+percona-proxyctl.
 
 ```
-$ maxctrl list sessions
+$ percona-proxyctl list sessions
 ┌────┬─────────┬──────────────────┬──────────────────────────┬──────┬─────────────────┐
 │ Id │ User    │ Host             │ Connected                │ Idle │ Service         │
 ├────┼─────────┼──────────────────┼──────────────────────────┼──────┼─────────────────┤
@@ -90,27 +90,27 @@ $ maxctrl list sessions
 
 ## Rotating Log Files
 
-Log rotation applies to the MaxScale log file, admin audit file and
+Log rotation applies to the Percona Proxy log file, admin audit file and
 qlafilter files.
 
-MariaDB MaxScale logs messages of different priority into a single log file.
+Percona Proxy for MariaDB logs messages of different priority into a single log file.
 With the exception if error messages that are always logged, whether messages of
-a particular priority should be logged or not can be enabled via the maxctrl
-interface or in the configuration file. By default, MaxScale keeps on writing to
+a particular priority should be logged or not can be enabled via the percona-proxyctl
+interface or in the configuration file. By default, Percona Proxy keeps on writing to
 the same log file. To prevent the file from growing indefinitely, the
 administrator must take action.
 
-The name of the log file is maxscale.log. When the log is rotated, MaxScale
+The name of the log file is percona-proxy.log. When the log is rotated, Percona Proxy
 closes the current log file and opens a new one using the same name.
 
 Log file rotation is achieved by use of the `rotate logs` command
-in maxctrl.
+in percona-proxyctl.
 
 ```
-maxctrl rotate logs
+percona-proxyctl rotate logs
 ```
 
-As there currently is only the maxscale log, that is the only one that will be
+As there currently is only the percona-proxy log, that is the only one that will be
 rotated.
 
 This may be integrated into the Linux _logrotate_ mechanism by adding a
@@ -119,41 +119,41 @@ rotate the log files once per month and wish to keep 5 log files worth of
 history, the configuration file would look as follows.
 
 ```
-/var/log/maxscale/maxscale.log {
+/var/log/percona-proxy/percona-proxy.log {
 monthly
 rotate 5
 missingok
 nocompress
 sharedscripts
 postrotate
-\# run if maxscale is running
-if test -n "`ps acx|grep maxscale`"; then
-/usr/bin/maxctrl rotate logs
+\# run if percona-proxy is running
+if test -n "`ps acx|grep percona-proxy`"; then
+/usr/bin/percona-proxyctl rotate logs
 fi
 endscript
 }
 ```
 
-MariaDB MaxScale will also rotate all of its log files if it receives the USR1
+Percona Proxy for MariaDB will also rotate all of its log files if it receives the USR1
 signal. Using this the logrotate configuration script can be rewritten as
 
 ```
-/var/log/maxscale/maxscale.log {
+/var/log/percona-proxy/percona-proxy.log {
 monthly
 rotate 5
 missingok
 nocompress
 sharedscripts
 postrotate
-kill -USR1 `cat /var/run/maxscale/maxscale.pid`
+kill -USR1 `cat /var/run/percona-proxy/percona-proxy.pid`
 endscript
 }
 ```
 
-In older versions MaxScale renamed the log file, behavior which is not fully
+In older versions Percona Proxy renamed the log file, behavior which is not fully
 compliant with the assumptions of logrotate and may lead to issues, depending on
-the used logrotate configuration file. From version 2.1 onward, MaxScale will
-not itself rename the log file, but when the log is rotated, MaxScale will
+the used logrotate configuration file. From version 2.1 onward, Percona Proxy will
+not itself rename the log file, but when the log is rotated, Percona Proxy will
 simply close and reopen the same log file. That will make the behavior fully
 compliant with logrotate.
 
@@ -161,36 +161,36 @@ compliant with logrotate.
 
 ### Putting Servers into Maintenance
 
-MariaDB MaxScale supports the concept of maintenance mode for servers within a
+Percona Proxy for MariaDB supports the concept of maintenance mode for servers within a
 cluster. This allows for planned, temporary removal of a database from the
-cluster without the need to change the MariaDB MaxScale configuration.
+cluster without the need to change the Percona Proxy for MariaDB configuration.
 
 ```
-maxctrl set server db-server-3 maintenance
+percona-proxyctl set server db-server-3 maintenance
 ```
 
-To achieve this, you can use the `set server` command in maxctrl to set the
+To achieve this, you can use the `set server` command in percona-proxyctl to set the
 maintenance mode flag for the server. This may be done interactively within
-maxctrl or by passing the command on the command line.
+percona-proxyctl or by passing the command on the command line.
 
-This will cause MariaDB MaxScale to stop routing any new requests to the server,
+This will cause Percona Proxy for MariaDB to stop routing any new requests to the server,
 however if there are currently requests executing on the server these will not
 be interrupted. Connections to servers in maintenance mode are closed as soon as
 the next request arrives. To close them immediately, use the `--force` option
-for `maxctrl set server`.
+for `percona-proxyctl set server`.
 
 ```
-maxctrl clear server db-server-3 maintenance
+percona-proxyctl clear server db-server-3 maintenance
 ```
 
 Clearing the maintenance mode for a server will bring it back into use. If
-multiple MariaDB MaxScale instances are configured to use the node then
-maintenance mode must be set within each MariaDB MaxScale instance.
+multiple Percona Proxy for MariaDB instances are configured to use the node then
+maintenance mode must be set within each Percona Proxy for MariaDB instance.
 
 ## Stopping and Starting Services
 
 ```
-maxctrl stop service db-service
+percona-proxyctl stop service db-service
 ```
 
 Services can be stopped to temporarily halt their use. Stopping a service will
@@ -199,7 +199,7 @@ are not refused if the service is stopped and are queued instead. This means
 that connecting clients will wait until the service is started again.
 
 ```
-maxctrl start service db-service
+percona-proxyctl start service db-service
 ```
 
 Starting a service will cause it to accept all queued connections that were
@@ -208,15 +208,15 @@ created while it was stopped.
 ### Stopping and Starting Monitors
 
 ```
-maxctrl stop monitor db-monitor
+percona-proxyctl stop monitor db-monitor
 ```
 
 Stopping a monitor will cause it to stop monitoring the state of the servers
 assigned to it. This is useful when the state of the servers is assigned
-manually with `maxctrl set server`.
+manually with `percona-proxyctl set server`.
 
 ```
-maxctrl start monitor db-monitor
+percona-proxyctl start monitor db-monitor
 ```
 
 Starting a monitor will make it resume monitoring of the servers. Any manually
@@ -224,11 +224,11 @@ assigned states will be overwritten by the monitor.
 
 ## Runtime Configuration Modification
 
-The MaxScale configuration can be changed at runtime by using the `create`,
-`alter` and `destroy` commands of `maxctrl`. These commands either create,
+The Percona Proxy configuration can be changed at runtime by using the `create`,
+`alter` and `destroy` commands of `percona-proxyctl`. These commands either create,
 modify or destroy objects (servers, services, monitors etc.) inside
-MaxScale. The exact syntax for each of the commands and any additional options
-that they take can be seen with `maxctrl --help <command>`.
+Percona Proxy. The exact syntax for each of the commands and any additional options
+that they take can be seen with `percona-proxyctl --help <command>`.
 
 Not all parameters can be modified at runtime. Refer to the module documentation
 for more information on which parameters can be modified at runtime. If a
@@ -236,22 +236,22 @@ parameter cannot be modified at runtime, the object can be destroyed and
 recreated in order to change it.
 
 All runtime changes are persisted in files stored by default in
-`/var/lib/maxscale/maxscale.cnf.d/`. This means that any changes done at runtime
+`/var/lib/percona-proxy/percona-proxy.cnf.d/`. This means that any changes done at runtime
 persist through restarts. Any changes done to objects in the main configuration
 file are ignored if a persisted entry is found for it.
 
-For example, if the address of a server is modified with `maxctrl alter server
+For example, if the address of a server is modified with `percona-proxyctl alter server
 db-server-1 address 192.168.0.100`, the file
-`/var/lib/maxscale/maxscale.cnf.d/db-server-1.cnf` is created with the complete
+`/var/lib/percona-proxy/percona-proxy.cnf.d/db-server-1.cnf` is created with the complete
 configuration for the object. To remove all runtime changes for all objects,
-remove all files found in `/var/lib/maxscale/maxscale.cnf.d`.
+remove all files found in `/var/lib/percona-proxy/percona-proxy.cnf.d`.
 
 ### Core Parameter Configuration
 
-Modify global MaxScale parameters:
+Modify global Percona Proxy parameters:
 
 ```
-maxctrl alter maxscale auth_connect_timeout 5s
+percona-proxyctl alter percona-proxy auth_connect_timeout 5s
 ```
 
 Some global parameters cannot be modified at runtime.  Refer to the
@@ -263,19 +263,19 @@ of parameters that can be modified at runtime.
 #### Create a new server
 
 ```
-maxctrl create server db-server-1 192.168.0.100 3306
+percona-proxyctl create server db-server-1 192.168.0.100 3306
 ```
 
 #### Modify a Server
 
 ```
-maxctrl alter server db-server-1 port 3307
+percona-proxyctl alter server db-server-1 port 3307
 ```
 
 #### Destroy a Server
 
 ```
-maxctrl destroy server db-server-1
+percona-proxyctl destroy server db-server-1
 ```
 
 A server can only be destroyed if it is not used by any services or monitors. To
@@ -285,7 +285,7 @@ the `--force` flag.
 #### Drain a Server
 
 ```
-maxctrl set server db-server-1 drain
+percona-proxyctl set server db-server-1 drain
 ```
 
 When a server is set into the `drain` state, no new connections to it are
@@ -297,7 +297,7 @@ in order to be gracefully closed once the client disconnects.
 To remove the `drain` state, use `clear server` command:
 
 ```
-maxctrl clear server db-server-1 drain
+percona-proxyctl clear server db-server-1 drain
 ```
 
 Servers with the `Master` state cannot be drained. To drain them, first perform
@@ -308,31 +308,31 @@ a switchover to another node and then drain the server.
 #### Create a new Monitor
 
 ```
-maxctrl create monitor db-monitor mariadbmon user=db-user password=db-password
+percona-proxyctl create monitor db-monitor mariadbmon user=db-user password=db-password
 ```
 
 #### Modify a Monitor
 
 ```
-maxctrl alter monitor db-monitor monitor_interval 1000
+percona-proxyctl alter monitor db-monitor monitor_interval 1000
 ```
 
 #### Add Server to a Monitor
 
 ```
-maxctrl link monitor db-monitor db-server-1
+percona-proxyctl link monitor db-monitor db-server-1
 ```
 
 #### Remove a Server from a Monitor
 
 ```
-maxctrl unlink monitor db-monitor db-server-1
+percona-proxyctl unlink monitor db-monitor db-server-1
 ```
 
 #### Destroy a Monitor
 
 ```
-maxctrl destroy monitor db-monitor
+percona-proxyctl destroy monitor db-monitor
 ```
 
 A monitor can only be destroyed if it is not monitoring any servers. To
@@ -343,19 +343,19 @@ automatically remove the servers from the monitor, use the `--force` flag.
 #### Create a New Service
 
 ```
-maxctrl create service db-service readwritesplit user=db-user password=db-password
+percona-proxyctl create service db-service readwritesplit user=db-user password=db-password
 ```
 
 #### Modify a Service
 
 ```
-maxctrl alter service db-service user new-db-user
+percona-proxyctl alter service db-service user new-db-user
 ```
 
 #### Add Servers to a Service
 
 ```
-maxctrl link service db-service db-server1
+percona-proxyctl link service db-service db-server1
 ```
 
 Any servers added to services will only be used by new sessions. Existing
@@ -364,7 +364,7 @@ sessions will use the servers that were available when they connected.
 #### Remove Servers from a Service
 
 ```
-maxctrl unlink service db-service db-server1
+percona-proxyctl unlink service db-service db-server1
 ```
 
 Similarly to adding servers, removing servers from a service will only affect
@@ -374,7 +374,7 @@ from a service.
 #### Change the Filters of a Service
 
 ```
-maxctrl alter service-filters my-regexfilter my-qlafilter
+percona-proxyctl alter service-filters my-regexfilter my-qlafilter
 ```
 
 The order of the filters is significant: the first filter will be the first to
@@ -385,7 +385,7 @@ when they connected.
 #### Destroy a Service
 
 ```
-maxctrl destroy service db-service
+percona-proxyctl destroy service db-service
 ```
 
 The service can only be destroyed if it uses no servers or clusters and has no
@@ -398,20 +398,20 @@ listeners associated with the service.
 #### Create a New Filter
 
 ```
-maxctrl create filter regexfilter match=ENGINE=MyISAM replace=ENGINE=InnoDB
+percona-proxyctl create filter regexfilter match=ENGINE=MyISAM replace=ENGINE=InnoDB
 ```
 
 #### Destroy a Filter
 
 ```
-maxctrl destroy filter my-regexfilter
+percona-proxyctl destroy filter my-regexfilter
 ```
 
 A filter can only be destroyed if it is not used by any services. To
 automatically remove the filter from all services using it, use the `--force`
 flag.
 
-Filters cannot be altered at runtime in MaxScale 2.5. To modify the parameters
+Filters cannot be altered at runtime in Percona Proxy 2.5. To modify the parameters
 of a filter, destroy it and recreate it with the modified parameters.
 
 ### Managing Listeners
@@ -419,13 +419,13 @@ of a filter, destroy it and recreate it with the modified parameters.
 #### Create a New Listener
 
 ```
-maxctrl create listener db-listener db-service 4006
+percona-proxyctl create listener db-listener db-service 4006
 ```
 
 #### Destroy a Listener
 
 ```
-maxctrl destroy listener db-listener
+percona-proxyctl destroy listener db-listener
 ```
 
 Destroying a listener will close the network socket and stop it from accepting
@@ -435,36 +435,36 @@ displaying it as the originating listener.
 Listeners cannot be moved from one service to another. In order to do this, the
 listener must be destroyed and then recreated with the new service.
 
-## Managing MaxCtrl and REST API Users
+## Managing Percona Proxyctl and REST API Users
 
-MaxCtrl uses the same credentials as the MaxScale REST API. These users can be
-managed via MaxCtrl.
+Percona Proxyctl uses the same credentials as the Percona Proxy REST API. These users can be
+managed via Percona Proxyctl.
 
-### Create a New MaxCtrl User
+### Create a New Percona Proxyctl User
 
 ```
-maxctrl create user basic-user basic-password
+percona-proxyctl create user basic-user basic-password
 ```
 
 By default new users are only allowed to read data. To make the account an
 administrative account, add the `--type=admin` option to the command:
 
 ```
-maxctrl create user admin-user admin-password --type=admin
+percona-proxyctl create user admin-user admin-password --type=admin
 ```
 
-Administrative accounts are allowed to use all MaxCtrl commands and modify any
-parts of MaxScale.
+Administrative accounts are allowed to use all Percona Proxyctl commands and modify any
+parts of Percona Proxy.
 
 
 ### Change the Password of an Existing User
 
 ```
-maxctrl alter user admin-user new-admin-password
+percona-proxyctl alter user admin-user new-admin-password
 ```
 
 ### Remove a User
 
 ```
-maxctrl destroy user basic-user
+percona-proxyctl destroy user basic-user
 ```

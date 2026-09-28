@@ -35,7 +35,7 @@ using std::move;
 const char* PIPE_FULL_WARNING =
     " Consider increasing the pipe buffer size (sysctl fs.pipe-max-size). Slow domain name servers "
     "can also cause problems. To disable reverse name resolution, add 'skip_name_resolve=true' under "
-    "the '[maxscale]' section.";
+    "the '[percona-proxy]' section.";
 
 static struct
 {

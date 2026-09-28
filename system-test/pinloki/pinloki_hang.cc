@@ -26,7 +26,7 @@ public:
 
         for (int i = 0; i < 50 && test.ok(); i++)
         {
-            test.check_maxctrl("show threads");
+            test.check_percona_proxyctl("show threads");
         }
 
         m_running = false;
@@ -37,17 +37,17 @@ public:
 private:
     void change_master()
     {
-        maxscale.set_timeout(10);
-        maxscale.connect();
+        percona_proxy.set_timeout(10);
+        percona_proxy.connect();
 
         while (m_running && test.ok())
         {
-            test.expect(maxscale.query("STOP SLAVE"),
-                        "STOP SLAVE failed: %s", maxscale.error());
-            test.expect(maxscale.query(change_master_sql(test.repl->ip(0), test.repl->port(0))),
-                        "CHANGE MASTER failed: %s", maxscale.error());
-            test.expect(maxscale.query("START SLAVE"),
-                        "START SLAVE failed: %s", maxscale.error());
+            test.expect(percona_proxy.query("STOP SLAVE"),
+                        "STOP SLAVE failed: %s", percona_proxy.error());
+            test.expect(percona_proxy.query(change_master_sql(test.repl->ip(0), test.repl->port(0))),
+                        "CHANGE MASTER failed: %s", percona_proxy.error());
+            test.expect(percona_proxy.query("START SLAVE"),
+                        "START SLAVE failed: %s", percona_proxy.error());
         }
     }
 

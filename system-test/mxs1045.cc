@@ -13,7 +13,7 @@
  */
 
 /**
- * @file mxs1045.cpp Regression case for the bug "Defunct processes after maxscale have executed script during
+ * @file mxs1045.cpp Regression case for the bug "Defunct processes after percona-proxy have executed script during
  * failover"
  * - configure monitor:
  * @verbatim
@@ -35,11 +35,11 @@ int main(int argc, char* argv[])
     test.repl->block_node(0);
 
     test.tprintf("Wait for monitor to see it");
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     test.tprintf("Check that there are no zombies");
 
-    int res = test.maxscale->ssh_node(
+    int res = test.percona_proxy->ssh_node(
         "if [ \"`ps -ef|grep defunct|grep -v grep`\" != \"\" ]; then exit 1; fi",
         false);
     test.add_result(res, "Zombie processes were found");

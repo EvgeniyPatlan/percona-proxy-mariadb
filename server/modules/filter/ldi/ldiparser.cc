@@ -16,7 +16,7 @@
 #include "ldiparser.hh"
 
 #include <maxbase/assert.hh>
-#include <maxscale/boost_spirit_utils.hh>
+#include <percona-proxy/boost_spirit_utils.hh>
 
 using namespace boost::spirit;
 using x3::lit;

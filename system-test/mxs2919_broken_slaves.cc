@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection should work");
 
     std::string master_id = conn.field("SELECT @@server_id, @@last_insert_id", 0);
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     }
 
     test.repl->disconnect();
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     for (int i = 0; test.ok() && i < 50; i++)
     {

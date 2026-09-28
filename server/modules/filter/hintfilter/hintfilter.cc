@@ -15,13 +15,13 @@
 #define MXB_MODULE_NAME "hintfilter"
 
 #include <stdio.h>
-#include <maxscale/filter.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/config2.hh>
 #include "mysqlhint.hh"
 
 /**
- * hintfilter.c - a filter to parse the MaxScale hint syntax and attach those
+ * hintfilter.c - a filter to parse the Percona Proxy hint syntax and attach those
  * hints to the buffers that carry the requests.
  *
  */

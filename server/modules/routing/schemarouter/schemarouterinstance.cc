@@ -21,10 +21,10 @@
 #include <string.h>
 #include <strings.h>
 
-#include <maxscale/buffer.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/router.hh>
-#include <maxscale/secrets.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/secrets.hh>
 
 using std::string;
 
@@ -101,7 +101,7 @@ SchemaRouter* SchemaRouter::create(SERVICE* pService)
  *      Number of backend server pointers pointed to by b.
  *
  * @param session - in, use
- *      MaxScale session pointer used when connection to backend is established.
+ *      Percona Proxy session pointer used when connection to backend is established.
  *
  * @param  router - in, use
  *      Pointer to router instance. Used when server states are qualified.

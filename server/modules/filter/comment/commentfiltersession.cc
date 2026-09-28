@@ -17,8 +17,8 @@
 
 #include "commentfiltersession.hh"
 #include "commentfilter.hh"
-#include <maxscale/session.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 #include <string>
 #include <regex>
 
@@ -27,7 +27,7 @@ using namespace std;
 CommentFilterSession::CommentFilterSession(MXS_SESSION* pSession,
                                            SERVICE* pService,
                                            const CommentFilter* pFilter)
-    : maxscale::FilterSession(pSession, pService)
+    : percona_proxy::FilterSession(pSession, pService)
     , m_inject(pFilter->config().inject.get())
 {
 }

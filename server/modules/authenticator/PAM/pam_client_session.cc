@@ -17,12 +17,12 @@
 #include <set>
 #include <maxbase/externcmd.hh>
 #include <maxbase/pam_utils.hh>
-#include <maxscale/protocol/mariadb/client_connection.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/client_connection.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 #include "pam_instance.hh"
 
-using maxscale::Buffer;
+using percona_proxy::Buffer;
 using std::string;
 using std::string_view;
 using AuthRes = mariadb::ClientAuthenticator::AuthRes;
@@ -72,7 +72,7 @@ PamClientAuthenticator::PamClientAuthenticator(AuthSettings settings, const Pass
 /**
  * @brief Create an AuthSwitchRequest packet
  *
- * The server (MaxScale) sends the plugin name "dialog" to the client with the
+ * The server (Percona Proxy) sends the plugin name "dialog" to the client with the
  * first password prompt. We want to avoid calling the PAM conversation function
  * more than once because it blocks, so we "emulate" its behaviour here.
  * This obviously only works with the basic password authentication scheme.

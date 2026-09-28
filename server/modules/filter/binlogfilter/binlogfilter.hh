@@ -13,9 +13,9 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/filter.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 
 #include "binlogconfig.hh"
 #include "binlogfiltersession.hh"

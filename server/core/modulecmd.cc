@@ -12,17 +12,17 @@
  * Public License.
  */
 
-#include <maxscale/modulecmd.hh>
+#include <percona-proxy/modulecmd.hh>
 
 #include <string>
 
 #include <maxbase/alloc.hh>
 #include <maxbase/json.hh>
 #include <maxbase/string.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/config.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/pcre2.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/pcre2.hh>
 
 #include "internal/filter.hh"
 #include "internal/modules.hh"
@@ -40,7 +40,7 @@ const char CN_MODULE_COMMAND[] = "module_command";
 /** Size of the error buffer */
 #define MODULECMD_ERRBUF_SIZE 512
 
-using maxscale::Monitor;
+using percona_proxy::Monitor;
 
 /** Thread local error buffer */
 thread_local std::array<char, MODULECMD_ERRBUF_SIZE> errbuf;

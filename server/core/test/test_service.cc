@@ -22,9 +22,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <maxscale/maxscale_test.h>
-#include <maxscale/listener.hh>
-#include <maxscale/paths.hh>
+#include <percona-proxy/percona_proxy_test.h>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/paths.hh>
 
 #include "../internal/service.hh"
 #include "test_utils.hh"

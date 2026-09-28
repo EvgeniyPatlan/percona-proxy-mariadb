@@ -21,7 +21,7 @@
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
     test.repl->connect();
@@ -41,11 +41,11 @@ int main(int argc, char** argv)
                   "UPDATE test.test1 SET some_id = 35, `desc` = NULL, some_date = NULL WHERE test1_id = 2;");
 
     /** Give avrorouter some time to process the events */
-    test.maxscale->start();
+    test.percona_proxy->start();
     sleep(10);
     test.reset_timeout();
 
-    CDC::Connection conn(test.maxscale->ip4(), 4001, "skysql", "skysql");
+    CDC::Connection conn(test.percona_proxy->ip4(), 4001, "skysql", "skysql");
 
     test.expect(conn.connect("test.test1"), "Failed to connect");
 

@@ -14,8 +14,8 @@
 
 /**
  * @file mxs874_slave_recovery.cpp Block and unblock first and second slaves and check that they are recovered
- * - Start MaxScale with 1 master and 2 slaves
- * - Connect to MaxScale with Readwritesplit
+ * - Start Percona Proxy with 1 master and 2 slaves
+ * - Connect to Percona Proxy with Readwritesplit
  * - Execute SET @a=1
  * - Block first slave
  * - Wait until monitor detects it
@@ -36,22 +36,22 @@ int main(int argc, char* argv[])
     TestConnections test(argc, argv);
     test.reset_timeout();
 
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
 
     test.reset_timeout();
-    test.try_query(test.maxscale->conn_rwsplit, (char*) "SET @a=1");
-    test.maxscale->wait_for_monitor();
+    test.try_query(test.percona_proxy->conn_rwsplit, (char*) "SET @a=1");
+    test.percona_proxy->wait_for_monitor();
     test.reset_timeout();
     test.tprintf("Blocking first slave\n");
     test.repl->block_node(1);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     test.reset_timeout();
     test.tprintf("Unblocking first slave and blocking second slave\n");
 
     test.repl->unblock_node(1);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     test.repl->block_node(2);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     test.reset_timeout();
 
     for (int retries = 0; test.get_server_status("server2").count("Running") == 0 && retries < 10; retries++)
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
     int real_id = test.repl->get_server_id(1);
 
     char server_id[200] = "";
-    find_field(test.maxscale->conn_rwsplit, "SELECT @@server_id", "@@server_id", server_id);
+    find_field(test.percona_proxy->conn_rwsplit, "SELECT @@server_id", "@@server_id", server_id);
     int queried_id = atoi(server_id);
 
     test.add_result(queried_id != real_id,
@@ -76,13 +76,13 @@ int main(int argc, char* argv[])
                     real_id);
 
     char userval[200] = "";
-    find_field(test.maxscale->conn_rwsplit, "SELECT @a", "@a", userval);
+    find_field(test.percona_proxy->conn_rwsplit, "SELECT @a", "@a", userval);
 
     test.add_result(atoi(userval) != 1, "User variable @a is not 1, it is '%s'", userval);
 
     test.tprintf("Unblocking second slave\n");
     test.repl->unblock_node(2);
 
-    test.check_maxscale_alive();
+    test.check_percona_proxy_alive();
     return test.global_result;
 }

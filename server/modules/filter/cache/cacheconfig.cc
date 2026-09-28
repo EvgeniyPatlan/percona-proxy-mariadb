@@ -164,7 +164,7 @@ config::ParamPath rules(
     &specification,
     "rules",
     "Specifies the path of the file where the caching rules are stored. A relative "
-    "path is interpreted relative to the data directory of MariaDB MaxScale.",
+    "path is interpreted relative to the data directory of Percona Proxy for MariaDB.",
     config::ParamPath::R,
     "",
     config::Param::Modifiable::AT_RUNTIME

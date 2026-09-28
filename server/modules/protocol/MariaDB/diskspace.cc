@@ -12,13 +12,13 @@
  * Public License.
  */
 
-#include <maxscale/protocol/mariadb/diskspace.hh>
+#include <percona-proxy/protocol/mariadb/diskspace.hh>
 #include <maxbase/assert.hh>
 
 namespace
 {
 
-using namespace maxscale;
+using namespace percona_proxy;
 
 typedef void (* Callback)(void* pCollection,
                           const char* zDisk,
@@ -118,7 +118,7 @@ void add_info_by_disk(std::map<std::string, disk::SizesAndPaths>* pSizes,
 }
 
 
-namespace maxscale
+namespace percona_proxy
 {
 
 namespace disk

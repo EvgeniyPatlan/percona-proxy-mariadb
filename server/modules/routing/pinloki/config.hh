@@ -16,12 +16,12 @@
 
 #include "gtid.hh"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <maxbase/stopwatch.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/key_manager.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/key_manager.hh>
 
 #include <string>
 #include <thread>

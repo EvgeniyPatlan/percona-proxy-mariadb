@@ -13,10 +13,10 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/protocol/mariadb/authenticator.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/protocol/mariadb/authenticator.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
 
 class MariaDBAuthenticatorModule : public mariadb::AuthenticatorModule
 {

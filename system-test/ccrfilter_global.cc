@@ -22,14 +22,14 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     conn.connect();
     test.expect(conn.query("CREATE OR REPLACE TABLE test.t1 (a LONGTEXT)"),
                 "Table creation should work: %s", conn.error());
     conn.disconnect();
 
     std::string data(1000000, 'a');
-    auto secondary = test.maxscale->rwsplit();
+    auto secondary = test.percona_proxy->rwsplit();
     secondary.connect();
 
     for (int i = 0; i < 25; i++)

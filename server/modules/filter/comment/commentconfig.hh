@@ -13,8 +13,8 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/config2.hh>
 
 class CommentConfig : public mxs::config::Configuration
 {

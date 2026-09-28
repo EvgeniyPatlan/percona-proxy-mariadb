@@ -17,9 +17,9 @@
 
 #include "gtid.hh"
 #include <maxbase/string.hh>
-#include <maxscale/log.hh>
+#include <percona-proxy/log.hh>
 #include <maxbase/log.hh>
-#include <maxscale/boost_spirit_utils.hh>
+#include <percona-proxy/boost_spirit_utils.hh>
 #include <algorithm>
 #include <sstream>
 #include <mysql.h>

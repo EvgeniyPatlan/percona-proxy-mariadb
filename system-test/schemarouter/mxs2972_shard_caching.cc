@@ -23,12 +23,12 @@ int main(int argc, char** argv)
     test.try_query(test.repl->nodes[0], "CREATE OR REPLACE TABLE test.t1(id INT)");
     test.repl->disconnect();
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     conn.set_database("db1");
 
     test.tprintf("Block server1 and perform a simple SELECT");
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     test.expect(conn.connect(), "Connection should work: %s", conn.error());
 
     auto db = conn.field("SELECT DATABASE()");
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
     conn.disconnect();
     test.repl->unblock_node(0);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     test.tprintf("Unblock server1 and perform a DELETE that is forced to server1");
     test.expect(conn.connect(), "Connection should work: %s", conn.error());

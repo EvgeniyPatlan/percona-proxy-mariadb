@@ -97,9 +97,9 @@ void test_main(TestConnections& test)
         vm.copy_to_node_sudo(pam_msgfile_path_src, pam_msgfile_path_dst);
     }
 
-    // Also create the user on the node running MaxScale, as the MaxScale PAM plugin compares against
+    // Also create the user on the node running Percona Proxy, as the Percona Proxy PAM plugin compares against
     // local users.
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& mxs_vm = mxs.vm_node();
     mxs_vm.add_linux_user(pam_user, pam_pw);
     mxs_vm.run_cmd_sudo(read_shadow);
@@ -108,7 +108,7 @@ void test_main(TestConnections& test)
 
     if (test.ok())
     {
-        cout << "PAM-plugin installed and users created on all servers. Starting MaxScale.\n";
+        cout << "PAM-plugin installed and users created on all servers. Starting Percona Proxy.\n";
         mxs.restart();
         mxs.check_print_servers_status({mxt::ServerInfo::master_st, mxt::ServerInfo::slave_st});
     }
@@ -119,7 +119,7 @@ void test_main(TestConnections& test)
 
     // Helper function for checking PAM-login. If db is empty, log to null database.
     auto try_log_in = [&test](const string& user, const string& pass, const string& database) {
-            int port = test.maxscale->rwsplit_port;
+            int port = test.percona_proxy->rwsplit_port;
             if (!test_pam_login(test, port, user, pass, database))
             {
                 test.expect(false, "PAM login failed.");
@@ -135,21 +135,21 @@ void test_main(TestConnections& test)
 
     if (test.ok())
     {
-        // First, test that MaxCtrl login with the pam user works.
-        string cmd = mxb::string_printf("-u %s -p %s show maxscale", pam_user, pam_pw);
-        test.check_maxctrl(cmd);
+        // First, test that Percona Proxyctl login with the pam user works.
+        string cmd = mxb::string_printf("-u %s -p %s show percona-proxy", pam_user, pam_pw);
+        test.check_percona_proxyctl(cmd);
         if (test.ok())
         {
-            cout << "'maxctrl " << cmd << "' works.\n";
+            cout << "'percona-proxyctl " << cmd << "' works.\n";
         }
 
         // MXS-4355: Token authentication does not work with PAM users
-        auto res = test.maxctrl(mxb::string_printf("-u %s -p %s api get auth meta.token", pam_user, pam_pw));
-        test.expect(res.rc == 0, "'maxctrl api get' failed: %s", res.output.c_str());
+        auto res = test.percona_proxyctl(mxb::string_printf("-u %s -p %s api get auth meta.token", pam_user, pam_pw));
+        test.expect(res.rc == 0, "'percona-proxyctl api get' failed: %s", res.output.c_str());
 
         auto token = res.output.substr(1, res.output.size() - 2);
-        int rc = test.maxscale->ssh_node_f(
-            false, "curl -f -s -H 'Authorization: Bearer %s' localhost:8989/v1/maxscale", token.c_str());
+        int rc = test.percona_proxy->ssh_node_f(
+            false, "curl -f -s -H 'Authorization: Bearer %s' localhost:8989/v1/percona-proxy", token.c_str());
         test.expect(rc == 0, "Token authentication with PAM user failed.");
         test.tprintf("Token authentication with PAM: %s", rc == 0 ? "OK" : "Failed");
     }
@@ -198,7 +198,7 @@ void test_main(TestConnections& test)
         const char dummy_pw[] = "unused_pw";
         // Basic PAM authentication seems to be working. Now try with an anonymous user proxying to
         // the real user. The following does not actually do proper user mapping, as that requires further
-        // setup on the backends. It does however demonstrate that MaxScale detects the anonymous user and
+        // setup on the backends. It does however demonstrate that Percona Proxy detects the anonymous user and
         // accepts the login of a non-existent user with PAM.
         test.tprintf("Creating anonymous catch-all user and proxy target user.");
         auto conn = test.repl->backend(0)->admin_connection();
@@ -271,17 +271,17 @@ void test_main(TestConnections& test)
     if (test.ok())
     {
         // Test that normal authentication on the same port works. This tests MXS-2497.
-        auto maxconn = test.maxscale->open_rwsplit_connection();
-        int port = test.maxscale->rwsplit_port;
+        auto maxconn = test.percona_proxy->open_rwsplit_connection();
+        int port = test.percona_proxy->rwsplit_port;
         test.try_query(maxconn, "SELECT rand();");
         cout << "Normal mariadb-authentication on port " << port << (test.ok() ? " works.\n" : " failed.\n");
         mysql_close(maxconn);
     }
 
-    // Remove the linux user from the MaxScale node. Required for next test cases.
+    // Remove the linux user from the Percona Proxy node. Required for next test cases.
     mxs_vm.remove_linux_user(pam_user);
 
-    int normal_port = test.maxscale->rwsplit_port;
+    int normal_port = test.percona_proxy->rwsplit_port;
     int skip_auth_port = 4007;
 
     const char login_failed_msg[] = "Login to port %i failed.";
@@ -318,7 +318,7 @@ void test_main(TestConnections& test)
     }
 
     test.tprintf("Test complete. Cleaning up.");
-    // Cleanup: remove linux user and files from the MaxScale node.
+    // Cleanup: remove linux user and files from the Percona Proxy node.
     mxs_vm.remove_linux_user(pam_user);
     mxs_vm.run_cmd_sudo(read_shadow_off);
     mxs_vm.run_cmd_sudo(delete_pam_conf_cmd);
@@ -344,7 +344,7 @@ void test_pam_cleartext_plugin(TestConnections& test)
     int cleartext_port = 4010;
     const string setting_name = "pam_use_cleartext_plugin";
     const string setting_val = setting_name + "=1";
-    auto& mxs_vm = test.maxscale->vm_node();
+    auto& mxs_vm = test.percona_proxy->vm_node();
     auto& repl = *test.repl;
 
     auto check_cleartext_val = [&](int node, bool expected) {
@@ -379,7 +379,7 @@ void test_pam_cleartext_plugin(TestConnections& test)
 
     if (test.ok())
     {
-        // The user needs to be recreated on the MaxScale node.
+        // The user needs to be recreated on the Percona Proxy node.
         mxs_vm.add_linux_user(pam_user, pam_pw);
         // Using the standard password service 'passwd' is unreliable, as it can change between
         // distributions. Copy a minimal pam config and use it.
@@ -428,11 +428,11 @@ void test_pam_cleartext_plugin(TestConnections& test)
 void test_user_account_mapping(TestConnections& test)
 {
     // Test user account mapping (MXS-3475). For this, the pam_user_map.so-file is required.
-    // This file is installed with the server, but not with MaxScale. Depending on distro, the file
+    // This file is installed with the server, but not with Percona Proxy. Depending on distro, the file
     // may be in different places. Check both.
-    // Copy the pam mapping module to the MaxScale VM. Also copy pam service config and mapping config.
+    // Copy the pam mapping module to the Percona Proxy VM. Also copy pam service config and mapping config.
     int user_map_port = 4011;
-    auto& mxs_vm = test.maxscale->vm_node();
+    auto& mxs_vm = test.percona_proxy->vm_node();
     pam::copy_user_map_lib(test.repl->backend(0)->vm_node(), mxs_vm);
     pam::copy_map_config(mxs_vm);
 
@@ -440,7 +440,7 @@ void test_user_account_mapping(TestConnections& test)
 
     if (test.ok())
     {
-        // For this case, it's enough to create the Linux user on the MaxScale VM.
+        // For this case, it's enough to create the Linux user on the Percona Proxy VM.
         const char orig_user[] = "orig_pam_user";
         const char orig_pass[] = "orig_pam_pw";
         mxs_vm.add_linux_user(orig_user, orig_pass);
@@ -454,7 +454,7 @@ void test_user_account_mapping(TestConnections& test)
         string create_mapped_user_query = mxb::string_printf("create or replace user '%s'@'%%';",
                                                              mapped_user);
         conn->cmd(create_mapped_user_query);
-        // Try to login with wrong username so MaxScale updates accounts.
+        // Try to login with wrong username so Percona Proxy updates accounts.
         sleep(1);
         bool login_success = test_pam_login(test, user_map_port, "wrong", "wrong", "");
         test.expect(!login_success, "Login succeeded when it should not have.");
@@ -472,9 +472,9 @@ void test_user_account_mapping(TestConnections& test)
         mxs_vm.remove_linux_user(orig_user);
     }
 
-    // Delete config files from MaxScale VM.
+    // Delete config files from Percona Proxy VM.
     pam::delete_map_config(mxs_vm);
-    // Delete the library file from both the tester VM and MaxScale VM.
+    // Delete the library file from both the tester VM and Percona Proxy VM.
     pam::delete_user_map_lib(mxs_vm);
 }
 
@@ -482,7 +482,7 @@ void test_user_account_mapping(TestConnections& test)
 MYSQL* pam_login(TestConnections& test, int port, const string& user, const string& pass,
                  const string& database)
 {
-    const char* host = test.maxscale->ip4();
+    const char* host = test.percona_proxy->ip4();
     const char* db = nullptr;
     if (!database.empty())
     {

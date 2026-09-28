@@ -18,7 +18,7 @@
 #include <sstream>
 #include <vector>
 #include <utility>
-#include <maxscale/buffer.hh>
+#include <percona-proxy/buffer.hh>
 #include "nosqlcommon.hh"
 
 namespace nosql

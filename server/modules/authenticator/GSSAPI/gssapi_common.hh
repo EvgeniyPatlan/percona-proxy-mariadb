@@ -14,10 +14,10 @@
  */
 #define MXB_MODULE_NAME "GSSAPIAuth"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <gssapi.h>
-#include <maxscale/protocol/mariadb/authenticator.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/protocol/mariadb/authenticator.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
 
 /** Report GSSAPI errors */
 void report_error(OM_uint32 major, OM_uint32 minor, const char* failed_func);

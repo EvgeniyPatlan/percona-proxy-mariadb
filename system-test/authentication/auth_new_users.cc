@@ -2,7 +2,7 @@
 
 void test_main(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
 
     for (int i = 0; i < 100 && test.ok(); i++)
@@ -10,7 +10,7 @@ void test_main(TestConnections& test)
         std::string user = "test" + std::to_string(i);
         c.query("CREATE USER '" + user + "'@'%' IDENTIFIED BY 'pw'");
 
-        auto u = test.maxscale->rwsplit("");
+        auto u = test.percona_proxy->rwsplit("");
         u.set_credentials(user, "pw");
         test.expect(u.connect(), "Failed to connect: %s", u.error());
         test.expect(u.query("SELECT 1"), "Failed to query: %s", u.error()),

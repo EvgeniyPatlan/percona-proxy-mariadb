@@ -57,7 +57,7 @@ void PgMonitor::post_tick()
 {
 }
 
-bool PgMonitor::can_be_disabled(const mxs::MonitorServer& server, maxscale::Monitor::DisableType type,
+bool PgMonitor::can_be_disabled(const mxs::MonitorServer& server, percona_proxy::Monitor::DisableType type,
                                 std::string* errmsg_out) const
 {
     // If the server is the master, it cannot be drained. It can be set to maintenance, though.
@@ -134,7 +134,7 @@ extern "C" MXS_MODULE* MXS_CREATE_MODULE()
         "PostGreSQL monitor",
         "V1.0.0",
         MXS_NO_MODULE_CAPABILITIES,
-        &maxscale::MonitorApi<PgMonitor>::s_api,
+        &percona_proxy::MonitorApi<PgMonitor>::s_api,
         NULL,
         NULL,
         NULL,

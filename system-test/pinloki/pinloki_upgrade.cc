@@ -69,19 +69,19 @@ private:
         ninserts = insert(ninserts, 10);
         sync(master, slave);
 
-        int org_log_count = maxscale.rows("SHOW BINARY LOGS").size();
-        test.expect(org_log_count >= 3, "maxscale should have at least 3 logs");
+        int org_log_count = percona_proxy.rows("SHOW BINARY LOGS").size();
+        test.expect(org_log_count >= 3, "percona-proxy should have at least 3 logs");
 
         // Latest gtid
         auto gtid_pos = slave.field("SELECT @@gtid_slave_pos");
         test.tprintf("Gtid pos of \"old system\" %s", gtid_pos.c_str());
 
-        // Stop the slave and maxscale, remove the binlog data
-        test.tprintf("Stop maxscale and its slave. Remove binlog data.");
+        // Stop the slave and percona-proxy, remove the binlog data
+        test.tprintf("Stop percona-proxy and its slave. Remove binlog data.");
 
         slave.query("STOP SLAVE");
-        test.maxscale->stop_and_check_stopped();
-        auto res = test.maxscale->ssh_output("rm -rf /var/lib/maxscale/binlogs");
+        test.percona_proxy->stop_and_check_stopped();
+        auto res = test.percona_proxy->ssh_output("rm -rf /var/lib/percona-proxy/binlogs");
         test.expect(res.rc == 0, "Failed to remove binlog data %s",
                     strerror_r(res.rc, buf, sizeof(buf)));
 
@@ -91,13 +91,13 @@ private:
 
         test.tprintf("\"old system\" neutered. Restart and wait for ReplSYNC.");
 
-        // Bring maxscale up, and start the slave.
-        test.maxscale->start_and_check_started();
-        maxscale = Connection(test.maxscale->rwsplit());
-        test.expect(maxscale.connect(), "Pinloki connection should work: %s", maxscale.error());
+        // Bring percona-proxy up, and start the slave.
+        test.percona_proxy->start_and_check_started();
+        percona_proxy = Connection(test.percona_proxy->rwsplit());
+        test.expect(percona_proxy.connect(), "Pinloki connection should work: %s", percona_proxy.error());
 
-        maxscale.query(change_master_sql(test.repl->ip(0), test.repl->port(0)));
-        maxscale.query("START SLAVE");
+        percona_proxy.query(change_master_sql(test.repl->ip(0), test.repl->port(0)));
+        percona_proxy.query("START SLAVE");
         slave.query("START SLAVE");     // making sure the slave can be connected before sync
 
         sleep(12);      // It takes 10 seconds before pinloki starts reporting
@@ -107,19 +107,19 @@ private:
         test.log_includes("ReplSYNC: Reader waiting for primary to sync.");
 
         // Maxscale should not receive any binlog data yet
-        int zero_count = maxscale.rows("SHOW BINARY LOGS").size();
-        test.expect(zero_count == 0, "maxscale should not have any binary logs");
+        int zero_count = percona_proxy.rows("SHOW BINARY LOGS").size();
+        test.expect(zero_count == 0, "percona-proxy should not have any binary logs");
 
         // Tell pinloki where to start. Start the Writer.
-        maxscale.query("STOP SLAVE");
-        maxscale.query("SET GLOBAL gtid_slave_pos='" + gtid_pos + "'");
-        maxscale.query("START SLAVE");
+        percona_proxy.query("STOP SLAVE");
+        percona_proxy.query("SET GLOBAL gtid_slave_pos='" + gtid_pos + "'");
+        percona_proxy.query("START SLAVE");
 
-        // Highjack another slave to replicate from maxscale
+        // Highjack another slave to replicate from percona-proxy
         Connection slave2 {test.repl->get_connection(2)};
         slave2.connect();
         slave2.query("STOP SLAVE");
-        slave2.query(change_master_sql(maxscale.host().c_str(), maxscale.port(), GtidPos::CURRENT));
+        slave2.query(change_master_sql(percona_proxy.host().c_str(), percona_proxy.port(), GtidPos::CURRENT));
         slave2.query("START SLAVE");
 
         sync(master, slave);    // sync master => pinloki => slave
@@ -128,7 +128,7 @@ private:
         // Check that the master->pinloki->slave replication works
         ninserts = insert(ninserts, 10);
         sync_all();
-        sync(maxscale, slave2);     // sync pinloki => slave2
+        sync(percona_proxy, slave2);     // sync pinloki => slave2
         auto master_row_count = std::stoi(master.field("SELECT COUNT(*) FROM test.data"));
         auto slave_row_count = std::stoi(slave.field("SELECT COUNT(*) FROM test.data"));
         auto slave2_row_count = std::stoi(slave2.field("SELECT COUNT(*) FROM test.data"));

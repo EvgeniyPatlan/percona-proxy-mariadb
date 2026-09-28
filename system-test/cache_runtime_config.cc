@@ -36,9 +36,9 @@ class TestCase
 public:
     TestCase(TestConnections* pTest)
         : m_test(*pTest)
-        , m_conn(m_test.maxscale->readconn_master())
+        , m_conn(m_test.percona_proxy->readconn_master())
     {
-        m_test.expect(m_conn.connect(), "Could not connect to MaxScale.");
+        m_test.expect(m_conn.connect(), "Could not connect to Percona Proxy.");
 
         init();
     }
@@ -81,12 +81,12 @@ public:
         m_test.tprintf("Testing that caching is active.");
         test_if_cached(conn, Expect::CACHED);
 
-        string rules_file1 = m_test.maxscale->access_homedir() + rules_tail1;
+        string rules_file1 = m_test.percona_proxy->access_homedir() + rules_tail1;
 
         string command("sed -i \"s/cache_runtime_config/some_other_table/\" ");
         command += rules_file1;
 
-        m_test.maxscale->ssh_node(command.c_str(), true);
+        m_test.percona_proxy->ssh_node(command.c_str(), true);
 
         m_test.tprintf("Testing that caching is still active (rules changed, but should not have been read).");
         test_if_cached(conn, Expect::CACHED);
@@ -102,7 +102,7 @@ public:
         m_test.tprintf("Testing that caching is not active (rules should have been refreshed).");
         test_if_cached(conn, Expect::NOT_CACHED);
 
-        string rules_file2 = m_test.maxscale->access_homedir() + rules_tail2;
+        string rules_file2 = m_test.percona_proxy->access_homedir() + rules_tail2;
         maxrest.alter(path, {{ "rules", rules_file2 }});
 
         m_test.tprintf("Testing that caching is active (original rules read from new rules file).");
@@ -114,15 +114,15 @@ public:
         run(m_conn, "Cache-Shared");
 
         // Reset the situation to what it was.
-        string rules_file1 = m_test.maxscale->access_homedir() + rules_tail1;
+        string rules_file1 = m_test.percona_proxy->access_homedir() + rules_tail1;
 
         string command("sed -i \"s/some_other_table/cache_runtime_config/\" ");
         command += rules_file1;
 
-        m_test.maxscale->ssh_node(command.c_str(), true);
+        m_test.percona_proxy->ssh_node(command.c_str(), true);
 
-        Connection conn = m_test.maxscale->readconn_slave();
-        m_test.expect(conn.connect(), "Could not connect to MaxScale.");
+        Connection conn = m_test.percona_proxy->readconn_slave();
+        m_test.expect(conn.connect(), "Could not connect to Percona Proxy.");
 
         run(conn, "Cache-Thread-Specific");
     }
@@ -146,26 +146,26 @@ private:
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
     string from = mxt::SOURCE_DIR + rules_tail;
-    string to1 = test.maxscale->access_homedir() + rules_tail1;
-    string to2 = test.maxscale->access_homedir() + rules_tail2;
+    string to1 = test.percona_proxy->access_homedir() + rules_tail1;
+    string to2 = test.percona_proxy->access_homedir() + rules_tail2;
 
-    if (test.maxscale->copy_to_node(from, to1) && test.maxscale->copy_to_node(from, to2))
+    if (test.percona_proxy->copy_to_node(from, to1) && test.percona_proxy->copy_to_node(from, to2))
     {
         string command1 = string("chmod a+r ") + to1;
         string command2 = string("chmod a+r ") + to2;
 
-        if (test.maxscale->ssh_node(command1, true) == 0 && test.maxscale->ssh_node(command2, true) == 0)
+        if (test.percona_proxy->ssh_node(command1, true) == 0 && test.percona_proxy->ssh_node(command2, true) == 0)
         {
-            test.maxscale->start();
+            test.percona_proxy->start();
 
             if (test.ok())
             {
                 sleep(1);
-                test.maxscale->wait_for_monitor();
+                test.percona_proxy->wait_for_monitor();
 
                 TestCase tc(&test);
 
@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
             }
             else
             {
-                test.expect(false, "Could not start MaxScale.");
+                test.expect(false, "Could not start Percona Proxy.");
             }
         }
         else
@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        test.expect(false, "Could not copy rules files to maxscale_000.");
+        test.expect(false, "Could not copy rules files to percona_proxy_000.");
     }
 
     return test.global_result;

@@ -1,0 +1,237 @@
+#
+# This file contains parser tests, specifically created for Percona Proxy.
+#
+
+SELECT * INTO @a, @b FROM t1;
+SELECT * FROM t1 INTO @a, @b;
+
+SELECT a, b INTO @a, @b FROM t1;
+SELECT a, b FROM t1 INTO @a, @b;
+
+SELECT * FROM t1 INTO OUTFILE '/tmp/dump1';
+SELECT * INTO OUTFILE '/tmp/dump1' FROM t1;
+
+SELECT * FROM t1 INTO DUMPFILE '/tmp/dump1';
+SELECT * INTO DUMPFILE '/tmp/dump1' FROM t1;
+
+SHOW SLAVE STATUS;
+SHOW MASTER STATUS;
+SHOW ALL SLAVES STATUS;
+SHOW SLAVE HOSTS;
+SHOW WARNINGS;
+
+
+CALL f1();
+CALL db1.f1();
+
+SELECT f1();
+SELECT db.f1();
+SELECT f1() FROM tbl1;
+SELECT db.f1() FROM db.tbl1;
+
+SHOW GRANTS;
+
+CREATE VIEW mysqltest.dummyview AS SELECT dummyfield FROM mysqltest.dummytable;
+
+SELECT fld FROM tbl WHERE GRANTEE = '\'dummy\'@\'localhost\'';
+
+SELECT TABLE_SCHEMA, TABLE_NAME, GROUP_CONCAT(PRIVILEGE_TYPE ORDER BY PRIVILEGE_TYPE ASC ,TABLE_NAME SEPARATOR ', ') AS PRIVILEGES FROM TABLE_PRIVILEGES WHERE GRANTEE = '\'dummy\'@\'localhost\'' GROUP BY TABLE_SCHEMA, TABLE_NAME;
+SELECT TABLE_SCHEMA, TABLE_NAME, GROUP_CONCAT(PRIVILEGE_TYPE SEPARATOR ', ') AS PRIVILEGES FROM TABLE_PRIVILEGES WHERE GRANTEE = '\'dummy\'@\'localhost\'' GROUP BY TABLE_SCHEMA, TABLE_NAME;
+SELECT DISTINCT i, GROUP_CONCAT(  d1, d2 ORDER BY d1, d2 ) FROM t1 a1 NATURAL JOIN t1 a2 GROUP BY i WITH ROLLUP;
+
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+SET GLOBAL TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+SET TRANSACTION READ ONLY;
+SET TRANSACTION READ WRITE;
+
+set autocommit=0;
+set autocommit=1;
+set @@autocommit=0;
+set @@autocommit=1;
+SET autocommit=ON;
+SET autocommit=true;
+SET autocommit=FALSE;
+SET autocommit=Off;
+
+LOAD DATA LOCAL INFILE '/tmp/data.csv' INTO TABLE test.t1;
+
+START TRANSACTION;
+START TRANSACTION READ ONLY;
+START TRANSACTION READ WRITE;
+START TRANSACTION READ ONLY, WITH CONSISTENT SNAPSHOT;
+START TRANSACTION READ WRITE, WITH CONSISTENT SNAPSHOT;
+START TRANSACTION WITH CONSISTENT SNAPSHOT, READ ONLY;
+START TRANSACTION WITH CONSISTENT SNAPSHOT, READ WRITE;
+
+BEGIN;
+BEGIN WORK;
+COMMIT;
+COMMIT WORK;
+ROLLBACK;
+ROLLBACK WORK;
+
+SAVEPOINT id;
+ROLLBACK WORK TO SAVEPOINT id;
+ROLLBACK TO SAVEPOINT id;
+ROLLBACK WORK TO id;
+ROLLBACK TO id;
+RELEASE SAVEPOINT id;
+
+SELECT her FROM (SELECT @@server_id as her) as t WHERE her REGEXP '.*';
+
+select * from db1.t1 union select * from db2.t2;
+
+# Names is a keyword as well
+select names from t;
+
+call p1();
+call p1(@var);
+
+create or replace table t (a int);
+
+# MXS-1688
+select id from db2.t1 where DATE_SUB("2017-06-15", INTERVAL 10 DAY) < "2017-06-15";
+select id from db2.t1 where SUBDATE("2017-06-15", INTERVAL 10 DAY) < "2017-06-15";
+select id from db2.t1 where DATE_ADD("2017-06-15", INTERVAL 10 DAY) < "2017-06-15";
+select id from db2.t1 where ADDDATE("2017-06-15", INTERVAL 10 DAY) < "2017-06-15";
+SELECT '2008-12-31 23:59:59' + INTERVAL 1 SECOND;
+SELECT '2005-01-01' - INTERVAL 1 SECOND;
+
+# MXS-1730
+SELECT id as engine FROM users WHERE id = 1;
+
+# MXS-1787
+CALL p1((SELECT f1()), ?);
+
+# MXS-1829
+SELECT PREVIOUS VALUE FOR SEQ;
+
+# MXS-1874
+SET STATEMENT max_statement_time=30 FOR SELECT seq FROM seq_0_to_100000;
+
+# MXS-1935
+PREPARE a FROM @sql;
+
+# MXS-2207
+SET STATEMENT max_statement_time=30 FOR UPDATE tbl SET a = 42;
+
+# MXS-2242
+# This applies also to X() and Y() that are synonyms to ST_X() and ST_Y().
+# However, as the embedded parser currently appears to silenty replace X()
+# with ST_X() and Y() with ST_Y(), something that pp_sqlite does not do,
+# better to not check for X() and Y(), as that would cause a mismatch in the
+# results of qc_mysqlembedded and pp_sqlite.
+SELECT ST_X(coordinates), ST_Y(coordinates) FROM data;
+
+# MXS-2248
+SELECT curdate() + interval '60' day;
+
+# MXS-2431
+XA BEGIN 'xid';
+XA END 'xid';
+XA PREPARE 'xid';
+XA COMMIT 'xid';
+XA ROLLBACK 'xid'
+XA RECOVER 'xid';
+
+# MXS-2688
+SET @saved_cs_client= @@character_set_client;
+
+# MXS-2699
+SELECT NEXTVAL(id_generator), context FROM t1 WHERE (a,b,c) >= (1,2,3);
+select soundex(_utf8mb4 0xD091D092D093) as vx, gray_user_tag from user_extends where user_id > last_insert_id();
+
+# MXS-2713
+SET PASSWORD FOR 'user'@'10.0.0.1'='*C50EB75D7CB4C76B5264218B92BC69E6815B057A';
+
+# MXS-2732
+SELECT * FROM t WHERE f = _latin1'a';
+# This was actually in the bug-report that was made due to a leak.
+CREATE VIEW v1 AS select sql_no_cache T0001.SERVERNAME AS SERVERNAME, T0003.TABNAME AS TABNAME,T0003.LOCAL_NAME AS LOCAL_NAME,T0002.DBINSTANCE AS DBINSTANCE from t2 T0001 join t1 T0002 join t3 T0003 where ((T0002.SERVERGRP = T0001.SERVERGRP) and (T0002.SERVERGRP = T0003.SERVERGRP) and (T0003.MAPSTATE = _latin1'A') and (T0003.ACTSTATE = _latin1' '));
+
+# MXS-2432
+RESET QUERY CACHE;
+RESET MASTER;
+RESET SLAVE;
+
+# MXS-2508
+SELECT 10 DIV 2;
+SELECT 10 MOD 2;
+
+# MXS-2227
+OPTIMIZE TABLE t;
+OPTIMIZE NO_WRITE_TO_BINLOG TABLE t;
+OPTIMIZE LOCAL TABLE t;
+OPTIMIZE LOCAL TABLE t NOWAIT;
+OPTIMIZE LOCAL TABLE t WAIT 42;
+
+# MXS-3292
+USE `test`;
+
+# MXS-3404
+# qc_mysqlembedded claims that "trim(LEADING ...)" is ltrim, to avoid that we use BOTH.
+SELECT rdba_test() AS crmid, trim(BOTH 0 FROM @@server_id);
+SELECT trim(@@server_id);
+SELECT trim("text");
+SELECT trim(BOTH " " FROM "  text");
+SELECT trim(BOTH FROM "  text");
+
+# MXS-3445
+SET DEFAULT ROLE 'MBK';
+SET DEFAULT ROLE NONE;
+SET DEFAULT ROLE 'MBK' FOR 'user'@'host';
+
+# MXS-3535
+# pp_sqlite misses symbols/vars used in an ON.
+select E.id  from bill_base  as T  inner join pb_meta_filter_item on A.itemName = @cFilterItemName;
+
+# MXS-3585
+# pp_sqlite crashes.
+update mailbox_queue as mb inner join ( select * from mailbox_queue where parsingDone=0 and scheduler=0 and testbed like "%an%" order by mailbox_queue.id limit 20) as mb2 on mb.id=mb2.id set mb.scheduler="2";
+
+# MXS-3589
+# "current_timestamp" is handled explicitly by sqlite3, which causes the function usage
+# to be parsed as token + parenthesis and not id + parenthesis.
+SET STATEMENT max_statement_time = 60 FOR INSERT INTO t (f) VALUES (current_timestamp());
+
+# MXS-3949
+# "transaction" is always parsed as a registered keyword. It should be parsed as an
+# identifier if it cannot be used as a keyword.
+SELECT uuid FROM Transaction LIMIT 1;
+
+# MXS-4614
+# This not the beginning of a transaction but of a non atomic block. qc_mysqlembedded
+# classifies as QUERY_TYPE_WRITE but qc_sqlite used to classify as QUERY_TYPE_BEGIN_TRX.
+BEGIN NOT ATOMIC SELECT 1; SELECT 2; END;
+
+# MXS-4080
+# "sequence" is always parsed as a keyword.
+DELETE FROM obj_stat_log_seq WHERE sequence < 6000;
+
+# MXS-4307
+# Does not parse CONVERT() properly.
+select CONVERT(substring(receive_code,8), UNSIGNED INTEGER) FROM t;
+
+# MXS-4413
+# pp_sqlite misses QUERY_TYPE_WRITE and QUERY_TYPE_USERVAR_READ
+UPDATE objects o,
+(
+    SELECT newIndex, o_id FROM (SELECT @n := IF(@n = '2' - 1,@n + 2,@n + 1) AS newIndex, o_id
+    FROM objects,
+    (SELECT @n := -1) variable
+     WHERE o_id != '2142' AND o_parentId = '343' AND o_type IN ('object','variant','folder')
+     ORDER BY o_index, o_id='2142'
+    ) tmp
+) order_table
+SET o.o_index = order_table.newIndex;
+
+# MXS-4625
+XA START 0x03, 0x02, 0x01;
+XA COMMIT 0x01;
+XA END 0x01
+
+# MXS-4714
+# qc_sqlite claims the affected tables would be db1.table1 and db2, and not
+# db1.table1 and db2.table2.
+RENAME TABLE db1.table1 TO db2.table2;

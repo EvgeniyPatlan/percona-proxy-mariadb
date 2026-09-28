@@ -27,7 +27,7 @@ const char* zPwd  = "maxuser";
 
 void drop(TestConnections& test)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pMysql, "DROP TABLE IF EXISTS cache_users");
 }
@@ -36,7 +36,7 @@ void create(TestConnections& test)
 {
     drop(test);
 
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pMysql, "CREATE TABLE cache_users (f INT)");
 }
@@ -57,9 +57,9 @@ void run(TestConnections& test)
 {
     create(test);
 
-    Connection c1 = test.maxscale->rwsplit();
+    Connection c1 = test.percona_proxy->rwsplit();
     c1.connect();
-    Connection c2 = test.maxscale->rwsplit();
+    Connection c2 = test.percona_proxy->rwsplit();
     c2.set_credentials(zUser, zPwd);
     c2.connect();
 
@@ -86,22 +86,22 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    auto maxscales = test.maxscale;
+    auto percona_proxies = test.percona_proxy;
 
-    if (maxscales->connect_rwsplit() == 0)
+    if (percona_proxies->connect_rwsplit() == 0)
     {
         test.tprintf("Testing users=mixed.");
         run(test);
 
-        maxscales->ssh_node(
-            "sed -i \"s/users=mixed/users=isolated/\" /etc/maxscale.cnf",
+        percona_proxies->ssh_node(
+            "sed -i \"s/users=mixed/users=isolated/\" /etc/percona-proxy.cnf",
             true);
-        maxscales->restart_maxscale();
+        percona_proxies->restart_percona_proxy();
 
-        // To be certain that MaxScale has started.
+        // To be certain that Percona Proxy has started.
         sleep(3);
 
-        if (maxscales->connect_rwsplit() == 0)
+        if (percona_proxies->connect_rwsplit() == 0)
         {
             test.tprintf("Testing users=isolated.");
             run(test);

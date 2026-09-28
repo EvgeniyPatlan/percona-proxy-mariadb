@@ -30,7 +30,7 @@ const char grp2_pw1[] = "grp2_pw1";
 
 const char auth_dir_fmt[] = "%s/authentication/%s";
 const char tmp_dir_fmt[] = "/tmp/%s";
-const string secrets_file_dst = "/var/lib/maxscale/.secrets";
+const string secrets_file_dst = "/var/lib/percona-proxy/.secrets";
 
 void prepare_grp_test(TestConnections& test);
 void cleanup_grp_test(TestConnections& test);
@@ -43,11 +43,11 @@ void test_user(TestConnections& test, int port, const string& user, const string
 void test_main(TestConnections& test)
 {
     auto test_dir = mxt::SOURCE_DIR;
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& mxs_vm = mxs.vm_node();
     auto& repl = *test.repl;
 
-    // Copy user accounts and user passwords files to MaxScale VM.
+    // Copy user accounts and user passwords files to Percona Proxy VM.
     const char users_file[] = "custom_authentication_user_accounts.json";
     string accounts_file_src = mxb::string_printf(auth_dir_fmt, test_dir, users_file);
     string accounts_file_dst = mxb::string_printf(tmp_dir_fmt, users_file);
@@ -58,7 +58,7 @@ void test_main(TestConnections& test)
     string passwords_file_dst = mxb::string_printf(tmp_dir_fmt, pwds_file);
     mxs_vm.copy_to_node(passwords_file_src, passwords_file_dst);
 
-    // Copy the second user accounts file and manual mapping file to MaxScale VM.
+    // Copy the second user accounts file and manual mapping file to Percona Proxy VM.
     const char users_file2[] = "custom_authentication_user_accounts2.json";
     string accounts_file2_src = mxb::string_printf(auth_dir_fmt, test_dir, users_file2);
     string accounts_file2_dst = mxb::string_printf(tmp_dir_fmt, users_file2);
@@ -69,7 +69,7 @@ void test_main(TestConnections& test)
     string mapping_file_dst = mxb::string_printf(tmp_dir_fmt, mapping_file);
     mxs_vm.copy_to_node(mapping_file_src, mapping_file_dst);
 
-    // Copy basic pam config to MaxScale VM.
+    // Copy basic pam config to Percona Proxy VM.
     const char pam_config[] = "pam_config_simple";
     string pam_cfg_src = mxb::string_printf(auth_dir_fmt, test_dir, pam_config);
     string pam_cfg_dst = mxb::string_printf("/etc/pam.d/%s", pam_config);
@@ -91,11 +91,11 @@ void test_main(TestConnections& test)
         const char user[] = "batman";
         const char pw[] = "iambatman";
 
-        // Create databases for real so that MaxScale does not complain when logging in to them.
+        // Create databases for real so that Percona Proxy does not complain when logging in to them.
         auto server_conn = repl.backend(0)->open_connection();
         server_conn->try_cmd_f("create database %s;", db1);
         server_conn->try_cmd_f("create database %s;", db2);
-        mxs.maxctrl("reload service RWSplit-Router");
+        mxs.percona_proxyctl("reload service RWSplit-Router");
         sleep(1);
 
         auto conn = mxs.try_open_rwsplit_connection(user, pw, db1);
@@ -116,7 +116,7 @@ void test_main(TestConnections& test)
     if (test.ok())
     {
         test.tprintf("Prepare to test user mapping.");
-        // Copy the pam mapping module to the MaxScale VM. Also copy pam service config and mapping config.
+        // Copy the pam mapping module to the Percona Proxy VM. Also copy pam service config and mapping config.
         auto* srv = repl.backend(0);
         pam::copy_user_map_lib(srv->vm_node(), mxs_vm);
         pam::copy_map_config(mxs_vm);
@@ -154,7 +154,7 @@ void test_main(TestConnections& test)
         if (test.ok())
         {
             // Next, test user when the final user is with password. Allow users to only log in from
-            // MaxScale ip.
+            // Percona Proxy ip.
             test.tprintf("Prepare to test group mapping.");
             prepare_grp_test(test);
 
@@ -251,7 +251,7 @@ void test_main(TestConnections& test)
 
 void prepare_grp_test(TestConnections& test)
 {
-    auto& mxs_vm = test.maxscale->vm_node();
+    auto& mxs_vm = test.percona_proxy->vm_node();
     // Add some more Linux users and assign them to groups.
     mxs_vm.add_linux_user(grp1_user1, grp1_pw1);
     mxs_vm.add_linux_user(grp1_user2, grp1_pw2);
@@ -263,7 +263,7 @@ void prepare_grp_test(TestConnections& test)
 
 void cleanup_grp_test(TestConnections& test)
 {
-    auto& mxs_vm = test.maxscale->vm_node();
+    auto& mxs_vm = test.percona_proxy->vm_node();
 
     mxs_vm.remove_linux_user(grp1_user1);
     mxs_vm.remove_linux_user(grp1_user2);
@@ -275,14 +275,14 @@ void cleanup_grp_test(TestConnections& test)
 
 void copy_secrets(TestConnections& test)
 {
-    auto& mxs_vm = test.maxscale->vm_node();
+    auto& mxs_vm = test.percona_proxy->vm_node();
     const char secrets_filename[] = "custom_authentication_secrets.json";
-    // Copy secrets-file to MaxScale VM. Direct copy seems to fail, copy to temp first.
+    // Copy secrets-file to Percona Proxy VM. Direct copy seems to fail, copy to temp first.
     string secrets_file_src = mxb::string_printf(auth_dir_fmt, mxt::SOURCE_DIR, secrets_filename);
     mxs_vm.copy_to_node_sudo(secrets_file_src, secrets_file_dst);
 
     // The .secrets-file requires specific permissions.
-    mxs_vm.run_cmd_output_sudof("chown maxscale:maxscale %s", secrets_file_dst.c_str());
+    mxs_vm.run_cmd_output_sudof("chown percona-proxy:percona-proxy %s", secrets_file_dst.c_str());
     mxs_vm.run_cmd_output_sudof("chmod u=r,g-rwx,o-rwx %s", secrets_file_dst.c_str());
 }
 
@@ -295,7 +295,7 @@ void test_user(TestConnections& test, int port, const string& user, const string
 void test_user(TestConnections& test, int port, const string& user, const string& pw, const string& db,
                const string& final_user, const string& final_host)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto conn = mxs.try_open_connection(port, user, pw, db);
     if (conn->is_open())
     {
@@ -330,6 +330,6 @@ void test_user(TestConnections& test, int port, const string& user, const string
 int main(int argc, char** argv)
 {
     TestConnections test;
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return test.run_test(argc, argv, test_main);
 }

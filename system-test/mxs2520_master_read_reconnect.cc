@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
                 && server.query("LOCK TABLE t1 WRITE"),
                 "Failed to set up test: %s", server.error());
 
-    auto rws = test.maxscale->rwsplit();
+    auto rws = test.percona_proxy->rwsplit();
     rws.set_credentials("bob", "bob");
     test.expect(rws.connect()
                 && rws.query("SELECT 1")    // Makes sure the connection is opened

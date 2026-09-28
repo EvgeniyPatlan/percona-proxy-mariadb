@@ -15,7 +15,7 @@
 
 #include "config.hh"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <memory>
 #include <string>

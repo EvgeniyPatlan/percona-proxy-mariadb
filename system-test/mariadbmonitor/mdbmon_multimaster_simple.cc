@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     auto master = ServerInfo::master_st;
     auto slave = ServerInfo::slave_st;

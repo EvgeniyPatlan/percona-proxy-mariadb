@@ -43,7 +43,7 @@ namespace maxtest
 {
 Config::Config(TestConnections* parent)
     : test_(parent)
-    , mxs(test_->maxscale)
+    , mxs(test_->percona_proxy)
 {
 }
 
@@ -55,13 +55,13 @@ void Config::add_server(int num, Expect expect)
 {
     test_->tprintf("Adding server%i to services and monitors.", num);
     const char link[] = "link service %s server%d";
-    mxs->maxctrlf(expect, link, SERVICE_NAME1, num);
-    mxs->maxctrlf(expect, link, SERVICE_NAME2, num);
-    mxs->maxctrlf(expect, link, SERVICE_NAME3, num);
+    mxs->percona_proxyctlf(expect, link, SERVICE_NAME1, num);
+    mxs->percona_proxyctlf(expect, link, SERVICE_NAME2, num);
+    mxs->percona_proxyctlf(expect, link, SERVICE_NAME3, num);
 
     for (auto& a : created_monitors_)
     {
-        mxs->maxctrlf(expect, "link monitor %s server%d", a.c_str(), num);
+        mxs->percona_proxyctlf(expect, "link monitor %s server%d", a.c_str(), num);
     }
 }
 
@@ -69,13 +69,13 @@ void Config::remove_server(int num)
 {
     test_->tprintf("Removing server%i from services and monitors.", num);
     const char remove[] = "unlink service %s server%d";
-    mxs->maxctrlf(remove, SERVICE_NAME1, num);
-    mxs->maxctrlf(remove, SERVICE_NAME2, num);
-    mxs->maxctrlf(remove, SERVICE_NAME3, num);
+    mxs->percona_proxyctlf(remove, SERVICE_NAME1, num);
+    mxs->percona_proxyctlf(remove, SERVICE_NAME2, num);
+    mxs->percona_proxyctlf(remove, SERVICE_NAME3, num);
 
     for (auto& a : created_monitors_)
     {
-        mxs->maxctrlf("unlink monitor %s server%d", a.c_str(), num);
+        mxs->percona_proxyctlf("unlink monitor %s server%d", a.c_str(), num);
     }
 }
 
@@ -84,8 +84,8 @@ void Config::add_created_servers(const char* object)
     for (auto a : created_servers_)
     {
         // Not pretty but it should work
-        auto res1 = mxs->maxctrl(mxb::string_printf("link service %s server%d", object, a));
-        auto res2 = mxs->maxctrl(mxb::string_printf("link monitor %s server%d", object, a));
+        auto res1 = mxs->percona_proxyctl(mxb::string_printf("link service %s server%d", object, a));
+        auto res2 = mxs->percona_proxyctl(mxb::string_printf("link monitor %s server%d", object, a));
         test_->expect((res1.rc != 0) != (res2.rc != 0),
                       "Expected one link command to succeed and the other to fail.");
     }
@@ -93,7 +93,7 @@ void Config::add_created_servers(const char* object)
 
 void Config::destroy_server(int num, Expect expect)
 {
-    auto res = mxs->maxctrlf(expect, "destroy server server%d", num);
+    auto res = mxs->percona_proxyctlf(expect, "destroy server server%d", num);
     if (res.rc == 0)
     {
         created_servers_.erase(num);
@@ -118,7 +118,7 @@ void Config::create_server(int num, Expect expect)
                 key.c_str(), cert.c_str(), ca_cert.c_str());
     }
     auto* srv = test_->repl->backend(num);
-    auto res = mxs->maxctrlf(expect, "create server server%d %s %d %s",
+    auto res = mxs->percona_proxyctlf(expect, "create server server%d %s %d %s",
                              num, srv->ip_private(), srv->port(), ssl_line);
     if (res.rc == 0)
     {
@@ -128,22 +128,22 @@ void Config::create_server(int num, Expect expect)
 
 void Config::alter_server(int num, const char* key, const char* value)
 {
-    mxs->maxctrlf("alter server server%d %s %s", num, key, value);
+    mxs->percona_proxyctlf("alter server server%d %s %s", num, key, value);
 }
 
 void Config::alter_server(int num, const char* key, int value)
 {
-    mxs->maxctrlf("alter server server%d %s %d", num, key, value);
+    mxs->percona_proxyctlf("alter server server%d %s %d", num, key, value);
 }
 
 void Config::alter_server(int num, const char* key, float value)
 {
-    mxs->maxctrlf("alter server server%d %s %f", num, key, value);
+    mxs->percona_proxyctlf("alter server server%d %s %f", num, key, value);
 }
 
 void Config::create_monitor(const char* name, const char* module, int interval)
 {
-    mxs->maxctrlf("create monitor %s %s monitor_interval=%dms user=%s password=%s",
+    mxs->percona_proxyctlf("create monitor %s %s monitor_interval=%dms user=%s password=%s",
                   name, module, interval, mxs->user_name().c_str(),
                   mxs->password().c_str());
     created_monitors_.insert(std::string(name));
@@ -151,27 +151,27 @@ void Config::create_monitor(const char* name, const char* module, int interval)
 
 void Config::alter_monitor(const char* name, const char* key, const char* value)
 {
-    mxs->maxctrlf("alter monitor %s %s %s", name, key, value);
+    mxs->percona_proxyctlf("alter monitor %s %s %s", name, key, value);
 }
 
 void Config::alter_monitor(const char* name, const char* key, int value)
 {
-    mxs->maxctrlf("alter monitor %s %s %d", name, key, value);
+    mxs->percona_proxyctlf("alter monitor %s %s %d", name, key, value);
 }
 
 void Config::alter_monitor(const char* name, const char* key, float value)
 {
-    mxs->maxctrlf("alter monitor %s %s %f", name, key, value);
+    mxs->percona_proxyctlf("alter monitor %s %s %f", name, key, value);
 }
 
 void Config::start_monitor(const char* name)
 {
-    mxs->maxctrlf("start monitor %s", name);
+    mxs->percona_proxyctlf("start monitor %s", name);
 }
 
 void Config::destroy_monitor(const char* name)
 {
-    mxs->maxctrlf("destroy monitor %s", name);
+    mxs->percona_proxyctlf("destroy monitor %s", name);
     created_monitors_.erase(std::string(name));
 }
 
@@ -179,15 +179,15 @@ void Config::restart_monitors()
 {
     for (auto& a : created_monitors_)
     {
-        mxs->maxctrlf("stop monitor \"%s\"", a.c_str());
-        mxs->maxctrlf("start monitor \"%s\"", a.c_str());
+        mxs->percona_proxyctlf("stop monitor \"%s\"", a.c_str());
+        mxs->percona_proxyctlf("start monitor \"%s\"", a.c_str());
     }
 }
 
 void Config::create_listener(Config::Service service, Expect expect)
 {
     int i = static_cast<int>(service);
-    mxs->maxctrlf(expect, "create listener %s %s %d",
+    mxs->percona_proxyctlf(expect, "create listener %s %s %d",
                   services[i].service, services[i].listener, services[i].port);
 }
 
@@ -198,7 +198,7 @@ void Config::create_ssl_listener(Config::Service service)
     auto cert = mxs->cert_path();
     auto ca_cert = mxs->ca_cert_path();
 
-    mxs->maxctrlf("create listener %s %s %d "
+    mxs->percona_proxyctlf("create listener %s %s %d "
                   "ssl=true "
                   "ssl_key=%s ssl_cert=%s ssl_ca=%s ",
                   services[i].service, services[i].listener, services[i].port,
@@ -208,7 +208,7 @@ void Config::create_ssl_listener(Config::Service service)
 void Config::destroy_listener(Config::Service service)
 {
     int i = static_cast<int>(service);
-    mxs->maxctrlf("destroy listener %s %s", services[i].service, services[i].listener);
+    mxs->percona_proxyctlf("destroy listener %s %s", services[i].service, services[i].listener);
 }
 
 void Config::create_all_listeners(Expect expect)

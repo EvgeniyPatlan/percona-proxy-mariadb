@@ -24,12 +24,12 @@
 #include <string>
 #include <sstream>
 #include <maxbase/string.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/log.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/trxboundaryparser.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/log.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/trxboundaryparser.hh>
 #ifdef BUILD_POSTGRES
 #include "../../protocol/Postgres/pgparser.hh"
 #endif
@@ -432,7 +432,7 @@ static uint32_t get_trx_type_mask_using_qc(const Parser& parser, const GWBUF& st
 
 static uint32_t get_trx_type_mask_using_parser(std::string_view sql)
 {
-    maxscale::TrxBoundaryParser parser;
+    percona_proxy::TrxBoundaryParser parser;
 
     return parser.type_mask_of(sql);
 }

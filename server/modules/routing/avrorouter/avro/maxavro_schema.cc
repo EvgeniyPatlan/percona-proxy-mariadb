@@ -15,7 +15,7 @@
 #include "maxavro_internal.hh"
 #include <string.h>
 #include <maxbase/assert.hh>
-#include <maxscale/log.hh>
+#include <percona-proxy/log.hh>
 
 static const MAXAVRO_SCHEMA_FIELD types[MAXAVRO_TYPE_MAX] =
 {

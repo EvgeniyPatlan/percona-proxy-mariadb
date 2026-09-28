@@ -83,12 +83,12 @@ int main(int argc, char** argv)
     test.galera->connect();
     auto galera_ids = test.galera->get_all_server_ids_str();
 
-    Connection rws = test.maxscale->rwsplit();
+    Connection rws = test.percona_proxy->rwsplit();
     test.expect(rws.connect(), "RWS connection should work: %s", rws.error());
     rws.query("FLUSH LOGS");
     auto gtid_pos = rws.field("SELECT @@gtid_binlog_pos, @@last_insert_id", 0);
 
-    Connection pinloki = test.maxscale->readconn_master();
+    Connection pinloki = test.percona_proxy->readconn_master();
     test.expect(pinloki.connect(), "Pinloki connection should work: %s", pinloki.error());
 
     pinloki.query("STOP SLAVE");

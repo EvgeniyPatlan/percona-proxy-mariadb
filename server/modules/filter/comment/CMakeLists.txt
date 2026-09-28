@@ -2,6 +2,6 @@ add_library(comment SHARED
   commentfilter.cc
   commentfiltersession.cc
   commentconfig.cc)
-target_link_libraries(comment maxscale-common)
+target_link_libraries(comment percona-proxy-common)
 set_target_properties(comment PROPERTIES VERSION "1.0.0" LINK_FLAGS -Wl,-z,defs)
 install_module(comment core)

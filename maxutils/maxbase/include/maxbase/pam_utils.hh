@@ -77,7 +77,7 @@ struct AuthSettings
     std::string service;    /**< Pam service to log in */
 
     /**
-     * Enable if the pam service may map the input username to something else. When true, MaxScale will
+     * Enable if the pam service may map the input username to something else. When true, Percona Proxy will
      * fetch the mapped username and will not run 'pam_acct_mgmt' after authentication, as it would likely
      * fail. */
     bool mapping_on {false};

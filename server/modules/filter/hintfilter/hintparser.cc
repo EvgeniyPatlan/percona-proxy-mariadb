@@ -16,14 +16,14 @@
 
 #include <unordered_map>
 
-#include <maxscale/filter.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 #include "mysqlhint.hh"
 
 /**
- * Code for parsing SQL comments and processing them into MaxScale hints
+ * Code for parsing SQL comments and processing them into Percona Proxy hints
  */
 
 using InputIter = HintParser::InputIter;
@@ -167,7 +167,7 @@ static const std::unordered_map<std::string, TOKEN_VALUE> tokens
     {"end", TOK_STOP},
     {"last", TOK_LAST},
     {"master", TOK_MASTER},
-    {"maxscale", TOK_MAXSCALE},
+    {"percona-proxy", TOK_MAXSCALE},
     {"prepare", TOK_PREPARE},
     {"route", TOK_ROUTE},
     {"server", TOK_SERVER},

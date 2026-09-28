@@ -23,7 +23,7 @@
 
 /*
  *  Vilho Raatikka 2014-11-14 09:03:59 UTC
- *  Enabling use of root user in MaxScale causes the following being printed to error log. Disabling the
+ *  Enabling use of root user in Percona Proxy causes the following being printed to error log. Disabling the
  * setting enable_root_user prevents these errors.
  *
  *  2014-11-14 11:02:47   Error : getaddrinfo failed for [linux-yxkl.site] due [Name or service not known]
@@ -43,15 +43,15 @@
  *  The second message root@127.0.0.1 may be related to a previous root@localhost entry.
  *
  *
- *  Names are resolved to IPs and added into maxscale hashtable: localhost and 127.0.0.1 result in a
+ *  Names are resolved to IPs and added into percona-proxy hashtable: localhost and 127.0.0.1 result in a
  * duplicated entry
  *
  *
  *
  *  A standard root@localhost only entry doesn't cause any logged message
  *  Comment 3 Vilho Raatikka 2014-11-14 09:24:56 UTC
- *  Problem is that they seem critical errors but MaxScale still works like nothing had happened. If the
- * default hostname of the server host is not good, what does it mean for MaxScale? Doest it still accept root
+ *  Problem is that they seem critical errors but Percona Proxy still works like nothing had happened. If the
+ * default hostname of the server host is not good, what does it mean for Percona Proxy? Doest it still accept root
  * user or not? Why it only causes trouble for root user but not for others?
  *
  *  If the error has no effect in practice, then log entries could be better in debug log.
@@ -87,7 +87,7 @@
  *  > The 'enable_root_user' option only allows selecting 'root' user from backend
  *  > databases.
  *
- *  I think that enable_root_user means : MaxScale user can use her 'root' account also with MaxScale.
+ *  I think that enable_root_user means : Percona Proxy user can use her 'root' account also with Percona Proxy.
  *
  *  Technically your explanation may be correct and I'm not against that. What I mean is that the user may not
  * want to worry about what is 'loaded' or 'selected' under the cover.
@@ -123,7 +123,7 @@
  *  >
  *  > foo@localhost and root@localhost are loaded
  *  Comment 6 Massimiliano 2014-11-14 11:00:04 UTC
- *  MaxScale MySQL authentication is based on user@host
+ *  Percona Proxy MySQL authentication is based on user@host
  *
  *
  *  You may have such situation:
@@ -153,16 +153,16 @@
  *
  *  2014-12-10 17:35:43   Error : getaddrinfo failed for [::1] due [Address family for hostname not supported]
  *  2014-12-10 17:35:43   Warning: Failed to add user root@::1 for service [RW Split Router]. This user will
- * be unavailable via MaxScale.
+ * be unavailable via Percona Proxy.
  *  2014-12-10 17:35:43   Warning: Failed to add user root@127.0.0.1 for service [RW Split Router]. This user
- * will be unavailable via MaxScale.
+ * will be unavailable via Percona Proxy.
  *  2014-12-10 17:35:43   Error : Failed to start router for service 'HTTPD Router'.
  *  2014-12-10 17:35:43   Error : Failed to start service 'HTTPD Router'.
  *  2014-12-10 17:36:08   Error : getaddrinfo failed for [::1] due [Address family for hostname not supported]
  *  2014-12-10 17:36:08   Warning: Failed to add user root@::1 for service [RW Split Router]. This user will
- * be unavailable via MaxScale.
+ * be unavailable via Percona Proxy.
  *  2014-12-10 17:36:08   Warning: Failed to add user root@127.0.0.1 for service [RW Split Router]. This user
- * will be unavailable via MaxScale.
+ * will be unavailable via Percona Proxy.
  *
  *
  *  Is it expected?
@@ -189,14 +189,14 @@
  *
  *  and you should see root@% you added with the grant
  *  Comment 9 Timofey Turenko 2014-12-12 21:59:30 UTC
- *  Following is present in the error log just after MaxScale start:
+ *  Following is present in the error log just after Percona Proxy start:
  *
  *
  *  2014-12-12 23:49:07   Error : getaddrinfo failed for [::1] due [Address family for hostname not supported]
  *  2014-12-12 23:49:07   Warning: Failed to add user root@::1 for service [RW Split Router]. This user will
- * be unavailable via MaxScale.
+ * be unavailable via Percona Proxy.
  *  2014-12-12 23:49:07   Warning: Failed to add user root@127.0.0.1 for service [RW Split Router]. This user
- * will be unavailable via MaxScale.
+ * will be unavailable via Percona Proxy.
  *
  *
  *  first two line are clear: no support for IPv6, but would it be better to print 'warning' instead of
@@ -224,7 +224,7 @@
  |
  |  admin interface gives:
  |
- |  MaxScale> show dbusers "RW Split Router"
+ |  Percona Proxy> show dbusers "RW Split Router"
  |  Users table data
  |  Hashtable: 0x7f6b64000c30, size 52
  |   No. of entries:         7
@@ -237,7 +237,7 @@
  |  So, root@127.0.0.1 is present in the list.
  |  Comment 10 Mark Riddoch 2015-01-05 13:03:34 UTC
  |  The message "Failed to add user root@127.0.0.1" is because the two entries root@localhsot and
- |root@127.0.0.1 are seen as duplicates in MaxScale. This is a result of MaxScale resolving hostnames at the
+ |root@127.0.0.1 are seen as duplicates in Percona Proxy. This is a result of Percona Proxy resolving hostnames at the
  |time it reads the database rather than at connect time. So a duplicate is detected and the second one causes
  |the error to be displayed.
  |  Comment 11 Timofey Turenko 2015-01-09 19:26:35 UTC
@@ -257,26 +257,26 @@ int main(int argc, char* argv[])
 {
     TestConnections* Test = new TestConnections(argc, argv);
 
-    Test->maxscale->connect_maxscale();
+    Test->percona_proxy->connect_percona_proxy();
 
     Test->tprintf("Creating 'root'@'%%'\n");
-    // global_result += execute_query(Test->maxscales->conn_rwsplit, (char *) "CREATE USER 'root'@'%'; SET
+    // global_result += execute_query(Test->percona_proxies->conn_rwsplit, (char *) "CREATE USER 'root'@'%'; SET
     // PASSWORD FOR 'root'@'%' = PASSWORD('skysqlroot');");
 
-    Test->try_query(Test->maxscale->conn_rwsplit,
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
                     (char*) "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%%' IDENTIFIED BY 'skysqlroot';");
-    Test->try_query(Test->maxscale->conn_rwsplit,
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
                     (char*) "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY 'skysqlroot';");
     Test->repl->sync_slaves();
 
     MYSQL* conn;
 
     Test->tprintf("Connecting using 'root'@'%%'\n");
-    conn = open_conn(Test->maxscale->rwsplit_port,
-                     Test->maxscale->ip4(),
+    conn = open_conn(Test->percona_proxy->rwsplit_port,
+                     Test->percona_proxy->ip4(),
                      (char*) "root",
                      (char*)  "skysqlroot",
-                     Test->maxscale_ssl);
+                     Test->percona_proxy_ssl);
     if (mysql_errno(conn) != 0)
     {
         Test->add_result(1, "Connection using 'root' user failed, error: %s\n", mysql_error(conn));
@@ -294,15 +294,15 @@ int main(int argc, char* argv[])
     }
 
     Test->tprintf("Dropping 'root'@'%%'\n");
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "DROP USER 'root'@'%%';");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "DROP USER 'root'@'%%';");
 
-    Test->maxscale->close_maxscale_connections();
+    Test->percona_proxy->close_percona_proxy_connections();
 
     Test->log_excludes("Failed to add user skysql");
     Test->log_excludes("getaddrinfo failed");
     Test->log_excludes("Couldn't find suitable Master");
 
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
     int rval = Test->global_result;
     delete Test;
     return rval;

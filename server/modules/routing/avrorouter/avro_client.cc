@@ -26,15 +26,15 @@
 #include <maxavro.hh>
 #include <fstream>
 #include <sstream>
-#include <maxscale/service.hh>
-#include <maxscale/server.hh>
-#include <maxscale/router.hh>
-#include <maxscale/dcb.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/server.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/dcb.hh>
 #include <maxbase/alloc.hh>
 #include <maxbase/string.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/routingworker.hh>
 #include <maxbase/format.hh>
 
 std::pair<std::string, std::string> get_avrofile_and_gtid(std::string file);

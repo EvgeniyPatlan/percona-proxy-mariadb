@@ -24,11 +24,11 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    test.maxscale->connect();
-    test.try_query(test.maxscale->conn_rwsplit,
+    test.percona_proxy->connect();
+    test.try_query(test.percona_proxy->conn_rwsplit,
                    "SET STATEMENT max_statement_time=30 FOR SELECT seq FROM seq_0_to_100000");
-    test.try_query(test.maxscale->conn_rwsplit, "SELECT 1");
-    test.maxscale->disconnect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "SELECT 1");
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

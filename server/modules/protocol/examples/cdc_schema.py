@@ -77,7 +77,7 @@ try:
 
 
     for t in tables:
-        schema = dict(namespace="MaxScaleChangeDataSchema.avro", type="record", name="ChangeRecord", fields=[])
+        schema = dict(namespace="PerconaProxyChangeDataSchema.avro", type="record", name="ChangeRecord", fields=[])
         cursor.execute("DESCRIBE {}.{}".format(opts.DATABASE, t))
 
         for res in cursor:

@@ -21,7 +21,7 @@
 int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection should work: %s", conn.error());
 
     auto row = conn.row("SELECT SQL_CALC_FOUND_ROWS LAST_INSERT_ID(), @@server_id FROM mysql.user");

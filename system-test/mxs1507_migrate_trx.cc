@@ -31,44 +31,44 @@ int main(int argc, char** argv)
     string slave = "server2";
 
     auto switchover = [&]() {
-            test.maxscale->wait_for_monitor();
-            int rc = test.maxscale->ssh_node_f(true,
-                                               "maxctrl call command mariadbmon switchover MySQL-Monitor %s %s",
+            test.percona_proxy->wait_for_monitor();
+            int rc = test.percona_proxy->ssh_node_f(true,
+                                               "percona-proxyctl call command mariadbmon switchover MySQL-Monitor %s %s",
                                                slave.c_str(),
                                                master.c_str());
             test.expect(rc == 0, "Switchover should work");
             master.swap(slave);
-            test.maxscale->wait_for_monitor();
+            test.percona_proxy->wait_for_monitor();
         };
 
     auto query = [&](string q) {
-            return execute_query_silent(test.maxscale->conn_rwsplit, q.c_str()) == 0;
+            return execute_query_silent(test.percona_proxy->conn_rwsplit, q.c_str()) == 0;
         };
 
     auto ok = [&](string q) {
             test.expect(query(q),
                         "Query '%s' should work: %s",
                         q.c_str(),
-                        mysql_error(test.maxscale->conn_rwsplit));
+                        mysql_error(test.percona_proxy->conn_rwsplit));
         };
 
     auto check = [&](string q) {
             ok("START TRANSACTION");
-            Row row = get_row(test.maxscale->conn_rwsplit, q.c_str());
+            Row row = get_row(test.percona_proxy->conn_rwsplit, q.c_str());
             ok("COMMIT");
             test.expect(!row.empty() && row[0] == "1", "Query should return 1: %s", q.c_str());
         };
 
     // Create a table, insert a value and make sure it's replicated to all slaves
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
     ok("CREATE OR REPLACE TABLE test.t1 (id INT)");
     ok("INSERT INTO test.t1 VALUES (1)");
     test.repl->connect();
     test.repl->sync_slaves();
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     cout << "Commit transaction" << endl;
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
     ok("START TRANSACTION");
     ok("SELECT id FROM test.t1 WHERE id = 1 FOR UPDATE");
     switchover();
@@ -76,28 +76,28 @@ int main(int argc, char** argv)
     ok("COMMIT");
     check("SELECT COUNT(*) = 1 FROM t1 WHERE id = 2");
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     cout << "Rollback transaction" << endl;
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
     ok("START TRANSACTION");
     ok("UPDATE test.t1 SET id = 1");
     switchover();
     ok("ROLLBACK");
     check("SELECT COUNT(*) = 1 FROM t1 WHERE id = 2");
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     cout << "Read-only transaction" << endl;
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
     ok("START TRANSACTION READ ONLY");
     ok("SELECT @@server_id");   // This causes a checksum mismatch if the transaction is migrated
     switchover();
     ok("COMMIT");
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
     ok("DROP TABLE test.t1");
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     // Even number of switchovers should bring us back to the original master
     switchover();

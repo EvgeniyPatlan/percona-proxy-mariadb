@@ -14,17 +14,17 @@
 
 #define MXB_MODULE_NAME "qlafilter"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include "qlalog.hh"
 #include <string>
 #include <future>
 #include <maxbase/stopwatch.hh>
-#include <maxscale/config.hh>
-#include <maxscale/filter.hh>
-#include <maxscale/pcre2.hh>
-#include <maxscale/workerlocal.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/pcre2.hh>
+#include <percona-proxy/workerlocal.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 #include <maxsimd/canonical.hh>
 
 class QlaFilterSession;
@@ -101,7 +101,7 @@ public:
     mxs::FilterSession* newSession(MXS_SESSION* session, SERVICE* service) override;
 
     /**
-     * Create an instance of the filter for a particular service within MaxScale.
+     * Create an instance of the filter for a particular service within Percona Proxy.
      *
      * @param name      The name of the instance (as defined in the config file)
      * @param params    The array of name/value pair parameters for the filter

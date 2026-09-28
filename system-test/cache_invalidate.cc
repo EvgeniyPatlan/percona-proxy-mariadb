@@ -31,7 +31,7 @@ const char* ZSELECT_STMT = "SELECT * FROM cache_invalidate";
 
 void drop(TestConnections& test)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pMysql, "%s", ZDROP_STMT);
 }
@@ -40,7 +40,7 @@ void create(TestConnections& test)
 {
     drop(test);
 
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pMysql, "%s", ZCREATE_STMT);
 }
@@ -92,7 +92,7 @@ void run(TestConnections& test, int port, Expect expect)
 {
     create(test);
 
-    Connection c = test.maxscale->get_connection(port);
+    Connection c = test.percona_proxy->get_connection(port);
     c.connect();
     if (port == PORT_REDIS_CACHE)
     {
@@ -140,11 +140,11 @@ void run(TestConnections& test, int port, Expect expect)
 }
 }
 
-void install_and_start_redis(mxt::MaxScale& maxscales)
+void install_and_start_redis(mxt::PerconaProxy& percona_proxies)
 {
-    setenv("maxscale_000_keyfile", maxscales.sshkey(), 0);
-    setenv("maxscale_000_whoami", maxscales.access_user(), 0);
-    setenv("maxscale_000_network", maxscales.ip4(), 0);
+    setenv("percona_proxy_000_keyfile", percona_proxies.sshkey(), 0);
+    setenv("percona_proxy_000_whoami", percona_proxies.access_user(), 0);
+    setenv("percona_proxy_000_network", percona_proxies.ip4(), 0);
 
     // This will install memcached as well, but that's ok.
 
@@ -156,16 +156,16 @@ void install_and_start_redis(mxt::MaxScale& maxscales)
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
-    auto maxscales = test.maxscale;
+    auto percona_proxies = test.percona_proxy;
 
-    install_and_start_redis(*maxscales);
+    install_and_start_redis(*percona_proxies);
 
-    maxscales->start();
+    percona_proxies->start();
 
-    if (maxscales->connect_rwsplit() == 0)
+    if (percona_proxies->connect_rwsplit() == 0)
     {
         // Non-invalidated cache
         test.tprintf("Testing non-invalidated cache.");
@@ -178,16 +178,16 @@ int main(int argc, char* argv[])
 
         // When the 'invalidate' flag is turned on, we also need to flush redis.
         // Otherwise there will be entries that are not subject to invalidation.
-        maxscales->ssh_node(
-            "sed -i \"s/invalidate=never/invalidate=current/\" /etc/maxscale.cnf; "
+        percona_proxies->ssh_node(
+            "sed -i \"s/invalidate=never/invalidate=current/\" /etc/percona-proxy.cnf; "
             "redis-cli flushall",
             true);
-        maxscales->restart_maxscale();
+        percona_proxies->restart_percona_proxy();
 
-        // To be certain that MaxScale has started.
+        // To be certain that Percona Proxy has started.
         sleep(3);
 
-        if (maxscales->connect_rwsplit() == 0)
+        if (percona_proxies->connect_rwsplit() == 0)
         {
             test.tprintf("Testing invalidated cache.");
             test.tprintf("Local storage.");

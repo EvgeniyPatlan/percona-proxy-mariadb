@@ -3,7 +3,7 @@
 The `cat` router is a special router that concatenates result sets.
 
 *Note:* This module is experimental and must be built from source. The
- module is deprecated in MaxScale 23.08 and might be removed in a future
+ module is deprecated in Percona Proxy 23.08 and might be removed in a future
  release.
 
 ## Configuration
@@ -36,13 +36,13 @@ be closed.
 
 Here is a simple example service definition that uses the servers from the
 [Configuring Servers](../Tutorials/Configuring-Servers.md) tutorial and the
-credentials from the [MaxScale Tutorial](../Tutorials/MaxScale-Tutorial.md).
+credentials from the [Percona Proxy Tutorial](../Tutorials/Percona Proxy-Tutorial.md).
 
 ```
 [concat-service]
 type=service
 router=cat
 servers=dbserv1,dbserv2,dbserv3
-user=maxscale
-password=maxscale_pw
+user=percona-proxy
+password=percona_proxy_pw
 ```

@@ -6,6 +6,6 @@ if(BUILD_TOOLS)
 endif()
 
 # Pam suid wrapper. Requires setuid permission
-add_executable(maxscale_pam_auth_tool pam_auth_tool.cc)
-target_link_libraries(maxscale_pam_auth_tool maxbase)
-install_executable_setuid(maxscale_pam_auth_tool core)
+add_executable(percona-proxy-pam-auth-tool pam_auth_tool.cc)
+target_link_libraries(percona-proxy-pam-auth-tool maxbase)
+install_executable_setuid(percona-proxy-pam-auth-tool core)

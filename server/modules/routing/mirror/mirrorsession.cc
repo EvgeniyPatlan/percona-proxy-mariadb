@@ -14,9 +14,9 @@
 #include "mirror.hh"
 #include "mirrorsession.hh"
 
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
-using namespace maxscale;
+using namespace percona_proxy;
 
 MirrorSession::MirrorSession(MXS_SESSION* session, Mirror* router, SMyBackends backends)
     : RouterSession(session)

@@ -1,6 +1,6 @@
 include(ExternalProject)
 
-ExternalProject_Add(maxscale_sqlite
+ExternalProject_Add(percona_proxy_sqlite
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sqlite-src-3110100
   BINARY_DIR ${CMAKE_BINARY_DIR}/sqlite-bld-3110100
   CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/sqlite-src-3110100/configure --with-pic --enable-maxscale
@@ -21,8 +21,8 @@ include_directories(${MARIADB_CONNECTOR_INCLUDE_DIR})
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=array-bounds -Wno-misleading-indentation -Wno-uninitialized -Wno-implicit-fallthrough -Wno-cast-function-type")
 
 add_library(pp_sqlite SHARED pp_sqlite.cc pp_sqlite3.c builtin_functions.cc)
-add_dependencies(pp_sqlite maxscale_sqlite)
-# If you feel a need to add something here, check also the handling of 'enable_maxscale'
+add_dependencies(pp_sqlite percona_proxy_sqlite)
+# If you feel a need to add something here, check also the handling of 'enable_percona_proxy'
 # in sqlite-src-3110100/configure.
 # In configure we have defined SQLITE_OMIT_VIRTUALTABLE, but it cannot be defined here,
 # although conceptually is should, as one needed static function in case will be missing.
@@ -36,7 +36,7 @@ set_target_properties(pp_sqlite PROPERTIES LINK_FLAGS -Wl,--version-script=${CMA
 # NOTE: shared library on the system. Libmaxscale-common depends on the libsqlite, but
 # NOTE: reason is not entirelly understood.
 #
-# target_link_libraries(pp_sqlite maxscale-common)
+# target_link_libraries(pp_sqlite percona-proxy-common)
 # set_target_properties(pp_sqlite PROPERTIES LINK_FLAGS -Wl,-z,defs)
 
 install_module(pp_sqlite core)

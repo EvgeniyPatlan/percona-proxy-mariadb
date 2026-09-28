@@ -55,7 +55,7 @@ void check_state(TestConnections& test,
 
     string command = "api get servers/" + server + " data.attributes.state";
 
-    auto result = test.maxctrl(command);
+    auto result = test.percona_proxyctl(command);
 
     bool found = std::regex_search(result.output, std::regex(what));
 
@@ -76,8 +76,8 @@ void set_drain(TestConnections& test, const string& server)
     test.tprintf("%s: Setting 'Draining' state.\n", server.c_str());
     string command = "set server " + server + " drain";
 
-    test.check_maxctrl(command);
-    test.maxscale->wait_for_monitor();
+    test.check_percona_proxyctl(command);
+    test.percona_proxy->wait_for_monitor();
 
     check_state(test, server, Expectation::INCLUDES, "Draining|Drained");
 }
@@ -87,8 +87,8 @@ void clear_drain(TestConnections& test, const string& server)
     test.tprintf("%s: Clearing 'Draining' state.\n", server.c_str());
     string command = "clear server " + server + " drain";
 
-    test.check_maxctrl(command);
-    test.maxscale->wait_for_monitor();
+    test.check_percona_proxyctl(command);
+    test.percona_proxy->wait_for_monitor();
 
     check_state(test, server, Expectation::EXCLUDES, "Draining|Drained");
 }
@@ -98,7 +98,7 @@ void check_connections(TestConnections& test, const string& server, int nExpecte
     test.tprintf("%s: Expecting %d connections.", server.c_str(), nExpected);
     string command = "api get servers/" + server + " data.attributes.statistics.connections";
 
-    auto result = test.maxctrl(command);
+    auto result = test.percona_proxyctl(command);
 
     int nConnections = atoi(result.output.c_str());
 
@@ -124,7 +124,7 @@ void test_rws(TestConnections& test)
 {
     test.tprintf("Testing draining with RWS\n");
 
-    Connection conn1 = test.maxscale->rwsplit();
+    Connection conn1 = test.percona_proxy->rwsplit();
     test.expect(conn1.connect(), "Connection failed: %s", conn1.error());
     smoke_test(test, conn1);
 
@@ -134,7 +134,7 @@ void test_rws(TestConnections& test)
     // Still works?
     smoke_test(test, conn1);
 
-    Connection conn2 = test.maxscale->rwsplit();
+    Connection conn2 = test.percona_proxy->rwsplit();
     test.expect(conn2.connect(), "Connection failed: %s", conn2.error());
     smoke_test(test, conn2);
 
@@ -152,7 +152,7 @@ void test_rws(TestConnections& test)
     set_drain(test, server2);
 
     // This should work as the master (server1) and one slave (server3) is available.
-    Connection conn3 = test.maxscale->rwsplit();
+    Connection conn3 = test.percona_proxy->rwsplit();
     test.expect(conn3.connect(), "Connection failed: %s", conn3.error());
     smoke_test(test, conn3);
 
@@ -166,7 +166,7 @@ void test_rws(TestConnections& test)
     clear_drain(test, server2);
 
     // So, this should work.
-    Connection conn4 = test.maxscale->rwsplit();
+    Connection conn4 = test.percona_proxy->rwsplit();
     test.expect(conn4.connect(), "Connection failed: %s", conn4.error());
     smoke_test(test, conn4);
 
@@ -180,7 +180,7 @@ void test_rcr(TestConnections& test)
 {
     test.tprintf("Testing draining with RCR\n");
 
-    Connection conn1 = test.maxscale->readconn_master();
+    Connection conn1 = test.percona_proxy->readconn_master();
     test.expect(conn1.connect(), "Connection failed: %s", conn1.error());
     smoke_test(test, conn1);
 
@@ -188,7 +188,7 @@ void test_rcr(TestConnections& test)
     set_drain(test, server2);
     set_drain(test, server3);
 
-    Connection conn2 = test.maxscale->readconn_master();
+    Connection conn2 = test.percona_proxy->readconn_master();
     test.expect(conn2.connect(), "Connection failed: %s", conn2.error());
     smoke_test(test, conn2);
 
@@ -204,7 +204,7 @@ void test_rcr(TestConnections& test)
 
     set_drain(test, server2);
 
-    Connection conn4 = test.maxscale->readconn_slave();
+    Connection conn4 = test.percona_proxy->readconn_slave();
     test.expect(conn4.connect(), "Connection failed: %s", conn4.error());
     smoke_test(test, conn4);
 
@@ -215,7 +215,7 @@ void test_rcr(TestConnections& test)
     clear_drain(test, server2);
     set_drain(test, server3);
 
-    Connection conn5 = test.maxscale->readconn_slave();
+    Connection conn5 = test.percona_proxy->readconn_slave();
     test.expect(conn5.connect(), "Connection failed: %s", conn5.error());
     smoke_test(test, conn5);
 
@@ -226,7 +226,7 @@ void test_rcr(TestConnections& test)
     // Now both slaves will be drained.
     set_drain(test, server2);
 
-    Connection conn6 = test.maxscale->readconn_slave();
+    Connection conn6 = test.percona_proxy->readconn_slave();
     test.expect(conn6.connect(), "Connection failed: %s", conn6.error());
     smoke_test(test, conn6);
 
@@ -243,7 +243,7 @@ int main(int argc, char* argv[])
     TestConnections test(argc, argv);
 
     // As of 2.5.0, the master cannot be drained
-    auto res = test.maxctrl("set server server1 drain");
+    auto res = test.percona_proxyctl("set server server1 drain");
     test.expect(res.rc != 0, "Should not be able to set master into `Draining` state");
 
     test_rws(test);

@@ -1,0 +1,178 @@
+#!/bin/bash
+#
+# percona-proxy:   The MariaDB Corporation Percona Proxy database proxy
+#
+# description:  Percona Proxy provides database specific proxy functionality
+#
+# processname: percona-proxy
+#
+### BEGIN INIT INFO
+# Provides: percona-proxy
+# Required-Start: $syslog $local_fs
+# Required-Stop: $syslog $local_fs
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: The percona-proxy database proxy
+# Description: Percona Proxy is a database proxy server that can be used to front end
+# database clusters offering different routing, filtering and protocol choices
+### END INIT INFO
+
+#############################################
+# Percona Proxy HOME, PIDFILE, LIB
+#############################################
+
+export PERCONA_PROXY_PIDFILE=@PERCONA_PROXY_VARDIR@/run/percona-proxy/percona-proxy.pid
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:@CMAKE_INSTALL_PREFIX@/@PERCONA_PROXY_LIBDIR@/percona-proxy
+
+###############################
+# LSB Exit codes (non-Status)
+###############################
+_RETVAL_GENERIC=1
+_RETVAL_NOT_INSTALLED=5
+_RETVAL_NOT_RUNNING=7
+
+###############################
+# LSB Status action Exit codes
+###############################
+_RETVAL_STATUS_OK=0
+_RETVAL_STATUS_NOT_RUNNING=3
+
+# Sanity checks.
+[ -x @CMAKE_INSTALL_PREFIX@/@PERCONA_PROXY_BINDIR@/percona-proxy ] || exit $_RETVAL_NOT_INSTALLED
+
+# Source additional command line arguments.
+[ -f /etc/default/percona-proxy ] &&  . /etc/default/percona-proxy
+
+#################################
+# stop/start/status related vars
+#################################
+NAME=percona-proxy
+DAEMON=@CMAKE_INSTALL_PREFIX@/@PERCONA_PROXY_BINDIR@/percona-proxy
+DAEMON_OPTS="--user=percona-proxy $PERCONA_PROXY_OPTIONS"
+
+# Source function library.
+. /lib/lsb/init-functions
+
+# we can rearrange this easily
+processname=percona-proxy
+servicename=percona-proxy
+
+RETVAL=0
+
+start() {
+
+    if [ ! -d @PERCONA_PROXY_VARDIR@/log/percona-proxy ]
+    then
+        mkdir -p @PERCONA_PROXY_VARDIR@/log/percona-proxy
+    fi
+
+    if [ ! -d @PERCONA_PROXY_VARDIR@/cache/percona-proxy ]
+    then
+        mkdir -p @PERCONA_PROXY_VARDIR@/cache/percona-proxy
+    fi
+
+    if [ ! -d @PERCONA_PROXY_VARDIR@/lib/percona-proxy ]
+    then
+        mkdir -p @PERCONA_PROXY_VARDIR@/lib/percona-proxy
+    fi
+
+    if [ ! -d @PERCONA_PROXY_VARDIR@/run/percona-proxy ]
+    then
+        mkdir -p @PERCONA_PROXY_VARDIR@/run/percona-proxy
+    fi
+
+    chown -R percona-proxy:percona-proxy @PERCONA_PROXY_VARDIR@/log/percona-proxy
+    chown -R percona-proxy:percona-proxy @PERCONA_PROXY_VARDIR@/lib/percona-proxy
+    chown -R percona-proxy:percona-proxy @PERCONA_PROXY_VARDIR@/cache/percona-proxy
+    chown -R percona-proxy:percona-proxy @PERCONA_PROXY_VARDIR@/run/percona-proxy
+    chmod 0755 @PERCONA_PROXY_VARDIR@/log/percona-proxy
+    chmod 0755 @PERCONA_PROXY_VARDIR@/lib/percona-proxy
+    chmod 0755 @PERCONA_PROXY_VARDIR@/cache/percona-proxy
+    chmod 0755 @PERCONA_PROXY_VARDIR@/run/percona-proxy
+
+    ulimit -HSn 65535
+    log_daemon_msg "Starting Percona Proxy"
+    start_daemon -p "$PERCONA_PROXY_PIDFILE" $DAEMON $DAEMON_OPTS 2> /dev/null > /dev/null
+
+    sleep 2
+
+    status_of_proc -p "$PERCONA_PROXY_PIDFILE" "$DAEMON" $NAME
+
+    log_end_msg $?
+}
+
+stop() {
+        log_daemon_msg "Stopping Percona Proxy"
+
+        percona_proxy_wait_stop
+
+        log_end_msg $?
+}
+
+reload() {
+        log_daemon_msg "Reloading Percona Proxy"
+        
+        kill -HUP $(cat "$PERCONA_PROXY_PIDFILE")
+
+        log_end_msg $?
+}
+
+percona_proxy_wait_stop() {
+        PIDTMP=$(pidofproc -p "$PERCONA_PROXY_PIDFILE" "$DAEMON")
+        kill -TERM "${PIDTMP:-}" 2> /dev/null;
+        if [ -n "${PIDTMP:-}" ] && kill -0 "${PIDTMP:-}" 2> /dev/null; then
+                local i=0
+                while kill -0 "${PIDTMP:-}" 2> /dev/null;  do
+                        if [ $i = '60' ]; then
+                                break
+                                STATUS=2
+                        fi
+                        [ "$VERBOSE" != no ] && log_progress_msg "."
+                        sleep 1
+                        i=$(($i+1))
+                done
+                return $STATUS
+        else
+            return $STATUS
+        fi
+}
+
+# See how we were called.
+case "$1" in
+    start)
+	start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+	# return 0 on success
+	# return 3 on any error
+
+        log_daemon_msg "Checking Percona Proxy"
+        status_of_proc -p "$PERCONA_PROXY_PIDFILE" "$DAEMON" $NAME
+        RETVAL=$?
+
+        if [ $RETVAL -ne 0 ]; then
+                [ $RETVAL -eq 1 ]
+
+                RETVAL=$_RETVAL_STATUS_NOT_RUNNING
+        else
+                RETVAL=$_RETVAL_STATUS_OK
+        fi
+
+        log_end_msg $RETVAL
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    reload)
+	reload
+        RETVAL=$?
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|reload}"
+        ;;
+esac
+exit $RETVAL

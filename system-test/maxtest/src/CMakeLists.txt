@@ -14,7 +14,7 @@ add_library(maxtest SHARED
         mariadb_connector.cc
         mariadb_nodes.cc
         maxrest.cc
-        maxscales.cc
+        percona_proxies.cc
         nodes.cc
         replication_cluster.cc
         sql_t1.cc

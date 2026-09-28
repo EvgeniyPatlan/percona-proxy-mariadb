@@ -21,9 +21,9 @@
 #endif
 #include <stdio.h>
 #include <string.h>
-#include <maxscale/dcb.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/service.hh>
 
 #include "test_utils.hh"
 #include "../internal/service.hh"

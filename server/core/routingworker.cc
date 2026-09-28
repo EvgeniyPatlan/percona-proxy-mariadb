@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/routingworker.hh>
 
 #include <cerrno>
 #include <csignal>
@@ -26,16 +26,16 @@
 #include <maxbase/average.hh>
 #include <maxbase/pretty_print.hh>
 #include <maxbase/semaphore.hh>
-#include <maxscale/cachingparser.hh>
-#include <maxscale/clock.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/config.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/maxscale.hh>
-#include <maxscale/statistics.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/cachingparser.hh>
+#include <percona-proxy/clock.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/percona-proxy.hh>
+#include <percona-proxy/statistics.hh>
+#include <percona-proxy/utils.hh>
 
 #include "internal/modules.hh"
 #include "internal/server.hh"
@@ -45,7 +45,7 @@ using maxbase::AverageN;
 using maxbase::Semaphore;
 using maxbase::Worker;
 using maxbase::WorkerLoad;
-using maxscale::RoutingWorker;
+using percona_proxy::RoutingWorker;
 using std::lock_guard;
 using std::shared_ptr;
 using std::stringstream;
@@ -66,7 +66,7 @@ namespace
  *              are all active and draining threads, and also inactive threads that are waiting
  *              for other draining threads to become inactive before they can be removed.
  *              The follwing will always hold: 1 <= nRunning <= nMax.
- * nConfigured: The configured number of threads. When a user issues 'maxctrl alter maxscale threads=N'
+ * nConfigured: The configured number of threads. When a user issues 'percona-proxyctl alter percona-proxy threads=N'
  *              nConfigured will be immediately set to N (subject to some possible failures), but
  *              when the number of threads is reduced nRunning will become N, only when the
  *              threads have properly been deactivated.
@@ -173,7 +173,7 @@ bool can_close_dcb(mxs::BackendConnection* b)
 }
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 // static
@@ -552,7 +552,7 @@ void RoutingWorker::terminate_last_if_dormant(bool first_attempt)
     mxb_assert((first_attempt && !this_unit.termination_in_process)
                || (!first_attempt && this_unit.termination_in_process));
 
-    if (maxscale_is_shutting_down())
+    if (percona_proxy_is_shutting_down())
     {
         // Already going down, in which case there is no need for further action.
         this_unit.termination_in_process = false;
@@ -1515,7 +1515,7 @@ void RoutingWorker::post_run()
     modules_thread_finish();
     // TODO: Add service_thread_finish().
 
-    if (maxscale_is_shutting_down())
+    if (percona_proxy_is_shutting_down())
     {
         auto i = index();
 
@@ -2049,10 +2049,10 @@ void RoutingWorker::terminate()
 
         std::chrono::duration time_passed = now - start;
 
-        if (maxscale_is_shutting_down())
+        if (percona_proxy_is_shutting_down())
         {
             MXB_NOTICE("Terminating worker %d going down immediately, "
-                       "as MaxScale shutdown has been iniated.",
+                       "as Percona Proxy shutdown has been iniated.",
                        index());
             ready_to_proceed = true;
         }
@@ -2942,7 +2942,7 @@ void mxs_rworker_watchdog()
 {
     mxb_assert(mxs::MainWorker::is_current());
 
-    MXB_INFO("MaxScale watchdog called.");
+    MXB_INFO("Percona Proxy watchdog called.");
     WatchdogTask task;
     RoutingWorker::execute_concurrently(task);
 }

@@ -18,7 +18,7 @@
  *
  * - use only one backend
  * - SET GLOBAL sql_mode="ANSI"
- * - restart MaxScale
+ * - restart Percona Proxy
  * - check log for "Error : Loading database names for service RW_Split encountered error: Unknown column"
  */
 
@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
     test.repl->connect();
     execute_query(test.repl->nodes[0], "SET GLOBAL sql_mode=\"ANSI\"");
 
-    test.maxscale->restart_maxscale();
+    test.percona_proxy->restart_percona_proxy();
     test.log_excludes("Loading database names");
     test.log_excludes("Unknown column");
 

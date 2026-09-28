@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     auto master = mxt::ServerInfo::master_st;
@@ -75,7 +75,7 @@ void test_main(TestConnections& test)
         repl.replicate_from(old_master_ind, 2);
         mxs.wait_for_monitor(1);
         mxs.check_print_servers_status({slave, slave, master, slave});
-        mxs.maxctrl(switchover);
+        mxs.percona_proxyctl(switchover);
         mxs.wait_for_monitor(1);
         mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
     }
@@ -99,7 +99,7 @@ void test_main(TestConnections& test)
         mxs.check_print_servers_status({running, slave, slave, master});
         repl.replicate_from(old_master_ind, 3);
         mxs.wait_for_monitor(1);
-        mxs.maxctrl(switchover);
+        mxs.percona_proxyctl(switchover);
         mxs.wait_for_monitor(1);
         mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
     }
@@ -185,9 +185,9 @@ void test_main(TestConnections& test)
             test.tprintf("Restart old master and rejoin it.");
             repl.backend(old_master_ind)->start_database();
             mxs.wait_for_monitor();
-            mxs.maxctrlf("call command mariadbmon rejoin MariaDB-Monitor server1");
+            mxs.percona_proxyctlf("call command mariadbmon rejoin MariaDB-Monitor server1");
             mxs.check_print_servers_status({slave, master, slave, slave});
-            mxs.maxctrlf("call command mariadbmon switchover MariaDB-Monitor server1");
+            mxs.percona_proxyctlf("call command mariadbmon switchover MariaDB-Monitor server1");
             mxs.wait_for_monitor();
             mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
         }

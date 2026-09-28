@@ -24,7 +24,7 @@ The `address` and `port` parameters tell where the server is located.
 
 ## Enabling TLS
 
-To enable encryption for the MaxScale-to-MariaDB communication, add `ssl=true`
+To enable encryption for the Percona Proxy-to-MariaDB communication, add `ssl=true`
 to the server section. To enable server certificate verification, add
 `ssl_verify_peer_certificate=true`.
 

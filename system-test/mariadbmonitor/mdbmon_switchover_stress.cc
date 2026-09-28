@@ -30,25 +30,25 @@ const char* CLIENT_PASSWORD = "mysqlmon_switchover_stress";
 
 void create_client_user(TestConnections& test)
 {
-    auto conn = test.maxscale->open_rwsplit_connection2();
+    auto conn = test.percona_proxy->open_rwsplit_connection2();
     conn->cmd_f("create or replace user '%s' identified by '%s';", CLIENT_USER, CLIENT_PASSWORD);
     conn->cmd_f("grant select, insert, update on test.* to '%s';", CLIENT_USER);
 }
 
 void drop_client_user(TestConnections& test)
 {
-    auto conn = test.maxscale->open_rwsplit_connection2();
+    auto conn = test.percona_proxy->open_rwsplit_connection2();
     conn->cmd_f("drop user '%s';", CLIENT_USER);
 }
 
 void switchover(TestConnections& test, int next_master_id, int current_master_id)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     string next_master_name = "server" + std::to_string(next_master_id);
     string command = mxb::string_printf("call command mysqlmon switchover MySQL-Monitor %s server%i",
                                         next_master_name.c_str(), current_master_id);
-    test.tprintf("Running on MaxCtrl: %s", command.c_str());
-    auto res = mxs.maxctrl(command);
+    test.tprintf("Running on Percona Proxyctl: %s", command.c_str());
+    auto res = mxs.percona_proxyctl(command);
     if (res.rc == 0)
     {
         mxs.wait_for_monitor();
@@ -87,7 +87,7 @@ void switchover(TestConnections& test, int next_master_id, int current_master_id
 
 void run(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     create_client_user(test);
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
 

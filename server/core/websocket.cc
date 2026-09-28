@@ -18,8 +18,8 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 
-#include <maxscale/utils.hh>
-#include <maxscale/mainworker.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/mainworker.hh>
 
 #include "internal/websocket.hh"
 

@@ -13,7 +13,7 @@
  */
 
 /**
- * @file avro.c - Avro router, allows MaxScale to act as an intermediary for
+ * @file avro.c - Avro router, allows Percona Proxy to act as an intermediary for
  * MySQL replication binlog files and AVRO binary files
  */
 
@@ -21,15 +21,15 @@
 
 #include <stdio.h>
 #include <maxbase/format.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/router.hh>
-#include <maxscale/service.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/routingworker.hh>
 
 #include "avro_converter.hh"
 
-using namespace maxscale;
+using namespace percona_proxy;
 
 // Sanitizes the SQL field names for Avro usage
 static std::string avro_sanitizer(const char* s, int l)

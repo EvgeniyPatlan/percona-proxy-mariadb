@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     test.repl->disconnect();
 
     int master_id = test.get_master_server_id();
-    Connection conn = test.maxscale->rwsplit();
+    Connection conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection failed: %s", conn.error());
 
     test.tprintf("Get the ID of the server we first start with");
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
     }
 
     block_by_id(test, first_id);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     int second_id = std::stoi(conn.field("SELECT @@server_id"));
 
@@ -94,7 +94,7 @@ int main(int argc, char** argv)
     }
 
     block_by_id(test, second_id);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     int third_id = std::stoi(conn.field("SELECT @@server_id"));
 

@@ -21,7 +21,7 @@
 #include <string.h>
 #include <time.h>
 #include <maxbase/assert.hh>
-#include <maxscale/log.hh>
+#include <percona-proxy/log.hh>
 
 static void skygw_log_enable(int priority)
 {

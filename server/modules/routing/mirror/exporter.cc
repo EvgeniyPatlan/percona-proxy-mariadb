@@ -21,7 +21,7 @@
 
 #include <librdkafka/rdkafkacpp.h>
 
-// Exports to maxscale.log on info level
+// Exports to percona-proxy.log on info level
 class LogExporter : public Exporter
 {
 public:

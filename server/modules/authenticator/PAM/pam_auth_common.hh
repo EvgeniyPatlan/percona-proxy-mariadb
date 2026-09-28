@@ -18,7 +18,7 @@
  */
 #define MXB_MODULE_NAME "PAMAuth"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <string>
 #include <unordered_map>
 #include <openssl/sha.h>

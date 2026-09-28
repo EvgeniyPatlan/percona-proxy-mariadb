@@ -19,7 +19,7 @@ namespace
 {
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     const char user[] = "testuser";
     const char pw1[] = "pass1";

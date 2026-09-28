@@ -18,8 +18,8 @@
 #include <sstream>
 #include <sys/time.h>
 
-#include <maxscale/cn_strings.hh>
-#include <maxscale/json_api.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/json_api.hh>
 
 #include "internal/admin.hh"
 
@@ -459,7 +459,7 @@ void HttpResponse::remove_fields_from_object(json_t* obj, std::vector<std::strin
 
 // Jansson 2.13 implements a json_object_update_recursive() but that cannot yet be used as the oldest version
 // is 2.12 which does not have it. This custom version is similar to the one in Jansson 2.13 except that it
-// doesn't check for cyclical references which do not happen in MaxScale.
+// doesn't check for cyclical references which do not happen in Percona Proxy.
 void mxs_json_object_update_recursive(json_t* dest, json_t* src)
 {
     const char* key;
@@ -666,7 +666,7 @@ void HttpResponse::paginate(int64_t limit, int64_t offset)
                 json_object_set_new(m_body, CN_DATA, new_data);
             }
 
-            // Create pagination links only if the resource itself didn't create them. The /maxscale/logs/data
+            // Create pagination links only if the resource itself didn't create them. The /percona-proxy/logs/data
             // endpoint has its own pagination links and they must not be overwritten.
             json_t* links = json_object_get(m_body, CN_LINKS);
 

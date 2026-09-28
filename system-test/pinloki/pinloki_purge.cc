@@ -28,19 +28,19 @@ public:
         {
             master.query("FLUSH LOGS");
         }
-        sync(master, maxscale);
+        sync(master, percona_proxy);
     }
 
     void verify_logs(std::vector<std::string> expected_files,
                      const std::vector<std::string>& unexpected_files)
     {
-        auto new_logs = maxscale.rows("SHOW BINARY LOGS");
+        auto new_logs = percona_proxy.rows("SHOW BINARY LOGS");
         test.expect(new_logs.size() == expected_files.size(),
                     "Expected binary logs %s:\ndiffer from SHOW BINARY LOGS %s",
                     maxbase::create_list_string(expected_files).c_str(),
-                    maxscale.pretty_rows("SHOW BINARY LOGS").c_str());
+                    percona_proxy.pretty_rows("SHOW BINARY LOGS").c_str());
 
-        auto index = test.maxscale->ssh_output("cat /var/lib/maxscale/binlogs/binlog.index");
+        auto index = test.percona_proxy->ssh_output("cat /var/lib/percona-proxy/binlogs/binlog.index");
         test.expect(index.rc == 0, "binlog.index should exist");
         test.expect(!index.output.empty(), "binlog.index should not be empty");
 
@@ -76,7 +76,7 @@ public:
         // Finally make sure the original files have been deleted
         for (const auto& a : unexpected_files)
         {
-            auto file = test.maxscale->ssh_output("test -f " + filepath + a);
+            auto file = test.percona_proxy->ssh_output("test -f " + filepath + a);
             test.expect(file.rc != 0, "File '%s' should not exist.", a.c_str());
         }
     }
@@ -85,11 +85,11 @@ public:
     {
         create_new_logs(5);
 
-        auto old_logs = maxscale.rows("SHOW BINARY LOGS");
+        auto old_logs = percona_proxy.rows("SHOW BINARY LOGS");
         test.expect(!old_logs.empty(), "Empty reply to SHOW BINARY LOGS");
         auto log_to_keep = old_logs.back()[0];
         old_logs.pop_back();    // Keep these around so that we can check that they don't exist
-        maxscale.query("PURGE BINARY LOGS TO '" + log_to_keep + "'");
+        percona_proxy.query("PURGE BINARY LOGS TO '" + log_to_keep + "'");
 
         std::vector<std::string> unexpected_files;
         for (const auto& old : old_logs)
@@ -115,7 +115,7 @@ public:
         maxbase::Timer timer(expire_log_duration);
         maxbase::StopWatch stop_watch;
 
-        auto all_logs = maxscale.rows("SHOW BINARY LOGS");
+        auto all_logs = percona_proxy.rows("SHOW BINARY LOGS");
         test.expect(all_logs.size() > num_new_logs, "Too few logs from SHOW BINARY LOGS");
 
         timer.wait_alarm();         // wait until the first moment logs could be purged
@@ -124,7 +124,7 @@ public:
         // Wait until the logs are purged, or until they should have been purged
         while (stop_watch.split() < max_wait_time)
         {
-            auto new_logs = maxscale.rows("SHOW BINARY LOGS");
+            auto new_logs = percona_proxy.rows("SHOW BINARY LOGS");
             if (new_logs.size() == expire_log_minimum_files)
             {
                 break;

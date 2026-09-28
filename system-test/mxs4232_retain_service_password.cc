@@ -47,31 +47,31 @@ void run(TestConnections& test)
 
     test.sync_repl_slaves();
 
-    // Connect using new user via MaxScale. Unless MaxScale uses the previous
+    // Connect using new user via Percona Proxy. Unless Percona Proxy uses the previous
     // correct password, the connecting will fail.
-    Connection maxscale = test.maxscale->rwsplit();
+    Connection percona_proxy = test.percona_proxy->rwsplit();
 
-    maxscale.set_credentials("mxs4232", "mxs4232");
+    percona_proxy.set_credentials("mxs4232", "mxs4232");
 
-    test.expect(maxscale.connect(), "Could not connect to MaxScale: %s", maxscale.error());
+    test.expect(percona_proxy.connect(), "Could not connect to Percona Proxy: %s", percona_proxy.error());
 
-    test.expect(maxscale.query("SELECT 1"), "Could not SELECT 1:, %s", maxscale.error());
+    test.expect(percona_proxy.query("SELECT 1"), "Could not SELECT 1:, %s", percona_proxy.error());
 }
 
 }
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
 
     TestConnections test(argc, argv);
 
-    // Delete the user before MaxScale has started and loads the users.
+    // Delete the user before Percona Proxy has started and loads the users.
     Connection master = test.repl->get_connection(0);
     test.expect(master.connect(), "Could not connect to master: %s", master.error());
     delete_user(test, master);
 
-    test.maxscale->start();
+    test.percona_proxy->start();
 
     try
     {

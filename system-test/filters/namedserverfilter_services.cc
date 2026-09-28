@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     test.repl->connect("mysql");
     auto expected = test.repl->get_all_server_ids_str();
 
-    auto c = test.maxscale->get_connection(4006);
+    auto c = test.percona_proxy->get_connection(4006);
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     std::vector<std::string> ids;
     ids.push_back(c.field("SELECT @@server_id, 'RCR1'"));

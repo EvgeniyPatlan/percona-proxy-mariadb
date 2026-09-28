@@ -16,24 +16,24 @@
 script=`basename "$0"`
 
 source=$src_dir/masking/$1/masking_rules.json
-target=${maxscale_000_whoami}@${maxscale_000_network}:/home/${maxscale_000_whoami}/masking_rules.json
+target=${percona_proxy_000_whoami}@${percona_proxy_000_network}:/home/${percona_proxy_000_whoami}/masking_rules.json
 
-if [ ${maxscale_000_network} != "127.0.0.1" ] ; then
-        scp -i $maxscale_000_keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $source $target
-        ssh -i $maxscale_000_keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${maxscale_000_whoami}@${maxscale_000_network} "sudo chmod o+r /home/${maxscale_000_whoami}/masking_rules.json"
+if [ ${percona_proxy_000_network} != "127.0.0.1" ] ; then
+        scp -i $percona_proxy_000_keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null $source $target
+        ssh -i $percona_proxy_000_keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${percona_proxy_000_whoami}@${percona_proxy_000_network} "sudo chmod o+r /home/${percona_proxy_000_whoami}/masking_rules.json"
 else
-        cp $source /home/${maxscale_000_whoami}/masking_rules.json
+        cp $source /home/${percona_proxy_000_whoami}/masking_rules.json
 fi
 
 if [ $? -ne 0 ]
 then
-    echo "error: Could not copy rules file to maxscale host."
+    echo "error: Could not copy rules file to percona-proxy host."
     exit 1
 fi
 
-echo $source copied to $target, restarting maxscale
+echo $source copied to $target, restarting percona-proxy
 
-ssh  -i $maxscale_000_keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${maxscale_000_whoami}@${maxscale_000_network} 'sudo systemctl restart maxscale'
+ssh  -i $percona_proxy_000_keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${percona_proxy_000_whoami}@${percona_proxy_000_network} 'sudo systemctl restart percona-proxy'
 
 test_dir=`pwd`
 
@@ -41,7 +41,7 @@ logdir=log_$1
 [ -d $logdir ] && rm -r $logdir
 mkdir $logdir || exit 1
 
-# [Read Connection Listener Master] in cnf/maxscale.maxscale.cnf.template.$1
+# [Read Connection Listener Master] in cnf/percona-proxy.percona-proxy.cnf.template.$1
 port=4008
 
 dir="$src_dir/masking/$1"
@@ -49,8 +49,8 @@ dir="$src_dir/masking/$1"
 user=skysql
 test_name=masking_user
 mariadb-test --no-defaults \
-          --host=${maxscale_000_network} --port=$port \
-          --user=$user --password=$maxscale_password \
+          --host=${percona_proxy_000_network} --port=$port \
+          --user=$user --password=$percona_proxy_password \
           --ssl-verify-server-cert=0 \
           --logdir=$logdir \
           --test-file=$dir/t/$test_name.test \
@@ -67,8 +67,8 @@ fi
 user=maxskysql
 test_name=masking_user
 mariadb-test --no-defaults \
-          --host=${maxscale_000_network} --port=$port \
-          --user=$user --password=$maxscale_password \
+          --host=${percona_proxy_000_network} --port=$port \
+          --user=$user --password=$percona_proxy_password \
           --ssl-verify-server-cert=0 \
           --logdir=$logdir \
           --test-file=$dir/t/$test_name.test \

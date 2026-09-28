@@ -70,15 +70,15 @@ int main(int argc, char** argv)
     test.repl->stop_node(3);
 
     test.tprintf("Giving monitor time to detect the situation...");
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
 
     // All slaves down, so we expect a connection to the master.
-    string master_id = get_server_id(test, test.maxscale->conn_slave);
+    string master_id = get_server_id(test, test.percona_proxy->conn_slave);
     test.tprintf("Master id: %s", master_id.c_str());
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     test.tprintf("Starting all slaves.");
     test.repl->start_node(3);
@@ -86,11 +86,11 @@ int main(int argc, char** argv)
     test.repl->start_node(1);
 
     test.tprintf("Giving monitor time to detect the situation...");
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
 
-    string slave_id = get_server_id(test, test.maxscale->conn_slave);
+    string slave_id = get_server_id(test, test.percona_proxy->conn_slave);
     test.tprintf("Server id: %s", slave_id.c_str());
     test.expect(slave_id != master_id, "Expected something else but %s", master_id.c_str());
 

@@ -24,8 +24,8 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    test.maxscale->connect();
-    test.try_query(test.maxscale->conn_master, "SELECT 1");
+    test.percona_proxy->connect();
+    test.try_query(test.percona_proxy->conn_master, "SELECT 1");
 
     // Change master mid-session
     test.repl->connect();
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     // Give the monitor some time to detect it
     sleep(5);
 
-    test.add_result(execute_query_silent(test.maxscale->conn_master, "SELECT 1") == 0,
+    test.add_result(execute_query_silent(test.percona_proxy->conn_master, "SELECT 1") == 0,
                     "Query should fail");
 
     // Change the master back to the original one

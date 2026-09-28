@@ -39,7 +39,7 @@ void test_master_failure(TestConnections& test)
 
     // Execute a slow session command before starting a transaction.
     test.reset_timeout();
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     c.set_credentials("bob", "bob");
     c.connect();
     c.query("SET @a = (SELECT SLEEP(10))");
@@ -77,7 +77,7 @@ void test_bad_master(TestConnections& test)
     master.connect();
     master.query("CREATE TABLE test.t1(id INT)");
 
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
 
     auto check = [&](std::string query) {
@@ -90,13 +90,13 @@ void test_bad_master(TestConnections& test)
     check("INSERT INTO test.t1 VALUES (1)");
 
     // Stop the monitor and manually set the servers into Down state
-    test.maxctrl("stop monitor MariaDB-Monitor");
+    test.percona_proxyctl("stop monitor MariaDB-Monitor");
 
     for (std::string server : {"server1", "server2", "server3", "server4"})
     {
-        test.maxctrl("clear server " + server + " master");
-        test.maxctrl("clear server " + server + " slave");
-        test.maxctrl("clear server " + server + " running");
+        test.percona_proxyctl("clear server " + server + " master");
+        test.percona_proxyctl("clear server " + server + " slave");
+        test.percona_proxyctl("clear server " + server + " running");
     }
 
     // Start a separate thread that starts the monitor. This causes the transaction replay to
@@ -104,7 +104,7 @@ void test_bad_master(TestConnections& test)
     std::thread thr(
         [&]() {
             sleep(5);
-            test.maxctrl("start monitor MariaDB-Monitor");
+            test.percona_proxyctl("start monitor MariaDB-Monitor");
         });
 
     test.reset_timeout();

@@ -98,7 +98,7 @@ bool Table::prepare(MYSQL* mysql, std::string engine)
     bool ok = false;
     mxb::upper_case(engine);
 
-    // The table schema assumes the same data format that the MongoDB API in MaxScale uses. The "_id" field in
+    // The table schema assumes the same data format that the MongoDB API in Percona Proxy uses. The "_id" field in
     // the JSON is expected to be populated. Currently the field is required as it has a unique index defined
     // for it. This can be changed with `ALTER TABLE ... DROP CONSTRAINT id_is_not_null`.
     std::string create = "CREATE TABLE IF NOT EXISTS " + m_table;

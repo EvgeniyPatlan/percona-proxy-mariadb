@@ -29,7 +29,7 @@ void try_conn(TestConnections& test, int port, Ssl ssl, const string& user, cons
 int main(int argc, char** argv)
 {
     TestConnections test;
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return test.run_test(argc, argv, test_main);
 }
 
@@ -37,7 +37,7 @@ namespace
 {
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& mxs_vm = mxs.vm_node();
     auto& repl = *test.repl;
 
@@ -136,7 +136,7 @@ void test_main(TestConnections& test)
             MYSQL* newconn = mysql_init(nullptr);
             mysql_optionsv(newconn, MYSQL_PLUGIN_DIR, connector_plugin_dir);
             mysql_optionsv(newconn, MYSQL_SERVER_PUBLIC_KEY, rsa_privkey_file_src.c_str());
-            if (mysql_real_connect(newconn, test.maxscale->ip4(), ed_sha_user_nossl.c_str(),
+            if (mysql_real_connect(newconn, test.percona_proxy->ip4(), ed_sha_user_nossl.c_str(),
                                    ed_sha_pw_nossl.c_str(), nullptr, sha256_port_nossl, nullptr, 0))
             {
                 const char query[] = "select rand();";
@@ -176,7 +176,7 @@ void try_conn(TestConnections& test, int port, Ssl ssl, const string& user, cons
     sett.password = pass;
     sett.ssl.enabled = ssl == Ssl::ON;
 
-    const string& host = test.maxscale->ip4();
+    const string& host = test.percona_proxy->ip4();
 
     test.tprintf("Trying to log in to [%s]:%i as '%s' using password '%s'.", host.c_str(), port,
                  user.c_str(), pass.c_str());
@@ -217,16 +217,16 @@ void try_conn(TestConnections& test, int port, Ssl ssl, const string& user, cons
         }
         else
         {
-            test.add_failure("Connection to MaxScale succeeded when failure was expected.");
+            test.add_failure("Connection to Percona Proxy succeeded when failure was expected.");
         }
     }
     else if (expect_success)
     {
-        test.add_failure("Connection to MaxScale failed: %s", maxconn.error());
+        test.add_failure("Connection to Percona Proxy failed: %s", maxconn.error());
     }
     else
     {
-        test.tprintf("Connection to MaxScale failed as expected.");
+        test.tprintf("Connection to Percona Proxy failed as expected.");
     }
 }
 }

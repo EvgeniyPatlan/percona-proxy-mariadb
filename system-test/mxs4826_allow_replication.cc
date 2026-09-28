@@ -16,12 +16,12 @@
 
 void test_main(TestConnections& test)
 {
-    if (!test.expect(test.maxscale->connect_rwsplit("") == 0, "Failed to connect"))
+    if (!test.expect(test.percona_proxy->connect_rwsplit("") == 0, "Failed to connect"))
     {
         return;
     }
 
-    MYSQL* c = test.maxscale->conn_rwsplit;
+    MYSQL* c = test.percona_proxy->conn_rwsplit;
 
     for (auto q : {
         "SET @master_binlog_checksum = @@global.binlog_checksum",
@@ -49,9 +49,9 @@ void test_main(TestConnections& test)
         test.expect(!ev, "No event should be sent");
 
         test.expect(mysql_errno(c) == 1289,
-                    "MaxScale should respond with ER_FEATURE_DISABLED, got %d", mysql_errno(c));
+                    "Percona Proxy should respond with ER_FEATURE_DISABLED, got %d", mysql_errno(c));
         test.expect(mysql_error(c) == "Replication protocol is disabled"s,
-                    "MaxScale responded with wrong message: %s", mysql_error(c));
+                    "Percona Proxy responded with wrong message: %s", mysql_error(c));
         mariadb_free_rpl_event(ev);
         mariadb_rpl_close(rpl);
     }

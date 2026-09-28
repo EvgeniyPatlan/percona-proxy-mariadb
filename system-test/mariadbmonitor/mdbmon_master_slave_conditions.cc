@@ -44,7 +44,7 @@ void test_main(TestConnections& test)
     auto down_3slaves = {down_st, slave_st, slave_st, slave_st};
     auto all_running = {running_st, running_st, running_st, running_st};
 
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     auto reset = [&]() {
             test.repl->stop_slaves();
@@ -341,8 +341,8 @@ void test_main(TestConnections& test)
             test.tprintf("Set server2 to maintenance, server3 to draining and shutdown server4. None"
                          "should have read_only.");
             alter_monitor(master_cond, "connected_slave,running_slave");
-            mxs.maxctrl("set server server2 maint");
-            mxs.maxctrl("set server server3 drain");
+            mxs.percona_proxyctl("set server server2 maint");
+            mxs.percona_proxyctl("set server server3 drain");
             int stopped_node = 3;
             repl.stop_node(stopped_node);
 
@@ -372,7 +372,7 @@ void test_main(TestConnections& test)
             expect_read_only(2, true);
 
             test.tprintf("Bring server2 out of maintenance. It should get read_only.");
-            mxs.maxctrl("clear server server2 maint");
+            mxs.percona_proxyctl("clear server server2 maint");
             mxs.wait_for_monitor();
             expect_read_only(1, true);
 
@@ -381,7 +381,7 @@ void test_main(TestConnections& test)
             mxs.wait_for_monitor();
             expect_read_only(3, true);
 
-            mxs.maxctrl("clear server server3 drain");
+            mxs.percona_proxyctl("clear server server3 drain");
             repl.backend(1)->admin_connection()->cmd(start);
             repl.backend(2)->admin_connection()->cmd(start);
             mxs.wait_for_monitor();

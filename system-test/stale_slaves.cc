@@ -13,7 +13,7 @@
  */
 
 /**
- * @file stale_slaves.cpp Testing slaves who have lost their master and how MaxScale works with them
+ * @file stale_slaves.cpp Testing slaves who have lost their master and how Percona Proxy works with them
  *
  * When the master server is blocked and slaves lose their master, they should
  * still be available for read queries. Once the master comes back, all slaves
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
     }
 
     auto get_id = [&]() {
-            Connection c = test.maxscale->readconn_slave();
+            Connection c = test.percona_proxy->readconn_slave();
             test.expect(c.connect(), "Connection should be OK: %s", c.error());
             string res = c.field("SELECT @@server_id");
             test.expect(!res.empty(), "Field should not be empty: %s", c.error());
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 
     test.tprintf("Blocking the master and doing a read query");
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
 
     string first = get_id();
     auto it = find(begin(ids), end(ids), first);
@@ -70,22 +70,22 @@ int main(int argc, char** argv)
 
     test.tprintf("Blocking the slave that replied to us");
     test.repl->block_node(node);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.expect(!in_use(first), "The first slave should not be in use");
 
     test.tprintf("Unblocking all nodes");
     test.repl->unblock_all_nodes();
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.expect(in_use(first), "The first slave should be in use");
 
     test.tprintf("Stopping replication on first slave");
     execute_query(test.repl->nodes[node], "STOP SLAVE");
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.expect(!in_use(first), "The first slave should not be in use");
 
     test.tprintf("Starting replication on first slave");
     execute_query(test.repl->nodes[node], "START SLAVE");
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.expect(in_use(first), "The first slave should be in use");
     test.repl->disconnect();
 

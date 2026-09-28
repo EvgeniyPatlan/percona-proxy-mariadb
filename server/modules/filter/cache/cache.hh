@@ -13,13 +13,13 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
-#include <maxscale/buffer.hh>
-#include <maxscale/session.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/session.hh>
 
 #include "rules.hh"
 #include "cache_storage_api.hh"

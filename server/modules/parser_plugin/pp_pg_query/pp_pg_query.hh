@@ -12,7 +12,7 @@
  */
 
 #define MXB_MODULE_NAME "pp_pg_query"
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <pg_query.h>
 extern "C"
 {

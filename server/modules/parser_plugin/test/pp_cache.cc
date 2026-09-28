@@ -16,11 +16,11 @@
 #include <chrono>
 #include <iostream>
 #include <maxbase/stopwatch.hh>
-#include <maxscale/cachingparser.hh>
-#include <maxscale/log.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/testparser.hh>
+#include <percona-proxy/cachingparser.hh>
+#include <percona-proxy/log.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/testparser.hh>
 
 using namespace std;
 

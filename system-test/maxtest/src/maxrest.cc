@@ -82,10 +82,10 @@ string to_string(const std::vector<MaxRest::Parameter>& parameters)
 class MaxRest::SystemTestImp : public MaxRest::Imp
 {
 public:
-    SystemTestImp(MaxRest* pOwner, TestConnections* pTest, mxt::MaxScale* pMaxscale)
+    SystemTestImp(MaxRest* pOwner, TestConnections* pTest, mxt::PerconaProxy* pPerconaProxy)
         : Imp(pOwner)
         , m_test(*pTest)
-        , m_maxscale(*pMaxscale)
+        , m_percona_proxy(*pPerconaProxy)
     {
     }
 
@@ -101,12 +101,12 @@ public:
 
     mxt::CmdResult execute_curl_command(const std::string& curl_command) const override final
     {
-        return m_maxscale.ssh_output(curl_command, false);
+        return m_percona_proxy.ssh_output(curl_command, false);
     }
 
 private:
     TestConnections& m_test;
-    mxt::MaxScale&   m_maxscale;
+    mxt::PerconaProxy&   m_percona_proxy;
 };
 
 //
@@ -177,8 +177,8 @@ MaxRest::MaxRest(TestConnections* pTest)
 {
 }
 
-MaxRest::MaxRest(TestConnections* pTest, mxt::MaxScale* pMaxscale)
-    : m_sImp(create_imp(pTest, pMaxscale))
+MaxRest::MaxRest(TestConnections* pTest, mxt::PerconaProxy* pPerconaProxy)
+    : m_sImp(create_imp(pTest, pPerconaProxy))
 {
 }
 
@@ -199,18 +199,18 @@ MaxRest::Thread::Thread(const MaxRest& maxrest, json_t* pObject)
 {
 }
 
-mxb::Json MaxRest::v1_maxscale_threads(const string& id) const
+mxb::Json MaxRest::v1_percona_proxy_threads(const string& id) const
 {
-    string path("maxscale/threads");
+    string path("percona-proxy/threads");
     path += "/";
     path += id;
 
     return curl_get(path);
 }
 
-mxb::Json MaxRest::v1_maxscale_threads() const
+mxb::Json MaxRest::v1_percona_proxy_threads() const
 {
-    return curl_get("maxscale/threads");
+    return curl_get("percona-proxy/threads");
 }
 
 mxb::Json MaxRest::v1_servers(const string& id) const
@@ -241,12 +241,12 @@ mxb::Json MaxRest::v1_services() const
     return curl_get("services");
 }
 
-void MaxRest::v1_maxscale_modules(const string& module,
+void MaxRest::v1_percona_proxy_modules(const string& module,
                                   const string& command,
                                   const string& instance,
                                   const std::vector<string>& params) const
 {
-    string path("maxscale/modules");
+    string path("percona-proxy/modules");
 
     path += "/";
     path += module;
@@ -292,20 +292,20 @@ void MaxRest::alter(const std::string& resource, const std::vector<Parameter>& p
     curl_patch(resource, body.str());
 }
 
-void MaxRest::alter_maxscale(const vector<Parameter>& parameters) const
+void MaxRest::alter_percona_proxy(const vector<Parameter>& parameters) const
 {
-    alter("maxscale", parameters);
+    alter("percona-proxy", parameters);
 }
 
-void MaxRest::alter_maxscale(const Parameter& parameter) const
+void MaxRest::alter_percona_proxy(const Parameter& parameter) const
 {
     vector<Parameter> parameters = { parameter };
-    alter_maxscale(parameters);
+    alter_percona_proxy(parameters);
 }
 
-void MaxRest::alter_maxscale(const string& parameter_name, const Value& parameter_value) const
+void MaxRest::alter_percona_proxy(const string& parameter_name, const Value& parameter_value) const
 {
-    alter_maxscale(Parameter { parameter_name, parameter_value });
+    alter_percona_proxy(Parameter { parameter_name, parameter_value });
 }
 
 void MaxRest::alter_service(const std::string& service, const std::vector<Parameter>& parameters) const
@@ -424,12 +424,12 @@ MaxRest::Server MaxRest::show_server(const std::string& id) const
 
 vector<MaxRest::Thread> MaxRest::show_threads() const
 {
-    return get_array<Thread>(v1_maxscale_threads().get_json(), "data", Presence::MANDATORY);
+    return get_array<Thread>(v1_percona_proxy_threads().get_json(), "data", Presence::MANDATORY);
 }
 
 MaxRest::Thread MaxRest::show_thread(const std::string& id) const
 {
-    mxb::Json object = v1_maxscale_threads(id);
+    mxb::Json object = v1_percona_proxy_threads(id);
     json_t* pData = get_object(object.get_json(), "data", Presence::MANDATORY);
     return Thread(*this, pData);
 }
@@ -684,21 +684,21 @@ string MaxRest::get<string>(json_t* pObject, const string& key, Presence presenc
     return pValue ? json_string_value(pValue) : "";
 }
 
-MaxRest::Imp* MaxRest::create_imp(TestConnections* pTest, mxt::MaxScale* pMaxscale)
+MaxRest::Imp* MaxRest::create_imp(TestConnections* pTest, mxt::PerconaProxy* pPerconaProxy)
 {
-    if (!pMaxscale)
+    if (!pPerconaProxy)
     {
-        pMaxscale = pTest->maxscale;
+        pPerconaProxy = pTest->percona_proxy;
     }
 
     Imp* pImp;
-    if (!pMaxscale->vm_node().is_remote())
+    if (!pPerconaProxy->vm_node().is_remote())
     {
         pImp = new LocalImp(this, pTest);
     }
     else
     {
-        pImp = new SystemTestImp(this, pTest, pMaxscale);
+        pImp = new SystemTestImp(this, pTest, pPerconaProxy);
     }
 
     return pImp;

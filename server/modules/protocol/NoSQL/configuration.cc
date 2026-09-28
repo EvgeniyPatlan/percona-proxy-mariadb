@@ -15,9 +15,9 @@
 #include "configuration.hh"
 #include "nosqlconfig.hh"
 #include <fstream>
-#include <maxscale/paths.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/key_manager.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/key_manager.hh>
 #include "../../filter/cache/cacheconfig.hh"
 #include "protocolmodule.hh"
 
@@ -210,7 +210,7 @@ const char* CONFIG_PREFIX = MXB_MODULE_NAME;
 mxs::config::Specification specification(MXB_MODULE_NAME, mxs::config::Specification::PROTOCOL,
                                          CONFIG_PREFIX);
 
-// Can only be changed via MaxScale
+// Can only be changed via Percona Proxy
 mxs::config::ParamString user(
     &nosqlprotocol::specification,
     "user",
@@ -239,7 +239,7 @@ mxs::config::ParamBool authentication_shared(
     &nosqlprotocol::specification,
     "authentication_shared",
     "Whether NoSQL credentials should be stored in the MariaDB server, thus enabling the "
-    "use of several MaxScale instances with the same nosqlprotocol configuration.",
+    "use of several Percona Proxy instances with the same nosqlprotocol configuration.",
     false);
 
 mxs::config::ParamString authentication_db(
@@ -524,7 +524,7 @@ void Config::copy_from(const string& command, const bsoncxx::document::view& doc
             || key == nosqlprotocol::id_length.name())
         {
             ostringstream ss;
-            ss << "Configuration parameter '" << key << "', can only be changed via MaxScale.";
+            ss << "Configuration parameter '" << key << "', can only be changed via Percona Proxy.";
             throw SoftError(ss.str(), error::NO_SUCH_KEY);
         }
 

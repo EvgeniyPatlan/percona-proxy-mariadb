@@ -51,8 +51,8 @@
 # line
 # example: '#NAME long_test_time=3600 ./long_test'
 #
-# $maxscale_product - use CI or production version of Maxscale
-# 'maxscale_ci' or 'maxscale'
+# $percona_proxy_product - use CI or production version of Maxscale
+# 'percona_proxy_ci' or 'percona-proxy'
 
 export vm_memory=${vm_memory:-"2048"}
 export dir=`pwd`
@@ -69,7 +69,7 @@ export mdbci_config_name=`echo ${mdbci_config_name} | sed "s/?//g"`
 
 export provider=`mdbci show provider $box --silent 2> /dev/null`
 export backend_box=${backend_box:-"rocky_8_"$provider}
-export maxscale_product=${maxscale_product:-"maxscale_ci"}
+export percona_proxy_product=${percona_proxy_product:-"percona_proxy_ci"}
 
 mdbci destroy --force ${mdbci_config_name}
 
@@ -101,24 +101,24 @@ if [ $? == 0 ] ; then
     fi
 fi
 
-# Build MaxScale locally on the VM
+# Build Percona Proxy locally on the VM
 if [[ "$name" =~ '-gcov' ]]
 then
-    echo "Building MaxScale from source on maxscale_000"
+    echo "Building Percona Proxy from source on percona_proxy_000"
 
-    # Start the MaxScale machine by running the sanity check test
+    # Start the Percona Proxy machine by running the sanity check test
     ctest -V -R sanity_check || exit 1
 
     # Configure SSH options
-    export sshuser=`mdbci ssh --command 'whoami' --silent $mdbci_config_name/maxscale_000 2> /dev/null | tr -d '\r'`
-    export IP=`mdbci show network $mdbci_config_name/maxscale_000 --silent 2> /dev/null`
-    export sshkey=`mdbci show keyfile $mdbci_config_name/maxscale_000 --silent 2> /dev/null | sed 's/"//g'`
+    export sshuser=`mdbci ssh --command 'whoami' --silent $mdbci_config_name/percona_proxy_000 2> /dev/null | tr -d '\r'`
+    export IP=`mdbci show network $mdbci_config_name/percona_proxy_000 --silent 2> /dev/null`
+    export sshkey=`mdbci show keyfile $mdbci_config_name/percona_proxy_000 --silent 2> /dev/null | sed 's/"//g'`
     export scpopt="-i $sshkey -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o ConnectTimeout=120 "
     export sshopt="$scpopt $sshuser@$IP"
 
-    rsync -az --delete -e "ssh $scpopt" ${script_dir}/../../ $sshuser@$IP:/tmp/MaxScale/
-    ssh $sshopt "/tmp/MaxScale/BUILD/install_build_deps.sh"
-    ssh $sshopt "mkdir /tmp/build && cd /tmp/build && cmake ../MaxScale -DCMAKE_INSTALL_PREFIX=/usr -DGCOV=Y && make && sudo make install"
+    rsync -az --delete -e "ssh $scpopt" ${script_dir}/../../ $sshuser@$IP:/tmp/Percona Proxy/
+    ssh $sshopt "/tmp/Percona Proxy/BUILD/install_build_deps.sh"
+    ssh $sshopt "mkdir /tmp/build && cd /tmp/build && cmake ../Percona Proxy -DCMAKE_INSTALL_PREFIX=/usr -DGCOV=Y && make && sudo make install"
     ssh $sshopt "sudo chmod -R a+rwx /tmp/build"
     ssh $sshopt "sudo systemctl daemon-reload"
 fi
@@ -135,12 +135,12 @@ else
     fi
 
     ctest -N "${arguments[@]}"
-    ctest -VV "${arguments[@]}" --test-output-size-passed 16777216 --test-output-size-failed 16777216 --output-junit LOGS/maxscale.xml --verbose --overwrite BuildName=maxscale
+    ctest -VV "${arguments[@]}" --test-output-size-passed 16777216 --test-output-size-failed 16777216 --output-junit LOGS/percona-proxy.xml --verbose --overwrite BuildName=percona-proxy
 fi
 
 if [[ "$name" =~ '-gcov' ]]
 then
-    ssh $sshopt 'cd /tmp/build && lcov --gcov-tool=$(command -v gcov) -c -d . -o lcov.info && genhtml --prefix /tmp/MaxScale/ -o /tmp/gcov-report/ lcov.info'
+    ssh $sshopt 'cd /tmp/build && lcov --gcov-tool=$(command -v gcov) -c -d . -o lcov.info && genhtml --prefix /tmp/Percona Proxy/ -o /tmp/gcov-report/ lcov.info'
     rsync -a --delete -e "ssh $scpopt" $sshuser@$IP:/tmp/gcov-report/ ./gcov-report/
     mkdir -p ${logs_publish_dir}/coverage/
     cp -r ./gcov-report/ ${logs_publish_dir}/coverage/

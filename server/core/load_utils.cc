@@ -27,18 +27,18 @@
 #include <string>
 
 #include <maxbase/format.hh>
-#include <maxscale/authenticator.hh>
-#include <maxscale/filter.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/monitor.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/protocol.hh>
-#include <maxscale/router.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/version.hh>
+#include <percona-proxy/authenticator.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/monitor.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/protocol.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/version.hh>
 
 #include "internal/config.hh"
 #include "internal/modules.hh"
@@ -246,11 +246,11 @@ bool check_module(const MXS_MODULE* mod_info, const string& filepath, ModuleType
 {
     auto filepathc = filepath.c_str();
     // Check the first field of the module-struct to see if the struct is valid for this
-    // MaxScale version.
+    // Percona Proxy version.
     auto obj_version = mod_info->mxs_version;
     if (obj_version != mxs::MODULE_INFO_VERSION)
     {
-        MXB_ERROR("Module from '%s' is a for a different version of MaxScale and cannot be loaded.",
+        MXB_ERROR("Module from '%s' is a for a different version of Percona Proxy and cannot be loaded.",
                   filepathc);
         return false;
     }
@@ -299,7 +299,7 @@ int load_module_cb(const char* fpath, const struct stat* sb, int typeflag, struc
         {
             string last_part = (last_part_ptr + 1);
             if (last_part.find("lib") == 0 && last_part.find(".so") != string::npos
-                && last_part.find("libmaxscale-common.so") == string::npos)
+                && last_part.find("libpercona-proxy-common.so") == string::npos)
             {
                 auto res = load_module(fpath, ModuleType::UNKNOWN);
 
@@ -366,7 +366,7 @@ LoadAttempt load_module_file(const string& filepath, ModuleType type, const stri
                 {
                     res.result = LoadResult::NOT_A_MODULE;
                     res.error = mxb::string_printf(
-                        "Not a MaxScale module (defined in '%s', module is '%s'): %s",
+                        "Not a Percona Proxy module (defined in '%s', module is '%s'): %s",
                         symbol_path, file_path, fnamec);
                     dlclose(dlhandle);
                 }
@@ -625,7 +625,7 @@ json_t* module_to_json(const MXS_MODULE* module, const char* host)
 
 json_t* spec_module_json_data(const char* host, const mxs::config::Specification& spec)
 {
-    mxb_assert((spec.kind() == mxs::config::Specification::Kind::GLOBAL && spec.module() == "maxscale")
+    mxb_assert((spec.kind() == mxs::config::Specification::Kind::GLOBAL && spec.module() == "percona-proxy")
                || (spec.kind() == mxs::config::Specification::Kind::SERVER && spec.module() == "servers"));
 
     json_t* commands = json_array();
@@ -636,8 +636,8 @@ json_t* spec_module_json_data(const char* host, const mxs::config::Specification
 
     json_t* attr = json_object();
     json_object_set_new(attr, "module_type", json_string(spec.module().c_str()));
-    json_object_set_new(attr, "version", json_string(MAXSCALE_VERSION));
-    // TODO: The description could be something other than than "maxscale" or "servers"
+    json_object_set_new(attr, "version", json_string(PERCONA_PROXY_VERSION));
+    // TODO: The description could be something other than than "percona-proxy" or "servers"
     json_object_set_new(attr, CN_DESCRIPTION, json_string(spec.module().c_str()));
     json_object_set_new(attr, "maturity", json_string("GA"));
     json_object_set_new(attr, "commands", commands);
@@ -934,7 +934,7 @@ void add_built_in_module(MXS_MODULE* module)
     this_unit.loaded_modules.insert(std::move(new_kv));
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 /**

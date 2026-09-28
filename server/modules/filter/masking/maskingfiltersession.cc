@@ -17,16 +17,16 @@
 
 #include <sstream>
 
-#include <maxscale/buffer.hh>
-#include <maxscale/filter.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 #include "maskingfilter.hh"
 #include "mysql.hh"
 
-using maxscale::Buffer;
-using maxscale::Parser;
+using percona_proxy::Buffer;
+using percona_proxy::Parser;
 using std::ostream;
 using std::string;
 using std::string_view;
@@ -127,7 +127,7 @@ bool should_be_masked(enum_field_types type)
 MaskingFilterSession::MaskingFilterSession(MXS_SESSION* pSession,
                                            SERVICE* pService,
                                            const MaskingFilter* pFilter)
-    : maxscale::FilterSession(pSession, pService)
+    : percona_proxy::FilterSession(pSession, pService)
     , m_state(IGNORING_RESPONSE)
     , m_config(pFilter->config())
     , m_bypass(!m_config.sRules->has_rule_for(pSession->user().c_str(),

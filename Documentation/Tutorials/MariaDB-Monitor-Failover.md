@@ -20,7 +20,7 @@ which `server1` is the initial primary and the other servers are replicas.
 In addition there is a monitor called _TheMonitor_ that monitors those
 servers.
 
-Somewhat simplified, the MaxScale configuration file would look like:
+Somewhat simplified, the Percona Proxy configuration file would look like:
 ```
 [server1]
 type=server
@@ -46,7 +46,7 @@ servers=server1,server2,server3,server4
 If everything is in order, the state of the cluster will look something
 like this:
 ```
-$ maxctrl list servers
+$ percona-proxyctl list servers
 ┌─────────┬─────────────────┬──────┬─────────────┬─────────────────┐
 │ Server  │ Address         │ Port │ Connections │ State           │
 ├─────────┼─────────────────┼──────┼─────────────┼─────────────────┤
@@ -62,7 +62,7 @@ $ maxctrl list servers
 If the primary now for any reason goes down, then the cluster state will
 look like this:
 ```
-$ maxctrl list servers
+$ percona-proxyctl list servers
 ┌─────────┬─────────────────┬──────┬─────────────┬────────────────┐
 │ Server  │ Address         │ Port │ Connections │ State          │
 ├─────────┼─────────────────┼──────┼─────────────┼────────────────┤
@@ -80,7 +80,7 @@ Note that the status for `server1` is _Down_.
 Since failover is by default _not_ enabled, the failover mechanism must be
 invoked manually:
 ```
-$ maxctrl call command mariadbmon failover TheMonitor
+$ percona-proxyctl call command mariadbmon failover TheMonitor
 OK
 ```
 There are quite a few arguments, so let's look at each one separately
@@ -100,7 +100,7 @@ If we now check the cluster state we will see that one of the remaining
 replicas has been made into primary.
 
 ```
-$ maxctrl list servers
+$ percona-proxyctl list servers
 ┌─────────┬─────────────────┬──────┬─────────────┬─────────────────┐
 │ Server  │ Address         │ Port │ Connections │ State           │
 ├─────────┼─────────────────┼──────┼─────────────┼─────────────────┤
@@ -116,7 +116,7 @@ $ maxctrl list servers
 If `server1` now reappears, it will not be rejoined to the cluster, as
 shown by the following output:
 ```
-$ maxctrl list servers
+$ percona-proxyctl list servers
 ┌─────────┬─────────────────┬──────┬─────────────┬─────────────────┐
 │ Server  │ Address         │ Port │ Connections │ State           │
 ├─────────┼─────────────────┼──────┼─────────────┼─────────────────┤
@@ -132,7 +132,7 @@ $ maxctrl list servers
 Had `auto_rejoin=true` been specified in the monitor section, then an
 attempt to rejoin `server1` would have been made.
 
-In MaxScale 2.2.1, rejoining cannot be initiated manually, but in a
+In Percona Proxy 2.2.1, rejoining cannot be initiated manually, but in a
 subsequent version a command to that effect will be provided.
 
 # Automatic Failover
@@ -149,7 +149,7 @@ auto_failover=true
 ```
 When everything is running fine, the cluster state looks like follows:
 ```
-$ maxctrl list servers
+$ percona-proxyctl list servers
 ┌─────────┬─────────────────┬──────┬─────────────┬─────────────────┐
 │ Server  │ Address         │ Port │ Connections │ State           │
 ├─────────┼─────────────────┼──────┼─────────────┼─────────────────┤
@@ -165,7 +165,7 @@ $ maxctrl list servers
 If `server1` now goes down, failover will automatically be performed and
 an existing replica promoted to new primary.
 ```
-$ maxctrl list servers
+$ percona-proxyctl list servers
 ┌─────────┬─────────────────┬──────┬─────────────┬────────────────────────┐
 │ Server  │ Address         │ Port │ Connections │ State                  │
 ├─────────┼─────────────────┼──────┼─────────────┼────────────────────────┤
@@ -200,7 +200,7 @@ rejoin a failed primary as a replica, if it reappears.
 
 When everything is running fine, the cluster state looks like follows:
 ```
-$ maxctrl list servers
+$ percona-proxyctl list servers
 ┌─────────┬─────────────────┬──────┬─────────────┬─────────────────┐
 │ Server  │ Address         │ Port │ Connections │ State           │
 ├─────────┼─────────────────┼──────┼─────────────┼─────────────────┤
@@ -217,7 +217,7 @@ Assuming `auto_failover=true` has been specified in the configuration
 file, when `server1` goes down for some reason, failover will be performed
 and we end up with the following cluster state:
 ```
-$ maxctrl list servers
+$ percona-proxyctl list servers
 ┌─────────┬─────────────────┬──────┬─────────────┬─────────────────┐
 │ Server  │ Address         │ Port │ Connections │ State           │
 ├─────────┼─────────────────┼──────┼─────────────┼─────────────────┤
@@ -241,7 +241,7 @@ then automatic rejoin will not be possible.
 If rejoining can be performed, then the cluster state will end up looking
 like:
 ```
-$ maxctrl list servers
+$ percona-proxyctl list servers
 ┌─────────┬─────────────────┬──────┬─────────────┬─────────────────┐
 │ Server  │ Address         │ Port │ Connections │ State           │
 ├─────────┼─────────────────┼──────┼─────────────┼─────────────────┤
@@ -264,7 +264,7 @@ If we continue from the cluster state at the end of the previous example
 and want to make `server1` primary again, then we must issue the following
 command:
 ```
-$ maxctrl call command mariadbmon switchover TheMonitor server1 server2
+$ percona-proxyctl call command mariadbmon switchover TheMonitor server1 server2
 OK
 ```
 There are quite a few arguments, so let's look at each one separately
@@ -282,7 +282,7 @@ _primary_.
 If the command executes successfully, we will end up with the following
 cluster state:
 ```
-$ maxctrl list servers
+$ percona-proxyctl list servers
 ┌─────────┬─────────────────┬──────┬─────────────┬─────────────────┐
 │ Server  │ Address         │ Port │ Connections │ State           │
 ├─────────┼─────────────────┼──────┼─────────────┼─────────────────┤

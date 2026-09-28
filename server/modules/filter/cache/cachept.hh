@@ -13,11 +13,11 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <memory>
 #include <vector>
-#include <maxscale/routingworker.hh>
-#include <maxscale/workerlocal.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/workerlocal.hh>
 #include "cache.hh"
 
 class CachePT : public Cache

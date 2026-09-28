@@ -24,11 +24,11 @@
 
 std::string test_one_hint(TestConnections& test, std::string hint)
 {
-    Connection conn = test.maxscale->rwsplit();
-    test.expect(conn.connect(), "Connection to MaxScale failed: %s", conn.error());
+    Connection conn = test.percona_proxy->rwsplit();
+    test.expect(conn.connect(), "Connection to Percona Proxy failed: %s", conn.error());
 
     MYSQL_STMT* stmt = conn.stmt();
-    std::string query = "SELECT @@server_id -- maxscale " + hint;
+    std::string query = "SELECT @@server_id -- percona-proxy " + hint;
 
     test.expect(mysql_stmt_prepare(stmt, query.c_str(), query.size()) == 0,
                 "PREPARE failed: %s", conn.error());
@@ -64,11 +64,11 @@ std::string test_one_hint(TestConnections& test, std::string hint)
 
 void test_unrelated_failure(TestConnections& test, const std::string& master_id)
 {
-    Connection conn = test.maxscale->rwsplit();
-    test.expect(conn.connect(), "Connection to MaxScale failed: %s", conn.error());
+    Connection conn = test.percona_proxy->rwsplit();
+    test.expect(conn.connect(), "Connection to Percona Proxy failed: %s", conn.error());
 
     MYSQL_STMT* stmt = conn.stmt();
-    std::string query = "SELECT @@server_id -- maxscale route to master";
+    std::string query = "SELECT @@server_id -- percona-proxy route to master";
 
     test.expect(mysql_stmt_prepare(stmt, query.c_str(), query.size()) == 0,
                 "PREPARE failed: %s", conn.error());
@@ -104,15 +104,15 @@ void test_unrelated_failure(TestConnections& test, const std::string& master_id)
 
 void test_ps_execute_direct(TestConnections& test, const std::string& master_id)
 {
-    Connection conn = test.maxscale->rwsplit();
-    test.expect(conn.connect(), "Connection to MaxScale failed: %s", conn.error());
+    Connection conn = test.percona_proxy->rwsplit();
+    test.expect(conn.connect(), "Connection to Percona Proxy failed: %s", conn.error());
 
     // Run the test multiple times to increase the probability that at least one slave server had enough time
     // to complete the PS before the COM_STMT_EXECUTE arrives.
     for (int i = 0; i < 100 && test.ok(); i++)
     {
         MYSQL_STMT* stmt = conn.stmt();
-        std::string query = "SELECT @@server_id -- maxscale route to master";
+        std::string query = "SELECT @@server_id -- percona-proxy route to master";
 
         test.expect(mariadb_stmt_execute_direct(stmt, query.c_str(), query.size()) == 0,
                     "execute_direct failed: %s %s", mysql_stmt_error(stmt), conn.error());

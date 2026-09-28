@@ -18,12 +18,12 @@
 #include <unistd.h>
 #include <map>
 #include <maxsql/mariadb.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/service.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/utils.hh>
 #include "configuration.hh"
 #include "nosqlkeys.hh"
-#include <maxscale/secrets.hh>
+#include <percona-proxy/secrets.hh>
 
 using namespace std;
 
@@ -1148,7 +1148,7 @@ unique_ptr<UserManager> UserManagerSqlite3::create(const string& name,
         if (is_accessible_by_others(path))
         {
             MXB_ERROR("The directory '%s' is accessible by others. The nosqlprotocol "
-                      "directory must only be accessible by MaxScale.",
+                      "directory must only be accessible by Percona Proxy.",
                       path.c_str());
         }
         else
@@ -1161,7 +1161,7 @@ unique_ptr<UserManager> UserManagerSqlite3::create(const string& name,
             if (is_accessible_by_others(path))
             {
                 MXB_ERROR("The file '%s' is accessible by others. The nosqlprotocol account "
-                          "database must only be accessible by MaxScale.",
+                          "database must only be accessible by Percona Proxy.",
                           path.c_str());
             }
             else
@@ -1170,7 +1170,7 @@ unique_ptr<UserManager> UserManagerSqlite3::create(const string& name,
 
                 if (pDb)
                 {
-                    // Ensure it is readable/writeable only by MaxScale. This should be
+                    // Ensure it is readable/writeable only by Percona Proxy. This should be
                     // necessary only when the database is created, but as you cannot
                     // provide a file mask to sqlite3, it's simpler to just do it always.
                     if (chmod(path.c_str(), S_IRUSR | S_IWUSR) == 0)
@@ -1179,7 +1179,7 @@ unique_ptr<UserManager> UserManagerSqlite3::create(const string& name,
                     }
                     else
                     {
-                        MXB_ERROR("Could not make '%s' usable only by MaxScale: %s",
+                        MXB_ERROR("Could not make '%s' usable only by Percona Proxy: %s",
                                   path.c_str(), mxb_strerror(errno));
 
                         sqlite3_close_v2(pDb);

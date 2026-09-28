@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/buffer.hh>
+#include <percona-proxy/buffer.hh>
 
 #include <cstdlib>
 #include <sstream>
@@ -20,9 +20,9 @@
 
 #include <maxbase/assert.hh>
 #include <maxbase/hexdump.hh>
-#include <maxscale/config.hh>
-#include <maxscale/hint.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/hint.hh>
+#include <percona-proxy/routingworker.hh>
 
 using mxs::RoutingWorker;
 using std::move;

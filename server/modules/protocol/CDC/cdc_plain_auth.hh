@@ -12,9 +12,9 @@
  * Public License.
  */
 
-#include <maxscale/users.hh>
-#include <maxscale/protocol/cdc/cdc.hh>
-#include <maxscale/modulecmd.hh>
+#include <percona-proxy/users.hh>
+#include <percona-proxy/protocol/cdc/cdc.hh>
+#include <percona-proxy/modulecmd.hh>
 
 class CDCClientAuthenticator;
 

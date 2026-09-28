@@ -18,8 +18,8 @@
 #include <vector>
 #include <memory>
 
-#include <maxscale/backend.hh>
-#include <maxscale/router.hh>
+#include <percona-proxy/backend.hh>
+#include <percona-proxy/router.hh>
 #include <maxbase/checksum.hh>
 
 class MyBackend;

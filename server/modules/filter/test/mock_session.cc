@@ -12,10 +12,10 @@
  * Public License.
  */
 
-#include "maxscale/mock/session.hh"
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
+#include "percona-proxy/mock/session.hh"
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
 
-namespace maxscale
+namespace percona_proxy
 {
 
 namespace mock

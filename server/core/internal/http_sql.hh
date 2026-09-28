@@ -22,7 +22,7 @@
 #include "sql_conn_manager.hh"
 
 #include <maxsql/mariadb_connector.hh>
-#include <maxscale/server.hh>
+#include <percona-proxy/server.hh>
 
 namespace HttpSql
 {

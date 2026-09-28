@@ -14,10 +14,10 @@
 
 #include <stdio.h>
 #include <maxbase/maxbase.hh>
-#include <maxscale/built_in_modules.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/testparser.hh>
+#include <percona-proxy/built_in_modules.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/testparser.hh>
 #include "../../../core/internal/modules.hh"
 
 #define MYSQL_HEADER_LEN 4

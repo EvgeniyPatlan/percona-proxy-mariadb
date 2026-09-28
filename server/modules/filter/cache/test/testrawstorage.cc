@@ -12,9 +12,9 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <iostream>
-#include <maxscale/paths.hh>
+#include <percona-proxy/paths.hh>
 #include "teststorage.hh"
 #include "testerrawstorage.hh"
 #include "../../../../core/test/test_utils.hh"

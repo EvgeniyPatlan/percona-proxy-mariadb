@@ -13,7 +13,7 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <cstdint>
 
@@ -25,9 +25,9 @@
 
 #include <maxbase/host.hh>
 #include <maxbase/jansson.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 extern const char CN_STORAGE_ARG_SERVER[];
 
@@ -574,7 +574,7 @@ public:
      * @param name       The name of the cache instance.
      * @param config     The storage configuration.
      * @param parameters The parameters of the storage, passed as nested parameters
-     *                   in the cache section in the MaxScale configuration file.
+     *                   in the cache section in the Percona Proxy configuration file.
      *
      * @return A new cache instance, or NULL if the instance could not be
      *         created.

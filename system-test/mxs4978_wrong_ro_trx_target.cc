@@ -18,7 +18,7 @@
 
 void run_test(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     CHECK(c.connect());
     CHECK(c.query("START TRANSACTION READ ONLY"));
     auto id = c.field("SELECT @@server_id");

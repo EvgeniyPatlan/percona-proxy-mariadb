@@ -12,8 +12,8 @@
  */
 
 #include "postgresprotocol.hh"
-#include <maxscale/config.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
 #include <maxbase/pretty_print.hh>
 #include "pgprotocolmodule.hh"
 #include "pgparser.hh"

@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    auto result = test.maxscale->ssh_output("cat /var/log/maxscale/maxscale.log");
+    auto result = test.percona_proxy->ssh_output("cat /var/log/percona-proxy/percona-proxy.log");
     test.expect(result.output.empty(), "Log file is not empty");
 
     return test.global_result;

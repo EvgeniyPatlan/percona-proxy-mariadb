@@ -38,12 +38,12 @@
 #include <string.h>
 #include <vector>
 
-#include <maxscale/hint.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/server.hh>
-#include <maxscale/session.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/hint.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/server.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/config2.hh>
 
 using std::string;
 
@@ -333,7 +333,7 @@ bool Specification::do_post_validate(Params& params) const
 
 RegexHintFSession::RegexHintFSession(MXS_SESSION* session, SERVICE* service, RegexHintFilter& filter,
                                      bool active, std::shared_ptr<RegexHintFilter::Setup>&& setup)
-    : maxscale::FilterSession::FilterSession(session, service)
+    : percona_proxy::FilterSession::FilterSession(session, service)
     , m_fil_inst(filter)
     , m_active(active)
     , m_setup(std::move(setup))

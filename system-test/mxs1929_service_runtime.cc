@@ -29,19 +29,19 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
     auto& repl = *test.repl;
 
-    auto maxctrl = [&](string cmd, bool print = true) {
+    auto percona_proxyctl = [&](string cmd, bool print = true) {
             test.reset_timeout();
-            auto rv = test.maxscale->ssh_output("maxctrl " + cmd);
+            auto rv = test.percona_proxy->ssh_output("percona-proxyctl " + cmd);
 
             if (rv.rc != 0 && print)
             {
-                cout << "MaxCtrl: " << rv.output << endl;
+                cout << "Percona Proxyctl: " << rv.output << endl;
             }
 
             return rv.rc == 0;
         };
 
-    Connection c1 = test.maxscale->rwsplit();
+    Connection c1 = test.percona_proxy->rwsplit();
     string host1 = repl.ip4(0);
     string port1 = to_string(repl.port(0));
     string host2 = repl.ip4(1);
@@ -51,13 +51,13 @@ int main(int argc, char** argv)
 
     cout << "Create a service and check that it works" << endl;
 
-    maxctrl("create service svc1 readwritesplit user=skysql password=skysql");
+    percona_proxyctl("create service svc1 readwritesplit user=skysql password=skysql");
 
-    maxctrl("create listener svc1 listener1 4006");
-    maxctrl("create monitor mon1 mariadbmon user=skysql password=skysql");
-    maxctrl("create server server1 " + host1 + " " + port1 + " --services svc1 --monitors mon1");
-    maxctrl("create server server2 " + host2 + " " + port2 + " --services svc1 --monitors mon1");
-    maxctrl("create server server3 " + host3 + " " + port3 + " --services svc1 --monitors mon1");
+    percona_proxyctl("create listener svc1 listener1 4006");
+    percona_proxyctl("create monitor mon1 mariadbmon user=skysql password=skysql");
+    percona_proxyctl("create server server1 " + host1 + " " + port1 + " --services svc1 --monitors mon1");
+    percona_proxyctl("create server server2 " + host2 + " " + port2 + " --services svc1 --monitors mon1");
+    percona_proxyctl("create server server3 " + host3 + " " + port3 + " --services svc1 --monitors mon1");
 
     c1.connect();
     test.expect(c1.query("SELECT 1"), "Query to simple service should work: %s", c1.error());
@@ -65,21 +65,21 @@ int main(int argc, char** argv)
 
     cout << "Destroy the service and check that it is removed" << endl;
 
-    test.expect(!maxctrl("destroy service svc1", false), "Destroying linked service should fail");
-    maxctrl("unlink service svc1 server1 server2 server3");
-    test.expect(!maxctrl("destroy service svc1", false),
+    test.expect(!percona_proxyctl("destroy service svc1", false), "Destroying linked service should fail");
+    percona_proxyctl("unlink service svc1 server1 server2 server3");
+    test.expect(!percona_proxyctl("destroy service svc1", false),
                 "Destroying service with active listeners should fail");
-    maxctrl("destroy listener svc1 listener1");
-    test.expect(maxctrl("destroy service svc1"), "Destroying valid service should work");
+    percona_proxyctl("destroy listener svc1 listener1");
+    test.expect(percona_proxyctl("destroy service svc1"), "Destroying valid service should work");
 
     test.reset_timeout();
     test.expect(!c1.connect(), "Connection should be rejected");
 
     cout << "Create the same service again and check that it still works" << endl;
 
-    maxctrl("create service svc1 readwritesplit user=skysql password=skysql");
-    maxctrl("create listener svc1 listener1 4006");
-    maxctrl("link service svc1 server1 server2 server3");
+    percona_proxyctl("create service svc1 readwritesplit user=skysql password=skysql");
+    percona_proxyctl("create listener svc1 listener1 4006");
+    percona_proxyctl("link service svc1 server1 server2 server3");
 
     c1.connect();
     test.expect(c1.query("SELECT 1"), "Query to recreated service should work: %s", c1.error());
@@ -88,9 +88,9 @@ int main(int argc, char** argv)
     cout << "Check that active connections aren't closed when service is destroyed" << endl;
 
     c1.connect();
-    maxctrl("unlink service svc1 server1 server2 server3");
-    maxctrl("destroy listener svc1 listener1");
-    maxctrl("destroy service svc1");
+    percona_proxyctl("unlink service svc1 server1 server2 server3");
+    percona_proxyctl("destroy listener svc1 listener1");
+    percona_proxyctl("destroy service svc1");
 
     test.expect(c1.query("SELECT 1"), "Query to destroyed service should still work");
 
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
     condition_variable cv;
     thread t([&]() {
                  cv.notify_one();
-                 test.expect(!test.maxscale->rwsplit().connect(),
+                 test.expect(!test.percona_proxy->rwsplit().connect(),
                              "New connections to created service "
                              "should fail with a timeout while the original connection is open");
              });

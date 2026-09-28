@@ -48,12 +48,12 @@ void query_thread(TestConnections& test)
     while (running.load() == 1 && test.ok())
     {
         auto conn = counter % 2 == 0 ?
-            test.maxscale->readconn_slave() : test.maxscale->readconn_master();
+            test.percona_proxy->readconn_slave() : test.percona_proxy->readconn_master();
         const char* type = counter % 2 == 0 ?
             "master_failure_mode=error_on_write" : "master_failure_mode=fail_on_write";
 
         conn.set_timeout(30);
-        test.expect(conn.connect(), "Failed to connect to MaxScale: %s", conn.error());
+        test.expect(conn.connect(), "Failed to connect to Percona Proxy: %s", conn.error());
 
         int i = 0;
         auto loop_start = Clock::now();
@@ -92,11 +92,11 @@ int main(int argc, char* argv[])
     {
         test.tprintf("Blocking master");
         test.repl->block_node(0);
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
 
         test.tprintf("Unblocking master");
         test.repl->unblock_node(0);
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
     }
 
     test.tprintf("Waiting for all threads to finish\n");

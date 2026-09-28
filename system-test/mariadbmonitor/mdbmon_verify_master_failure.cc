@@ -25,7 +25,7 @@ namespace
 void test_main(TestConnections& test)
 {
     auto& repl = *test.repl;
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
 
     if (test.ok())
@@ -60,12 +60,12 @@ void test_main(TestConnections& test)
         if (test.ok())
         {
             test.tprintf("Rejoining server1 and switching back.");
-            mxs.maxctrl("call command mariadbmon rejoin MySQL-Monitor server1");
+            mxs.percona_proxyctl("call command mariadbmon rejoin MySQL-Monitor server1");
             mxs.wait_for_monitor(2);
             mxs.check_print_servers_status({slave, master, slave, slave});
             if (test.ok())
             {
-                mxs.maxctrl("call command mariadbmon switchover MySQL-Monitor");
+                mxs.percona_proxyctl("call command mariadbmon switchover MySQL-Monitor");
                 mxs.wait_for_monitor(2);
                 mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
             }

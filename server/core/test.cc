@@ -22,7 +22,7 @@ struct ThisUnit
 static ThisUnit this_unit;
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 namespace test
 {

@@ -29,14 +29,14 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     auto query = [&](string q) {
-            return execute_query_silent(test.maxscale->conn_rwsplit, q.c_str()) == 0;
+            return execute_query_silent(test.percona_proxy->conn_rwsplit, q.c_str()) == 0;
         };
 
     auto ok = [&](string q) {
             test.expect(query(q),
                         "Query '%s' should work: %s",
                         q.c_str(),
-                        mysql_error(test.maxscale->conn_rwsplit));
+                        mysql_error(test.percona_proxy->conn_rwsplit));
         };
 
     auto err = [&](string q) {
@@ -44,7 +44,7 @@ int main(int argc, char** argv)
         };
 
     // Create a table and insert one value
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
     ok("CREATE OR REPLACE TABLE test.t1 (id INT)");
     ok("INSERT INTO test.t1 VALUES (1)");
 
@@ -63,15 +63,15 @@ int main(int argc, char** argv)
 
     // Block the node where the transaction is active
     test.repl->block_node(1);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     // The checksums for the results should conflict causing the replay to fail
     err("COMMIT");
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
     ok("DROP TABLE test.t1");
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

@@ -24,7 +24,7 @@
  * slave list) take turns processing read queries.
  *
  * This router is intended to be a rather straightforward example on how to
- * program a module for MariaDB MaxScale. The router does not yet support all
+ * program a module for Percona Proxy for MariaDB. The router does not yet support all
  * SQL-commands and there are bound to be various limitations yet unknown. It
  * does work on basic reads and writes.
  *
@@ -33,21 +33,21 @@
 /* The log macros use this definition. */
 #define MXB_MODULE_NAME "RoundRobinRouter"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <vector>
 #include <iostream>
 #include <string>
 #include <iterator>
 
-#include <maxscale/buffer.hh>
-#include <maxscale/dcb.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
-#include <maxscale/router.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
+#include <percona-proxy/router.hh>
 
 // #define DEBUG_RRROUTER
 #undef DEBUG_RROUTER
@@ -233,7 +233,7 @@ RRRouter::~RRRouter()
  * Connect a client session to the router instance and return a router session.
  * The router session stores all client specific data required by the router.
  *
- * @param session    The MaxScale session (generic client connection data)
+ * @param session    The Percona Proxy session (generic client connection data)
  * @param endspoints The routing endpoints that this session should use
  *
  * @return          Client specific data for this router
@@ -401,7 +401,7 @@ bool RRRouterSession::clientReply(GWBUF&& buf, const mxs::ReplyRoute& down, cons
 {
     if (m_replies_to_ignore > 0)
     {
-        /* In this case MaxScale cloned the message to many backends but the client
+        /* In this case Percona Proxy cloned the message to many backends but the client
          * expects just one reply. Assume that client does not send next query until
          * previous has been answered.
          */
@@ -633,7 +633,7 @@ bool custom_cmd_example(const MODULECMD_ARG* argv, json_t** output)
 }
 
 /*
- * This is called by the module loader during MaxScale startup. A module
+ * This is called by the module loader during Percona Proxy startup. A module
  * description, including entrypoints and allowed configuration parameters,
  * is returned. This function must be exported.
  */

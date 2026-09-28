@@ -12,16 +12,16 @@
  * Public License.
  */
 
-#include <maxscale/target.hh>
-#include <maxscale/service.hh>
-#include <maxscale/server.hh>
+#include <percona-proxy/target.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/server.hh>
 #include <maxbase/pretty_print.hh>
 
 #include <mysqld_error.h>
 
 #include "internal/service.hh"
 
-namespace maxscale
+namespace percona_proxy
 {
 
 // static

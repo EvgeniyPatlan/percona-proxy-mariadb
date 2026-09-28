@@ -20,16 +20,16 @@
 #include <maxbase/checksum.hh>
 #include <maxbase/jansson.hh>
 #include <maxbase/string.hh>
-#include <maxscale/cachingparser.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/http.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/cachingparser.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/http.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/routingworker.hh>
 
 #include "internal/admin.hh"
 #include "internal/adminusers.hh"
@@ -50,8 +50,8 @@
 using std::map;
 using std::string;
 using std::stringstream;
-using maxscale::Listener;
-using maxscale::Monitor;
+using percona_proxy::Listener;
+using percona_proxy::Monitor;
 
 using namespace std::literals::string_literals;
 
@@ -898,16 +898,16 @@ HttpResponse cb_get_listener_service_relationship(const HttpRequest& request)
     return get_relationship(request, ObjectType::LISTENER, "services");
 }
 
-HttpResponse cb_maxscale(const HttpRequest& request)
+HttpResponse cb_percona_proxy(const HttpRequest& request)
 {
-    return HttpResponse(MHD_HTTP_OK, mxs::Config::get().maxscale_to_json(request.host()));
+    return HttpResponse(MHD_HTTP_OK, mxs::Config::get().percona_proxy_to_json(request.host()));
 }
 
-HttpResponse cb_alter_maxscale(const HttpRequest& request)
+HttpResponse cb_alter_percona_proxy(const HttpRequest& request)
 {
     mxb_assert(request.get_json());
 
-    if (runtime_alter_maxscale_from_json(request.get_json()))
+    if (runtime_alter_percona_proxy_from_json(request.get_json()))
     {
         return HttpResponse(MHD_HTTP_NO_CONTENT);
     }
@@ -1609,21 +1609,21 @@ public:
         m_get.emplace_back(cb_get_listener_service_relationship,
                            "listeners", ":listener", "relationships", "services");
 
-        m_get.emplace_back(cb_maxscale, "maxscale");
-        m_get.emplace_back(cb_qc, "maxscale", "query_classifier");
-        m_get.emplace_back(cb_qc_classify, "maxscale", "query_classifier", "classify");
-        m_get.emplace_back(cb_qc_cache, "maxscale", "query_classifier", "cache");
-        m_get.emplace_back(cb_all_threads, "maxscale", "threads");
-        m_get.emplace_back(cb_thread, "maxscale", "threads", ":thread");
-        m_get.emplace_back(cb_logs, "maxscale", "logs");
-        m_get.emplace_back(cb_log_data, "maxscale", "logs", "data");
-        m_get.emplace_back(cb_log_stream, "maxscale", "logs", "stream");
-        m_get.emplace_back(cb_all_modules, "maxscale", "modules");
-        m_get.emplace_back(cb_module, "maxscale", "modules", ":module");
-        m_get.emplace_back(cb_memory, "maxscale", "memory");
+        m_get.emplace_back(cb_percona_proxy, "percona-proxy");
+        m_get.emplace_back(cb_qc, "percona-proxy", "query_classifier");
+        m_get.emplace_back(cb_qc_classify, "percona-proxy", "query_classifier", "classify");
+        m_get.emplace_back(cb_qc_cache, "percona-proxy", "query_classifier", "cache");
+        m_get.emplace_back(cb_all_threads, "percona-proxy", "threads");
+        m_get.emplace_back(cb_thread, "percona-proxy", "threads", ":thread");
+        m_get.emplace_back(cb_logs, "percona-proxy", "logs");
+        m_get.emplace_back(cb_log_data, "percona-proxy", "logs", "data");
+        m_get.emplace_back(cb_log_stream, "percona-proxy", "logs", "stream");
+        m_get.emplace_back(cb_all_modules, "percona-proxy", "modules");
+        m_get.emplace_back(cb_module, "percona-proxy", "modules", ":module");
+        m_get.emplace_back(cb_memory, "percona-proxy", "memory");
 
         /** For all read-only module commands */
-        m_get.emplace_back(cb_modulecmd, "maxscale", "modules", ":module", "?");
+        m_get.emplace_back(cb_modulecmd, "percona-proxy", "modules", ":module", "?");
 
         m_get.emplace_back(cb_all_users, "users");
         m_get.emplace_back(cb_all_inet_users, "users", "inet");
@@ -1637,18 +1637,18 @@ public:
         m_get.emplace_back(cb_sql_get_odbc_drivers, "sql", "odbc", "drivers");
 
         /** Debug utility endpoints */
-        m_get.emplace_back(cb_monitor_wait, "maxscale", "debug", "monitor_wait");
-        m_put.emplace_back(cb_thread_listen, "maxscale", "debug", "threads", ":thread", "listen");
-        m_put.emplace_back(cb_thread_unlisten, "maxscale", "debug", "threads", ":thread", "unlisten");
-        m_get.emplace_back(cb_termination_in_process, "maxscale", "debug", "termination_in_process");
-        m_get.emplace_back(cb_profile_snapshot, "maxscale", "debug", "stacktrace");
-        m_get.emplace_back(cb_debug_server_diagnostics, "maxscale", "debug", "server_diagnostics");
+        m_get.emplace_back(cb_monitor_wait, "percona-proxy", "debug", "monitor_wait");
+        m_put.emplace_back(cb_thread_listen, "percona-proxy", "debug", "threads", ":thread", "listen");
+        m_put.emplace_back(cb_thread_unlisten, "percona-proxy", "debug", "threads", ":thread", "unlisten");
+        m_get.emplace_back(cb_termination_in_process, "percona-proxy", "debug", "termination_in_process");
+        m_get.emplace_back(cb_profile_snapshot, "percona-proxy", "debug", "stacktrace");
+        m_get.emplace_back(cb_debug_server_diagnostics, "percona-proxy", "debug", "server_diagnostics");
 
         // This debug endpoint exists solely for the mxs2057_systemd_watchdog test
         // and is only available in debug builds. This is to prevent it from being
         // accidentally called in the released binaries.
 #ifdef SS_DEBUG
-        m_get.emplace_back(cb_debug_hang, "maxscale", "debug", "hang");
+        m_get.emplace_back(cb_debug_hang, "percona-proxy", "debug", "hang");
 #endif
 
         /** Create new resources */
@@ -1673,11 +1673,11 @@ public:
         m_post.emplace_back(REQ_BODY, cb_sql_etl_start, "sql", ":connection_id", "etl", "start");
 
         /** For all module commands that modify state/data */
-        m_post.emplace_back(cb_modulecmd, "maxscale", "modules", ":module", "?");
-        m_post.emplace_back(cb_flush, "maxscale", "logs", "flush");
-        m_post.emplace_back(cb_tls_reload, "maxscale", "tls", "reload");
-        m_post.emplace_back(cb_thread_rebalance, "maxscale", "threads", ":thread", "rebalance");
-        m_post.emplace_back(cb_threads_rebalance, "maxscale", "threads", "rebalance");
+        m_post.emplace_back(cb_modulecmd, "percona-proxy", "modules", ":module", "?");
+        m_post.emplace_back(cb_flush, "percona-proxy", "logs", "flush");
+        m_post.emplace_back(cb_tls_reload, "percona-proxy", "tls", "reload");
+        m_post.emplace_back(cb_thread_rebalance, "percona-proxy", "threads", ":thread", "rebalance");
+        m_post.emplace_back(cb_threads_rebalance, "percona-proxy", "threads", "rebalance");
         m_post.emplace_back(cb_reload_users, "services", ":service", "reload");
 
         /** Session manipulation */
@@ -1690,9 +1690,9 @@ public:
         m_patch.emplace_back(REQ_BODY | REQ_SYNC, cb_alter_service, "services", ":service");
         m_patch.emplace_back(REQ_BODY | REQ_SYNC, cb_alter_filter, "filters", ":filter");
         m_patch.emplace_back(REQ_BODY | REQ_SYNC, cb_alter_listener, "listeners", ":listener");
-        m_patch.emplace_back(REQ_BODY | REQ_SYNC, cb_alter_maxscale, "maxscale", "logs");   // Deprecated
-        m_patch.emplace_back(REQ_BODY | REQ_SYNC, cb_alter_maxscale, "maxscale");
-        m_patch.emplace_back(REQ_BODY | REQ_SYNC, cb_alter_qc, "maxscale", "query_classifier");
+        m_patch.emplace_back(REQ_BODY | REQ_SYNC, cb_alter_percona_proxy, "percona-proxy", "logs");   // Deprecated
+        m_patch.emplace_back(REQ_BODY | REQ_SYNC, cb_alter_percona_proxy, "percona-proxy");
+        m_patch.emplace_back(REQ_BODY | REQ_SYNC, cb_alter_qc, "percona-proxy", "query_classifier");
         m_patch.emplace_back(REQ_BODY | REQ_SYNC, cb_alter_user, "users", "inet", ":inetuser");
         m_patch.emplace_back(REQ_BODY, cb_alter_session, "sessions", ":session");
 

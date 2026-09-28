@@ -22,7 +22,7 @@ void test_main(TestConnections& test)
     std::thread query_thr([&](){
         while (running)
         {
-            auto c = test.maxscale->rwsplit();
+            auto c = test.percona_proxy->rwsplit();
             c.connect();
             c.query("SELECT 1");
         }
@@ -32,7 +32,7 @@ void test_main(TestConnections& test)
 
     try
     {
-        MaxRest api(&test, test.maxscale);
+        MaxRest api(&test, test.percona_proxy);
         api.fail_on_error(false);
 
         while (mxb::Clock::now() - start < 30s)

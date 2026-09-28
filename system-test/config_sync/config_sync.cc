@@ -18,7 +18,7 @@
 
 using namespace std::chrono;
 using JsonType = mxb::Json::Type;
-using mxt::MaxScale;
+using mxt::PerconaProxy;
 
 const auto NORMAL = mxb::Json::Format::NORMAL;
 
@@ -28,15 +28,15 @@ RestApi api2;
 struct TestCase
 {
     std::string desc;       // Test description
-    std::string cmd;        // The MaxCtrl command to execute
+    std::string cmd;        // The Percona Proxyctl command to execute
     std::string endpoint;   // REST API endpoint to check, optional
     std::string ptr;        // JSON Pointer to field to check, optional
 
-    void execute(TestConnections& test, MaxScale* maxscale) const
+    void execute(TestConnections& test, PerconaProxy* percona_proxy) const
     {
         test.tprintf("  %s", desc.c_str());
-        auto res = maxscale->maxctrl(cmd);
-        test.expect(res.rc == 0, "MaxCtrl command '%s' failed: %s", cmd.c_str(), res.output.c_str());
+        auto res = percona_proxy->percona_proxyctl(cmd);
+        test.expect(res.rc == 0, "Percona Proxyctl command '%s' failed: %s", cmd.c_str(), res.output.c_str());
     }
 };
 
@@ -49,7 +49,7 @@ std::vector<TestCase> tests
         "/data/attributes/parameters/max_sescmd_history"
     },
     {
-        "Change router parameter on the second MaxScale",
+        "Change router parameter on the second Percona Proxy",
         "alter service RW-Split-Router max_sescmd_history 15",
         "services/RW-Split-Router",
         "/data/attributes/parameters/max_sescmd_history"
@@ -158,8 +158,8 @@ void wait_for_sync(int version = 0)
 
     while (steady_clock::now() - start < seconds(5))
     {
-        auto res1 = get(api1, "maxscale", "/data/attributes/config_sync");
-        auto res2 = get(api2, "maxscale", "/data/attributes/config_sync");
+        auto res1 = get(api1, "percona-proxy", "/data/attributes/config_sync");
+        auto res2 = get(api2, "percona-proxy", "/data/attributes/config_sync");
         int v1 = res1.get_int("version");
         int v2 = res2.get_int("version");
 
@@ -176,17 +176,17 @@ void wait_for_sync(int version = 0)
     }
 }
 
-void create_config(MaxScale* mxs, const std::string& config)
+void create_config(PerconaProxy* mxs, const std::string& config)
 {
     mxs->stop();
     mxs->ssh_node_f(true,
-                    "echo '%s' > /var/lib/maxscale/maxscale-config.json;"
-                    "chown maxscale:maxscale /var/lib/maxscale/maxscale-config.json;",
+                    "echo '%s' > /var/lib/percona-proxy/percona-proxy-config.json;"
+                    "chown percona-proxy:percona-proxy /var/lib/percona-proxy/percona-proxy-config.json;",
                     config.c_str());
     mxs->start();
 
-    // This is a bit crude but it's needed in case maxscale ends up restarting
-    mxs->ssh_node("for ((i=0;i<10;i++)); do maxctrl show maxscale && break; done", true);
+    // This is a bit crude but it's needed in case percona-proxy ends up restarting
+    mxs->ssh_node("for ((i=0;i<10;i++)); do percona-proxyctl show percona-proxy && break; done", true);
 }
 
 std::string get_diff(const mxb::Json& js_a, const mxb::Json& js_b)
@@ -249,7 +249,7 @@ std::string get_diff(const mxb::Json& js_a, const mxb::Json& js_b)
     return a_diff + " != " + b_diff;
 }
 
-void expect_sync(TestConnections& test, int expected_version, size_t num_maxscales)
+void expect_sync(TestConnections& test, int expected_version, size_t num_percona_proxies)
 {
     bool ok = true;
     std::ostringstream ss;
@@ -262,9 +262,9 @@ void expect_sync(TestConnections& test, int expected_version, size_t num_maxscal
         auto nodes = status.get_object("nodes");
         size_t num_fields = json_object_size(nodes.get_json());
 
-        test.expect(num_fields == num_maxscales,
+        test.expect(num_fields == num_percona_proxies,
                     "Expected \"nodes\" object to have %lu fields, got %lu from %s: %s",
-                    num_maxscales, num_fields, who, nodes.to_string(NORMAL).c_str());
+                    num_percona_proxies, num_fields, who, nodes.to_string(NORMAL).c_str());
 
         test.expect(status.contains("origin"), "Expected \"origin\" to not be empty.");
         test.expect(status.contains("status"), "Expected \"status\" to not be empty.");
@@ -272,11 +272,11 @@ void expect_sync(TestConnections& test, int expected_version, size_t num_maxscal
 
     wait_for_sync();
 
-    auto status1 = get(api1, "maxscale", "/data/attributes/config_sync");
-    auto status2 = get(api2, "maxscale", "/data/attributes/config_sync");
+    auto status1 = get(api1, "percona-proxy", "/data/attributes/config_sync");
+    auto status2 = get(api2, "percona-proxy", "/data/attributes/config_sync");
 
-    check(status1, "MaxScale 1");
-    check(status2, "MaxScale 2");
+    check(status1, "Percona Proxy 1");
+    check(status2, "Percona Proxy 2");
 
     if (ok)
     {
@@ -303,38 +303,38 @@ void expect_equal(TestConnections& test, const std::string& resource, const std:
 
 void reset(TestConnections& test)
 {
-    test.stop_all_maxscales();
+    test.stop_all_percona_proxies();
 
-    test.maxscale->ssh_output("rm -rf /var/lib/maxscale/*");
-    test.maxscale2->ssh_output("rm -rf /var/lib/maxscale/*");
+    test.percona_proxy->ssh_output("rm -rf /var/lib/percona-proxy/*");
+    test.percona_proxy2->ssh_output("rm -rf /var/lib/percona-proxy/*");
 
     auto conn = test.repl->get_connection(0);
     test.expect(conn.connect(), "Connection failed: %s", conn.error());
-    conn.query("DROP TABLE mysql.maxscale_config");
+    conn.query("DROP TABLE mysql.percona_proxy_config");
 
-    test.maxscale->start();
-    test.maxscale2->start();
+    test.percona_proxy->start();
+    test.percona_proxy2->start();
 }
 
 void test_config_parameters(TestConnections& test)
 {
     for (auto cmd : {
-        "alter maxscale config_sync_cluster some-monitor",
+        "alter percona-proxy config_sync_cluster some-monitor",
         "destroy monitor --force MariaDB-Monitor"
     })
     {
-        test.expect(test.maxscale->maxctrl(cmd).rc != 0,
+        test.expect(test.percona_proxy->percona_proxyctl(cmd).rc != 0,
                     "Command should fail: %s", cmd);
     }
 
     test.tprintf("Disabling and then enabling config_sync_cluster should not increment version");
-    auto res = test.maxscale->maxctrl("alter maxscale config_sync_cluster \"\"");
+    auto res = test.percona_proxy->percona_proxyctl("alter percona-proxy config_sync_cluster \"\"");
     test.expect(res.rc == 0, "Disabling config_sync_cluster failed: %s", res.output.c_str());
 
-    res = test.maxscale->maxctrl("alter maxscale config_sync_cluster MariaDB-Monitor");
+    res = test.percona_proxy->percona_proxyctl("alter percona-proxy config_sync_cluster MariaDB-Monitor");
     test.expect(res.rc == 0, "Enabling config_sync_cluster failed: %s", res.output.c_str());
 
-    auto sync = get(api1, "maxscale", "/data/attributes/config_sync");
+    auto sync = get(api1, "percona-proxy", "/data/attributes/config_sync");
     test.expect(sync.type() == JsonType::OBJECT,
                 "\"config_sync\" should be an object after toggling config_sync_cluster: %s",
                 sync.to_string(NORMAL).c_str());
@@ -342,59 +342,59 @@ void test_config_parameters(TestConnections& test)
     test.expect(sync.try_get_int("version", &version) && version == 0,
                 "Version should be 0: %s", sync.to_string(NORMAL).c_str());
 
-    res = test.maxscale->maxctrl("alter maxscale config_sync_cluster \"\"");
+    res = test.percona_proxy->percona_proxyctl("alter percona-proxy config_sync_cluster \"\"");
     test.expect(res.rc == 0, "Disabling config_sync_cluster failed: %s", res.output.c_str());
 
-    res = test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history 123");
+    res = test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history 123");
     test.expect(res.rc == 0, "Config change without config_sync_cluster failed: %s", res.output.c_str());
 
-    res = test.maxscale2->maxctrl("alter service RW-Split-Router max_sescmd_history 321");
-    test.expect(res.rc == 0, "Config change on second MaxScale should work: %s", res.output.c_str());
+    res = test.percona_proxy2->percona_proxyctl("alter service RW-Split-Router max_sescmd_history 321");
+    test.expect(res.rc == 0, "Config change on second Percona Proxy should work: %s", res.output.c_str());
 
-    sync = get(api1, "maxscale", "/data/attributes/config_sync");
+    sync = get(api1, "percona-proxy", "/data/attributes/config_sync");
     test.expect(sync.type() == JsonType::JSON_NULL,
                 "\"config_sync\" should be null after modification in the cluster: %s",
                 sync.to_string(NORMAL).c_str());
 
-    res = test.maxscale->maxctrl("alter maxscale config_sync_cluster MariaDB-Monitor");
+    res = test.percona_proxy->percona_proxyctl("alter percona-proxy config_sync_cluster MariaDB-Monitor");
     test.expect(res.rc == 0, "Enabling config_sync_cluster failed: %s", res.output.c_str());
 
     expect_sync(test, 1, 2);
     expect_equal(test, "services/RW-Split-Router", "/data/attributes/parameters");
 
-    res = test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history 123");
+    res = test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history 123");
     test.expect(res.rc == 0, "Config change failed after enabling config_sync_cluster: %s",
                 res.output.c_str());
 
     auto version0 = get_version(api1);
-    res = test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history 123");
+    res = test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history 123");
     test.expect(res.rc == 0, "First no-op change failed: %s", res.output.c_str());
 
     auto version1 = get_version(api1);
     test.expect(version0 == version1, "First no-op change should not increment version: %ld != %ld",
                 version0, version1);
 
-    res = test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history 123");
+    res = test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history 123");
     test.expect(res.rc == 0, "Second no-op change failed: %s", res.output.c_str());
 
     auto version2 = get_version(api1);
     test.expect(version0 == version2, "Second no-op change should not increment version: %ld != %ld",
                 version0, version2);
 
-    res = test.maxscale->maxctrl("alter maxscale config_sync_user bob");
+    res = test.percona_proxy->percona_proxyctl("alter percona-proxy config_sync_user bob");
     test.expect(res.rc == 0, "Changing config_sync_user to a bad user failed: %s", res.output.c_str());
     test.expect(version0 == get_version(api1), "Changing config_sync_user should not increment version");
 
-    res = test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history 124");
+    res = test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history 124");
     test.expect(res.rc != 0, "Config change with bad credentials should fail");
     test.expect(version0 == get_version(api1),
                 "Config update with bad credentials should not increment version");
 
-    res = test.maxscale->maxctrl("alter maxscale --skip-sync config_sync_user maxskysql");
+    res = test.percona_proxy->percona_proxyctl("alter percona-proxy --skip-sync config_sync_user maxskysql");
     test.expect(res.rc == 0, "Changing config_sync_user back failed: %s", res.output.c_str());
     test.expect(version0 == get_version(api1), "Changing config_sync_user should not increment version");
 
-    res = test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history 124");
+    res = test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history 124");
     test.expect(res.rc == 0, "Config change with good credentials should work");
     expect_sync(test, version0 + 1, 2);
 }
@@ -404,17 +404,17 @@ void test_sync(TestConnections& test)
     // Each test case should increment the version by one
     int version = 1;
 
-    test.tprintf("Execute tests with both MaxScales running");
+    test.tprintf("Execute tests with both PerconaProxies running");
 
     for (const auto& t : tests)
     {
-        t.execute(test, test.maxscale);
+        t.execute(test, test.percona_proxy);
         expect_sync(test, version++, 2);
         expect_equal(test, t.endpoint, t.ptr);
     }
 
-    test.tprintf("Execute tests with only one MaxScale");
-    test.maxscale2->stop();
+    test.tprintf("Execute tests with only one Percona Proxy");
+    test.percona_proxy2->stop();
 
     std::string commands;
 
@@ -423,28 +423,28 @@ void test_sync(TestConnections& test)
         commands += "'" + t.cmd + "' ";
     }
 
-    auto res = test.maxscale->ssh_node_f(
-        false, "for cmd in %s; do echo $cmd; done|maxctrl", commands.c_str());
-    test.expect(res == 0, "MaxCtrl commands failed");
+    auto res = test.percona_proxy->ssh_node_f(
+        false, "for cmd in %s; do echo $cmd; done|percona-proxyctl", commands.c_str());
+    test.expect(res == 0, "Percona Proxyctl commands failed");
 
-    test.tprintf("Start the second MaxScale and make sure it catches up");
+    test.tprintf("Start the second Percona Proxy and make sure it catches up");
 
     version = get_version(api1);
-    test.maxscale2->start();
+    test.percona_proxy2->start();
     expect_sync(test, version, 2);
 
     test.tprintf("Sync new monitor with service relationship");
-    test.maxscale2->stop();
-    test.maxscale->maxctrl("create monitor test-monitor galeramon user=maxskysql password=skysql");
-    test.maxscale->maxctrl("create service test-service2 readconnroute "
+    test.percona_proxy2->stop();
+    test.percona_proxy->percona_proxyctl("create monitor test-monitor galeramon user=maxskysql password=skysql");
+    test.percona_proxy->percona_proxyctl("create service test-service2 readconnroute "
                            "user=maxskysql password=skysql router_options=master --cluster test-monitor");
-    test.maxscale2->start();
+    test.percona_proxy2->start();
 
     version += 2;
     expect_sync(test, version, 2);
 
-    test.maxscale->maxctrl("destroy monitor --force test-monitor");
-    test.maxscale->maxctrl("destroy service --force test-service2");
+    test.percona_proxy->percona_proxyctl("destroy monitor --force test-monitor");
+    test.percona_proxy->percona_proxyctl("destroy service --force test-service2");
 
     version += 2;
     expect_sync(test, version, 2);
@@ -453,32 +453,32 @@ void test_sync(TestConnections& test)
 void test_bad_change(TestConnections& test)
 {
     test.tprintf("Do a configuration change that is expected to work");
-    test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history 15");
+    test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history 15");
     expect_sync(test, 1, 2);
     expect_equal(test, "services/RW-Split-Router", "/data/attributes/parameters");
 
-    test.tprintf("Create a filter that only works on one MaxScale");
+    test.tprintf("Create a filter that only works on one Percona Proxy");
     const char REMOVE_DIR[] = "rm -rf /tmp/path-that-exists-on-mxs1/";
     const char CREATE_DIR[] = "mkdir --mode 0777 -p /tmp/path-that-exists-on-mxs1/";
-    test.maxscale->ssh_node(CREATE_DIR, false);
+    test.percona_proxy->ssh_node(CREATE_DIR, false);
 
     // Make sure the path on the other Maxscale doesn't exist
-    test.maxscale2->ssh_node(REMOVE_DIR, false);
+    test.percona_proxy2->ssh_node(REMOVE_DIR, false);
 
-    auto res = test.maxscale->maxctrl("create filter test-filter qlafilter "
+    auto res = test.percona_proxy->percona_proxyctl("create filter test-filter qlafilter "
                                       "log_type=unified append=true "
                                       "filebase=/tmp/path-that-exists-on-mxs1/qla.log");
     test.expect(res.rc == 0, "Creating the filter should work");
 
     wait_for_sync();
 
-    auto sync1 = get(api1, "maxscale", "/data/attributes/config_sync");
-    auto sync2 = get(api2, "maxscale", "/data/attributes/config_sync");
+    auto sync1 = get(api1, "percona-proxy", "/data/attributes/config_sync");
+    auto sync2 = get(api2, "percona-proxy", "/data/attributes/config_sync");
     int64_t version1 = sync1.get_int("version");
     int64_t version2 = sync2.get_int("version");
 
     test.expect(version1 == version2,
-                "Second MaxScale should be at version %ld but it is at %ld",
+                "Second Percona Proxy should be at version %ld but it is at %ld",
                 version1, version2);
 
     std::string cksum1 = sync1.get_string("checksum");
@@ -491,7 +491,7 @@ void test_bad_change(TestConnections& test)
     auto nodes2 = sync2.get_object("nodes");
 
     test.expect(nodes1 == nodes2,
-                "Both MaxScales should have the same \"nodes\" data: %s",
+                "Both PerconaProxies should have the same \"nodes\" data: %s",
                 get_diff(nodes1, nodes2).c_str());
 
     int error = 0;
@@ -519,46 +519,46 @@ void test_bad_change(TestConnections& test)
     test.expect(ok == 1, "One node should be in sync, got %d", ok);
     test.expect(error == 1, "One node should fail, got %d", error);
 
-    test.tprintf("Restart the second MaxScale and check that the good cached configuration is used");
-    test.maxscale2->restart();
+    test.tprintf("Restart the second Percona Proxy and check that the good cached configuration is used");
+    test.percona_proxy2->restart();
     version2 = get_version(api2);
     test.expect(version2 == version1, "Expected version %ld after restart, got %ld", version1, version2);
 
-    test.tprintf("Fix the second MaxScale and do a configuration change that works");
-    test.maxscale2->ssh_node(CREATE_DIR, false);
+    test.tprintf("Fix the second Percona Proxy and do a configuration change that works");
+    test.percona_proxy2->ssh_node(CREATE_DIR, false);
 
-    test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history 20");
+    test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history 20");
 
     wait_for_sync();
 
-    sync1 = get(api1, "maxscale", "/data/attributes/config_sync");
-    sync2 = get(api2, "maxscale", "/data/attributes/config_sync");
+    sync1 = get(api1, "percona-proxy", "/data/attributes/config_sync");
+    sync2 = get(api2, "percona-proxy", "/data/attributes/config_sync");
 
     test.expect(sync1 == sync2, "Expected \"config_sync\" values to be equal: %s",
                 get_diff(sync1, sync2).c_str());
 
-    res = test.maxscale->maxctrl("destroy filter test-filter");
+    res = test.percona_proxy->percona_proxyctl("destroy filter test-filter");
     test.expect(res.rc == 0, "Destroying the filter should work");
     version1 = sync1.get_int("version");
     expect_sync(test, version1 + 1, 2);
 
     // Remove the directory in case we repeat the test
-    test.maxscale->ssh_node(REMOVE_DIR, false);
-    test.maxscale2->ssh_node(REMOVE_DIR, false);
+    test.percona_proxy->ssh_node(REMOVE_DIR, false);
+    test.percona_proxy2->ssh_node(REMOVE_DIR, false);
 
-    test.tprintf("Make /var/lib/maxscale unwritable, update should still succeed");
+    test.tprintf("Make /var/lib/percona-proxy unwritable, update should still succeed");
     auto version_start = get_version(api1);
-    test.maxscale->ssh_node("chown root:root /var/lib/maxscale", true);
-    res = test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history 21");
+    test.percona_proxy->ssh_node("chown root:root /var/lib/percona-proxy", true);
+    res = test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history 21");
     test.expect(res.rc == 0, "Command should succeed even if the config cannot be saved");
 
     wait_for_sync(version_start + 1);
     expect_sync(test, version_start + 1, 2);
     expect_equal(test, "services/RW-Split-Router", "/data/attributes/parameters");
 
-    test.tprintf("Make /var/lib/maxscale writable again, update should work on both nodes");
-    test.maxscale->ssh_node("chown maxscale:maxscale /var/lib/maxscale", true);
-    res = test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history 22");
+    test.tprintf("Make /var/lib/percona-proxy writable again, update should work on both nodes");
+    test.percona_proxy->ssh_node("chown percona-proxy:percona-proxy /var/lib/percona-proxy", true);
+    res = test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history 22");
     test.expect(res.rc == 0, "Command should work: %s", res.output.c_str());
     expect_sync(test, version_start + 2, 2);
     expect_equal(test, "services/RW-Split-Router", "/data/attributes/parameters");
@@ -569,96 +569,96 @@ void test_failures(TestConnections& test)
     int value = 10;
     int version = 1;
     auto config_update = [&](auto mxs) {
-        auto rv = mxs->maxctrl("alter service RW-Split-Router max_sescmd_history "
+        auto rv = mxs->percona_proxyctl("alter service RW-Split-Router max_sescmd_history "
                                + std::to_string(value++));
         test.expect(rv.rc == 0, "Expected alter service to work: %s", rv.output.c_str());
         expect_sync(test, version++, 2);
         expect_equal(test, "services/RW-Split-Router", "/data/attributes/parameters");
     };
 
-    config_update(test.maxscale);
+    config_update(test.percona_proxy);
 
     test.tprintf("Switch master to server2");
-    auto res = test.maxscale->maxctrl("call command mariadbmon switchover MariaDB-Monitor server2");
+    auto res = test.percona_proxy->percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor server2");
     test.expect(res.rc == 0, "Error: %s", res.output.c_str());
-    config_update(test.maxscale);
+    config_update(test.percona_proxy);
 
     test.tprintf("Switch master to server3");
-    res = test.maxscale->maxctrl("call command mariadbmon switchover MariaDB-Monitor server3");
+    res = test.percona_proxy->percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor server3");
     test.expect(res.rc == 0, "Error: %s", res.output.c_str());
-    config_update(test.maxscale);
+    config_update(test.percona_proxy);
 
     test.tprintf("Switch master back over to server1");
-    res = test.maxscale->maxctrl("call command mariadbmon switchover MariaDB-Monitor server1");
+    res = test.percona_proxy->percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor server1");
     test.expect(res.rc == 0, "Error: %s", res.output.c_str());
-    config_update(test.maxscale);
+    config_update(test.percona_proxy);
 
     test.tprintf("Config updates should fail if all nodes are down");
     test.repl->stop_nodes();
-    res = test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history "
+    res = test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history "
                                  + std::to_string(value++));
     test.expect(res.rc != 0, "Command should fail when all servers are down");
 
     test.tprintf("Config updates works with --skip-sync");
-    res = test.maxscale->maxctrl("alter service --skip-sync RW-Split-Router max_sescmd_history "
+    res = test.percona_proxy->percona_proxyctl("alter service --skip-sync RW-Split-Router max_sescmd_history "
                                  + std::to_string(value++));
     test.expect(res.rc == 0, "Command with --skip-sync should work: %s", res.output.c_str());
     test.repl->start_nodes();
 
     test.tprintf("Next update should override change done with --skip-sync");
-    test.maxscale->sleep_and_wait_for_monitor(2, 2);
-    expect_equal(test, "maxscale", "/data/attributes/config_sync/version");
-    config_update(test.maxscale2);
+    test.percona_proxy->sleep_and_wait_for_monitor(2, 2);
+    expect_equal(test, "percona-proxy", "/data/attributes/config_sync/version");
+    config_update(test.percona_proxy2);
     expect_equal(test, "services/RW-Split-Router", "/data/attributes/parameters");
 
-    res = test.maxscale->maxctrl("destroy service --skip-sync --force RW-Split-Router");
+    res = test.percona_proxy->percona_proxyctl("destroy service --skip-sync --force RW-Split-Router");
     test.expect(res.rc == 0, "Command with --skip-sync should work: %s", res.output.c_str());
-    res = test.maxscale2->maxctrl("alter service RW-Split-Router max_sescmd_history "
+    res = test.percona_proxy2->percona_proxyctl("alter service RW-Split-Router max_sescmd_history "
                                   + std::to_string(value++));
     test.expect(res.rc == 0, "Normal command after --skip-sync should work: %s", res.output.c_str());
     ++version;
 
-    config_update(test.maxscale2);
+    config_update(test.percona_proxy2);
     expect_equal(test, "services/RW-Split-Router", "/data/attributes/parameters");
 
     test.tprintf("Set the version field in the database to 1, new changes should fail");
     auto c = test.repl->get_connection(0);
     c.connect();
-    c.query("UPDATE mysql.maxscale_config SET version = 1");
-    res = test.maxscale->maxctrl("alter service RW-Split-Router max_sescmd_history "
+    c.query("UPDATE mysql.percona_proxy_config SET version = 1");
+    res = test.percona_proxy->percona_proxyctl("alter service RW-Split-Router max_sescmd_history "
                                  + std::to_string(value++));
     test.expect(res.rc != 0, "Command should fail database has stale version value");
 
     std::string EXPECTED = "100";
     test.tprintf("Set the version field in the database to %s, all nodes should re-apply the config",
                  EXPECTED.c_str());
-    c.query("UPDATE mysql.maxscale_config SET version = " + EXPECTED);
+    c.query("UPDATE mysql.percona_proxy_config SET version = " + EXPECTED);
     wait_for_sync(100);
     auto mxs_version = get_version(api1);
-    auto db_version = c.field("SELECT version FROM mysql.maxscale_config");
+    auto db_version = c.field("SELECT version FROM mysql.percona_proxy_config");
 
     test.expect(db_version == EXPECTED,
                 "Version in the database should be %s, not %s", EXPECTED.c_str(), db_version.c_str());
     test.expect(mxs_version == std::stoi(EXPECTED),
                 "Config change should update version value to %s, not %ld", EXPECTED.c_str(), mxs_version);
-    expect_equal(test, "maxscale", "/data/attributes/config_sync/version");
+    expect_equal(test, "percona-proxy", "/data/attributes/config_sync/version");
 
     test.tprintf("Config change after new version should work");
     version = 101;
-    config_update(test.maxscale);
+    config_update(test.percona_proxy);
 
     test.tprintf("Delete configuration from database, next update should recreate the row");
-    c.query("DELETE FROM mysql.maxscale_config");
-    config_update(test.maxscale);
+    c.query("DELETE FROM mysql.percona_proxy_config");
+    config_update(test.percona_proxy);
     mxs_version = get_version(api1);
-    db_version = c.field("SELECT version FROM mysql.maxscale_config");
+    db_version = c.field("SELECT version FROM mysql.percona_proxy_config");
     test.expect(db_version == std::to_string(mxs_version),
-                "Database and MaxScale should be in sync: %s != %ld",
+                "Database and Percona Proxy should be in sync: %s != %ld",
                 db_version.c_str(), mxs_version);
 
     test.tprintf("Store bad configation data in database");
-    c.query("ALTER TABLE mysql.maxscale_config MODIFY COLUMN config TEXT");
-    c.query("UPDATE mysql.maxscale_config SET config = 'hello world', version = 105");
+    c.query("ALTER TABLE mysql.percona_proxy_config MODIFY COLUMN config TEXT");
+    c.query("UPDATE mysql.percona_proxy_config SET config = 'hello world', version = 105");
     wait_for_sync(105);
     mxs_version = get_version(api1);
     test.expect(mxs_version != 105, "Configuration with bad JSON should not increment version");
@@ -667,7 +667,7 @@ void test_failures(TestConnections& test)
 void test_bad_cache(TestConnections& test)
 {
     auto expect_empty = [&]() {
-        auto sync1 = get(api1, "maxscale", "/data/attributes/config_sync");
+        auto sync1 = get(api1, "percona-proxy", "/data/attributes/config_sync");
         int64_t version = -1;
         test.expect(sync1.try_get_int("version", &version) && version == 0,
                     "Wrong cached configuration should not be read: %s",
@@ -675,27 +675,27 @@ void test_bad_cache(TestConnections& test)
     };
 
     auto expect_discarded = [&]() {
-        int rc = test.maxscale->ssh_node("test -f /var/lib/maxscale/maxscale-config.json", true);
+        int rc = test.percona_proxy->ssh_node("test -f /var/lib/percona-proxy/percona-proxy-config.json", true);
         test.expect(rc != 0, "Bad cached configuration should be discarded");
     };
 
     test.tprintf("Create a cached configuration with no monitor");
     std::string NO_MONITOR =
         R"EOF({"config":[{"id":"server1","type":"servers","attributes":{"parameters":{"port":3306,"address":"127.0.0.1"}}}],"version":2,"cluster_name":"MariaDB-Monitor"})EOF";
-    create_config(test.maxscale, NO_MONITOR);
+    create_config(test.percona_proxy, NO_MONITOR);
     expect_empty();
     expect_discarded();
 
     test.tprintf("Create a cached configuration for the wrong cluster");
     std::string WRONG_CONFIG =
         R"EOF({"config":[{"id":"server1","type":"servers","attributes":{"parameters":{"port":3306,"address":"127.0.0.1"}}}],"version":2,"cluster_name":"Other-Cluster"})EOF";
-    create_config(test.maxscale, WRONG_CONFIG);
+    create_config(test.percona_proxy, WRONG_CONFIG);
     expect_empty();
 
     test.tprintf("Create a bad cached configuration and make sure it's discarded");
     std::string BAD_CONFIG =
         R"EOF({"config":[{"id":"server1","type":"servers","attributes":{"parameters":{"rank":"tertiary"}}}],"version":123,"cluster_name":"MariaDB-Monitor"})EOF";
-    create_config(test.maxscale, BAD_CONFIG);
+    create_config(test.percona_proxy, BAD_CONFIG);
     expect_empty();
     expect_discarded();
 }
@@ -706,75 +706,75 @@ void test_conflicts(TestConnections& test)
     int version = 0;
 
     test.tprintf("Create a filter");
-    test.check_maxctrl("create filter test-object hintfilter");
+    test.check_percona_proxyctl("create filter test-object hintfilter");
     ++version;
 
     expect_sync(test, version, 2);
     expect_equal(test, "filters/test-object", "/data/type");
 
-    test.tprintf("Stop the second MaxScale");
-    test.maxscale2->stop();
+    test.tprintf("Stop the second Percona Proxy");
+    test.percona_proxy2->stop();
 
     test.tprintf("Recreate the filter as a server");
-    test.check_maxctrl("destroy filter test-object");
+    test.check_percona_proxyctl("destroy filter test-object");
     ++version;
-    test.check_maxctrl("create server test-object 127.0.0.1 3306");
+    test.check_percona_proxyctl("create server test-object 127.0.0.1 3306");
     ++version;
 
-    test.tprintf("Start the second MaxScale: it should destroy the filter and create it as a server");
-    test.maxscale2->start();
+    test.tprintf("Start the second Percona Proxy: it should destroy the filter and create it as a server");
+    test.percona_proxy2->start();
 
     expect_sync(test, version, 2);
     expect_equal(test, "servers/test-object", "/data/type");
 
     test.tprintf("Destroy the server");
-    test.check_maxctrl("destroy server test-object");
+    test.check_percona_proxyctl("destroy server test-object");
     ++version;
     expect_sync(test, version, 2);
 
     test.tprintf("Create the object as a service");
-    test.check_maxctrl("create service test-object readwritesplit user=maxskysql password=skysql");
+    test.check_percona_proxyctl("create service test-object readwritesplit user=maxskysql password=skysql");
     ++version;
 
     expect_sync(test, version, 2);
     expect_equal(test, "services/test-object", "/data/attributes/router");
 
-    test.tprintf("Stop the second MaxScale");
-    test.maxscale2->stop();
+    test.tprintf("Stop the second Percona Proxy");
+    test.percona_proxy2->stop();
 
     test.tprintf("Destroy the service and create it with another router");
-    test.check_maxctrl("destroy service test-object");
+    test.check_percona_proxyctl("destroy service test-object");
     ++version;
-    test.check_maxctrl("create service test-object readconnroute user=maxskysql password=skysql");
+    test.check_percona_proxyctl("create service test-object readconnroute user=maxskysql password=skysql");
     ++version;
 
-    test.tprintf("Start the second MaxScale: it should recreate the service");
-    test.maxscale2->start();
+    test.tprintf("Start the second Percona Proxy: it should recreate the service");
+    test.percona_proxy2->start();
 
     expect_sync(test, version, 2);
     expect_equal(test, "services/test-object", "/data/attributes/router");
 
     test.tprintf("Destroy the service and create a qlafilter");
-    test.check_maxctrl("destroy service test-object");
+    test.check_percona_proxyctl("destroy service test-object");
     ++version;
-    test.check_maxctrl("create filter test-object qlafilter filebase=/tmp/file1");
+    test.check_percona_proxyctl("create filter test-object qlafilter filebase=/tmp/file1");
     ++version;
 
     expect_sync(test, version, 2);
     expect_equal(test, "filters/test-object", "/data/attributes/parameters");
 
-    test.tprintf("Stop the second MaxScale");
-    test.maxscale2->stop();
+    test.tprintf("Stop the second Percona Proxy");
+    test.percona_proxy2->stop();
 
     // TODO: The filter needs to be changed when runtime config change support is added to qlafilter
     test.tprintf("Destroy the filter and create it with different parameters");
-    test.check_maxctrl("destroy filter test-object");
+    test.check_percona_proxyctl("destroy filter test-object");
     ++version;
-    test.check_maxctrl("create filter test-object qlafilter filebase=/tmp/file2");
+    test.check_percona_proxyctl("create filter test-object qlafilter filebase=/tmp/file2");
     ++version;
 
-    test.tprintf("Start the second MaxScale: it should recreate the filter");
-    test.maxscale2->start();
+    test.tprintf("Start the second Percona Proxy: it should recreate the filter");
+    test.percona_proxy2->start();
 
     expect_sync(test, version, 2);
     expect_equal(test, "filters/test-object", "/data/attributes/parameters");
@@ -789,46 +789,46 @@ void test_one_server_state(TestConnections& test, const std::string& state)
         test.tprintf("    %s", msg);
     };
 
-    log("Setting state should be synced to both MaxScales");
-    test.check_maxctrl("set server server2 " + state);
-    test.maxscale->sleep_and_wait_for_monitor(2, 2);
+    log("Setting state should be synced to both PerconaProxies");
+    test.check_percona_proxyctl("set server server2 " + state);
+    test.percona_proxy->sleep_and_wait_for_monitor(2, 2);
     ++version;
 
     expect_sync(test, version, 2);
     expect_equal(test, "servers/server2", "/data/attributes/state");
 
-    log("Clearing state should be synced to both MaxScales");
-    test.check_maxctrl("clear server server2 " + state);
-    test.maxscale->sleep_and_wait_for_monitor(2, 2);
+    log("Clearing state should be synced to both PerconaProxies");
+    test.check_percona_proxyctl("clear server server2 " + state);
+    test.percona_proxy->sleep_and_wait_for_monitor(2, 2);
     ++version;
 
     expect_sync(test, version, 2);
     expect_equal(test, "servers/server2", "/data/attributes/state");
 
-    log("Stop the second MaxScale and set server state");
-    test.maxscale2->stop();
+    log("Stop the second Percona Proxy and set server state");
+    test.percona_proxy2->stop();
 
-    test.check_maxctrl("set server server3 " + state);
-    test.maxscale->sleep_and_wait_for_monitor(2, 2);
+    test.check_percona_proxyctl("set server server3 " + state);
+    test.percona_proxy->sleep_and_wait_for_monitor(2, 2);
     ++version;
 
-    log("Start the second MaxScale: it should pick up the state change");
-    test.maxscale2->start();
+    log("Start the second Percona Proxy: it should pick up the state change");
+    test.percona_proxy2->start();
 
     expect_sync(test, version, 2);
     expect_equal(test, "servers/server3", "/data/attributes/state");
 
-    log("Clear state on second MaxScale: it should picked up by the first one");
-    test.maxscale2->maxctrl("clear server server3 " + state);
-    test.maxscale2->sleep_and_wait_for_monitor(2, 2);
+    log("Clear state on second Percona Proxy: it should picked up by the first one");
+    test.percona_proxy2->percona_proxyctl("clear server server3 " + state);
+    test.percona_proxy2->sleep_and_wait_for_monitor(2, 2);
     ++version;
 
     expect_sync(test, version, 2);
     expect_equal(test, "servers/server3", "/data/attributes/state");
 
-    log("Set state with --skip-sync: only first MaxScale should be affected");
-    test.check_maxctrl("set server --skip-sync server4 " + state);
-    test.maxscale->sleep_and_wait_for_monitor(2, 2);
+    log("Set state with --skip-sync: only first Percona Proxy should be affected");
+    test.check_percona_proxyctl("set server --skip-sync server4 " + state);
+    test.percona_proxy->sleep_and_wait_for_monitor(2, 2);
     auto state1 = get(api1, "servers/server4", "/data/attributes/state");
     auto state2 = get(api2, "servers/server4", "/data/attributes/state");
 
@@ -836,7 +836,7 @@ void test_one_server_state(TestConnections& test, const std::string& state)
                 "Servers should be in different states but both are in '%s'", state1.get_string().c_str());
 
     log("Clear state without --skip-sync");
-    test.check_maxctrl("clear server server4 " + state);
+    test.check_percona_proxyctl("clear server server4 " + state);
     ++version;
 
     expect_sync(test, version, 2);
@@ -856,8 +856,8 @@ void test_server_state_drain(TestConnections& test)
 void test_admin_users(TestConnections& test)
 {
     auto test_login = [&](std::string user, std::string pw){
-        return test.maxscale->maxctrl("-u " + user + " -p " + pw + " show maxscale").rc == 0
-               && test.maxscale2->maxctrl("-u " + user + " -p " + pw + " show maxscale").rc == 0;
+        return test.percona_proxy->percona_proxyctl("-u " + user + " -p " + pw + " show percona-proxy").rc == 0
+               && test.percona_proxy2->percona_proxyctl("-u " + user + " -p " + pw + " show percona-proxy").rc == 0;
     };
 
     auto login_ok = [&](std::string user, std::string pw){
@@ -869,39 +869,39 @@ void test_admin_users(TestConnections& test)
     };
 
     int version = 0;
-    test.tprintf("Create a new user, should work on both MaxScales");
-    test.check_maxctrl("create user bob bob");
+    test.tprintf("Create a new user, should work on both PerconaProxies");
+    test.check_percona_proxyctl("create user bob bob");
     expect_sync(test, ++version, 2);
     expect_equal(test, "users/inet/bob", "/data/attributes/account");
     login_ok("admin", "mariadb");
     login_ok("bob", "bob");
     login_err("bob", "bob2");
 
-    test.tprintf("Change the password on the second MaxScale, first one should work");
-    test.maxscale2->maxctrl("alter user bob bob2");
+    test.tprintf("Change the password on the second Percona Proxy, first one should work");
+    test.percona_proxy2->percona_proxyctl("alter user bob bob2");
     expect_sync(test, ++version, 2);
     expect_equal(test, "users/inet/bob", "/data/attributes/account");
     login_ok("admin", "mariadb");
     login_ok("bob", "bob2");
     login_err("bob", "bob");
 
-    test.tprintf("Change password with --skip-sync on the first MaxScale, only first one should work");
-    test.maxscale->maxctrl("alter user bob bob3 --skip-sync");
+    test.tprintf("Change password with --skip-sync on the first Percona Proxy, only first one should work");
+    test.percona_proxy->percona_proxyctl("alter user bob bob3 --skip-sync");
     sleep(2);   // Should work, sync interval is 100ms for this test
 
-    test.expect(test.maxscale->maxctrl("-u bob -p bob3 show maxscale").rc == 0,
-                "Login should work on first MaxScale with new password");
-    test.expect(test.maxscale2->maxctrl("-u bob -p bob3 show maxscale").rc != 0,
-                "Login should fail on second MaxScale with new password");
-    test.expect(test.maxscale2->maxctrl("-u bob -p bob2 show maxscale").rc == 0,
-                "Login should work on second MaxScale with old password");
+    test.expect(test.percona_proxy->percona_proxyctl("-u bob -p bob3 show percona-proxy").rc == 0,
+                "Login should work on first Percona Proxy with new password");
+    test.expect(test.percona_proxy2->percona_proxyctl("-u bob -p bob3 show percona-proxy").rc != 0,
+                "Login should fail on second Percona Proxy with new password");
+    test.expect(test.percona_proxy2->percona_proxyctl("-u bob -p bob2 show percona-proxy").rc == 0,
+                "Login should work on second Percona Proxy with old password");
 
     login_ok("admin", "mariadb");
     login_err("bob", "bob2");
     login_err("bob", "bob");
 
-    test.tprintf("Change the password without --skip-sync, login to both MaxScale should now work");
-    test.maxscale2->maxctrl("alter user bob bob4");
+    test.tprintf("Change the password without --skip-sync, login to both Percona Proxy should now work");
+    test.percona_proxy2->percona_proxyctl("alter user bob bob4");
     expect_sync(test, ++version, 2);
     expect_equal(test, "users/inet/bob", "/data/attributes/account");
     login_ok("admin", "mariadb");
@@ -910,8 +910,8 @@ void test_admin_users(TestConnections& test)
     login_err("bob", "bob2");
     login_err("bob", "bob");
 
-    test.tprintf("Delete user on first MaxScale, login should fail on both");
-    test.check_maxctrl("destroy user bob");
+    test.tprintf("Delete user on first Percona Proxy, login should fail on both");
+    test.check_percona_proxyctl("destroy user bob");
     expect_sync(test, ++version, 2);
     expect_equal(test, "users/inet/bob", "");
     login_ok("admin", "mariadb");
@@ -923,35 +923,35 @@ void test_admin_users(TestConnections& test)
 
 void test_custom_db(TestConnections& test)
 {
-    test.maxscale->ssh_output("sed -i 's/config_sync_db=mysql/config_sync_db=test/' /etc/maxscale.cnf");
-    test.maxscale2->ssh_output("sed -i 's/config_sync_db=mysql/config_sync_db=test/' /etc/maxscale.cnf");
+    test.percona_proxy->ssh_output("sed -i 's/config_sync_db=mysql/config_sync_db=test/' /etc/percona-proxy.cnf");
+    test.percona_proxy2->ssh_output("sed -i 's/config_sync_db=mysql/config_sync_db=test/' /etc/percona-proxy.cnf");
     reset(test);
 
     int version = 0;
     test.tprintf("Create a filter");
-    test.check_maxctrl("create filter test-object hintfilter");
+    test.check_percona_proxyctl("create filter test-object hintfilter");
     ++version;
 
     expect_sync(test, version, 2);
     expect_equal(test, "filters/test-object", "/data/type");
 
-    auto res = test.maxscale2->maxctrl("destroy filter test-object");
-    test.expect(res.rc == 0, "Destroying object on second MaxScale should work: %s", res.output.c_str());
+    auto res = test.percona_proxy2->percona_proxyctl("destroy filter test-object");
+    test.expect(res.rc == 0, "Destroying object on second Percona Proxy should work: %s", res.output.c_str());
 
     auto c = test.repl->get_connection(0);
-    test.expect(c.connect() && c.field("SELECT COUNT(*) FROM test.maxscale_config") == "1",
-                "Expected 1 row in test.maxscale_config. %s", c.error());
+    test.expect(c.connect() && c.field("SELECT COUNT(*) FROM test.percona_proxy_config") == "1",
+                "Expected 1 row in test.percona_proxy_config. %s", c.error());
 
-    test.maxscale->ssh_output("sed -i 's/config_sync_db=test/config_sync_db=mysql/' /etc/maxscale.cnf");
-    test.maxscale2->ssh_output("sed -i 's/config_sync_db=test/config_sync_db=mysql/' /etc/maxscale.cnf");
+    test.percona_proxy->ssh_output("sed -i 's/config_sync_db=test/config_sync_db=mysql/' /etc/percona-proxy.cnf");
+    test.percona_proxy2->ssh_output("sed -i 's/config_sync_db=test/config_sync_db=mysql/' /etc/percona-proxy.cnf");
 }
 
 void test_service_cluster(TestConnections& test)
 {
     int version = 1;
-    std::string user = test.maxscale->user_name();
-    std::string pw = test.maxscale->password();
-    test.check_maxctrl("create service service-with-cluster readconnroute "
+    std::string user = test.percona_proxy->user_name();
+    std::string pw = test.percona_proxy->password();
+    test.check_percona_proxyctl("create service service-with-cluster readconnroute "
                        "user=" + user + " password=" + pw + " --cluster=MariaDB-Monitor");
 
     expect_sync(test, version, 2);
@@ -964,7 +964,7 @@ static int num = 1;
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
     api1 = create_api1(test);
     api2 = create_api2(test);

@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
     TestConnections test(argc, argv);
     test.reset_timeout();
 
-    MYSQL* conn = test.maxscale->open_rwsplit_connection();
+    MYSQL* conn = test.percona_proxy->open_rwsplit_connection();
 
     test.add_result(execute_query(conn, "SELECT 1"), "Query should succeed.");
 

@@ -12,7 +12,7 @@ endfunction()
 # Helper function to add a configuration template to the global test definitions list.
 # Parameters are as in add_test_executable().
 function(add_template name template labels)
-  set(config_template_path "${CMAKE_SOURCE_DIR}/system-test/cnf/maxscale.cnf.template.${template}")
+  set(config_template_path "${CMAKE_SOURCE_DIR}/system-test/cnf/percona-proxy.cnf.template.${template}")
   set(new_def "{\"${name}\", \"${config_template_path}\", \"${labels}\"}")
   set(TEST_DEFINITIONS "${TEST_DEFINITIONS}${new_def}," CACHE INTERNAL "")
 endfunction()
@@ -39,9 +39,9 @@ endfunction()
 # source Test source code file name
 # name Name of the generated test executable and the test itself
 # template Configuration file template file name. Should only be the last part of the file name. The file
-# should be located in the /cnf/ directory and have prefix "maxscale.cnf.template.".
+# should be located in the /cnf/ directory and have prefix "percona-proxy.cnf.template.".
 # labels Test labels. The labels can be given as "Label1;Label2;Label3..." or "Label1 Label2 Label3 ..."
-# Example: to add simple_test.cc with maxscale.cnf.template.simple_config to the
+# Example: to add simple_test.cc with percona-proxy.cnf.template.simple_config to the
 # test set, the function should be called as follows:
 #     add_test_executable(simple_test.cc simple_test simple_config LABELS some_label)
 function(add_test_executable source name template labels)
@@ -160,7 +160,7 @@ function(add_test_executable_ex)
   else()
     # Check that the vms setup is recognized.
     set(known_vms_setups none repl_backend galera_backend xpand_backend
-        columnstore_backend second_maxscale backend_ssl)
+        columnstore_backend second_percona_proxy backend_ssl)
 
     foreach(elem ${vms_setup})
       list(FIND known_vms_setups ${elem} vms_ind)

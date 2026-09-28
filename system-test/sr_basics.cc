@@ -49,7 +49,7 @@ const size_t N_UNIQUE_SELECTS = 3;
 void thread_stress(TestConnections* pTest, int id)
 {
     pTest->tprintf("Hello from thread %d", id);
-    Connection c = pTest->maxscale->rwsplit();
+    Connection c = pTest->percona_proxy->rwsplit();
 
     pTest->expect(c.connect(), "Thread %d failed to connect: %s", id, c.error());
 
@@ -103,7 +103,7 @@ void test_stress(TestConnections& test)
         threads[i].join();
     }
 
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
 
     test.repl->sync_slaves();
@@ -148,9 +148,9 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
 
-    test.expect(c.connect(), "Could not connect to MaxScale.");
+    test.expect(c.connect(), "Could not connect to Percona Proxy.");
 
     init(test, c);
 

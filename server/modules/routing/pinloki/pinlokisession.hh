@@ -13,10 +13,10 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
-#include <maxscale/router.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/service.hh>
 
 #include "rpl_event.hh"
 #include "parser.hh"

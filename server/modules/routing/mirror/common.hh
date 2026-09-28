@@ -15,5 +15,5 @@
 
 #define MXB_MODULE_NAME "mirror"
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/log.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/log.hh>

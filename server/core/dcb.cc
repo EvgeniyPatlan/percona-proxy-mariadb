@@ -21,7 +21,7 @@
  * the state data and pointers to other components that relate to the
  * use of a file descriptor.
  */
-#include <maxscale/dcb.hh>
+#include <percona-proxy/dcb.hh>
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -51,19 +51,19 @@
 #include <maxbase/alloc.hh>
 #include <maxbase/format.hh>
 #include <maxbase/hexdump.hh>
-#include <maxscale/clock.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/protocol2.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/service.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/clock.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/protocol2.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/utils.hh>
 
 #include "internal/server.hh"
 #include "internal/session.hh"
 
-using maxscale::RoutingWorker;
+using percona_proxy::RoutingWorker;
 using maxbase::Worker;
 using std::string;
 using std::move;
@@ -629,7 +629,7 @@ std::string DCB::get_one_SSL_error(unsigned long ssl_errno)
     {
         // No shared ciphers, print the list of ciphers we offered and, if possible, the ones the client asked
         // for. This should help administrators determine why the failure happened. Usually this happens when
-        // an older client attempts to connect to a MaxScale instance that uses a newer TLS version.
+        // an older client attempts to connect to a Percona Proxy instance that uses a newer TLS version.
 
 #ifdef OPENSSL_1_1
         // This only works when we're acting as the server.
@@ -2151,7 +2151,7 @@ std::string BackendDCB::whoami() const
 /**
  * Free Functions
  */
-namespace maxscale
+namespace percona_proxy
 {
 
 const char* to_string(DCB::Role role)
@@ -2261,7 +2261,7 @@ const ClientDCB* mxs::ClientConnectionBase::dcb() const
     return m_dcb;
 }
 
-json_t* maxscale::ClientConnectionBase::diagnostics() const
+json_t* percona_proxy::ClientConnectionBase::diagnostics() const
 {
     json_t* rval = json_object();   // This is not currently used.
     return rval;

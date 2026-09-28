@@ -15,7 +15,7 @@
 /**
  * @file bug658.cpp regression case for bug 658 ("readconnroute: client is not closed if backend fails")
  *
- * - Connect all MaxScale
+ * - Connect all Percona Proxy
  * - block Mariadb server on Master node by Firewall
  * - execute query
  * - unblock Mariadb server
@@ -44,25 +44,25 @@ int main(int argc, char* argv[])
     TestConnections* Test = new TestConnections(argc, argv);
     Test->reset_timeout();
 
-    Test->tprintf("Connecting to Maxscale %s", Test->maxscale->ip4());
-    Test->maxscale->connect_maxscale();
+    Test->tprintf("Connecting to Maxscale %s", Test->percona_proxy->ip4());
+    Test->percona_proxy->connect_percona_proxy();
 
     printf("Setup firewall to block mysql on master");
     Test->repl->block_node(0);
-    Test->maxscale->wait_for_monitor();
+    Test->percona_proxy->wait_for_monitor();
 
     Test->tprintf(
         "Trying query to RWSplit, ReadConn master and ReadConn slave: expecting failure, but not a crash");
-    execute_query(Test->maxscale->conn_rwsplit, "show processlist;");
-    execute_query(Test->maxscale->conn_master, "show processlist;");
-    execute_query(Test->maxscale->conn_slave, "show processlist;");
-    Test->maxscale->close_maxscale_connections();
+    execute_query(Test->percona_proxy->conn_rwsplit, "show processlist;");
+    execute_query(Test->percona_proxy->conn_master, "show processlist;");
+    execute_query(Test->percona_proxy->conn_slave, "show processlist;");
+    Test->percona_proxy->close_percona_proxy_connections();
 
     // Wait three monitor intervals to allow the monitor to detect that the server is up
     Test->repl->unblock_node(0);
-    Test->maxscale->wait_for_monitor();
+    Test->percona_proxy->wait_for_monitor();
 
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
 
     int rval = Test->global_result;
     delete Test;

@@ -18,8 +18,8 @@
 #include <new>
 #include <set>
 #include <string>
-#include <maxscale/buffer.hh>
-#include <maxscale/paths.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/paths.hh>
 #include "storagefactory.hh"
 #include "storage.hh"
 

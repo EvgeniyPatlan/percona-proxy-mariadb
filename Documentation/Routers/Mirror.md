@@ -61,7 +61,7 @@ values are:
 
 * `log`
 
-  * Exports metrics to MaxScale log on INFO level. No configuration parameters.
+  * Exports metrics to Percona Proxy log on INFO level. No configuration parameters.
 
 * `file`
 
@@ -81,7 +81,7 @@ values are:
 - **Dynamic**: Yes
 
 The output file where the metrics will be written. The file must be writable by
-the user that is running MaxScale, usually the `maxscale` user.
+the user that is running Percona Proxy, usually the `percona-proxy` user.
 
 When the `file` parameter is altered at runtime, the old file is closed before
 the new file is opened. This makes it a convenient way of rotating the file
@@ -132,7 +132,7 @@ What to do when a backend network connection fails. Accepted values are:
 
   * Close the client connection when the first backend fails.
 
-This parameter was added in MaxScale 6.0. Older versions always ignored
+This parameter was added in Percona Proxy 6.0. Older versions always ignored
 failing backends.
 
 ### `report`
@@ -153,7 +153,7 @@ When to report the result of the queries. Accepted values are:
 
   * Only report when one or more backends returns a conflicting result.
 
-This parameter was added in MaxScale 6.0. Older versions always reported the
+This parameter was added in Percona Proxy 6.0. Older versions always reported the
 result.
 
 ## Example Configuration

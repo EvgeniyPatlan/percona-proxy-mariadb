@@ -15,7 +15,7 @@
 
 #define MXB_MODULE_NAME "kafkaimporter"
 
-#include <maxscale/config2.hh>
+#include <percona-proxy/config2.hh>
 
 #include "../kafkacdc/kafka_common.hh"      // TODO: This file should be placed somewhere else
 

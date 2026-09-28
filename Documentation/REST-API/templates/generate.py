@@ -137,17 +137,17 @@ pwd = os.getcwd()
 os.chdir(test_dir)
 os.system("docker-compose up -d server1 server2")
 os.chdir(pwd)
-image = os.environ.get("MAXSCALE_IMAGE", "maxscale-rest-api")
+image = os.environ.get("PERCONA_PROXY_IMAGE", "percona-proxy-rest-api")
 os.system("docker rm -vf mxs")
-os.system("docker run --name mxs -d --rm -v " + pwd + "/rest_api.cnf:/etc/maxscale.cnf --network=host " + image)
+os.system("docker run --name mxs -d --rm -v " + pwd + "/rest_api.cnf:/etc/percona-proxy.cnf --network=host " + image)
 
 # Install the MariaDB ODBC connector, needed for generating the ETL output
-os.system("docker exec mxs dnf -y --disablerepo mariadb-maxscale install mariadb-connector-odbc")
+os.system("docker exec mxs dnf -y --disablerepo mariadb-percona-proxy install mariadb-connector-odbc")
 
-print("Give MaxScale and the databases a few seconds to start up")
+print("Give Percona Proxy and the databases a few seconds to start up")
 time.sleep(10)
 
-print("Create a connection to MaxScale and do a query")
+print("Create a connection to Percona Proxy and do a query")
 conn = mariadb.connect(
     user="maxuser",
     password="maxpwd",

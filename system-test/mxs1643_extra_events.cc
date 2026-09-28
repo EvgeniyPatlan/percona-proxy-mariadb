@@ -27,15 +27,15 @@ int main(int argc, char** argv)
     test.tprintf("Set master into read-only mode");
     test.repl->connect();
     execute_query(test.repl->nodes[0], "SET GLOBAL read_only=ON");
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     test.tprintf("Check that the current master now has the slave label");
     test.log_excludes("server1.*\\[Master, Running\\] -> \\[Running\\]");
     test.log_includes("server1.*\\[Master, Running\\] -> \\[Slave, Running\\]");
-    test.maxscale->ssh_node_f(true, "truncate -s 0 /var/log/maxscale/maxscale.log");
+    test.percona_proxy->ssh_node_f(true, "truncate -s 0 /var/log/percona-proxy/percona-proxy.log");
 
     // Check that the Master and Slave status aren't both set
     execute_query(test.repl->nodes[0], "SET GLOBAL read_only=OFF");
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     test.tprintf("Check that the new master doesn't have both slave and master labels");
     test.log_excludes("server1.*\\[Slave, Running\\] -> \\[Master, Slave, Running\\]");
     test.log_excludes("server1.*\\[Running\\] -> \\[Master, Running\\]");

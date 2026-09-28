@@ -17,7 +17,7 @@
 #include <stdbool.h>
 #include "maxavro_internal.hh"
 #include <maxbase/assert.hh>
-#include <maxscale/log.hh>
+#include <percona-proxy/log.hh>
 #include <errno.h>
 
 /** Maximum byte size of an integer value */

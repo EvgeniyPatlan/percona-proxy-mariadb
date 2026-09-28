@@ -1,7 +1,7 @@
 include_directories(${MARIADB_CONNECTOR_INCLUDE_DIR})
 
 add_library(roundrobinrouter SHARED roundrobinrouter.cpp)
-target_link_libraries(roundrobinrouter maxscale-common)
+target_link_libraries(roundrobinrouter percona-proxy-common)
 set_target_properties(roundrobinrouter PROPERTIES VERSION "1.0.0")
 install_module(roundrobinrouter core)
 

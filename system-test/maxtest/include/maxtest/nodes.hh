@@ -33,7 +33,7 @@ struct SharedData;
 class TestLogger;
 
 /**
- * Abstract class that interfaces with a test node, such as one running MaxScale or a backend server.
+ * Abstract class that interfaces with a test node, such as one running Percona Proxy or a backend server.
  * Implementations of some commands (start, stop etc) of different node types (local, docker, remote)
  * are separated to their own classes.
  */
@@ -171,10 +171,10 @@ protected:
     std::string m_sudo;     /**< empty or "sudo " */
     std::string m_sshkey;   /**< Path to ssh key */
 
-    std::string m_start_proc_cmd;       /**< Command to start MariaDB Server/MaxScale */
-    std::string m_restart_proc_cmd;     /**< Command to restart MariaDB Server/MaxScale */
-    std::string m_stop_proc_cmd;        /**< Command to stop MariaDB Server/MaxScale */
-    std::string m_reset_data_cmd;       /**< Command to remove MariaDB Server/MaxScale data files */
+    std::string m_start_proc_cmd;       /**< Command to start MariaDB Server/Percona Proxy */
+    std::string m_restart_proc_cmd;     /**< Command to restart MariaDB Server/Percona Proxy */
+    std::string m_stop_proc_cmd;        /**< Command to stop MariaDB Server/Percona Proxy */
+    std::string m_reset_data_cmd;       /**< Command to remove MariaDB Server/Percona Proxy data files */
 
 private:
     std::string m_mariadb_executable;
@@ -212,7 +212,7 @@ private:
 };
 
 /**
- * Local server or MaxScale. Can run non-sudo commands. Cannot copy files.
+ * Local server or Percona Proxy. Can run non-sudo commands. Cannot copy files.
  */
 class LocalNode final : public Node
 {

@@ -136,18 +136,18 @@
     ]
   },
 
-  "maxscale_000" :
+  "percona_proxy_000" :
   {
-    "hostname" : "maxscale",
+    "hostname" : "percona-proxy",
     "box" : "${box}",
     "memory_size" : "${vm_memory}",
     "cpu_count" : "4",
     "labels" : [
-      "MAXSCALE"
+      "PERCONA_PROXY"
     ],
     "products" : [
       {
-        "name" : "${maxscale_product}",
+        "name" : "${percona_proxy_product}",
         "version" : "${target}",
         "force_version": ${force_maxscale_version}
       },
@@ -173,9 +173,9 @@
     ]
   },
 
-  "maxscale_001" :
+  "percona_proxy_001" :
   {
-    "hostname" : "maxscale2",
+    "hostname" : "percona_proxy2",
     "box" : "${box}",
     "memory_size" : "${vm_memory}",
     "cpu_count" : "4",
@@ -183,7 +183,7 @@
       "SECOND_MAXSCALE"
     ],
     "product" : {
-      "name" : "${maxscale_product}",
+      "name" : "${percona_proxy_product}",
       "version" : "${target}",
       "force_version": ${force_maxscale_version}
     }

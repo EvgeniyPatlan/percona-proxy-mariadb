@@ -12,9 +12,9 @@
  * Public License.
  */
 
-#include "maxscale/mock/dcb.hh"
+#include "percona-proxy/mock/dcb.hh"
 
-namespace maxscale
+namespace percona_proxy
 {
 
 namespace mock

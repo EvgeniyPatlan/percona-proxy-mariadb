@@ -1,0 +1,12 @@
+/var/log/percona-proxy/percona-proxy.log {
+su percona-proxy percona-proxy
+monthly
+rotate 5
+missingok
+nocompress
+sharedscripts
+postrotate
+test -r /var/run/percona-proxy/percona-proxy.pid && kill -USR1 $(cat /var/run/percona-proxy/percona-proxy.pid)
+endscript
+}
+

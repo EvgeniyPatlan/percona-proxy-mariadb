@@ -2,7 +2,7 @@
 
 ## What Are Filters?
 
-The filter mechanism in MariaDB MaxScale is a means by which processing can be inserted into the flow of requests and responses between the client connection to MariaDB MaxScale and the MariaDB MaxScale connection to the backend database servers. The path from the client side of MariaDB MaxScale out to the actual database servers can be considered a pipeline, filters can then be placed in that pipeline to monitor, modify, copy or block the content that flows through that pipeline.
+The filter mechanism in Percona Proxy for MariaDB is a means by which processing can be inserted into the flow of requests and responses between the client connection to Percona Proxy for MariaDB and the Percona Proxy for MariaDB connection to the backend database servers. The path from the client side of Percona Proxy for MariaDB out to the actual database servers can be considered a pipeline, filters can then be placed in that pipeline to monitor, modify, copy or block the content that flows through that pipeline.
 
 ## Types Of Filter
 
@@ -10,9 +10,9 @@ Filters can be divided into a number of categories
 
 ### Logging filters
 
-Logging filters do not in any way alter the statement or results of the statements that are passed through MariaDB MaxScale. They merely log some information about some or all of the statements and/or result sets.
+Logging filters do not in any way alter the statement or results of the statements that are passed through Percona Proxy for MariaDB. They merely log some information about some or all of the statements and/or result sets.
 
-Two examples of logging filters are contained within the MariaDB MaxScale, a filter that will log all statements and another that will log only a number of statements, based on the duration of the execution of the query.
+Two examples of logging filters are contained within the Percona Proxy for MariaDB, a filter that will log all statements and another that will log only a number of statements, based on the duration of the execution of the query.
 
 ### Statement rewriting filters
 
@@ -28,23 +28,23 @@ Routing hint filters are filters that embed hints in the request that can be use
 
 ### Firewall filters
 
-A firewall filter is a mechanism that allows queries to be blocked within MariaDB MaxScale before they are sent on to the database server for execution. They allow constructs or individual queries to be intercepted and give a level of access control that is more flexible than the traditional database grant mechanism.
+A firewall filter is a mechanism that allows queries to be blocked within Percona Proxy for MariaDB before they are sent on to the database server for execution. They allow constructs or individual queries to be intercepted and give a level of access control that is more flexible than the traditional database grant mechanism.
 
 ### Pipeline control filters
 
-A pipeline filter is one that has an affect on how the requests are routed within the internal MariaDB MaxScale components. The most obvious version of this is the ability to add a "tee" connector in the pipeline, duplicating the request and sending it to a second MariaDB MaxScale service for processing.
+A pipeline filter is one that has an affect on how the requests are routed within the internal Percona Proxy for MariaDB components. The most obvious version of this is the ability to add a "tee" connector in the pipeline, duplicating the request and sending it to a second Percona Proxy for MariaDB service for processing.
 
 ## Filter Definition
 
-Filters are defined in the configuration file, typically maxscale.cnf, using a section for each filter instance. The content of the filter sections in the configuration file various from filter to filter, however there are always to entries present for every filter, the type and module.
+Filters are defined in the configuration file, typically percona-proxy.cnf, using a section for each filter instance. The content of the filter sections in the configuration file various from filter to filter, however there are always to entries present for every filter, the type and module.
 ```
 [MyFilter]
 type=filter
 module=xxxfilter
 ```
-The type is used by the configuration manager within MariaDB MaxScale to determine what this section is defining and the module is the name of the plugin that implements the filter.
+The type is used by the configuration manager within Percona Proxy for MariaDB to determine what this section is defining and the module is the name of the plugin that implements the filter.
 
-When a filter is used within a service in MariaDB MaxScale the entry filters= is added to the service definition in the ini file section for the service. Multiple filters can be defined using a syntax akin to the Linux shell pipe syntax.
+When a filter is used within a service in Percona Proxy for MariaDB the entry filters= is added to the service definition in the ini file section for the service. Multiple filters can be defined using a syntax akin to the Linux shell pipe syntax.
 ```
 [Split-Service]
 type=service
@@ -58,7 +58,7 @@ The names used in the filters= parameter are the names of the filter definition 
 
 ## Filter Examples
 
-The filters that are bundled with the MariaDB MaxScale are documented separately, in this section a short overview of how these might be used for some simple tasks will be discussed. These are just examples of how these filters might be used, other filters may also be easily added that will enhance the MariaDB MaxScale functionality still further.
+The filters that are bundled with the Percona Proxy for MariaDB are documented separately, in this section a short overview of how these might be used for some simple tasks will be discussed. These are just examples of how these filters might be used, other filters may also be easily added that will enhance the Percona Proxy for MariaDB functionality still further.
 
 ### Log The 30 Longest Running Queries
 
@@ -92,18 +92,18 @@ When the session ends a report will be written for the session into the logfile 
 
 ### Duplicate Data From Your Application Into Cassandra
 
-The scenario we are using in this example is one in which you have an online gaming application that is designed to work with a MariaDB database. The database schema includes a high score table which you would like to have access to in a Cassandra cluster. The application is already using MariaDB MaxScale to connect to a MariaDB Galera cluster, using a service names BubbleGame. The definition of that service is as follows
+The scenario we are using in this example is one in which you have an online gaming application that is designed to work with a MariaDB database. The database schema includes a high score table which you would like to have access to in a Cassandra cluster. The application is already using Percona Proxy for MariaDB to connect to a MariaDB Galera cluster, using a service names BubbleGame. The definition of that service is as follows
 ```
 [BubbleGame]
 type=service
 router=readwritesplit
 servers=dbbubble1,dbbubble2,dbbubble3,dbbubble4,dbbubble5
-user=maxscale
+user=percona-proxy
 password=6628C50E07CCE1F0392EDEEB9D1203F3
 ```
 The table you wish to store in Cassandra in called HighScore and will contain the same columns in both the MariaDB table and the Cassandra table. The first step is to install a MariaDB instance with the Cassandra storage engine to act as a bridge server between the relational database and Cassandra. In this bridge server add a table definition for the HighScore table with the engine type set to Cassandra.
 See [Cassandra Storage Engine Overview]( https://mariadb.com/kb/en/mariadb/cassandra-storage-engine-overview/) for details.
-Add this server into the MariaDB MaxScale configuration and create a service that will connect to this server.
+Add this server into the Percona Proxy for MariaDB configuration and create a service that will connect to this server.
 ```
 [CassandraDB]
 type=server
@@ -115,7 +115,7 @@ type=service
 router=readconnroute
 router_options=running
 servers=CassandraDB
-user=maxscale
+user=percona-proxy
 password=6628C50E07CCE1F0392EDEEB9D1203F3
 ```
 Next add a filter definition for the tee filter that will duplication insert statements that are destined for the HighScore table to this new service.
@@ -134,7 +134,7 @@ The final step is to add the filter to the BubbleGame service to enable the use 
 type=service
 router=readwritesplit
 servers=dbbubble1,dbbubble2,dbbubble3,dbbubble4,dbbubble5
-user=maxscale
+user=percona-proxy
 password=6628C50E07CCE1F0392EDEEB9D1203F3
 filters=HighScores
 ```

@@ -13,7 +13,7 @@
  */
 
 #define MXB_MODULE_NAME "storage_inmemory"
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include "../../cache_storage_api.hh"
 #include "../storagemodule.hh"
 #include "inmemorystoragest.hh"

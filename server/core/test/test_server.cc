@@ -23,9 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <maxscale/server.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/config.hh>
+#include <percona-proxy/server.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/config.hh>
 
 #include "../internal/config.hh"
 #include "../internal/server.hh"

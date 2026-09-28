@@ -19,7 +19,7 @@
 
 #define MXB_MODULE_NAME "schemarouter"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <limits>
 #include <list>
@@ -27,12 +27,12 @@
 #include <string>
 #include <memory>
 
-#include <maxscale/buffer.hh>
-#include <maxscale/pcre2.hh>
-#include <maxscale/service.hh>
-#include <maxscale/backend.hh>
-#include <maxscale/protocol/mariadb/rwbackend.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/pcre2.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/backend.hh>
+#include <percona-proxy/protocol/mariadb/rwbackend.hh>
+#include <percona-proxy/config2.hh>
 
 namespace schemarouter
 {

@@ -13,12 +13,12 @@
  */
 
 #include "protocolmodule.hh"
-#include <maxscale/cn_strings.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/protocol/mariadb/backend_connection.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/protocol/mariadb/backend_connection.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/service.hh>
 #include "../MariaDB/user_data.hh"
 #include "../MariaDB/protocol_module.hh"
 #include "clientconnection.hh"

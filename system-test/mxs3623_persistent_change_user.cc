@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
     c.query("CREATE USER test IDENTIFIED BY 'test'");
     c.query("GRANT ALL ON *.* TO test");

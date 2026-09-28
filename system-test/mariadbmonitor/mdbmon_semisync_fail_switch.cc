@@ -21,7 +21,7 @@ namespace
 void test_main(TestConnections& test)
 {
     auto& repl = *test.repl;
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     auto down = mxt::ServerInfo::DOWN;
 
@@ -126,7 +126,7 @@ void test_main(TestConnections& test)
             servers.print();
 
             test.tprintf("Switchover back to server1.");
-            mxs.maxctrlf("call command mariadbmon async-switchover MariaDB-Monitor server1");
+            mxs.percona_proxyctlf("call command mariadbmon async-switchover MariaDB-Monitor server1");
             mxs.wait_for_monitor();
             wait_for_master();
             mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());

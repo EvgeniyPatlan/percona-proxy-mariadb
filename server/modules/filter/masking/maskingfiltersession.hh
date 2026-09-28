@@ -13,17 +13,17 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <memory>
 #include <memory>
-#include <maxscale/buffer.hh>
-#include <maxscale/filter.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/filter.hh>
 #include "maskingrules.hh"
 #include "maskingfilterconfig.hh"
 
 class MaskingFilter;
 
-class MaskingFilterSession : public maxscale::FilterSession
+class MaskingFilterSession : public percona_proxy::FilterSession
 {
 public:
     typedef std::shared_ptr<MaskingRules> SMaskingRules;

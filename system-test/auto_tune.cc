@@ -66,7 +66,7 @@ string touch_connection_keepalive(const string& value)
 
 struct AutoTuneCase
 {
-    const char* zMaxScale_parameter;
+    const char* zPerconaProxy_parameter;
     const char* zServer_variable;
     string (*touch)(const string& value);
 };
@@ -82,7 +82,7 @@ AutoTuneCase auto_tune_cases[] =
 
 void check(TestConnections& test, MaxRest& rest, Connection& c, const AutoTuneCase& auto_tune_case)
 {
-    string parameter_was = get_parameter_value(rest, auto_tune_case.zMaxScale_parameter);
+    string parameter_was = get_parameter_value(rest, auto_tune_case.zPerconaProxy_parameter);
     string variable_was = get_server_variable(c, auto_tune_case.zServer_variable);
 
     cout << "Variable: " << variable_was << ", parameter: " << parameter_was << endl;
@@ -94,9 +94,9 @@ void check(TestConnections& test, MaxRest& rest, Connection& c, const AutoTuneCa
 
     // Currently the variable values are fetched by the Monitor every 10 seconds.
     sleep(10);
-    test.maxscale->wait_for_monitor(2); // To make sure auto_tune has picked up the current values.
+    test.percona_proxy->wait_for_monitor(2); // To make sure auto_tune has picked up the current values.
 
-    string parameter_is = get_parameter_value(rest, auto_tune_case.zMaxScale_parameter);
+    string parameter_is = get_parameter_value(rest, auto_tune_case.zPerconaProxy_parameter);
     cout << "Variable: " << variable_is << ", parameter: " << parameter_is << endl;
 
     test.expect(parameter_is != parameter_was, "Parameter value is still the same.");
@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    test.maxscale->wait_for_monitor(2); // To make sure auto_tune has picked up the current values.
+    test.percona_proxy->wait_for_monitor(2); // To make sure auto_tune has picked up the current values.
 
     MaxRest rest(&test);
     Connection c = test.repl->get_connection(0);

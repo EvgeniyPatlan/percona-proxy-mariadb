@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/protocol/mariadb/backend_connection.hh>
+#include <percona-proxy/protocol/mariadb/backend_connection.hh>
 
 #include <arpa/inet.h>
 #include <openssl/rand.h>
@@ -22,17 +22,17 @@
 #include <maxbase/format.hh>
 #include <maxbase/proxy_protocol.hh>
 #include <maxbase/pretty_print.hh>
-#include <maxscale/clock.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/router.hh>
-#include <maxscale/server.hh>
-#include <maxscale/service.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/protocol/mariadb/authenticator.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/clock.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/server.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/protocol/mariadb/authenticator.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 #include "user_data.hh"
 
 using mxs::ReplyState;
@@ -281,7 +281,7 @@ void MariaDBBackendConnection::handle_error_response(const GWBUF& buffer)
     {
         m_server.set_maintenance();
         MXB_ERROR("Server %s has been put into maintenance mode due to the server blocking connections "
-                  "from MaxScale. Run 'mysqladmin -h %s -P %d flush-hosts' on this server before taking "
+                  "from Percona Proxy. Run 'mysqladmin -h %s -P %d flush-hosts' on this server before taking "
                   "this server out of maintenance mode. To avoid this problem in the future, set "
                   "'max_connect_errors' to a larger value in the backend server.",
                   m_server.name(), m_server.address(), m_server.port());
@@ -290,7 +290,7 @@ void MariaDBBackendConnection::handle_error_response(const GWBUF& buffer)
     {
         m_session->service->stats().add_failed_auth();
 
-        // Authentication to backend failed. MaxScale must be operating on old user account data. This
+        // Authentication to backend failed. Percona Proxy must be operating on old user account data. This
         // session will fail, but update account data.
         auto user_cache = user_account_cache();
         if (user_cache)
@@ -367,7 +367,7 @@ void MariaDBBackendConnection::process_stmt_execute(GWBUF& original, uint32_t id
             auto it = data->exec_metadata.find(id);
 
             // Although this check is practically always true, it will prevent a broken
-            // connector from crashing MaxScale.
+            // connector from crashing Percona Proxy.
             if (it != data->exec_metadata.end())
             {
                 const auto& metadata = it->second;
@@ -1147,7 +1147,7 @@ bool MariaDBBackendConnection::routeQuery(GWBUF&& queue)
                 else if (ps_id != MARIADB_PS_DIRECT_EXEC_ID)
                 {
                     std::stringstream ss;
-                    ss << "Unknown prepared statement handler (" << ps_id << ") given to MaxScale for "
+                    ss << "Unknown prepared statement handler (" << ps_id << ") given to Percona Proxy for "
                        << mariadb::cmd_to_string(cmd) << " by " << m_session->user_and_host();
 
                     // Only send the error if the client expects a response. If an unknown COM_STMT_CLOSE is
@@ -1456,9 +1456,9 @@ bool MariaDBBackendConnection::capability_mismatch() const
 
     if (use_deprecate_eof() && (m_server_capabilities & GW_MYSQL_CAPABILITIES_DEPRECATE_EOF) == 0)
     {
-        // This is an unexpected situation but it can happen if the server is swapped out without MaxScale
+        // This is an unexpected situation but it can happen if the server is swapped out without Percona Proxy
         // recalculating the version. Mostly this is here to catch any possible bugs that there might be in
-        // the capability handling of MaxScale. Separate code should exist for routers for any unexpected
+        // the capability handling of Percona Proxy. Separate code should exist for routers for any unexpected
         // responses as bugs in the server can cause mismatching result types to be sent,
         // https://bugs.mysql.com/bug.php?id=83346 is one example of such.
         MXB_INFO("Client uses DEPRECATE_EOF protocol but the server does not implement it");
@@ -1690,20 +1690,20 @@ GWBUF MariaDBBackendConnection::create_hs_response_packet(bool with_ssl)
  *
  * We start by taking the default bitmask and removing any bits not set in
  * the bitmask contained in the connection structure. Then add SSL flag if
- * the connection requires SSL (set from the MaxScale configuration). The
+ * the connection requires SSL (set from the Percona Proxy configuration). The
  * compression flag may be set, although compression is NOT SUPPORTED. If a
  * database name has been specified in the function call, the relevant flag
  * is set.
  *
  * @param with_ssl Is ssl required?
  * @return Bit mask (32 bits)
- * @note Capability bits are defined in maxscale/protocol/mysql.h
+ * @note Capability bits are defined in percona-proxy/protocol/mysql.h
  */
 uint32_t MariaDBBackendConnection::create_capabilities(bool with_ssl) const
 {
     uint32_t final_capabilities = m_auth_data.client_data->client_capabilities();
 
-    // Disable the cert verification capability, it has never been enabled in MaxScale.
+    // Disable the cert verification capability, it has never been enabled in Percona Proxy.
     // TODO: Figure out if this is correct, the documentation doesn't mention this capability at all
     final_capabilities &= ~GW_MYSQL_CAPABILITIES_SSL_VERIFY_SERVER_CERT;
 

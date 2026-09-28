@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <maxbase/jansson.hh>
-#include <maxscale/buffer.hh>
+#include <percona-proxy/buffer.hh>
 
 /** File magic and sync marker sizes block sizes */
 #define AVRO_MAGIC_SIZE  4

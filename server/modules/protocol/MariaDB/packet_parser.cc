@@ -14,7 +14,7 @@
 
 #include "packet_parser.hh"
 #include <maxsql/mariadb.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 using std::string;
 
@@ -65,7 +65,7 @@ ClientCapsResult parse_client_capabilities(ByteVec& data, const ClientInfo& old_
     /**
      * We OR the capability bits in order to retain the starting bits sent
      * when an SSL connection is opened. Oracle Connector/J 8.0 appears to drop
-     * the SSL capability bit mid-authentication which causes MaxScale to think
+     * the SSL capability bit mid-authentication which causes Percona Proxy to think
      * that SSL is not used. We also AND the bytes with the ones we sent in the handshake.
      */
     caps.basic_capabilities |= mariadb::get_byte4(ptr);
@@ -94,7 +94,7 @@ ClientCapsResult parse_client_capabilities(ByteVec& data, const ClientInfo& old_
     }
 
     // AND the extra capabilities with the ones we sent in the handshake. This makes sure we use only the
-    // capabilities that both the client and MaxScale support.
+    // capabilities that both the client and Percona Proxy support.
     caps.ext_capabilities &= (caps.advertised_capabilities >> 32);
 
     ptr += 4;

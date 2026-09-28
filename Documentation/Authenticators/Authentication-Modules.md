@@ -1,14 +1,14 @@
 # Authentication Modules
 
-This document describes general MySQL protocol authentication in MaxScale. For
+This document describes general MySQL protocol authentication in Percona Proxy. For
 REST-api authentication, see the
 [configuration guide](../Getting-Started/Configuration-Guide.md) and the
 [REST-api guide](../REST-API/API.md).
 
-Similar to the MariaDB Server, MaxScale uses authentication plugins to implement
+Similar to the MariaDB Server, Percona Proxy uses authentication plugins to implement
 different authentication schemes for incoming clients. The same plugins also
 handle authenticating the clients to backend servers. The authentication plugins
-available in MaxScale are
+available in Percona Proxy are
 [standard MySQL password](MySQL-Authenticator.md),
 [GSSAPI](GSSAPI-Authenticator.md) and
 [pluggable authentication modules (PAM)](PAM-Authenticator.md).
@@ -19,7 +19,7 @@ document. For information on an individual plugin, see its documentation.
 
 ## User account management
 
-Every MaxScale service with a MariaDB protocol listener requires knowledge of
+Every Percona Proxy service with a MariaDB protocol listener requires knowledge of
 the user accounts defined on the backend databases. The service maintains this
 information in an internal component called the *user account manager* (UAM).
 The UAM queries relevant data from the *mysql*-database of the backends and
@@ -30,10 +30,10 @@ define the credentials used when fetching user accounts.
 The service uses the stored data when authenticating clients, checking their
 passwords and database access rights. This results in an authentication process
 very similar to the MariaDB Server itself. Unauthorized users are generally
-detected already at the MaxScale level instead of the backend servers. This may
-not apply in some cases, for example if MaxScale is using old user account data.
+detected already at the Percona Proxy level instead of the backend servers. This may
+not apply in some cases, for example if Percona Proxy is using old user account data.
 
-If authentication fails, the UAM updates its data from a backend. MaxScale may
+If authentication fails, the UAM updates its data from a backend. Percona Proxy may
 attempt authenticating the client again with the refreshed data without
 communicating the first failure to the client. This transparent user data update
 does not always work, in which case the client should try to log in again.
@@ -48,57 +48,57 @@ the various server-level ssl-settings.
 
 ### Required grants
 
-To properly fetch user account information, the MaxScale service user must be
+To properly fetch user account information, the Percona Proxy service user must be
 able to read from various tables in the  *mysql*-database: *user*, *db*,
 *tables_priv*, *columns_priv*, *procs_priv*, *proxies_priv* and *roles_mapping*.
 The user should also have the *SHOW DATABASES*-grant.
 
 ```
-CREATE USER 'maxscale'@'maxscalehost' IDENTIFIED BY 'maxscale-password';
-GRANT SELECT ON mysql.user TO 'maxscale'@'maxscalehost';
-GRANT SELECT ON mysql.db TO 'maxscale'@'maxscalehost';
-GRANT SELECT ON mysql.tables_priv TO 'maxscale'@'maxscalehost';
-GRANT SELECT ON mysql.columns_priv TO 'maxscale'@'maxscalehost';
-GRANT SELECT ON mysql.procs_priv TO 'maxscale'@'maxscalehost';
-GRANT SELECT ON mysql.proxies_priv TO 'maxscale'@'maxscalehost';
-GRANT SELECT ON mysql.roles_mapping TO 'maxscale'@'maxscalehost';
-GRANT SHOW DATABASES ON *.* TO 'maxscale'@'maxscalehost';
+CREATE USER 'percona-proxy'@'percona_proxy_host' IDENTIFIED BY 'percona-proxy-password';
+GRANT SELECT ON mysql.user TO 'percona-proxy'@'percona_proxy_host';
+GRANT SELECT ON mysql.db TO 'percona-proxy'@'percona_proxy_host';
+GRANT SELECT ON mysql.tables_priv TO 'percona-proxy'@'percona_proxy_host';
+GRANT SELECT ON mysql.columns_priv TO 'percona-proxy'@'percona_proxy_host';
+GRANT SELECT ON mysql.procs_priv TO 'percona-proxy'@'percona_proxy_host';
+GRANT SELECT ON mysql.proxies_priv TO 'percona-proxy'@'percona_proxy_host';
+GRANT SELECT ON mysql.roles_mapping TO 'percona-proxy'@'percona_proxy_host';
+GRANT SHOW DATABASES ON *.* TO 'percona-proxy'@'percona_proxy_host';
 ```
 
 If using MariaDB ColumnStore, the following grant is required:
 
 ```
-GRANT ALL ON infinidb_vtable.* TO 'maxscale'@'maxscalehost';
+GRANT ALL ON infinidb_vtable.* TO 'percona-proxy'@'percona_proxy_host';
 ```
 
 ## Limitations and troubleshooting
 
-When a client logs in to MaxScale, MaxScale sees the client's IP address. When
-MaxScale then connects the client to backends (using the client's username and
+When a client logs in to Percona Proxy, Percona Proxy sees the client's IP address. When
+Percona Proxy then connects the client to backends (using the client's username and
 password), the backends see the connection coming from the IP address of
-MaxScale. If the client user account is to a wildcard host (`'alice'@'%'`), this
+Percona Proxy. If the client user account is to a wildcard host (`'alice'@'%'`), this
 is not an issue. If the host is restricted (`'alice'@'123.123.123.123'`),
 authentication to backends will fail.
 
 There are two primary ways to deal with this:
 1. Duplicate user accounts. For every user account with a restricted hostname an
-equivalent user account for MaxScale is added (`'alice'@'maxscale-ip'`).
+equivalent user account for Percona Proxy is added (`'alice'@'percona-proxy-ip'`).
 2. Use [proxy protocol](../Getting-Started/Configuration-Guide.md#proxy_protocol).
 
 Option 1 limits the passwords for user accounts with shared usernames. Such
 accounts must use the same password since they will effectively share the
-MaxScale-to-backend user account. Option 2 requires server support.
+Percona Proxy-to-backend user account. Option 2 requires server support.
 
 See
-[MaxScale Troubleshooting](https://mariadb.com/kb/en/mariadb-enterprise/maxscale-troubleshooting/)
+[Percona Proxy Troubleshooting](https://mariadb.com/kb/en/mariadb-enterprise/percona-proxy-troubleshooting/)
 for additional information on how to solve authentication issues.
 
 ### Wildcard database grants
 
-MaxScale supports wildcards `_` and `%` for database-level grants. As with
+Percona Proxy supports wildcards `_` and `%` for database-level grants. As with
 MariaDB Server, `grant select on test_.* to 'alice'@'%';` gives access to
 *test_* as well as *test1*, *test2* and so on. If the GRANT command escapes the
-wildcard (``grant select on `test\_`.* to 'alice'@'%';``) both MaxScale and the
+wildcard (``grant select on `test\_`.* to 'alice'@'%';``) both Percona Proxy and the
 MariaDB Server interpret it as only allowing access to *test_*. `_` and `%`
 are only interpreted as wildcards when the grant is to a database:
 ``grant select on `test_`.t1 to 'alice'@'%';`` only grants access to the
@@ -123,20 +123,20 @@ authenticator_options=skip_authentication=true,lower_case_table_names=1
 - **Dynamic**: No
 - **Default**: `false`
 
-If enabled, MaxScale will not check the
+If enabled, Percona Proxy will not check the
 passwords of incoming clients and just assumes that they are correct.
-Wrong passwords are instead detected when MaxScale tries to authenticate to the
+Wrong passwords are instead detected when Percona Proxy tries to authenticate to the
 backend servers.
 
 This setting is mainly meant for failure tolerance in situations where the
-password check is performed outside of MaxScale. If, for example, MaxScale
+password check is performed outside of Percona Proxy. If, for example, Percona Proxy
 cannot use an LDAP-server but the backend databases can, enabling this setting
 allows clients to log in. Even with this setting enabled, a user account
 matching the incoming client username and IP must exist on the backends for
-MaxScale to accept the client.
+Percona Proxy to accept the client.
 
 This setting is incompatible with standard MariaDB/MySQL authentication plugin
-(*MariaDBAuth* in MaxScale). If enabled, MaxScale cannot authenticate clients to
+(*MariaDBAuth* in Percona Proxy). If enabled, Percona Proxy cannot authenticate clients to
 backend servers using standard authentication.
 
 ```
@@ -150,16 +150,16 @@ authenticator_options=skip_authentication=true
 - **Dynamic**: No
 - **Default**: `true`
 
-If disabled, MaxScale does not require that a
+If disabled, Percona Proxy does not require that a
 valid user account entry for incoming clients exists on the backends.
 Specifically, only the client username needs to match a user account,
 hostname/IP is ignored.
 
-This setting may be used to force clients to connect through MaxScale. Normally,
+This setting may be used to force clients to connect through Percona Proxy. Normally,
 creating the user *jdoe@%* will allow the user *jdoe* to connect from any
 IP-address. By disabling *match_host* and replacing the user with
-*jdoe@maxscale-IP*, the user can still connect from any client IP but will be
-forced to go through MaxScale.
+*jdoe@percona-proxy-IP*, the user can still connect from any client IP but will be
+forced to go through Percona Proxy.
 
 ```
 authenticator_options=match_host=false
@@ -191,12 +191,12 @@ and 0, respectively.
 The identifier names are converted using an ASCII-only function. This means that
 non-ASCII characters will retain their case-sensitivity.
 
-Starting with MaxScale versions 2.5.25, 6.4.6, 22.08.5 and 23.02.2, the behavior
+Starting with Percona Proxy versions 2.5.25, 6.4.6, 22.08.5 and 23.02.2, the behavior
 of `lower_case_table_names=1` is identical with how the MariaDB server
 behaves. In older releases the comparisons were done in a case-sensitive manner
 after the requested database name was converted into lowercase. Using
 `lower_case_table_names=2` will behave identically in all versions which makes
-it a safe alternative to use when a mix of older and newer MaxScale versions is
+it a safe alternative to use when a mix of older and newer Percona Proxy versions is
 being used.
 
 ```

@@ -12,13 +12,13 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include "maxavro_internal.hh"
 #include <string.h>
 #include <maxbase/assert.hh>
 #include <maxbase/string.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/log.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/log.hh>
 #include <errno.h>
 
 /**

@@ -13,15 +13,15 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <mysql.h>
 #include <maxsql/mariadb.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 /**
  * @class ComPacket

@@ -1,0 +1,122 @@
+#####################################################
+# Percona Proxy documentation:                           #
+# https://mariadb.com/kb/en/mariadb-percona-proxy-23-08/ #
+#####################################################
+
+#########################################################################################
+# Global parameters                                                                     #
+#                                                                                       #
+# Complete list of configuration options:                                               #
+# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-mariadb-percona-proxy-configuration-guide/ #
+#########################################################################################
+[percona-proxy]
+threads=auto
+
+############################################################################
+# Server definitions                                                       #
+#                                                                          #
+# Set the address of the server to the network address of a MariaDB server.#
+############################################################################
+
+[server1]
+type=server
+address=127.0.0.1
+port=3306
+##################################################################################
+# Uncomment this and add Percona Proxy's IP to proxy_protocol_networks in MariaDB for #
+# easier user management: https://mariadb.com/kb/en/proxy-protocol-support/      #
+##################################################################################
+# proxy_protocol=true
+
+####################################################################################
+# Monitor for the servers                                                          #
+#                                                                                  #
+# This will keep Percona Proxy aware of the state of the servers.                       #
+# MariaDB Monitor documentation:                                                   #
+# https://mariadb.com/kb/en/mariadb-percona-proxy-23-08-monitors/                       #
+#                                                                                  #
+# The GRANTs needed by the monitor user depend on the actual monitor.              #
+# The GRANTs required by the MariaDB Monitor can be found here:                    #
+# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-mariadb-monitor/#required-grants #
+####################################################################################
+
+[MariaDB-Monitor]
+type=monitor
+module=mariadbmon
+servers=server1
+user=monitor_user
+password=monitor_pw
+monitor_interval=2s
+####################################################################################################
+# Uncomment these to enable automatic node failover:                                               #
+# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-mariadb-monitor/#cluster-manipulation-operations #
+#                                                                                                  #
+# The GRANTs required for automatic node failover can be found here:                               #
+# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-mariadb-monitor/#cluster-manipulation-grants     #
+####################################################################################################
+# auto_failover=true
+# auto_rejoin=true
+# enforce_simple_topology=true
+# replication_user=<username used for replication>
+# replication_password=<password used for replication>
+#################################################################################################
+# Uncomment this if you use more than one Percona Proxy with automatic node failover:                #
+# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-mariadb-monitor/#cooperative-monitoring       #
+#################################################################################################
+# cooperative_monitoring_locks=majority_of_all
+
+###########################################################################################
+# Service definitions                                                                     #
+#                                                                                         #
+# Service Definition for a read-only service and a read/write splitting service.          #
+#                                                                                         #
+# The GRANTs needed by the service user can be found here:                                #
+# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-authentication-modules/#required-grants #
+###########################################################################################
+
+##################################################################
+# ReadConnRoute documentation:                                   #
+# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-readconnroute/ #
+##################################################################
+
+[Read-Only-Service]
+type=service
+router=readconnroute
+servers=server1
+user=service_user
+password=service_pw
+router_options=slave
+
+###################################################################
+# ReadWriteSplit documentation:                                   #
+# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-readwritesplit/ #
+###################################################################
+
+[Read-Write-Service]
+type=service
+router=readwritesplit
+servers=server1
+user=service_user
+password=service_pw
+######################################################################################
+# Uncomment these to enable transparent transaction replay on node failure:          #
+# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-readwritesplit/#transaction_replay #
+######################################################################################
+# transaction_replay=true
+# transaction_replay_timeout=30s
+
+####################################################################
+# Listener definitions for the services                            #
+#                                                                  #
+# These listeners represent the ports the services will listen on. #
+####################################################################
+
+[Read-Only-Listener]
+type=listener
+service=Read-Only-Service
+port=4008
+
+[Read-Write-Listener]
+type=listener
+service=Read-Write-Service
+port=4006

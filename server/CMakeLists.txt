@@ -1,4 +1,4 @@
-# Use the client libraries in MaxScale core
+# Use the client libraries in Percona Proxy core
 include_directories(${MARIADB_CONNECTOR_INCLUDE_DIR})
 
 add_subdirectory(core)

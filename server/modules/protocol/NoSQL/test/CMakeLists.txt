@@ -21,7 +21,7 @@ add_executable(nosqltest_path nosqltest_path.cc
   ../crc32-x86.c
 )
 
-target_link_libraries(nosqltest_path maxscale-common
+target_link_libraries(nosqltest_path percona-proxy-common
   cache
   ${MONGO_C_LIBRARIES}
   ${BSON_CXX_LIBRARIES}

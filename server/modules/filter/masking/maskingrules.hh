@@ -13,15 +13,15 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <string>
 #include <memory>
 #include <vector>
 
 #include <maxbase/jansson.hh>
-#include <maxscale/pcre2.hh>
-#include <maxscale/queryclassifier.hh>
+#include <percona-proxy/pcre2.hh>
+#include <percona-proxy/queryclassifier.hh>
 #include "mysql.hh"
 
 /**

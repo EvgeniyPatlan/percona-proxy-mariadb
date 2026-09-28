@@ -13,13 +13,13 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/filter.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/filter.hh>
 #include <string>
 
 class CommentFilter;
 
-class CommentFilterSession : public maxscale::FilterSession
+class CommentFilterSession : public percona_proxy::FilterSession
 {
     // Prevent copy-constructor and assignment operator usage
     CommentFilterSession(const CommentFilterSession&);

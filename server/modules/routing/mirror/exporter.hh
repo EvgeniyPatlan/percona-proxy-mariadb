@@ -16,7 +16,7 @@
 #include "common.hh"
 
 #include <maxbase/jansson.hh>
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include "config.hh"
 
@@ -25,7 +25,7 @@ struct Exporter
     virtual ~Exporter() = default;
 
     /**
-     * Ship a JSON object outside of MaxScale
+     * Ship a JSON object outside of Percona Proxy
      *
      * @param obj JSON object to ship
      */

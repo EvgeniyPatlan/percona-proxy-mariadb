@@ -16,9 +16,9 @@
 #include "cachept.hh"
 
 #include <maxbase/atomic.hh>
-#include <maxscale/config.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/routingworker.hh>
 
 #include "cachest.hh"
 #include "storagefactory.hh"

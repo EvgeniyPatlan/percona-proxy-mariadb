@@ -53,7 +53,7 @@ void test_one_stmt(TestConnections& test, Connection& conn, MYSQL_STMT* stmt, in
 
 void run_test(TestConnections& test)
 {
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection should work");
     conn.query("CREATE OR REPLACE TABLE test.t1(id INT, data TEXT)");
 
@@ -102,11 +102,11 @@ int main(int argc, char** argv)
     run_test(test);
 
     test.tprintf("Testing causal_reads=global");
-    test.check_maxctrl("alter service RW-Split-Router causal_reads global");
+    test.check_percona_proxyctl("alter service RW-Split-Router causal_reads global");
     run_test(test);
 
     test.tprintf("Testing causal_reads=fast");
-    test.check_maxctrl("alter service RW-Split-Router causal_reads fast");
+    test.check_percona_proxyctl("alter service RW-Split-Router causal_reads fast");
     run_test(test);
 
     return test.global_result;

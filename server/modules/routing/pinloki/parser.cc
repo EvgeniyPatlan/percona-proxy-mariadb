@@ -21,7 +21,7 @@
 #define BOOST_SPIRIT_X3_NO_RTTI
 
 #include <maxbase/assert.hh>
-#include <maxscale/boost_spirit_utils.hh>
+#include <percona-proxy/boost_spirit_utils.hh>
 
 using namespace boost::spirit;
 using CMT = pinloki::ChangeMasterType;

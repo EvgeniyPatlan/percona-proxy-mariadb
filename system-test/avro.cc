@@ -16,7 +16,7 @@
  * @file avro.cpp test of avro
  * - setup binlog and avro
  * - put some data to t1
- * - check avro file with "maxavrocheck -vv /var/lib/maxscale/avro/test.t1.000001.avro"
+ * - check avro file with "percona-proxy-avrocheck -vv /var/lib/percona-proxy/avro/test.t1.000001.avro"
  * - check that data in avro file is correct
  */
 
@@ -27,7 +27,7 @@
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
     test.reset_timeout();
@@ -52,13 +52,13 @@ int main(int argc, char* argv[])
     execute_query(test.repl->nodes[0], "FLUSH LOGS");
 
     test.repl->close_connections();
-    test.maxscale->start();
+    test.percona_proxy->start();
 
     /** Give avrorouter some time to process the events */
     sleep(10);
     test.reset_timeout();
 
-    auto res = test.maxscale->ssh_output("maxavrocheck -d /var/lib/maxscale/avro/test.t1.000001.avro");
+    auto res = test.percona_proxy->ssh_output("percona-proxy-avrocheck -d /var/lib/percona-proxy/avro/test.t1.000001.avro");
 
     std::istringstream iss;
     iss.str(res.output);

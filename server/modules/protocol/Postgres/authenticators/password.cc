@@ -14,8 +14,8 @@
 #include "password.hh"
 #include "../pgprotocoldata.hh"
 #include <openssl/md5.h>
-#include <maxscale/protocol/postgresql/scram.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/protocol/postgresql/scram.hh>
+#include <percona-proxy/utils.hh>
 #include "common.hh"
 
 using std::string;

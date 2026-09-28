@@ -24,9 +24,9 @@
 #include <unistd.h>
 
 #include <maxbase/ini.hh>
-#include <maxscale/maxscale.hh>
-#include <maxscale/pcre2.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/percona-proxy.hh>
+#include <percona-proxy/pcre2.hh>
+#include <percona-proxy/routingworker.hh>
 
 static const char* statefile_section = "avro-conversion";
 
@@ -584,7 +584,7 @@ avro_binlog_end_t avro_read_all_events(Avro* router)
     std::string next_binlog;
     bool rotate_seen = false;
 
-    while (!maxscale_is_shutting_down())
+    while (!percona_proxy_is_shutting_down())
     {
         avro_binlog_end_t rc;
         REP_HEADER hdr;

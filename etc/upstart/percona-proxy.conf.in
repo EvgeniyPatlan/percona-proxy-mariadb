@@ -1,0 +1,26 @@
+# Percona Proxy service
+
+description "Percona Proxy for MariaDB"
+
+start on stopped rc RUNLEVEL=[2345]
+stop on starting rc runlevel [!2345]
+
+# Respawn the process on abnormal exits
+respawn
+
+# Uncomment this to limit respawns to two every five minutes
+# respawn limit 2 5
+
+# Unlimited open files
+limit nofile 65535 65535
+
+# Make sure /var/run/percona-proxy exists
+pre-start exec /usr/bin/install -d -o percona-proxy -g percona-proxy @PERCONA_PROXY_VARDIR@/run/percona-proxy
+
+# Change the user to percona-proxy:percona-proxy
+setuid percona-proxy
+setgid percona-proxy
+
+# Start Percona Proxy
+expect fork
+exec /usr/bin/percona-proxy

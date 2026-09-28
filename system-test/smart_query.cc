@@ -48,8 +48,8 @@ const maxbase::Duration TEST_RUN_TIME = std::chrono::seconds(60);
  */
 void setup_test(TestConnections& test)
 {
-    Connection c = test.maxscale->rwsplit();
-    test.expect(c.connect(), "Could not connect to MaxScale.");
+    Connection c = test.percona_proxy->rwsplit();
+    test.expect(c.connect(), "Could not connect to Percona Proxy.");
     test.expect(c.query("drop table if exists ints1"), "Could not drop ints1.");
     test.expect(c.query("drop table if exists ints2"), "Could not drop ints2.");
     test.expect(c.query("create table ints1(val int)"), "Could not create table ints1.");
@@ -71,8 +71,8 @@ void setup_test(TestConnections& test)
  */
 void tear_down_test(TestConnections& test)
 {
-    Connection c = test.maxscale->rwsplit();
-    test.expect(c.connect(), "Could not connect to MaxScale.");
+    Connection c = test.percona_proxy->rwsplit();
+    test.expect(c.connect(), "Could not connect to Percona Proxy.");
 
     test.expect(c.query("drop table if exists ints1"), "Could not drop ints1.");
     test.expect(c.query("drop table if exists ints2"), "Could not drop ints2.");
@@ -92,8 +92,8 @@ const std::string THE_QUERY = "select @@server_id, count(*)"
  */
 int track_server(TestConnections& test)
 {
-    Connection c = test.maxscale->rwsplit();
-    test.expect(c.connect(), "Could not connect to MaxScale.");
+    Connection c = test.percona_proxy->rwsplit();
+    test.expect(c.connect(), "Could not connect to Percona Proxy.");
 
     Result rows = c.rows(THE_QUERY);
     test.expect(rows.size() == 1, "Expected exactly one row.");

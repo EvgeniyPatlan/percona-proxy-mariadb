@@ -24,7 +24,7 @@
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
     test.reset_timeout();
@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
     execute_query(test.repl->nodes[0], "INSERT INTO test.t1 VALUES (16, 17, \"d\")");
     execute_query(test.repl->nodes[0], "DELETE FROM test.t1");
 
-    test.maxscale->start();
+    test.percona_proxy->start();
 
     /** Give avrorouter some time to process the events */
     sleep(10);
@@ -98,8 +98,8 @@ int main(int argc, char* argv[])
     for (int i = 1; i <= 12; i++)
     {
         char cmd[PATH_MAX];
-        snprintf(cmd, sizeof(cmd), "maxavrocheck -d /var/lib/maxscale/avro/test.t1.%06d.avro", i);
-        auto res = test.maxscale->ssh_output(cmd);
+        snprintf(cmd, sizeof(cmd), "percona-proxy-avrocheck -d /var/lib/percona-proxy/avro/test.t1.%06d.avro", i);
+        auto res = test.percona_proxy->ssh_output(cmd);
         int nrows = 0;
         std::istringstream iss;
         iss.str(res.output);

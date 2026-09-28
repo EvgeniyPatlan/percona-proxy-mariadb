@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     for (int limit = 1; limit < 10; limit++)
     {
         tcp::Connection conn;
-        conn.connect(test.maxscale->ip(), 4006);
+        conn.connect(test.percona_proxy->ip(), 4006);
 
         // The payload will be a partial packet which should trigger the bug.
         std::vector<uint8_t> data{0xff, 0xff, 0xff, 0};
@@ -32,7 +32,7 @@ int main(int argc, char** argv)
             conn.write(data.data(), data.size());
         }
 
-        auto rws = test.maxscale->rwsplit();
+        auto rws = test.percona_proxy->rwsplit();
         test.expect(rws.connect(), "Failed to connect: %s", rws.error());
 
         for (int i = 0; i < 10; i++)

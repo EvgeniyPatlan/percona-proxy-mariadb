@@ -31,12 +31,12 @@ void test_rwsplit(TestConnections& test, std::vector<std::string> ids)
 {
     std::cout << "Servers in two groups with different ranks" << std::endl;
 
-    test.check_maxctrl("alter server server1 rank primary");
-    test.check_maxctrl("alter server server2 rank primary");
-    test.check_maxctrl("alter server server3 rank secondary");
-    test.check_maxctrl("alter server server4 rank secondary");
+    test.check_percona_proxyctl("alter server server1 rank primary");
+    test.check_percona_proxyctl("alter server server2 rank primary");
+    test.check_percona_proxyctl("alter server server3 rank secondary");
+    test.check_percona_proxyctl("alter server server4 rank secondary");
 
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
 
     auto is_primary = [&]() {
         auto id = c.field("SELECT @@server_id");
@@ -84,10 +84,10 @@ void test_rwsplit(TestConnections& test, std::vector<std::string> ids)
 
     std::cout << "Grouping servers into a three-node cluster with one low-ranking server" << std::endl;
 
-    test.check_maxctrl("alter server server1 rank primary");
-    test.check_maxctrl("alter server server2 rank primary");
-    test.check_maxctrl("alter server server3 rank primary");
-    test.check_maxctrl("alter server server4 rank secondary");
+    test.check_percona_proxyctl("alter server server1 rank primary");
+    test.check_percona_proxyctl("alter server server2 rank primary");
+    test.check_percona_proxyctl("alter server server3 rank primary");
+    test.check_percona_proxyctl("alter server server4 rank secondary");
 
     c.disconnect();
     c.connect();
@@ -120,13 +120,13 @@ void test_readconnroute(TestConnections& test, std::vector<std::string> ids)
 {
     std::cout << "Readconnroute with descending server rank" << std::endl;
 
-    test.check_maxctrl("alter server server1 rank primary");
-    test.check_maxctrl("alter server server2 rank primary");
-    test.check_maxctrl("alter server server3 rank secondary");
-    test.check_maxctrl("alter server server4 rank secondary");
+    test.check_percona_proxyctl("alter server server1 rank primary");
+    test.check_percona_proxyctl("alter server server2 rank primary");
+    test.check_percona_proxyctl("alter server server3 rank secondary");
+    test.check_percona_proxyctl("alter server server4 rank secondary");
 
     auto do_test = [&](int node) {
-        Connection c = test.maxscale->readconn_master();
+        Connection c = test.percona_proxy->readconn_master();
         c.connect();
         test.expect(c.field("SELECT @@server_id") == ids[node], "server%d should reply", node + 1);
     };
@@ -148,44 +148,44 @@ void test_readconnroute(TestConnections& test, std::vector<std::string> ids)
 
     std::cout << "MXS-4132: Rank of the first server is ignored with router_options=master" << std::endl;
 
-    test.check_maxctrl("alter service Read-Connection-Router router_options=master");
-    test.check_maxctrl("set server server2 master");
-    test.check_maxctrl("set server server3 master");
-    test.check_maxctrl("set server server4 master");
-    test.check_maxctrl("alter server server2 rank secondary");
+    test.check_percona_proxyctl("alter service Read-Connection-Router router_options=master");
+    test.check_percona_proxyctl("set server server2 master");
+    test.check_percona_proxyctl("set server server3 master");
+    test.check_percona_proxyctl("set server server4 master");
+    test.check_percona_proxyctl("alter server server2 rank secondary");
 
     do_test(0);
-    test.check_maxctrl("clear server server1 master");
+    test.check_percona_proxyctl("clear server server1 master");
     do_test(1);
-    test.check_maxctrl("clear server server2 master");
+    test.check_percona_proxyctl("clear server server2 master");
     do_test(2);
-    test.check_maxctrl("clear server server3 master");
+    test.check_percona_proxyctl("clear server server3 master");
     do_test(3);
 
-    test.check_maxctrl("alter service Read-Connection-Router router_options=running");
+    test.check_percona_proxyctl("alter service Read-Connection-Router router_options=running");
 }
 
 void test_hints(TestConnections& test, std::vector<std::string> ids)
 {
     std::cout << "Test that routing hints override server rank" << std::endl;
 
-    test.check_maxctrl("alter server server1 rank primary");
-    test.check_maxctrl("alter server server2 rank primary");
-    test.check_maxctrl("alter server server3 rank primary");
-    test.check_maxctrl("alter server server4 rank secondary");
+    test.check_percona_proxyctl("alter server server1 rank primary");
+    test.check_percona_proxyctl("alter server server2 rank primary");
+    test.check_percona_proxyctl("alter server server3 rank primary");
+    test.check_percona_proxyctl("alter server server4 rank secondary");
 
     set_states({RW, RO, RO, RO});
 
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     c.connect();
 
-    auto id = c.field("SELECT @@server_id -- maxscale route to server server4");
+    auto id = c.field("SELECT @@server_id -- percona-proxy route to server server4");
     test.expect(!id.empty() && id == ids[3], "Third slave should reply");
 
-    id = c.field("SELECT @@server_id -- maxscale route to slave");
+    id = c.field("SELECT @@server_id -- percona-proxy route to slave");
     test.expect(!id.empty() && (id == ids[1] || id == ids[2]), "Primary slave should reply");
 
-    id = c.field("SELECT @@server_id -- maxscale route to master");
+    id = c.field("SELECT @@server_id -- percona-proxy route to master");
     test.expect(!id.empty() && id == ids[0], "Master should reply");
 }
 
@@ -193,51 +193,51 @@ void test_services(TestConnections& test, std::vector<std::string> ids)
 {
     test.log_printf("Test that rank works with services");
 
-    test.check_maxctrl("alter server server1 rank primary");
-    test.check_maxctrl("alter server server2 rank primary");
-    test.check_maxctrl("alter server server3 rank primary");
-    test.check_maxctrl("alter server server4 rank primary");
+    test.check_percona_proxyctl("alter server server1 rank primary");
+    test.check_percona_proxyctl("alter server server2 rank primary");
+    test.check_percona_proxyctl("alter server server3 rank primary");
+    test.check_percona_proxyctl("alter server server4 rank primary");
 
     set_states({RW, RO, RO, RO});
 
-    Connection c = test.maxscale->get_connection(4009);
+    Connection c = test.percona_proxy->get_connection(4009);
 
-    test.check_maxctrl("alter service service1 rank primary");
-    test.check_maxctrl("alter service service2 rank secondary");
-    test.check_maxctrl("alter service service3 rank secondary");
+    test.check_percona_proxyctl("alter service service1 rank primary");
+    test.check_percona_proxyctl("alter service service2 rank secondary");
+    test.check_percona_proxyctl("alter service service3 rank secondary");
 
     // service1 uses server1 and server2
     c.connect();
     test.expect(c.field("SELECT @@server_id") == ids[1], "Second slave should reply");
 
-    test.check_maxctrl("alter service service1 rank secondary");
-    test.check_maxctrl("alter service service2 rank primary");
-    test.check_maxctrl("alter service service3 rank secondary");
+    test.check_percona_proxyctl("alter service service1 rank secondary");
+    test.check_percona_proxyctl("alter service service2 rank primary");
+    test.check_percona_proxyctl("alter service service3 rank secondary");
 
     // service2 uses server1 and server3
     c.connect();
     test.expect(c.field("SELECT @@server_id") == ids[2], "Third slave should reply");
 
-    test.check_maxctrl("alter service service1 rank secondary");
-    test.check_maxctrl("alter service service2 rank secondary");
-    test.check_maxctrl("alter service service3 rank primary");
+    test.check_percona_proxyctl("alter service service1 rank secondary");
+    test.check_percona_proxyctl("alter service service2 rank secondary");
+    test.check_percona_proxyctl("alter service service3 rank primary");
 
     // service3 uses server1 and server4
     c.connect();
     test.expect(c.field("SELECT @@server_id") == ids[3], "Fourth slave should reply");
 
     // Set all serviecs to the same rank
-    test.check_maxctrl("alter service service1 rank secondary");
-    test.check_maxctrl("alter service service2 rank secondary");
-    test.check_maxctrl("alter service service3 rank secondary");
+    test.check_percona_proxyctl("alter service service1 rank secondary");
+    test.check_percona_proxyctl("alter service service2 rank secondary");
+    test.check_percona_proxyctl("alter service service3 rank secondary");
 
     c.connect();
     std::set<std::string> id_set(ids.begin() + 1, ids.end());
     test.expect(id_set.count(c.field("SELECT @@server_id")), "Any slave should reply");
 
-    test.check_maxctrl("alter service service1 rank primary");
-    test.check_maxctrl("alter service service2 rank primary");
-    test.check_maxctrl("alter service service3 rank primary");
+    test.check_percona_proxyctl("alter service service1 rank primary");
+    test.check_percona_proxyctl("alter service service2 rank primary");
+    test.check_percona_proxyctl("alter service service3 rank primary");
 
     c.connect();
     test.expect(id_set.count(c.field("SELECT @@server_id")), "Any slave should reply");
@@ -248,7 +248,7 @@ int main(int argc, char* argv[])
     TestConnections test(argc, argv);
 
     set_states = [&](std::vector<std::string> states){
-        // Collecting the commands into a file and feeding that into maxctrl speeds up
+        // Collecting the commands into a file and feeding that into percona-proxyctl speeds up
         // the testing by quite a bit.
         std::ofstream commands("commands.txt");
 
@@ -260,8 +260,8 @@ int main(int argc, char* argv[])
         }
 
         commands.flush();
-        test.maxscale->copy_to_node("commands.txt", "/tmp/commands.txt");
-        test.maxscale->ssh_node_f(false, "maxctrl --timeout 30s < /tmp/commands.txt");
+        test.percona_proxy->copy_to_node("commands.txt", "/tmp/commands.txt");
+        test.percona_proxy->ssh_node_f(false, "percona-proxyctl --timeout 30s < /tmp/commands.txt");
     };
 
     test.repl->connect();

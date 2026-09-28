@@ -39,8 +39,8 @@ void usage(ostream& out, const char* zProgram)
         << "  -t num : Number of threads\n"
         << "  -r num : Number of rows in table\n"
         << "  -c num : Percentage of updates\n"
-        << "  -h host: MaxScale host (default 127.0.0.1)\n"
-        << "  -P port: MaxScale port (default 4006)\n"
+        << "  -h host: Percona Proxy host (default 127.0.0.1)\n"
+        << "  -P port: Percona Proxy port (default 4006)\n"
         << "  -u user: User to connect with\n"
         << "  -p pwd : Password to use\n\n"
         << "Default: " << zProgram

@@ -20,17 +20,17 @@ using std::string;
 
 namespace
 {
-void test_maxscale_startup(TestConnections& test, const string& params, bool expect_success);
+void test_percona_proxy_startup(TestConnections& test, const string& params, bool expect_success);
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     mxs.stop_and_check_stopped();
 
-    test_maxscale_startup(test, "", true);
-    test_maxscale_startup(test, "--non-existing-option", false);
-    test_maxscale_startup(test, "--basedir=/", true);
-    test_maxscale_startup(test, "--basedir=/wrong_dir", false);
+    test_percona_proxy_startup(test, "", true);
+    test_percona_proxy_startup(test, "--non-existing-option", false);
+    test_percona_proxy_startup(test, "--basedir=/", true);
+    test_percona_proxy_startup(test, "--basedir=/wrong_dir", false);
 
     // Even a failed start causes the basedir to be created, delete it.
     mxs.vm_node().run_cmd_output_sudo("rm -rf /wrong_dir");
@@ -42,7 +42,7 @@ void test_main(TestConnections& test)
         auto link_res = mxs.vm_node().run_cmd_output_sudof("ln -s / %s", link_name.c_str());
         if (link_res.rc == 0)
         {
-            test_maxscale_startup(test, "--basedir=/tmp/basedir_link", true);
+            test_percona_proxy_startup(test, "--basedir=/tmp/basedir_link", true);
             mxs.vm_node().run_cmd_output_sudof("rm -rf %s", link_name.c_str());
         }
         else
@@ -52,24 +52,24 @@ void test_main(TestConnections& test)
     }
 }
 
-void test_maxscale_startup(TestConnections& test, const string& params, bool expect_success)
+void test_percona_proxy_startup(TestConnections& test, const string& params, bool expect_success)
 {
     const int MXS_RUNNING = INT32_MAX;
-    auto& mxs_node = test.maxscale->vm_node();
+    auto& mxs_node = test.percona_proxy->vm_node();
     std::atomic_int mxs_rc {MXS_RUNNING};
 
-    string mxs_cmd = mxb::string_printf("maxscale -d --user=root %s", params.c_str());
+    string mxs_cmd = mxb::string_printf("percona-proxy -d --user=root %s", params.c_str());
 
     auto thread_func = [&mxs_node, &mxs_cmd, &mxs_rc]() {
         auto res = mxs_node.run_cmd_output_sudo(mxs_cmd);
         mxs_rc = res.rc;
     };
-    test.tprintf("Trying to start MaxScale with '%s'.", mxs_cmd.c_str());
+    test.tprintf("Trying to start Percona Proxy with '%s'.", mxs_cmd.c_str());
     std::thread mxs_thread(thread_func);
 
     sleep(2);
 
-    auto pidof_res = mxs_node.run_cmd_output("pidof maxscale");
+    auto pidof_res = mxs_node.run_cmd_output("pidof percona-proxy");
     if (pidof_res.rc == 0)
     {
         if (pidof_res.output.empty())
@@ -84,8 +84,8 @@ void test_maxscale_startup(TestConnections& test, const string& params, bool exp
             if (kill_res.rc == 0)
             {
                 mxs_thread.join();
-                test.expect(mxs_rc != MXS_RUNNING, "MaxScale running even after kill.");
-                test.expect(expect_success, "MaxScale started successfully when failure was expected.");
+                test.expect(mxs_rc != MXS_RUNNING, "Percona Proxy running even after kill.");
+                test.expect(expect_success, "Percona Proxy started successfully when failure was expected.");
             }
             else
             {
@@ -96,16 +96,16 @@ void test_maxscale_startup(TestConnections& test, const string& params, bool exp
     }
     else
     {
-        // This typically means MaxScale already exited.
+        // This typically means Percona Proxy already exited.
         if (mxs_rc != MXS_RUNNING)
         {
-            // MaxScale already exited, startup must have failed. MaxScale can still return 0.
+            // Percona Proxy already exited, startup must have failed. Percona Proxy can still return 0.
             mxs_thread.join();
-            test.expect(!expect_success, "MaxScale startup failed when success was expected.");
+            test.expect(!expect_success, "Percona Proxy startup failed when success was expected.");
         }
         else
         {
-            test.add_failure("pidof failed, yet MaxScale is still running.");
+            test.add_failure("pidof failed, yet Percona Proxy is still running.");
             exit(EXIT_FAILURE);
         }
     }

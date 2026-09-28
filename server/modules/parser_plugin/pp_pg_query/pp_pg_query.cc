@@ -14,9 +14,9 @@
 #include "pp_pg_query.hh"
 #include <maxsimd/canonical.hh>
 #include <maxsimd/multistmt.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/parser.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/parser.hh>
 #include "../../protocol/Postgres/pgparser.hh"
 #include "pgutils.hh"
 
@@ -95,7 +95,7 @@ public:
         }
         else
         {
-#if defined(MAXSCALE_DEVELOP)
+#if defined(PERCONA_PROXY_DEVELOP)
             if (result.error)
             {
                 MXB_WARNING("Parse error: '%s', SQL: %.*s",

@@ -32,10 +32,10 @@
 #include <maxbase/filesystem.hh>
 #include <maxbase/http.hh>
 #include <maxbase/csv_writer.hh>
-#include <maxscale/config.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/threadpool.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/threadpool.hh>
+#include <percona-proxy/utils.hh>
 
 #include "internal/adminusers.hh"
 #include "internal/defaults.hh"
@@ -48,7 +48,7 @@ using std::string;
 namespace
 {
 
-static char shutting_down_response[] = "{\"errors\": [ { \"detail\": \"MaxScale is shutting down\" } ] }";
+static char shutting_down_response[] = "{\"errors\": [ { \"detail\": \"Percona Proxy is shutting down\" } ] }";
 static char auth_failure_response[] = "{\"errors\": [ { \"detail\": \"Access denied\" } ] }";
 static char no_https_response[] = "{\"errors\": [ { \"detail\": \"Connection is not encrypted\" } ] }";
 static char not_admin_response[] = "{\"errors\": [ { \"detail\": \"Administrative access required\" } ] }";
@@ -65,17 +65,17 @@ const char* gui_not_secure_page =
   </head>
   <body>
     <p>
-      The MaxScale GUI requires HTTPS to work, please enable it by configuring the
+      The Percona Proxy GUI requires HTTPS to work, please enable it by configuring the
       <code>admin_ssl_key</code> and <code>admin_ssl_cert</code> parameters.
-      To allow insecure use of the GUI, add <code>admin_secure_gui=false</code> under the <code>[maxscale]</code> section.
-      To disable the GUI completely, add  <code>admin_gui=false</code> under the <code>[maxscale]</code> section.
+      To allow insecure use of the GUI, add <code>admin_secure_gui=false</code> under the <code>[percona-proxy]</code> section.
+      To disable the GUI completely, add  <code>admin_gui=false</code> under the <code>[percona-proxy]</code> section.
     </p>
     <p>
-      For more information about securing the admin interface of your MaxScale installation, refer to the
+      For more information about securing the admin interface of your Percona Proxy installation, refer to the
       Configuration and Hardening section of the REST API tutorial.
     </p>
     <p>
-      <a href="https://mariadb.com/kb/en/maxscale/">MaxScale Documentation</a>
+      <a href="https://mariadb.com/kb/en/percona-proxy/">Percona Proxy Documentation</a>
     </p>
   </body>
 </html>
@@ -468,7 +468,7 @@ void add_content_type_header(MHD_Response* response, const std::string& path)
 
     if (suffix == ".html")
     {
-        // The GUI HTML files should be validated by the browser, this causes MaxScale upgrades to eventually
+        // The GUI HTML files should be validated by the browser, this causes Percona Proxy upgrades to eventually
         // trigger a reloading of the GUI.
         MHD_add_response_header(response, "Cache-Control", "public, no-cache");
     }
@@ -670,7 +670,7 @@ void Client::send_basic_auth_error()
     else
     {
         set_http_response_code(MHD_HTTP_UNAUTHORIZED);
-        MHD_queue_basic_auth_fail_response(m_connection, "maxscale", resp);
+        MHD_queue_basic_auth_fail_response(m_connection, "percona-proxy", resp);
     }
 
     MHD_destroy_response(resp);
@@ -1190,7 +1190,7 @@ bool Client::auth_with_token(const std::string& token, const char* method, const
     }
     else
     {
-        // Normal token authentication, tokens are generated and verified by MaxScale
+        // Normal token authentication, tokens are generated and verified by Percona Proxy
         if (auto claims = mxs::jwt::decode(mxs::Config::get().admin_jwt_issuer, token))
         {
             auto user = claims->get("sub");
@@ -1367,7 +1367,7 @@ bool mxs_admin_init()
         }
         else if (mxs::Config::get().gui && mxs::Config::get().secure_gui)
         {
-            MXB_WARNING("The MaxScale GUI is enabled but encryption for the REST API is not enabled, "
+            MXB_WARNING("The Percona Proxy GUI is enabled but encryption for the REST API is not enabled, "
                         "the GUI will not be enabled. Configure `admin_ssl_key` and `admin_ssl_cert` "
                         "to enable HTTPS or add `admin_secure_gui=false` to allow use of the GUI without encryption.");
         }
@@ -1405,7 +1405,7 @@ void mxs_admin_finish()
 {
     WebSocket::shutdown();
     MHD_stop_daemon(this_unit.daemon);
-    MXB_NOTICE("Stopped MaxScale REST API");
+    MXB_NOTICE("Stopped Percona Proxy REST API");
 }
 
 bool mxs_admin_https_enabled()

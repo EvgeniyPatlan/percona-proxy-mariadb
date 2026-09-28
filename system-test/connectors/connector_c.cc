@@ -12,7 +12,7 @@
  */
 
 /**
- * Runs the MariaDB Connector/ODBC test suite against MaxScale
+ * Runs the MariaDB Connector/ODBC test suite against Percona Proxy
  */
 #include "connector_common.hh"
 #include <thread>
@@ -32,7 +32,7 @@ void test_main(TestConnections& test)
         std::ostringstream ss;
         ss << "cd mariadb-connector-c "
            << " && export MARIADB_CC_TEST=1"
-           << " && export MYSQL_TEST_HOST=" << test.maxscale->ip()
+           << " && export MYSQL_TEST_HOST=" << test.percona_proxy->ip()
            << " && export MYSQL_TEST_USER=connector"
            << " && export MYSQL_TEST_PASSWD=connector"
             // The 3.4 branch expects TLS on all ports so set both to 4007 where TLS is enabled.
@@ -41,7 +41,7 @@ void test_main(TestConnections& test)
            << " && export MYSQL_TEST_TLS=0"
            << " && export MARIADB_TLS_DUMMY_PORT=4999"
            << " && export MYSQL_TEST_SCHEMA=test"
-           << " && export srv=maxscale"
+           << " && export srv=percona-proxy"
            << " && cmake -DWITH_UNIT_TESTS=Y ."
            << " && make -j " << std::thread::hardware_concurrency()
            << " && cd unittest/libmariadb"

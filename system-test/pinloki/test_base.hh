@@ -31,7 +31,7 @@ public:
         : test(t)
         , master(test.repl->get_connection(0))
         , slave(test.repl->get_connection(1))
-        , maxscale(test.maxscale->rwsplit())
+        , percona_proxy(test.percona_proxy->rwsplit())
     {
     }
 
@@ -69,10 +69,10 @@ protected:
     }
 
     // Test setup. Connects all Connections and sets up replication between
-    // the master, MaxScale and a slave. Only override if custom test setup is needed.
+    // the master, Percona Proxy and a slave. Only override if custom test setup is needed.
     virtual void setup()
     {
-        test.expect(maxscale.connect(), "Pinloki connection should work: %s", maxscale.error());
+        test.expect(percona_proxy.connect(), "Pinloki connection should work: %s", percona_proxy.error());
         test.expect(master.connect(), "Master connection should work: %s", master.error());
         test.expect(slave.connect(), "Slave connection should work: %s", slave.error());
 
@@ -83,48 +83,48 @@ protected:
         slave.query("STOP SLAVE; RESET SLAVE ALL;");
 
         // Start replicating from the master
-        maxscale.query("STOP SLAVE");
-        maxscale.query("RESET SLAVE");
-        maxscale.query("SET GLOBAL gtid_slave_pos = '" + gtid + "'");
-        maxscale.query(change_master_sql(test.repl->ip(0), test.repl->port(0)));
-        maxscale.query("START SLAVE");
+        percona_proxy.query("STOP SLAVE");
+        percona_proxy.query("RESET SLAVE");
+        percona_proxy.query("SET GLOBAL gtid_slave_pos = '" + gtid + "'");
+        percona_proxy.query(change_master_sql(test.repl->ip(0), test.repl->port(0)));
+        percona_proxy.query("START SLAVE");
 
-        // Sync MaxScale with the master
-        sync(master, maxscale);
+        // Sync Percona Proxy with the master
+        sync(master, percona_proxy);
 
-        // Configure the slave to replicate from MaxScale and sync it
+        // Configure the slave to replicate from Percona Proxy and sync it
         slave.query("SET GLOBAL gtid_slave_pos = '" + gtid + "'");
-        slave.query(change_master_sql(test.maxscale->ip(), test.maxscale->rwsplit_port));
+        slave.query(change_master_sql(test.percona_proxy->ip(), test.percona_proxy->rwsplit_port));
         slave.query("START SLAVE");
-        sync(maxscale, slave);
+        sync(percona_proxy, slave);
     }
 
     virtual void setup_select_master()
     {
-        test.expect(maxscale.connect(), "Pinloki connection should work: %s", maxscale.error());
+        test.expect(percona_proxy.connect(), "Pinloki connection should work: %s", percona_proxy.error());
         test.expect(master.connect(), "Master connection should work: %s", master.error());
         test.expect(slave.connect(), "Slave connection should work: %s", slave.error());
 
         // Use the latest GTID in case the binlogs have been purged and the complete history is not available
         auto gtid = master.field("SELECT @@gtid_current_pos");
 
-        maxscale.query("STOP SLAVE");
-        maxscale.query("SET GLOBAL gtid_slave_pos = '" + gtid + "'");
-        maxscale.query("START SLAVE");
+        percona_proxy.query("STOP SLAVE");
+        percona_proxy.query("SET GLOBAL gtid_slave_pos = '" + gtid + "'");
+        percona_proxy.query("START SLAVE");
 
-        sync(master, maxscale);
+        sync(master, percona_proxy);
 
         slave.query("STOP SLAVE; RESET SLAVE ALL;");
-        slave.query(change_master_sql(test.maxscale->ip(), test.maxscale->rwsplit_port));
+        slave.query(change_master_sql(test.percona_proxy->ip(), test.percona_proxy->rwsplit_port));
         slave.query("START SLAVE");
-        sync(maxscale, slave);
+        sync(percona_proxy, slave);
     }
 
 protected:
     TestConnections& test;      // The core test library
     Connection       master;    // Connection to the master
     Connection       slave;     // Connection to the slave
-    Connection       maxscale;  // Connection to MaxScale
+    Connection       percona_proxy;  // Connection to Percona Proxy
 
     // Syncs the `dest` connection with the `src` connection
     void sync(Connection& src, Connection& dest)
@@ -135,30 +135,30 @@ protected:
         test.expect(res == "0",
                     "`MASTER_GTID_WAIT('%s', 30)` on %s returned: %s (error: %s). "
                     "Target GTID: %s Starting GTID: %s",
-                    gtid.c_str(), &dest == &maxscale ? "MaxScale" : "slave",
+                    gtid.c_str(), &dest == &percona_proxy ? "Percona Proxy" : "slave",
                     res.c_str(), slave.error(), gtid.c_str(), start_gtid.c_str());
     }
 
-    // Syncs maxscale with master and then the slave with master
+    // Syncs percona-proxy with master and then the slave with master
     void sync_all()
     {
-        sync(master, maxscale);
-        sync(maxscale, slave);
+        sync(master, percona_proxy);
+        sync(percona_proxy, slave);
     }
 
-    // Checks that `master`, `maxscale` and `slave` all report the same GTID position
+    // Checks that `master`, `percona-proxy` and `slave` all report the same GTID position
     void check_gtid()
     {
         auto master_pos = master.field("SELECT @@gtid_current_pos");
         auto slave_pos = slave.field("SELECT @@gtid_current_pos");
-        auto maxscale_pos = maxscale.field("SELECT @@gtid_current_pos");
+        auto percona_proxy_pos = percona_proxy.field("SELECT @@gtid_current_pos");
 
-        test.expect(maxscale_pos == master_pos,
-                    "MaxScale GTID (%s) is not the same as Master GTID (%s)",
-                    maxscale_pos.c_str(), master_pos.c_str());
+        test.expect(percona_proxy_pos == master_pos,
+                    "Percona Proxy GTID (%s) is not the same as Master GTID (%s)",
+                    percona_proxy_pos.c_str(), master_pos.c_str());
 
-        test.expect(slave_pos == maxscale_pos,
-                    "Slave GTID (%s) is not the same as MaxScale GTID (%s)",
-                    slave_pos.c_str(), maxscale_pos.c_str());
+        test.expect(slave_pos == percona_proxy_pos,
+                    "Slave GTID (%s) is not the same as Percona Proxy GTID (%s)",
+                    slave_pos.c_str(), percona_proxy_pos.c_str());
     }
 };

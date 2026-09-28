@@ -1,6 +1,6 @@
 # Maxrows
 
-This filter was introduced in MariaDB MaxScale 2.1.
+This filter was introduced in Percona Proxy for MariaDB 2.1.
 
 [TOC]
 

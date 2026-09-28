@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
 
     test.repl->close_connections();
     sleep(6); // The router is configured to refresh the shard map if older than 5 seconds.
-    auto mxs_ip = test.maxscale->ip4();
+    auto mxs_ip = test.percona_proxy->ip4();
 
     // Generate a table for each user on the common db. The tables should be on different backends since
     // each user only has access to one node.
@@ -128,8 +128,8 @@ int main(int argc, char* argv[])
         auto table = shard_tables[i];
 
         test.tprintf(opening_fmt, user, pass, common_db);
-        auto conn = open_conn_db(test.maxscale->rwsplit_port, mxs_ip,
-                                 common_db, user, pass, test.maxscale_ssl);
+        auto conn = open_conn_db(test.percona_proxy->rwsplit_port, mxs_ip,
+                                 common_db, user, pass, test.percona_proxy_ssl);
         if (test.try_query(conn, "CREATE TABLE %s (x1 int, fl int);", table) == 0)
         {
             test.tprintf("Table '%s.%s' for user '%s' created.", common_db, table, user);
@@ -145,8 +145,8 @@ int main(int argc, char* argv[])
         auto pass = user_pws[i];
         auto table = shard_tables[i];
         test.tprintf(opening_fmt, user, pass, common_db);
-        auto conn = open_conn_db(test.maxscale->rwsplit_port, mxs_ip,
-                                 common_db, user, pass, test.maxscale_ssl);
+        auto conn = open_conn_db(test.percona_proxy->rwsplit_port, mxs_ip,
+                                 common_db, user, pass, test.percona_proxy_ssl);
 
         const char* query = "SHOW TABLES;";
         test.tprintf("Table should be %s\n", table);
@@ -155,8 +155,8 @@ int main(int argc, char* argv[])
     }
 
     // Test accessing all databases as the admin.
-    test.maxscale->connect_rwsplit();
-    auto conn = test.maxscale->conn_rwsplit; // Is a schemarouter connection.
+    test.percona_proxy->connect_rwsplit();
+    auto conn = test.percona_proxy->conn_rwsplit; // Is a schemarouter connection.
     test.try_query(conn, "USE %s", common_db);
     for (int i = 0; i < N; i++)
     {
@@ -166,15 +166,15 @@ int main(int argc, char* argv[])
     {
         test.tprintf("%s", "All databases are present.");
     }
-    test.maxscale->close_rwsplit();
+    test.percona_proxy->close_rwsplit();
 
     test.tprintf("Test connecting with empty database name for all users.\n");
     for (int i = 0; i < N; i++)
     {
         auto user = user_names[i];
         auto pass = user_pws[i];
-        conn = open_conn_db(test.maxscale->rwsplit_port, mxs_ip,
-                            "", user, pass, test.maxscale_ssl);
+        conn = open_conn_db(test.percona_proxy->rwsplit_port, mxs_ip,
+                            "", user, pass, test.percona_proxy_ssl);
         test.expect(conn, "Connection failed for user '%s'.", user);
         mysql_close(conn);
     }
@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
     test.log_excludes("query string allocation failed");
 
     test.log_printf("MXS-4527: Database names with dots in them cause problems");
-    test.check_maxctrl("call command schemarouter clear Sharding-router");
+    test.check_percona_proxyctl("call command schemarouter clear Sharding-router");
     test.repl->connect();
     test.try_query(test.repl->nodes[0],
                    "CREATE DATABASE `a.b.c`;"
@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
                    "INSERT INTO `a.b.c`.`d.e.f` VALUES (@@server_id)");
 
     // Default database
-    auto rws = test.maxscale->rwsplit();
+    auto rws = test.percona_proxy->rwsplit();
     rws.set_database("a.b.c");
     test.expect(rws.connect(), "Failed to connect: %s", rws.error());
     test.expect(rws.query("SELECT * FROM `a.b.c`.`d.e.f`"), "Failed to query: %s", rws.error());

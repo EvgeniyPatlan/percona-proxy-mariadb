@@ -1,0 +1,121 @@
+/*
+ * Copyright (c) 2016 MariaDB Corporation Ab
+ * Copyright (c) 2023 MariaDB plc, Finnish Branch
+ *
+ * Use of this software is governed by the Business Source License included
+ * in the LICENSE.TXT file and at www.mariadb.com/bsl11.
+ *
+ * Change Date: 2026-09-21
+ *
+ * On the date above, in accordance with the Business Source License, use
+ * of this software will be governed by version 2 or later of the General
+ * Public License.
+ */
+const { percona_proxyctl, helpMsg, doRequest, OK } = require("./common.js");
+
+exports.command = "stop <command>";
+exports.desc = "Stop objects";
+exports.handler = function () {};
+exports.builder = function (yargs) {
+  yargs
+    .command(
+      "service <name>",
+      "Stop a service",
+      function (yargs) {
+        return yargs
+          .group(["force"], "Stop options:")
+          .option("force", {
+            describe: "Close existing connections after stopping the service",
+            type: "boolean",
+            default: false,
+          })
+          .epilog(
+            "Stopping a service will prevent all the listeners for that service " +
+              "from accepting new connections. Existing connections will still be " +
+              "handled normally until they are closed."
+          )
+          .usage("Usage: stop service <name>");
+      },
+      function (argv) {
+        percona_proxyctl(argv, function (host) {
+          var opts = argv.force ? "?force=yes" : "";
+          return doRequest(host, "services/" + argv.name + "/stop" + opts, { method: "PUT" });
+        });
+      }
+    )
+    .command(
+      "listener <name>",
+      "Stop a listener",
+      function (yargs) {
+        return yargs
+          .group(["force"], "Stop options:")
+          .option("force", {
+            describe: "Close existing connections after stopping the listener",
+            type: "boolean",
+            default: false,
+          })
+          .epilog(
+            "Stopping a listener will prevent it from accepting new connections. Existing " +
+              "connections will still be handled normally until they are closed."
+          )
+          .usage("Usage: stop listener <name>");
+      },
+      function (argv) {
+        percona_proxyctl(argv, function (host) {
+          var opts = argv.force ? "?force=yes" : "";
+          return doRequest(host, "listeners/" + argv.name + "/stop" + opts, { method: "PUT" });
+        });
+      }
+    )
+    .command(
+      "monitor <name>",
+      "Stop a monitor",
+      function (yargs) {
+        return yargs
+          .epilog(
+            "Stopping a monitor will pause the monitoring of the servers. " +
+              "This can be used to manually control server states with the " +
+              "`set server` command."
+          )
+          .usage("Usage: stop monitor <name>");
+      },
+      function (argv) {
+        percona_proxyctl(argv, function (host) {
+          return doRequest(host, "monitors/" + argv.name + "/stop", { method: "PUT" });
+        });
+      }
+    )
+    .command(
+      ["services", "percona-proxy"],
+      "Stop all services",
+      function (yargs) {
+        return yargs
+          .group(["force"], "Stop options:")
+          .option("force", {
+            describe: "Close existing connections after stopping all services",
+            type: "boolean",
+            default: false,
+          })
+          .epilog("This command will execute the `stop service` command for " + "all services in Percona Proxy.")
+          .usage("Usage: stop [services|percona-proxy]");
+      },
+      function (argv) {
+        percona_proxyctl(argv, function (host) {
+          return doRequest(host, "services/").then(function (res) {
+            var promises = [];
+            var opts = argv.force ? "?force=yes" : "";
+
+            res.data.forEach(function (i) {
+              promises.push(doRequest(host, "services/" + i.id + "/stop" + opts, { method: "PUT" }));
+            });
+
+            return Promise.all(promises).then(() => OK());
+          });
+        });
+      }
+    )
+    .usage("Usage: stop <command>")
+    .help()
+    .wrap(null)
+    .demandCommand(1, helpMsg);
+};

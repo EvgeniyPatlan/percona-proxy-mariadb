@@ -42,12 +42,12 @@ int main(int argc, char** argv)
 
     for (auto a : commands)
     {
-        test.check_maxctrl(a);
+        test.check_percona_proxyctl(a);
     }
 
-    test.tprintf("Restarting MaxScale");
-    test.add_result(test.maxscale->restart_maxscale(), "Restart should succeed");
-    test.check_maxscale_alive();
+    test.tprintf("Restarting Percona Proxy");
+    test.add_result(test.percona_proxy->restart_percona_proxy(), "Restart should succeed");
+    test.check_percona_proxy_alive();
 
     return test.global_result;
 }

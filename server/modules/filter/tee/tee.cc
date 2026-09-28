@@ -18,11 +18,11 @@
 
 #define MXB_MODULE_NAME "tee"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
-#include <maxscale/modinfo.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/pcre2.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/pcre2.hh>
 
 #include "tee.hh"
 #include "teesession.hh"
@@ -149,7 +149,7 @@ Tee::Tee(const char* name)
 
 /**
  * Create an instance of the filter for a particular service
- * within MaxScale.
+ * within Percona Proxy.
  *
  * @param name      The name of the instance (as defined in the config file).
  * @param options   The options for this filter

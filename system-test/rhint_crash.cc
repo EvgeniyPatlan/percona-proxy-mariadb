@@ -22,11 +22,11 @@
  *  Markus Mäkelä 2014-08-07 09:21:44 UTC
  *  All of the following queries cause a segmentation fault:
  *
- *  select @@server_id; -- maxscale route to server =(
- *  select @@server_id; -- maxscale route to server =)
- *  select @@server_id; -- maxscale route to server =:
- *  select @@server_id; -- maxscale route to server =a
- *  select @@server_id; -- maxscale route to server = a
+ *  select @@server_id; -- percona-proxy route to server =(
+ *  select @@server_id; -- percona-proxy route to server =)
+ *  select @@server_id; -- percona-proxy route to server =:
+ *  select @@server_id; -- percona-proxy route to server =a
+ *  select @@server_id; -- percona-proxy route to server = a
  *
  *  Most likely all variatios with the equals sign and a character after it cause the crash.
  *
@@ -73,46 +73,46 @@ int main(int argc, char* argv[])
     TestConnections* Test = new TestConnections(argc, argv);
     Test->reset_timeout();
 
-    Test->add_result(Test->maxscale->connect_maxscale(), "Can not connect to Maxscale\n");
+    Test->add_result(Test->percona_proxy->connect_percona_proxy(), "Can not connect to Maxscale\n");
 
 
     Test->tprintf("Trying queries that caused crashes before fix: bug473\n");
 
-    Test->try_query(Test->maxscale->conn_rwsplit,
-                    (char*) "select @@server_id; -- maxscale route to server =(");
-    Test->try_query(Test->maxscale->conn_rwsplit,
-                    (char*) "select @@server_id; -- maxscale route to server =)");
-    Test->try_query(Test->maxscale->conn_rwsplit,
-                    (char*) "select @@server_id; -- maxscale route to server =:");
-    Test->try_query(Test->maxscale->conn_rwsplit,
-                    (char*) "select @@server_id; -- maxscale route to server =a");
-    Test->try_query(Test->maxscale->conn_rwsplit,
-                    (char*) "select @@server_id; -- maxscale route to server = a");
-    Test->try_query(Test->maxscale->conn_rwsplit,
-                    (char*) "select @@server_id; -- maxscale route to server = кириллица åäö");
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
+                    (char*) "select @@server_id; -- percona-proxy route to server =(");
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
+                    (char*) "select @@server_id; -- percona-proxy route to server =)");
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
+                    (char*) "select @@server_id; -- percona-proxy route to server =:");
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
+                    (char*) "select @@server_id; -- percona-proxy route to server =a");
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
+                    (char*) "select @@server_id; -- percona-proxy route to server = a");
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
+                    (char*) "select @@server_id; -- percona-proxy route to server = кириллица åäö");
 
     // bug472
     Test->tprintf("Trying queries that caused crashes before fix: bug472\n");
-    Test->try_query(Test->maxscale->conn_rwsplit,
-                    (char*) "select @@server_id; -- maxscale s1 begin route to server server3");
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "select @@server_id; -- maxscale end");
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "select @@server_id; -- maxscale s1 begin");
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
+                    (char*) "select @@server_id; -- percona-proxy s1 begin route to server server3");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "select @@server_id; -- percona-proxy end");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "select @@server_id; -- percona-proxy s1 begin");
 
     // bug470
     Test->tprintf("Trying queries that caused crashes before fix: bug470\n");
     fflush(stdout);
-    Test->try_query(Test->maxscale->conn_rwsplit,
-                    (char*) "select @@server_id; -- maxscale named begin route to master");
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "select @@server_id;");
-    Test->try_query(Test->maxscale->conn_rwsplit,
-                    (char*) "select @@server_id; -- maxscale named begin route to master; select @@server_id;");
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
+                    (char*) "select @@server_id; -- percona-proxy named begin route to master");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "select @@server_id;");
+    Test->try_query(Test->percona_proxy->conn_rwsplit,
+                    (char*) "select @@server_id; -- percona-proxy named begin route to master; select @@server_id;");
 
 
-    Test->maxscale->close_maxscale_connections();
+    Test->percona_proxy->close_percona_proxy_connections();
 
     Test->tprintf("Checking if Maxscale is alive\n");
     fflush(stdout);
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
 
     int rval = Test->global_result;
     delete Test;

@@ -188,7 +188,7 @@ type=service
 filters=Rewrite
 ```
 
-### Parameters in maxscale.cnf
+### Parameters in percona-proxy.cnf
 
 #### `template_file`
 
@@ -232,14 +232,14 @@ Log replacements at NOTICE level.
 #### `regex_grammar`
 - **Type**: string
 - **Values**: `Native`, `ECMAScript`, `Posix`, `EPosix`, `Awk`, `Grep`, `EGrep`
-- **Default**: From maxscale.cnf
+- **Default**: From percona-proxy.cnf
 
 Overrides the global regex_grammar of a template.
 
 #### `case_sensitive`
 
 - **Type**: boolean
-- **Default**: From maxscale.cnf
+- **Default**: From percona-proxy.cnf
 
 Overrides the global case sensitivity of a template.
 
@@ -338,7 +338,7 @@ and @{3} in (select user from approved_users)"
 The configuration is re-read if any dynamic value is updated
 even if the value does not change.
 ```
-maxctrl alter filter Rewrite log_replacement=false
+percona-proxyctl alter filter Rewrite log_replacement=false
 ```
 ## Reference
 

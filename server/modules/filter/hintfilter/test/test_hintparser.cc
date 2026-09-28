@@ -182,44 +182,44 @@ int main(int argc, char** argv)
     test("select 1 -- working comment --bad comment", {"working comment --bad comment"});
 
     using Type = Hint::Type;
-    test_parse("SELECT 1 /* maxscale route to master */", Type::ROUTE_TO_MASTER);
-    test_parse("SELECT 1 /* maxscale route to slave */", Type::ROUTE_TO_SLAVE);
-    test_parse("SELECT 1 /* maxscale route to last*/", Type::ROUTE_TO_LAST_USED);
-    test_parse("SELECT 1 /* maxscale route to server server1 */", Type::ROUTE_TO_NAMED_SERVER);
-    test_parse("SELECT 1 /* maxscale test1 prepare route to server server1 */", Type::NONE);
-    test_parse("SELECT 1 /* maxscale test1 start route to server server1 */", Type::ROUTE_TO_NAMED_SERVER);
-    test_parse("SELECT 1 /* maxscale start route to server server1 */", Type::ROUTE_TO_NAMED_SERVER);
-    test_parse("SELECT 1 /* maxscale end*/", Type::NONE);
-    test_parse("SELECT 1 /* maxscale end*/", Type::NONE);
-    test_parse("SELECT 1 /* maxscale key=value */", Type::PARAMETER);
-    test_parse("SELECT 1 /* maxscale max_slave_replication_lag=1*/", Type::PARAMETER);
+    test_parse("SELECT 1 /* percona-proxy route to master */", Type::ROUTE_TO_MASTER);
+    test_parse("SELECT 1 /* percona-proxy route to slave */", Type::ROUTE_TO_SLAVE);
+    test_parse("SELECT 1 /* percona-proxy route to last*/", Type::ROUTE_TO_LAST_USED);
+    test_parse("SELECT 1 /* percona-proxy route to server server1 */", Type::ROUTE_TO_NAMED_SERVER);
+    test_parse("SELECT 1 /* percona-proxy test1 prepare route to server server1 */", Type::NONE);
+    test_parse("SELECT 1 /* percona-proxy test1 start route to server server1 */", Type::ROUTE_TO_NAMED_SERVER);
+    test_parse("SELECT 1 /* percona-proxy start route to server server1 */", Type::ROUTE_TO_NAMED_SERVER);
+    test_parse("SELECT 1 /* percona-proxy end*/", Type::NONE);
+    test_parse("SELECT 1 /* percona-proxy end*/", Type::NONE);
+    test_parse("SELECT 1 /* percona-proxy key=value */", Type::PARAMETER);
+    test_parse("SELECT 1 /* percona-proxy max_slave_replication_lag=1*/", Type::PARAMETER);
 
     // Process multiple comments  with hints in them
     // Note: How the hints are used depends on the router module
-    count_hints("SELECT /* comment before hint */ 1 /* maxscale route to master */", 1);
-    count_hints("SELECT /* maxscale route to master */1/* comment after hint */", 1);
-    count_hints("SELECT /* maxscale route to slave */ 1 /* maxscale route to master */", 2);
-    count_hints("#maxscale route to slave\nSELECT 1;\n#maxscale route to master", 2);
-    count_hints("-- maxscale route to slave\nSELECT 1;\n-- maxscale route to master", 2);
-    count_hints("#maxscale route to slave \n#comment after hint\nSELECT 1", 1);
-    count_hints("#comment before hint\n#maxscale route to slave \nSELECT 1", 1);
+    count_hints("SELECT /* comment before hint */ 1 /* percona-proxy route to master */", 1);
+    count_hints("SELECT /* percona-proxy route to master */1/* comment after hint */", 1);
+    count_hints("SELECT /* percona-proxy route to slave */ 1 /* percona-proxy route to master */", 2);
+    count_hints("#percona-proxy route to slave\nSELECT 1;\n#percona-proxy route to master", 2);
+    count_hints("-- percona-proxy route to slave\nSELECT 1;\n-- percona-proxy route to master", 2);
+    count_hints("#percona-proxy route to slave \n#comment after hint\nSELECT 1", 1);
+    count_hints("#comment before hint\n#percona-proxy route to slave \nSELECT 1", 1);
 
     // Hints with unexpected trailing input and unknown input
-    count_hints("/* maxscale route to slave server */ SELECT 1", 0);
-    count_hints("/* maxscale route to something */ SELECT 1", 0);
-    count_hints("/* maxscale route master */ SELECT 1", 0);
-    count_hints("/* maxscale route slave */ SELECT 1", 0);
-    count_hints("/* maxscale route to slave \n# comment inside comment\n */ SELECT 1", 0);
-    count_hints("/* maxscale route to slave -- */ SELECT 1", 0);
-    count_hints("/* maxscale route to slave # */ SELECT 1", 0);
-    count_hints("#/* maxscale route to slave */ SELECT 1", 0);
-    count_hints("-- /* maxscale route to slave */ SELECT 1", 0);
-    count_hints("-- # maxscale route to slave */ SELECT 1", 0);
-    count_hints("#-- maxscale route to slave */ SELECT 1", 0);
+    count_hints("/* percona-proxy route to slave server */ SELECT 1", 0);
+    count_hints("/* percona-proxy route to something */ SELECT 1", 0);
+    count_hints("/* percona-proxy route master */ SELECT 1", 0);
+    count_hints("/* percona-proxy route slave */ SELECT 1", 0);
+    count_hints("/* percona-proxy route to slave \n# comment inside comment\n */ SELECT 1", 0);
+    count_hints("/* percona-proxy route to slave -- */ SELECT 1", 0);
+    count_hints("/* percona-proxy route to slave # */ SELECT 1", 0);
+    count_hints("#/* percona-proxy route to slave */ SELECT 1", 0);
+    count_hints("-- /* percona-proxy route to slave */ SELECT 1", 0);
+    count_hints("-- # percona-proxy route to slave */ SELECT 1", 0);
+    count_hints("#-- percona-proxy route to slave */ SELECT 1", 0);
 
     // The extra asterisk is a part of the comment and should cause the hint to be ignored. It could be
     // processed but for the sake of simplicity and "bug compatibility" with 2.3 it is treated as an error.
-    count_hints("/**maxscale route to slave*/ SELECT 1", 0);
+    count_hints("/**percona-proxy route to slave*/ SELECT 1", 0);
 
     return errors;
 }

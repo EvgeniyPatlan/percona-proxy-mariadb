@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     test.reset_timeout();
     test.repl->connect();
 
-    MYSQL* conn = test.maxscale->open_rwsplit_connection();
+    MYSQL* conn = test.percona_proxy->open_rwsplit_connection();
     execute_query(conn, "USE test;");
     create_t1(conn);
     mysql_close(conn);
@@ -51,38 +51,38 @@ int main(int argc, char* argv[])
         sprintf(sql, "INSERT INTO t1 (x1, fl) VALUES(%d, 1);", i);
 
         test.reset_timeout();
-        conn = test.maxscale->open_rwsplit_connection();
+        conn = test.percona_proxy->open_rwsplit_connection();
         execute_query(conn, "%s", sql);
         mysql_close(conn);
     }
 
     test.reset_timeout();
-    test.add_result(test.maxscale->connect_maxscale(), "Failed to connect to MaxScale");
+    test.add_result(test.percona_proxy->connect_percona_proxy(), "Failed to connect to Percona Proxy");
 
     test.tprintf("Checking t1 table using RWSplit router");
     test.reset_timeout();
-    test.add_result(execute_select_query_and_check(test.maxscale->conn_rwsplit,
+    test.add_result(execute_select_query_and_check(test.percona_proxy->conn_rwsplit,
                                                    (char*) "SELECT * FROM t1;",
                                                    iterations),
                     "t1 is wrong");
 
     test.tprintf("Checking t1 table using ReadConn router in master mode");
     test.reset_timeout();
-    test.add_result(execute_select_query_and_check(test.maxscale->conn_master,
+    test.add_result(execute_select_query_and_check(test.percona_proxy->conn_master,
                                                    (char*) "SELECT * FROM t1;",
                                                    iterations),
                     "t1 is wrong");
 
     test.tprintf("Checking t1 table using ReadConn router in slave mode");
     test.reset_timeout();
-    test.add_result(execute_select_query_and_check(test.maxscale->conn_slave,
+    test.add_result(execute_select_query_and_check(test.percona_proxy->conn_slave,
                                                    (char*) "SELECT * FROM t1;",
                                                    iterations),
                     "t1 is wrong");
 
     test.reset_timeout();
-    test.maxscale->close_maxscale_connections();
-    test.check_maxscale_alive();
+    test.percona_proxy->close_percona_proxy_connections();
+    test.check_percona_proxy_alive();
 
     return test.global_result;
 }

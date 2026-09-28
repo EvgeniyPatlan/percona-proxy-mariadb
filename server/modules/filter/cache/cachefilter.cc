@@ -16,9 +16,9 @@
 #include "cachefilter.hh"
 
 #include <maxbase/jansson.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/utils.hh>
 
 #include "cacheconfig.hh"
 #include "cachemt.hh"

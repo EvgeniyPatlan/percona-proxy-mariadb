@@ -17,7 +17,7 @@
 #include "file_reader.hh"
 #include "config.hh"
 
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 #include <mariadb_rpl.h>
 #include <iostream>
 #include <iomanip>

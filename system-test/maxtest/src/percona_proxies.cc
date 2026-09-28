@@ -1,0 +1,1451 @@
+/*
+ * Copyright (c) 2022 MariaDB Corporation Ab
+ * Copyright (c) 2023 MariaDB plc, Finnish Branch
+ *
+ * Use of this software is governed by the Business Source License included
+ * in the LICENSE.TXT file and at www.mariadb.com/bsl11.
+ *
+ * Change Date: 2026-09-21
+ *
+ * On the date above, in accordance with the Business Source License, use
+ * of this software will be governed by version 2 or later of the General
+ * Public License.
+ */
+
+#include <maxtest/percona_proxies.hh>
+#include <string>
+#include <iostream>
+#include <maxbase/format.hh>
+#include <maxbase/jansson.hh>
+#include <maxbase/json.hh>
+#include <maxbase/string.hh>
+#include <maxtest/log.hh>
+#include <maxtest/mariadb_connector.hh>
+#include <maxtest/testconnections.hh>
+#include "envv.hh"
+
+using std::string;
+
+namespace
+{
+const string my_prefix = "percona-proxy";
+enum class StatusType {STATUS, DETAIL};
+
+struct ServerStatusDesc
+{
+    mxt::ServerInfo::bitfield bit {0};
+    StatusType                type {StatusType::STATUS};
+    string                    desc;
+};
+
+#define SLAVE_OF_EXT "Slave of External Server"
+using Status = mxt::ServerInfo;
+const ServerStatusDesc status_flag_to_str[] = {
+    {Status::MASTER,                 StatusType::STATUS, "Master"                     },
+    {Status::SLAVE,                  StatusType::STATUS, "Slave"                      },
+    {Status::RUNNING,                StatusType::STATUS, "Running"                    },
+    {Status::DOWN,                   StatusType::STATUS, "Down"                       },
+    {Status::MAINT,                  StatusType::STATUS, "Maintenance"                },
+    {Status::DRAINING,               StatusType::STATUS, "Draining"                   },
+    {Status::DRAINED,                StatusType::STATUS, "Drained"                    },
+    {Status::RELAY,                  StatusType::STATUS, "Relay Master"               },
+    {Status::BLR,                    StatusType::STATUS, "Binlog Relay"               },
+    {Status::SYNCED,                 StatusType::STATUS, "Synced"                     },
+    {Status::DISK_LOW,               StatusType::DETAIL, "Low disk space"             },
+    {Status::EXT_MASTER,             StatusType::DETAIL, SLAVE_OF_EXT                 },
+    {Status::EXT_MASTER_STOPPED,     StatusType::DETAIL, SLAVE_OF_EXT " (stopped)"    },
+    {Status::EXT_MASTER_IO_STOPPED,  StatusType::DETAIL, SLAVE_OF_EXT " (IO stopped)" },
+    {Status::EXT_MASTER_SQL_STOPPED, StatusType::DETAIL, SLAVE_OF_EXT " (SQL stopped)"},
+    {Status::EXT_MASTER_CONNECTING,  StatusType::DETAIL, SLAVE_OF_EXT " (connecting)" }};
+}
+
+namespace maxtest
+{
+PerconaProxy::PerconaProxy(mxt::SharedData* shared)
+    : m_shared(*shared)
+{
+}
+
+PerconaProxy::~PerconaProxy()
+{
+    close_percona_proxy_connections();
+}
+
+bool PerconaProxy::setup(const mxt::NetworkConfig& nwconfig, const std::string& vm_name)
+{
+    auto prefixc = my_prefix.c_str();
+    string key_user = mxb::string_printf("%s_user", prefixc);
+    m_user_name = envvar_get_set(key_user.c_str(), "skysql");
+
+    string key_pw = mxb::string_printf("%s_password", prefixc);
+    m_password = envvar_get_set(key_pw.c_str(), "skysql");
+
+    m_vmnode = nullptr;
+    bool rval = false;
+
+    auto new_node = std::make_unique<mxt::VMNode>(m_shared, vm_name, "mariadb");
+    if (new_node->configure(nwconfig))
+    {
+        m_vmnode = move(new_node);
+
+        string key_cnf = vm_name + "_cnf";
+        m_cnf_path = envvar_get_set(key_cnf.c_str(), "/etc/percona-proxy.cnf");
+
+        string key_log_dir = vm_name + "_log_dir";
+        string log_dir = envvar_get_set(key_log_dir.c_str(), "/var/log/percona-proxy");
+        set_log_dir(std::move(log_dir));
+
+        rwsplit_port = 4006;
+        readconn_master_port = 4008;
+        readconn_slave_port = 4009;
+
+        ports[0] = rwsplit_port;
+        ports[1] = readconn_master_port;
+        ports[2] = readconn_slave_port;
+
+        // TODO: think of a proper reset command if ever needed.
+        m_vmnode->set_commands("systemctl start percona-proxy", "systemctl stop percona-proxy",
+                               "systemctl restart percona-proxy", "");
+        rval = true;
+    }
+    return rval;
+}
+
+bool PerconaProxy::setup(const mxb::ini::map_result::Configuration::value_type& config)
+{
+    bool rval = false;
+    auto new_node = mxt::create_node(config, m_shared);
+    if (new_node)
+    {
+        auto& cnf = config.second;
+        auto& s = m_shared;
+        string log_dir;
+        if (s.read_str(cnf, "cnf_path", m_cnf_path)
+            && s.read_str(cnf, "mxs_logdir", log_dir)
+            && s.read_str(cnf, "log_storage_dir", m_log_storage_dir)
+            && s.read_str(cnf, "mariadb_username", m_user_name)
+            && s.read_str(cnf, "mariadb_password", m_password)
+            && s.read_str(cnf, "percona-proxyctl_cmd", m_local_percona_proxyctl)
+            && s.read_int(cnf, "rwsplit_port", rwsplit_port)
+            && s.read_int(cnf, "rcrmaster_port", readconn_master_port)
+            && s.read_int(cnf, "rcrslave_port", readconn_slave_port))
+        {
+            ports[0] = rwsplit_port;
+            ports[1] = readconn_master_port;
+            ports[2] = readconn_slave_port;
+            set_log_dir(std::move(log_dir));
+            m_vmnode = std::move(new_node);
+            rval = true;
+        }
+        else
+        {
+            log().add_failure("Could not configure Percona Proxy node '%s'.", config.first.c_str());
+        }
+    }
+    return rval;
+}
+
+int PerconaProxy::connect_rwsplit(const std::string& db)
+{
+    mysql_close(conn_rwsplit);
+
+    conn_rwsplit = open_conn_db(rwsplit_port, ip(), db, m_user_name, m_password, m_ssl);
+    routers[0] = conn_rwsplit;
+
+    int rc = 0;
+    int my_errno = mysql_errno(conn_rwsplit);
+
+    if (my_errno)
+    {
+        if (verbose())
+        {
+            printf("Failed to connect to readwritesplit: %d, %s\n", my_errno, mysql_error(conn_rwsplit));
+        }
+        rc = my_errno;
+    }
+
+    return rc;
+}
+
+int PerconaProxy::connect_readconn_master(const std::string& db)
+{
+    MYSQL*& conn_rc_master = conn_master;
+    mysql_close(conn_rc_master);
+
+    conn_rc_master = open_conn_db(readconn_master_port, ip(), db, m_user_name, m_password, m_ssl);
+    routers[1] = conn_rc_master;
+
+    int rc = 0;
+    int my_errno = mysql_errno(conn_rc_master);
+
+    if (my_errno)
+    {
+        if (verbose())
+        {
+            printf("Failed to connect to readwritesplit: %d, %s\n", my_errno, mysql_error(conn_rc_master));
+        }
+        rc = my_errno;
+    }
+
+    return rc;
+}
+
+int PerconaProxy::connect_readconn_slave(const std::string& db)
+{
+    MYSQL*& conn_rc_slave = conn_slave;
+    mysql_close(conn_rc_slave);
+
+    conn_rc_slave = open_conn_db(readconn_slave_port, ip(), db, m_user_name, m_password, m_ssl);
+    routers[2] = conn_rc_slave;
+
+    int rc = 0;
+    int my_errno = mysql_errno(conn_rc_slave);
+
+    if (my_errno)
+    {
+        if (verbose())
+        {
+            printf("Failed to connect to readwritesplit: %d, %s\n", my_errno, mysql_error(conn_rc_slave));
+        }
+        rc = my_errno;
+    }
+
+    return rc;
+}
+
+int PerconaProxy::connect_percona_proxy(const std::string& db)
+{
+    return connect_rwsplit(db) + connect_readconn_master(db) + connect_readconn_slave(db);
+}
+
+int PerconaProxy::connect(const std::string& db)
+{
+    return connect_percona_proxy(db);
+}
+
+int PerconaProxy::close_percona_proxy_connections()
+{
+    close_readconn_master();
+
+    mysql_close(conn_slave);
+    conn_slave = nullptr;
+
+    close_rwsplit();
+    return 0;
+}
+
+int PerconaProxy::disconnect()
+{
+    return close_percona_proxy_connections();
+}
+
+int PerconaProxy::restart_percona_proxy()
+{
+    int res;
+    if (m_vmnode->is_remote())
+    {
+        res = m_vmnode->restart_process() ? 0 : 1;
+    }
+    else
+    {
+        m_vmnode->stop_process();
+        res = start_local_percona_proxy();
+    }
+    return res;
+}
+
+int PerconaProxy::start_percona_proxy()
+{
+    int res;
+    if (m_vmnode->is_remote())
+    {
+        res = m_vmnode->start_process("") ? 0 : 1;
+    }
+    else
+    {
+        res = start_local_percona_proxy();
+    }
+    return res;
+}
+
+int PerconaProxy::start_local_percona_proxy()
+{
+    string params = mxb::string_printf("--config=%s", m_cnf_path.c_str());
+    return m_vmnode->start_process(params) ? 0 : 1;
+}
+
+int PerconaProxy::stop_percona_proxy()
+{
+    return m_vmnode->stop_process() ? 0 : 1;
+}
+
+long unsigned PerconaProxy::get_percona_proxy_memsize(int m)
+{
+    auto res = ssh_output("ps -e -o pid,vsz,comm= | grep percona-proxy", false);
+    long unsigned mem = 0;
+    pid_t pid;
+    sscanf(res.output.c_str(), "%d %lu", &pid, &mem);
+    return mem;
+}
+
+int PerconaProxy::port(enum service type) const
+{
+    switch (type)
+    {
+    case RWSPLIT:
+        return rwsplit_port;
+
+    case READCONN_MASTER:
+        return readconn_master_port;
+
+    case READCONN_SLAVE:
+        return readconn_slave_port;
+    }
+    return -1;
+}
+
+void PerconaProxy::wait_for_monitor(int intervals)
+{
+    for (int i = 0; i < intervals; i++)
+    {
+        auto res = curl_rest_api("percona-proxy/debug/monitor_wait");
+        if (res.rc)
+        {
+            log().add_failure("Monitor wait failed. Error %i, %s", res.rc, res.output.c_str());
+            break;
+        }
+    }
+}
+
+void PerconaProxy::wait_for_status(const std::string& name, uint32_t status, std::chrono::seconds timeout)
+{
+    auto start = std::chrono::steady_clock::now();
+
+    while (get_servers().get(name).status != status && std::chrono::steady_clock::now() - start < timeout)
+    {
+        wait_for_monitor();
+    }
+}
+
+void PerconaProxy::sleep_and_wait_for_monitor(int sleep_s, int intervals)
+{
+    sleep(sleep_s);
+    wait_for_monitor(intervals);
+}
+
+const char* PerconaProxy::ip() const
+{
+    return m_use_ipv6 ? m_vmnode->ip6s().c_str() : m_vmnode->ip4();
+}
+
+const char* PerconaProxy::ip_private() const
+{
+    return m_vmnode->priv_ip();
+}
+
+void PerconaProxy::set_use_ipv6(bool use_ipv6)
+{
+    m_use_ipv6 = use_ipv6;
+}
+
+void PerconaProxy::set_ssl(bool ssl)
+{
+    m_ssl = ssl;
+}
+
+const char* PerconaProxy::hostname() const
+{
+    return m_vmnode->hostname();
+}
+
+const char* PerconaProxy::access_user() const
+{
+    return m_vmnode->access_user();
+}
+
+const char* PerconaProxy::access_homedir() const
+{
+    return m_vmnode->access_homedir();
+}
+
+const char* PerconaProxy::access_sudo() const
+{
+    return m_vmnode->access_sudo();
+}
+
+const char* PerconaProxy::sshkey() const
+{
+    return m_vmnode->sshkey();
+}
+
+const std::string& PerconaProxy::prefix()
+{
+    return my_prefix;
+}
+
+const char* PerconaProxy::ip4() const
+{
+    return m_vmnode->ip4();
+}
+
+const std::string& PerconaProxy::node_name() const
+{
+    return m_vmnode->m_name;
+}
+
+mxt::CmdResult PerconaProxy::percona_proxyctl(const std::string& cmd, bool sudo)
+{
+    string total_cmd;
+    if (m_vmnode->is_remote())
+    {
+        total_cmd = mxb::string_printf("percona-proxyctl %s 2>&1", cmd.c_str());
+    }
+    else
+    {
+        total_cmd = mxb::string_printf("%s %s 2>&1", m_local_percona_proxyctl.c_str(), cmd.c_str());
+    }
+    return m_vmnode->run_cmd_output(total_cmd);
+}
+
+mxt::CmdResult PerconaProxy::percona_proxyctlf(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    auto rval = vpercona_proxyctl(Expect::SUCCESS, format, args);
+    va_end(args);
+    return rval;
+}
+
+mxt::CmdResult PerconaProxy::percona_proxyctlf(PerconaProxy::Expect expect, const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    auto rval = vpercona_proxyctl(expect, fmt, args);
+    va_end(args);
+    return rval;
+}
+
+mxt::CmdResult PerconaProxy::vpercona_proxyctl(PerconaProxy::Expect expect, const char* format, va_list args)
+{
+    string cmd = mxb::string_vprintf(format, args);
+    auto res = percona_proxyctl(cmd, false);
+    if (expect == Expect::SUCCESS)
+    {
+        log().expect(!res.rc, "Percona Proxyctl command '%s' failed: %s", cmd.c_str(), res.output.c_str());
+    }
+    else if (expect == Expect::FAIL)
+    {
+        log().expect(res.rc, "Percona Proxyctl command '%s' succeeded when failure was expected", cmd.c_str());
+    }
+    else if (res.rc)
+    {
+        // Report error but don't classify it as a test error.
+        log().log_msgf("Percona Proxyctl command '%s' failed: %s", cmd.c_str(), res.output.c_str());
+    }
+    return res;
+}
+
+int PerconaProxy::restart()
+{
+    return restart_percona_proxy();
+}
+
+
+void PerconaProxy::start()
+{
+    int res = start_percona_proxy();
+    log().expect(res == 0, "Percona Proxy start failed, error %i.", res);
+}
+
+void PerconaProxy::stop()
+{
+    int res = stop_percona_proxy();
+    log().expect(res == 0, "Percona Proxy stop failed, error %i.", res);
+}
+
+bool PerconaProxy::prepare_for_test()
+{
+    bool rval = false;
+    if (m_vmnode->is_remote())
+    {
+        if (m_vmnode->init_connection())
+        {
+            rval = true;
+        }
+    }
+    else
+    {
+        rval = true;    // No preparations necessary in local mode, user is responsible for it.
+    }
+    return rval;
+}
+
+bool PerconaProxy::ssl() const
+{
+    return m_ssl;
+}
+
+mxt::Node& PerconaProxy::vm_node()
+{
+    return *m_vmnode;
+}
+
+void PerconaProxy::expect_running_status(bool expected)
+{
+    const int n_expected = expected ? 1 : 0;
+    const int n_tries = 5;
+
+    for (int i = 1; i <= n_tries; i++)
+    {
+        int n_mxs = get_n_running_processes();
+        if (n_mxs == n_expected || n_mxs < 0)
+        {
+            break;
+        }
+        else if (i == n_tries)
+        {
+            log().add_failure("%i Percona Proxy processes detected when %i was expected.",
+                              n_mxs, n_expected);
+        }
+        else
+        {
+            log().log_msgf("%i Percona Proxy processes detected when %i was expected. "
+                           "Trying again in a second.",
+                           n_mxs, n_expected);
+            sleep(1);
+        }
+    }
+}
+
+int PerconaProxy::get_n_running_processes()
+{
+    const char* ps_cmd = "ps -eo comm|grep -E \"memcheck|percona-proxy\"|wc -l";
+
+    int rval = -1;
+    auto cmd_res = ssh_output(ps_cmd, false);
+    if (cmd_res.rc != 0)
+    {
+        log().add_failure("Can't check Percona Proxy running status. Command '%s' failed with code %i and "
+                          "output '%s'.", ps_cmd, cmd_res.rc, cmd_res.output.c_str());
+    }
+    else if (cmd_res.output.empty())
+    {
+        log().add_failure("Can't check Percona Proxy running status. Command '%s' gave no output.", ps_cmd);
+    }
+    else
+    {
+        int num = 0;
+        if (mxb::get_int(cmd_res.output, 10, &num))
+        {
+            rval = num;
+        }
+        else
+        {
+            log().add_failure("Unexpected output from '%s': %s", ps_cmd, cmd_res.output.c_str());
+        }
+    }
+    return rval;
+}
+
+mxt::TestLogger& PerconaProxy::log() const
+{
+    return m_shared.log;
+}
+
+bool PerconaProxy::verbose() const
+{
+    return m_shared.settings.verbose;
+}
+
+bool PerconaProxy::start_and_check_started()
+{
+    int res = start_percona_proxy();
+    expect_running_status(true);
+    return res == 0;
+}
+
+bool PerconaProxy::stop_and_check_stopped()
+{
+    int res = stop_percona_proxy();
+    expect_running_status(false);
+    return res == 0;
+}
+
+bool PerconaProxy::reinstall(const std::string& target, const std::string& mdbci_config_name)
+{
+    bool rval = false;
+    auto& vm = vm_node();
+    log().log_msgf("Installing Percona Proxy on node %s.", vm.m_name.c_str());
+    // TODO: make it via MDBCI and compatible with any distro
+    vm.run_cmd_output_sudo("yum remove percona-proxy -y");
+    vm.run_cmd_output_sudo("yum clean all");
+
+    string install_cmd = mxb::string_printf(
+        "mdbci install_product --product percona_proxy_ci --product-version %s %s/%s",
+        target.c_str(), mdbci_config_name.c_str(), vm.m_name.c_str());
+    if (m_shared.run_shell_command(install_cmd, "Percona Proxy install failed."))
+    {
+        rval = true;
+    }
+    return rval;
+}
+
+void PerconaProxy::copy_log(int mxs_ind, int timestamp, const std::string& test_name)
+{
+    string dest_log_dir;
+    if (m_shared.settings.mdbci_test)
+    {
+        dest_log_dir = mxb::string_printf("%s/LOGS/%s", mxt::BUILD_DIR, test_name.c_str());
+    }
+    else
+    {
+        // When running test locally, save logs to the configured log storage directory.
+        dest_log_dir = mxb::string_printf("%s/%s", m_log_storage_dir.c_str(), test_name.c_str());
+    }
+
+    // Copy main Percona Proxy logs to main test log directory, additional Percona Proxy logs (rare) to a subdirectory.
+    if (timestamp != 0)
+    {
+        dest_log_dir.append(mxb::string_printf("/%04d", timestamp));
+    }
+    if (mxs_ind != 0)
+    {
+        dest_log_dir.append("/mxs").append(std::to_string(mxs_ind + 1));
+    }
+
+    string mkdir_cmd = mxb::string_printf("mkdir -p %s", dest_log_dir.c_str());
+    m_shared.run_shell_command(mkdir_cmd, "");
+    auto vm = m_vmnode.get();
+    auto mxs_cnf_file = m_cnf_path.c_str();
+
+    if (vm->is_remote())
+    {
+        string temp_logdir = mxb::string_printf("%s/logs", vm->access_homedir());
+        const char* temp_logdirc = temp_logdir.c_str();
+        string remote_cmd = mxb::string_printf(
+            "rm -rf %s; mkdir %s; cp %s/*.log %s/; "
+            "if ls /tmp/core* 1> /dev/null 2>&1; then have_core=1; fi; "
+            "if (( have_core == 1 )); then cp /tmp/core* %s/ >& /dev/null; fi; "
+            "cp %s %s/; "
+            "chmod 777 -R %s; "
+            "if (( have_core == 1 )); then exit 42; fi;"
+            "grep 'alert.*fatal signal' %s/* && exit 42",
+            temp_logdirc, temp_logdirc, m_log_dir.c_str(), temp_logdirc,
+            temp_logdirc,
+            mxs_cnf_file, temp_logdirc,
+            temp_logdirc, temp_logdirc);
+
+        remote_cmd += mxb::string_printf(
+            "; if grep VALGRIND_ERROR %s/* 1> /dev/null 2>&1; then exit 44; fi", temp_logdirc);
+
+        if (m_leak_check)
+        {
+            const char* sanitizers = "LeakSanitizer|AddressSanitizer|UndefinedBehaviorSanitizer";
+            remote_cmd += mxb::string_printf(
+                "; if grep -P \"%s\" %s/* 1> /dev/null 2>&1; then exit 43; fi", sanitizers, temp_logdirc);
+        }
+
+        int rc = ssh_node(remote_cmd, true);
+        if (rc == 44)
+        {
+            log().add_failure("Valgrind found errors in Percona Proxy");
+        }
+        else if (rc == 43)
+        {
+            log().add_failure("Percona Proxy should not leak memory");
+        }
+        else if (rc == 42)
+        {
+            log().add_failure("Test should not generate core files");
+
+            // Dump stacktraces from all coredumps. This helps figure out exactly where the problem is if it
+            // happens during shutdown. Printing the stacktrace from the coredump on the system where it was
+            // generates makes sure that the information is shown.
+            for (std::string line : mxb::strtok(ssh_output("ls -1 /tmp/core*", true).output, "\n"))
+            {
+                std::string cmd = "gdb /usr/bin/percona-proxy --core=" + line + " -batch -ex bt";
+                std::cout << ssh_output(cmd, true).output << std::endl;
+            }
+        }
+        else if (rc != 0)
+        {
+            log().add_failure("Remote command '%s' failed with error %i.", remote_cmd.c_str(), rc);
+        }
+
+        string log_source = temp_logdir;
+        if (vm->type() == VMNode::Type::REMOTE)
+        {
+            log_source += "/*";
+        }
+        else
+        {
+            log_source += "/.";
+        }
+        vm->copy_from_node(log_source, dest_log_dir);
+    }
+    else
+    {
+        auto dest = dest_log_dir.c_str();
+        m_shared.run_shell_cmdf("rm -rf %s/*", dest);
+        m_shared.run_shell_cmdf("cp %s/*.log %s/", m_log_dir.c_str(), dest);
+        m_shared.run_shell_cmdf("cp %s %s/", mxs_cnf_file, dest);
+        // Ignore errors of next command, as core-files may not exist.
+        string core_copy = mxb::string_printf("cp /tmp/core* %s/ 2>/dev/null", dest);
+        system(core_copy.c_str());
+    }
+}
+
+MYSQL* PerconaProxy::open_rwsplit_connection(const std::string& db)
+{
+    return open_conn(rwsplit_port, ip4(), m_user_name, m_password, m_ssl);
+}
+
+PerconaProxy::SMariaDB PerconaProxy::try_open_rwsplit_connection(const string& db)
+{
+    return try_open_rwsplit_connection(SslMode::AUTO, m_user_name, m_password, db);
+}
+
+PerconaProxy::SMariaDB PerconaProxy::try_open_rwsplit_connection(const string& user, const string& pass,
+                                                         const string& db)
+{
+    return try_open_rwsplit_connection(SslMode::AUTO, user, pass, db);
+}
+
+PerconaProxy::SMariaDB PerconaProxy::try_open_rwsplit_connection(PerconaProxy::SslMode ssl, const string& user,
+                                                         const std::string& pass, const string& db)
+{
+    return try_open_connection(ssl, rwsplit_port, user, pass, db);
+}
+
+PerconaProxy::SMariaDB
+PerconaProxy::try_open_connection(PerconaProxy::SslMode ssl, int port, const string& user, const string& pass,
+                              const string& db)
+{
+    auto conn = std::make_unique<mxt::MariaDB>(log());
+    auto& sett = conn->connection_settings();
+    sett.user = user;
+    sett.password = pass;
+    if (ssl == SslMode::ON || (ssl == SslMode::AUTO && m_ssl))
+    {
+        auto base_dir = mxt::SOURCE_DIR;
+        sett.ssl.key = mxb::string_printf("%s/ssl-cert/client.key", base_dir);
+        sett.ssl.cert = mxb::string_printf("%s/ssl-cert/client.crt", base_dir);
+        sett.ssl.ca = mxb::string_printf("%s/ssl-cert/ca.crt", base_dir);
+        sett.ssl.enabled = true;
+    }
+
+    conn->try_open(ip(), port, db);
+    return conn;
+}
+
+PerconaProxy::SMariaDB
+PerconaProxy::try_open_connection(int port, const string& user, const string& pass, const string& db)
+{
+    return try_open_connection(SslMode::AUTO, port, user, pass, db);
+}
+
+std::unique_ptr<mxt::MariaDB> PerconaProxy::open_rwsplit_connection2(const string& db)
+{
+    auto conn = try_open_rwsplit_connection(db);
+    m_shared.log.expect(conn->is_open(), "Failed to open MySQL connection to RWSplit.");
+    return conn;
+}
+
+PerconaProxy::SMariaDB PerconaProxy::open_rwsplit_connection2_nodb()
+{
+    return open_rwsplit_connection2("");
+}
+
+Connection PerconaProxy::rwsplit(const std::string& db)
+{
+    return Connection(ip4(), rwsplit_port, m_user_name, m_password, db, m_ssl);
+}
+
+Connection PerconaProxy::get_connection(int port, const std::string& db)
+{
+    return Connection(ip4(), port, m_user_name, m_password, db, m_ssl);
+}
+
+MYSQL* PerconaProxy::open_readconn_master_connection()
+{
+    return open_conn(readconn_master_port, ip4(), m_user_name, m_password, m_ssl);
+}
+
+Connection PerconaProxy::readconn_master(const std::string& db)
+{
+    return Connection(ip4(), readconn_master_port, m_user_name, m_password, db, m_ssl);
+}
+
+MYSQL* PerconaProxy::open_readconn_slave_connection()
+{
+    return open_conn(readconn_slave_port, ip4(), m_user_name, m_password, m_ssl);
+}
+
+Connection PerconaProxy::readconn_slave(const std::string& db)
+{
+    return Connection(ip4(), readconn_slave_port, m_user_name, m_password, db, m_ssl);
+}
+
+void PerconaProxy::close_rwsplit()
+{
+    mysql_close(conn_rwsplit);
+    conn_rwsplit = NULL;
+}
+
+void PerconaProxy::close_readconn_master()
+{
+    mysql_close(conn_master);
+    conn_master = NULL;
+}
+
+int PerconaProxy::ssh_node_f(bool sudo, const char* format, ...)
+{
+    va_list valist;
+    va_start(valist, format);
+    string cmd = mxb::string_vprintf(format, valist);
+    va_end(valist);
+    return ssh_node(cmd, sudo);
+}
+
+void PerconaProxy::copy_fw_rules(const std::string& rules_name, const std::string& rules_dir)
+{
+    ssh_node_f(true, "cd %s; rm -rf rules; mkdir rules; chown %s:%s rules",
+               access_homedir(), access_user(), access_user());
+
+    string src = rules_dir + "/" + rules_name;
+    string dest = string(access_homedir()) + "/rules/rules.txt";
+
+    copy_to_node(src.c_str(), dest.c_str());
+    ssh_node_f(true, "chmod a+r %s", dest.c_str());
+}
+
+bool PerconaProxy::log_matches(std::string pattern) const
+{
+    // Replace single quotes with wildcard characters, should solve most problems
+    for (auto& a : pattern)
+    {
+        if (a == '\'')
+        {
+            a = '.';
+        }
+    }
+
+    PerconaProxy* p = const_cast<PerconaProxy*>(this);
+
+    return p->ssh_node_f(true, "grep '%s' %s/percona-proxy*.log", pattern.c_str(), m_log_dir.c_str()) == 0;
+}
+
+mxt::CmdResult PerconaProxy::ssh_output(const std::string& cmd, bool sudo)
+{
+    using CmdPriv = mxt::VMNode::CmdPriv;
+    return m_vmnode->run_cmd_output(cmd, sudo ? CmdPriv::SUDO : CmdPriv::NORMAL);
+}
+
+bool PerconaProxy::copy_to_node(const char* src, const char* dest)
+{
+    return m_vmnode->copy_to_node(src, dest);
+}
+
+bool PerconaProxy::copy_from_node(const char* src, const char* dest)
+{
+    return m_vmnode->copy_from_node(src, dest);
+}
+
+void PerconaProxy::write_env_vars()
+{
+    m_vmnode->write_node_env_vars();
+}
+
+int PerconaProxy::ssh_node(const string& cmd, bool sudo)
+{
+    using CmdPriv = mxt::VMNode::CmdPriv;
+    return m_vmnode->run_cmd(cmd, sudo ? CmdPriv::SUDO : CmdPriv::NORMAL);
+}
+
+void PerconaProxy::check_servers_status(const std::vector<mxt::ServerInfo::bitfield>& expected_status)
+{
+    auto data = get_servers();
+    data.check_servers_status(expected_status);
+}
+
+void PerconaProxy::check_print_servers_status(const std::vector<uint32_t>& expected_status)
+{
+    wait_for_monitor();
+    auto data = get_servers();
+    data.print();
+    data.check_servers_status(expected_status);
+}
+
+void PerconaProxy::alter_monitor(const string& mon_name, const string& setting, const string& value)
+{
+    string cmd = mxb::string_printf("alter monitor %s %s %s", mon_name.c_str(),
+                                    setting.c_str(), value.c_str());
+    auto res = percona_proxyctl(cmd);
+    log().expect(res.rc == 0 && res.output == "OK", "Alter monitor command '%s' failed.", cmd.c_str());
+}
+
+void PerconaProxy::alter_service(const string& svc_name, const string& setting, const string& value)
+{
+    string cmd = mxb::string_printf("alter service %s %s %s", svc_name.c_str(),
+                                    setting.c_str(), value.c_str());
+    auto res = percona_proxyctl(cmd);
+    log().expect(res.rc == 0 && res.output == "OK", "Alter service command '%s' failed.", cmd.c_str());
+}
+
+void PerconaProxy::alter_server(const string& srv_name, const string& setting, const string& value)
+{
+    string cmd = mxb::string_printf("alter server %s %s %s", srv_name.c_str(),
+                                    setting.c_str(), value.c_str());
+    auto res = percona_proxyctl(cmd);
+    log().expect(res.rc == 0 && res.output == "OK", "Alter server command '%s' failed.", cmd.c_str());
+}
+
+void PerconaProxy::delete_log()
+{
+    auto cmd = mxb::string_printf("truncate -s 0 %s/percona-proxy.log", m_log_dir.c_str());
+    auto res = vm_node().run_cmd_output(cmd, mxt::VMNode::CmdPriv::SUDO);
+    log().expect(res.rc == 0, "'%s' failed", cmd.c_str());
+}
+
+mxt::CmdResult PerconaProxy::curl_rest_api(const std::string& path)
+{
+    string cmd = mxb::string_printf("curl --silent --show-error http://%s:%s@%s:%s/v1/%s",
+                                    m_rest_user.c_str(), m_rest_pw.c_str(),
+                                    m_rest_ip.c_str(), m_rest_port.c_str(),
+                                    path.c_str());
+    return m_vmnode->run_cmd_output(cmd, Node::CmdPriv::NORMAL);
+}
+
+mxt::ServersInfo PerconaProxy::get_servers()
+{
+    using mxt::ServerInfo;
+    using mxt::ServersInfo;
+    using mxb::Json;
+
+    const string field_servers = "servers";
+    const string field_data = "data";
+    const string field_id = "id";
+    const string field_attr = "attributes";
+    const string field_state = "state";
+    const string field_state_details = "state_details";
+    const string field_mgroup = "master_group";
+    const string field_rlag = "replication_lag";
+    const string field_serverid = "server_id";
+    const string field_readonly = "read_only";
+    const string field_slave_conns = "slave_connections";
+    const string field_statistics = "statistics";
+    const string field_gtid = "gtid_current_pos";
+
+    // Slave conn fields
+    const string field_scon_name = "connection_name";
+    const string field_scon_gtid = "gtid_io_pos";
+    const string field_scon_id = "master_server_id";
+    const string field_scon_io = "slave_io_running";
+    const string field_scon_sql = "slave_sql_running";
+
+    // Statistics fields
+    const string field_pers_conns = "persistent_connections";
+    const string field_connections = "connections";
+
+    // Parameters
+    const string field_parameters = "parameters";
+    const string field_ssl = "ssl";
+
+    auto try_get_int = [](const Json& json, const string& key, int64_t failval) {
+        int64_t rval = failval;
+        json.try_get_int(key, &rval);
+        return rval;
+    };
+
+    auto try_get_bool = [](const Json& json, const string& key, bool failval) {
+        bool rval = failval;
+        json.try_get_bool(key, &rval);
+        return rval;
+    };
+
+    ServersInfo rval(&m_shared.log);
+    auto res = curl_rest_api(field_servers);
+    if (res.rc == 0)
+    {
+        Json all;
+        if (all.load_string(res.output))
+        {
+            auto data = all.get_array_elems(field_data);
+            for (auto& elem : data)
+            {
+                ServerInfo info;
+                info.name = elem.get_string(field_id);
+                auto attr = elem.get_object(field_attr);
+                string state = attr.get_string(field_state);
+                string state_details;
+                attr.try_get_string(field_state_details, &state_details);
+                if (!info.status_from_string(state, state_details))
+                {
+                    log().add_failure("Server status string parsing error. State: '%s', details: '%s'",
+                                      state.c_str(), state_details.c_str());
+                }
+
+                // The following depend on the monitor and may be null.
+                info.master_group = try_get_int(attr, field_mgroup, ServerInfo::GROUP_NONE);
+                info.rlag = try_get_int(attr, field_rlag, ServerInfo::RLAG_NONE);
+                info.server_id = try_get_int(attr, field_serverid, ServerInfo::SRV_ID_NONE);
+                info.read_only = try_get_bool(attr, field_readonly, false);
+                attr.try_get_string(field_gtid, &info.gtid);
+
+                if (attr.contains(field_slave_conns))
+                {
+                    auto conns = attr.get_array_elems(field_slave_conns);
+                    info.slave_connections.reserve(conns.size());
+                    for (auto& conn : conns)
+                    {
+                        using IO_State = ServerInfo::SlaveConnection::IO_State;
+                        ServerInfo::SlaveConnection conn_info;
+                        conn_info.name = conn.get_string(field_scon_name);
+                        conn_info.gtid = conn.get_string(field_scon_gtid);
+                        conn_info.master_id = conn.get_int(field_scon_id);
+                        string io_running = conn.get_string(field_scon_io);
+                        conn_info.io_running = (io_running == "Yes") ? IO_State::YES :
+                            ((io_running == "Connecting") ? IO_State::CONNECTING : IO_State::NO);
+                        string sql_running = conn.get_string(field_scon_sql);
+                        conn_info.sql_running = (sql_running == "Yes");
+                        info.slave_connections.push_back(std::move(conn_info));
+                    }
+                }
+
+                auto stats = attr.get_object(field_statistics);
+                info.pool_conns = try_get_int(stats, field_pers_conns, -1);
+                info.connections = try_get_int(stats, field_connections, 0);
+
+                auto params = attr.get_object(field_parameters);
+                info.ssl_configured = try_get_bool(params, field_ssl, false);
+                rval.add(info);
+            }
+        }
+        else
+        {
+            log().add_failure("Invalid data from REST-API servers query: %s", all.error_msg().c_str());
+        }
+    }
+    else
+    {
+        log().add_failure("REST-API servers query failed. Error %i, %s", res.rc, mxb_strerror(res.rc));
+    }
+    return rval;
+}
+
+const std::string& PerconaProxy::user_name() const
+{
+    return m_user_name;
+}
+
+const std::string& PerconaProxy::password() const
+{
+    return m_password;
+}
+
+const std::string& PerconaProxy::cnf_path() const
+{
+    return m_cnf_path;
+}
+
+int PerconaProxy::get_master_server_id()
+{
+    return get_servers().get_master().server_id;
+}
+
+void PerconaProxy::write_in_log(string&& str)
+{
+    char* buf = str.data();
+    while (char* c = strchr(buf, '\''))
+    {
+        *c = '^';
+    }
+    // Assuming here that if running Percona Proxy locally, the user has write access to Percona Proxy log.
+    ssh_node_f(m_vmnode->is_remote(), "echo '--- %s ---' >> %s/percona-proxy.log", buf, m_log_dir.c_str());
+}
+
+void PerconaProxy::delete_logs_and_rtfiles()
+{
+    int rc;
+    if (m_vmnode->is_remote())
+    {
+        string remote_cmd = mxb::string_printf(
+            "rm -rf %s/*.log /tmp/core* /dev/shm/* /var/lib/percona-proxy/* /var/lib/percona-proxy/.secrets; "
+            "find /var/*/percona-proxy -name 'percona-proxy.lock' -delete;", m_log_dir.c_str());
+        if (vm_node().type() == Node::Type::REMOTE)
+        {
+            remote_cmd += " iptables -F INPUT;";
+        }
+        rc = ssh_node(remote_cmd, true);
+    }
+    else
+    {
+        // Percona Proxy running locally, delete any old logs and runtime config files.
+        // TODO: make datadir configurable.
+        rc = m_shared.run_shell_cmdf("rm -rf %s/*.log  /tmp/core* /var/lib/percona-proxy/percona-proxy.cnf.d/*",
+                                     m_log_dir.c_str()) ? 0 : 1;
+    }
+
+    log().expect(rc == 0, "Percona Proxy log delete failed. Error %i", rc);
+}
+
+void PerconaProxy::create_report()
+{
+    // Create report and save it to Percona Proxy log dir. It will get copied along with other logs.
+    string cmd = mxb::string_printf("create report %s/percona-proxyctl-report.log", m_log_dir.c_str());
+    percona_proxyctl("create report /var/log/percona-proxy/percona-proxyctl-report.log");
+}
+
+void PerconaProxy::set_log_dir(string&& str)
+{
+    // The log directory is used "rm -rf"-style commands. Check that dir is not empty to avoid
+    // an accidental "rm -rf /*".
+    if (str.length() >= 2 && str[0] == '/' && str.find_first_not_of('/', 1) != string::npos)
+    {
+        m_log_dir = std::move(str);
+    }
+    else
+    {
+        log().add_failure("Percona Proxy log path '%s' is invalid.", str.c_str());
+    }
+}
+
+std::string PerconaProxy::cert_path() const
+{
+    return mxb::string_printf("%s/certs/mxs.crt", access_homedir());
+}
+
+std::string PerconaProxy::cert_key_path() const
+{
+    return mxb::string_printf("%s/certs/mxs.key", access_homedir());
+}
+
+std::string PerconaProxy::ca_cert_path() const
+{
+    return mxb::string_printf("%s/certs/ca.crt", access_homedir());
+}
+
+void ServersInfo::add(const ServerInfo& info)
+{
+    m_servers.push_back(info);
+}
+
+void ServersInfo::add(ServerInfo&& info)
+{
+    m_servers.push_back(std::move(info));
+}
+
+const ServerInfo& ServersInfo::get(size_t i) const
+{
+    return m_servers[i];
+}
+
+ServerInfo ServersInfo::get(const std::string& cnf_name) const
+{
+    ServerInfo rval;
+    for (auto& elem : m_servers)
+    {
+        if (elem.name == cnf_name)
+        {
+            rval = elem;
+            break;
+        }
+    }
+    return rval;
+}
+
+size_t ServersInfo::size() const
+{
+    return m_servers.size();
+}
+
+void ServersInfo::check_servers_property(size_t n_expected, const std::function<void(size_t)>& tester)
+{
+    // Checking only some of the servers is ok.
+    if (n_expected <= m_servers.size())
+    {
+        for (size_t i = 0; i < n_expected; i++)
+        {
+            tester(i);
+        }
+    }
+    else
+    {
+        m_log->add_failure("Expected at least %zu servers, found %zu.", n_expected, m_servers.size());
+    }
+}
+
+void ServersInfo::check_servers_status(const std::vector<ServerInfo::bitfield>& expected_status)
+{
+    auto tester = [&](size_t i) {
+        auto expected = expected_status[i];
+        auto& info = m_servers[i];
+        if (expected != info.status)
+        {
+            string found_str = info.status_to_string();
+            string expected_str = ServerInfo::status_to_string(expected);
+            m_log->add_failure("Wrong status for %s. Got '%s', expected '%s'.",
+                               info.name.c_str(), found_str.c_str(), expected_str.c_str());
+        }
+    };
+    check_servers_property(expected_status.size(), tester);
+}
+
+void ServersInfo::check_master_groups(const std::vector<int>& expected_groups)
+{
+    auto tester = [&](size_t i) {
+        auto expected = expected_groups[i];
+        auto& info = m_servers[i];
+        if (expected != info.master_group)
+        {
+            m_log->add_failure("Wrong master group for %s. Got '%li', expected '%i'.",
+                               info.name.c_str(), info.master_group, expected);
+        }
+    };
+    check_servers_property(expected_groups.size(), tester);
+}
+
+void ServersInfo::check_pool_connections(const std::vector<int>& expected_conns)
+{
+    auto tester = [&](size_t i) {
+        auto expected = expected_conns[i];
+        auto& info = m_servers[i];
+        if (expected != info.pool_conns)
+        {
+            m_log->add_failure("Wrong connection pool size for %s. Got '%li', expected '%i'.",
+                               info.name.c_str(), info.pool_conns, expected);
+        }
+    };
+    check_servers_property(expected_conns.size(), tester);
+}
+
+void ServersInfo::check_connections(const std::vector<int>& expected_conns)
+{
+    auto tester = [&](size_t i) {
+        auto expected = expected_conns[i];
+        auto& info = m_servers[i];
+        if (expected != info.connections)
+        {
+            m_log->add_failure("Wrong number of connections for %s. Got '%li', expected '%i'.",
+                               info.name.c_str(), info.connections, expected);
+        }
+    };
+    check_servers_property(expected_conns.size(), tester);
+}
+
+void ServersInfo::check_read_only(const std::vector<bool>& expected_ro)
+{
+    auto tester = [&](size_t i) {
+        auto expected = expected_ro[i];
+        auto& info = m_servers[i];
+        if (expected != info.read_only)
+        {
+            m_log->add_failure("Wrong read_only for %s. Got '%i', expected '%i'.",
+                               info.name.c_str(), info.read_only, expected);
+        }
+    };
+    check_servers_property(expected_ro.size(), tester);
+}
+
+
+ServersInfo::ServersInfo(TestLogger* log)
+    : m_log(log)
+{
+}
+
+ServersInfo& ServersInfo::operator=(const ServersInfo& rhs)
+{
+    m_servers = rhs.m_servers;
+    m_log = rhs.m_log;
+    return *this;
+}
+
+ServersInfo::ServersInfo(ServersInfo&& rhs) noexcept
+    : m_servers(std::move(rhs.m_servers))
+    , m_log(rhs.m_log)
+{
+}
+
+ServersInfo& ServersInfo::operator=(ServersInfo&& rhs) noexcept
+{
+    m_servers = std::move(rhs.m_servers);
+    m_log = rhs.m_log;
+    return *this;
+}
+
+ServerInfo ServersInfo::get_master() const
+{
+    ServerInfo rval;
+    for (const auto& server : m_servers)
+    {
+        if (server.status & ServerInfo::MASTER)
+        {
+            rval = server;
+            break;
+        }
+    }
+    return rval;
+}
+
+void ServersInfo::print()
+{
+    if (m_servers.empty())
+    {
+        m_log->log_msgf("No server info received from REST api.");
+    }
+    else
+    {
+        string total_msg;
+        auto n = m_servers.size();
+        total_msg.reserve(n * 30);
+        total_msg += "Server information from REST api:\n";
+        for (auto& elem : m_servers)
+        {
+            total_msg.append(elem.to_string_short()).append("\n");
+        }
+        m_log->log_msg(total_msg);
+    }
+}
+
+const std::vector<ServerInfo::bitfield>& ServersInfo::default_repl_states()
+{
+    static const std::vector<mxt::ServerInfo::bitfield> def_repl_states =
+    {mxt::ServerInfo::master_st,
+     mxt::ServerInfo::slave_st, mxt::ServerInfo::slave_st, mxt::ServerInfo::slave_st};
+    return def_repl_states;
+}
+
+ServersInfo::RoleInfo ServersInfo::get_role_info() const
+{
+    RoleInfo rval;
+
+    for (const auto& srv : m_servers)
+    {
+        auto status = srv.status;
+        if (status == mxt::ServerInfo::master_st)
+        {
+            rval.masters++;
+            if (rval.master_name.empty())
+            {
+                rval.master_name = srv.name;
+            }
+        }
+        else if (status == mxt::ServerInfo::slave_st)
+        {
+            rval.slaves++;
+        }
+        else if (status == mxt::ServerInfo::RUNNING)
+        {
+            rval.running++;
+        }
+    }
+
+    return rval;
+}
+
+std::vector<ServerInfo>::iterator ServersInfo::begin()
+{
+    return m_servers.begin();
+}
+
+std::vector<ServerInfo>::iterator ServersInfo::end()
+{
+    return m_servers.end();
+}
+
+bool ServerInfo::status_from_string(const string& source, const string& details)
+{
+    status = UNKNOWN;
+    bool error = false;
+
+    auto check_tokens = [this, &error](std::vector<string> tokens, StatusType expected_type) {
+        const char* expected_type_str = (expected_type == StatusType::STATUS) ? "status" : "detail";
+
+        for (string& token : tokens)
+        {
+            mxb::trim(token);
+            // Expect all flags to be recognized and be correct type (status or detail).
+            bool found = false;
+            for (const auto& elem : status_flag_to_str)
+            {
+                if (elem.desc == token)
+                {
+                    if (elem.type == expected_type)
+                    {
+                        status |= elem.bit;
+                    }
+                    else
+                    {
+                        printf("Unexpected flag type for '%s', expected %s.\n",
+                               token.c_str(), expected_type_str);
+                        error = true;
+                    }
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                printf("Unrecognized %s flag '%s'\n", expected_type_str, token.c_str());
+                error = true;
+            }
+        }
+    };
+
+    auto status_tokens = mxb::strtok(source, ",");
+    check_tokens(std::move(status_tokens), StatusType::STATUS);
+
+    if (!details.empty())
+    {
+        auto details_tokens = mxb::strtok(details, ",");
+        check_tokens(std::move(details_tokens), StatusType::DETAIL);
+    }
+    return !error;
+}
+
+std::string ServerInfo::status_to_string(bitfield status)
+{
+    if (status == mxt::ServerInfo::UNKNOWN)
+    {
+        return "Unknown";
+    }
+
+    string rval;
+    string sep;
+
+    while (status)
+    {
+        bool found = false;
+
+        for (const auto& elem : status_flag_to_str)
+        {
+            if (elem.bit & status)
+            {
+                rval.append(sep).append(elem.desc);
+                sep = ", ";
+                status &= ~elem.bit;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            mxb_assert(!true);      // Unrecognized test status bit.
+            break;
+        }
+    }
+    return rval;
+}
+
+std::string ServerInfo::status_to_string() const
+{
+    return status_to_string(status);
+}
+
+std::string ServerInfo::to_string_short() const
+{
+    return mxb::string_printf("%10s, %15s, %s", name.c_str(), status_to_string().c_str(), gtid.c_str());
+}
+}

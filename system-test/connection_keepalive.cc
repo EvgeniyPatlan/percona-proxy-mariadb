@@ -23,7 +23,7 @@
 
 Connection open_shortlived_connection(TestConnections& test, int port)
 {
-    auto c = test.maxscale->get_connection(port);
+    auto c = test.percona_proxy->get_connection(port);
     test.expect(c.connect(), "Failed to open connection to forced keepalive service: %s", c.error());
     test.expect(c.query("SET wait_timeout=10"), "Failed to set wait_timeout: %s", c.error());
     return c;
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    auto conn = test.maxscale->get_connection(4006);
+    auto conn = test.percona_proxy->get_connection(4006);
     test.expect(conn.connect(), "Connection should work: %s", conn.error());
 
     auto still_alive = open_shortlived_connection(test, 4009);
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
     test.expect(conn.query("SELECT 1"), "SELECT should work: %s", conn.error());
 
     test.tprintf("Alter the connection_keepalive so that if it takes effect the session will be closed");
-    test.check_maxctrl("alter service RW-Split-Router connection_keepalive 3000s");
+    test.check_percona_proxyctl("alter service RW-Split-Router connection_keepalive 3000s");
 
     sleep(20);
 
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 
 
     test.tprintf("Open a connection to a readwritesplit that is using another readwritesplit");
-    auto conn2 = test.maxscale->get_connection(4008);
+    auto conn2 = test.percona_proxy->get_connection(4008);
     test.expect(conn2.connect(), "Connection should work: %s", conn2.error());
 
     test.tprintf("Check that connection keepalive works on the upper level as well");

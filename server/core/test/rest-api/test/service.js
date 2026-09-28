@@ -311,5 +311,5 @@ describe("Service", function () {
       .fulfilled;
   });
 
-  after(restartMaxScale);
+  after(restartPerconaProxy);
 });

@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     auto ids = test.repl->get_all_server_ids();
     test.repl->disconnect();
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection to rwsplit should work: %s", conn.error());
 
     auto first_slave = conn.field("SELECT @@server_id");
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
         if (ids[i] == slave)
         {
             test.repl->block_node(i);
-            test.maxscale->wait_for_monitor();
+            test.percona_proxy->wait_for_monitor();
             break;
         }
     }

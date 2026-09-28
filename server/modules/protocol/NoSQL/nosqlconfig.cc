@@ -109,7 +109,7 @@ void Config::copy_from(const string& command, const bsoncxx::document::view& doc
         if (key == C::s_user.name() || key == C::s_password.name() || key == C::s_id_length.name())
         {
             ostringstream ss;
-            ss << "Configuration parameter '" << key << "', can only be changed via MaxScale.";
+            ss << "Configuration parameter '" << key << "', can only be changed via Percona Proxy.";
             throw SoftError(ss.str(), error::NO_SUCH_KEY);
         }
 

@@ -333,7 +333,7 @@ void ConnectionManager::cleanup_thread_func()
 ConnectionManager::~ConnectionManager()
 {
     // There are cases where the call to HttpSQL::finish() is not done before shutdown. This mostly
-    // happens when multiple termination signals are sent one after another and MaxScale is doing something
+    // happens when multiple termination signals are sent one after another and Percona Proxy is doing something
     // that is blocking the shutdown temporarily (e.g. blocking TCP connection).
     stop_cleanup_thread();
 }
@@ -350,7 +350,7 @@ void ConnectionManager::stop_cleanup_thread()
         m_keep_running = false;
     }
 
-    // The cleanup thread may not have been created if MaxScale start failed.
+    // The cleanup thread may not have been created if Percona Proxy start failed.
     if (m_cleanup_thread.joinable())
     {
         m_stop_running_notifier.notify_one();

@@ -62,7 +62,7 @@ password=mypasswd
 filters=IPComment
 ```
 
-In this example when MaxScale receives statement like:
+In this example when Percona Proxy receives statement like:
 ```
  SELECT user FROM people;
 ```

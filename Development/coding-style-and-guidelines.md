@@ -5,12 +5,12 @@ to the next.
 
 ## Coding Style
 ### uncrustify
-MaxScale comes with an uncrustify configuration file that can be used to
+Percona Proxy comes with an uncrustify configuration file that can be used to
 format the source code. To use it, run the following in the source root.
 ```
 uncrustify -c uncrustify.cfg <path to source>
 ```
-This will format the source file according to the MaxScale coding style.
+This will format the source file according to the Percona Proxy coding style.
 
 Note though that the purpose of uncrustify is to be an assistant and not
 the master. That is, if its formatting does not look good, then manually
@@ -41,8 +41,8 @@ change; *not* as part of other modifications.
 
 * In general, comment only what is not obvious from the code.
 * APIs intended to be implemented by components independent of the API
-  itself should be documented properly. Use `include/maxscale/filter.hh`
-  and `include/maxscale/router.hh` as example.
+  itself should be documented properly. Use `include/percona-proxy/filter.hh`
+  and `include/percona-proxy/router.hh` as example.
 * On a particular line, the number of characters in documenting text should
   not exceed 80, for ease of reading. When counting the characters, any
   prepending code or space, due to indentation, is not included. The hard
@@ -150,7 +150,7 @@ a = b[5];
 
 Naming convention: snake_case
 ```
-namespace maxscale
+namespace percona_proxy
 {
 
 class ...
@@ -163,9 +163,9 @@ namespace xyz_filter
 }
 ```
 Note that symbols within a namespace are not indented. Note also that the
-namespace `maxscale` can only be used by classes belonging to the MaxScale
-core. An exception is when a template in the MaxScale namespace is
-specialized for a non MaxScale core class.
+namespace `percona-proxy` can only be used by classes belonging to the Percona Proxy
+core. An exception is when a template in the Percona Proxy namespace is
+specialized for a non Percona Proxy core class.
 
 ### structs and classes
 
@@ -191,7 +191,7 @@ Naming convention: snake_case
 ```
 void set_color(...);
 ```
-Note that the functions in MaxScale's plugin interfaces are _exceptions_;
+Note that the functions in Percona Proxy's plugin interfaces are _exceptions_;
 they use camelCase.
 
 ### enums

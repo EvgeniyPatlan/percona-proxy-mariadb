@@ -28,15 +28,15 @@ int main(int argc, char *argv[])
     // Reset server settings by replacing the config files
     Test->repl->reset_all_servers_settings();
 
-    Test->tprintf("Connecting to Maxscale maxscales->routers[0] with Master/Slave backend\n");
-    Test->maxscale->connect_maxscale();
+    Test->tprintf("Connecting to Maxscale percona_proxies->routers[0] with Master/Slave backend\n");
+    Test->percona_proxy->connect_percona_proxy();
     Test->tprintf("Testing connections\n");
 
-    Test->add_result(Test->test_maxscale_connections(true, true, true), "Can't connect to backend\n");
+    Test->add_result(Test->test_percona_proxy_connections(true, true, true), "Can't connect to backend\n");
 
     Test->tprintf("Connecting to Maxscale router with Galera backend\n");
-    MYSQL * g_conn = open_conn(4016, Test->maxscale->ip4(), Test->maxscale->user_name(),
-                               Test->maxscale->password(), Test->maxscale_ssl);
+    MYSQL * g_conn = open_conn(4016, Test->percona_proxy->ip4(), Test->percona_proxy->user_name(),
+                               Test->percona_proxy->password(), Test->percona_proxy_ssl);
     if (g_conn != NULL )
     {
         Test->tprintf("Testing connection\n");
@@ -45,10 +45,10 @@ int main(int argc, char *argv[])
     }
 
     Test->tprintf("Closing connections\n");
-    Test->maxscale->close_maxscale_connections();
-    Test->check_maxscale_alive();
+    Test->percona_proxy->close_percona_proxy_connections();
+    Test->check_percona_proxy_alive();
 
-    auto ver = Test->maxscale->ssh_output("maxscale --version-full", false);
+    auto ver = Test->percona_proxy->ssh_output("percona-proxy --version-full", false);
     Test->tprintf("Maxscale_full_version_start:\n%s\nMaxscale_full_version_end\n", ver.output.c_str());
 
     int rval = Test->global_result;

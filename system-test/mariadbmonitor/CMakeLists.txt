@@ -164,14 +164,14 @@ add_test_executable_ex(NAME mdbmon_repl_custom_opts SOURCE mdbmon_repl_custom_op
 add_test_executable_ex(NAME mdbmon_broken_repl_master SOURCE mdbmon_broken_repl_master.cc
         CONFIG mdbmon_broken_repl_master.cnf VMS repl_backend LABELS mysqlmon)
 
-# Two MaxScales with cooperative monitoring. Does not really break replication but mark as such anyway
+# Two PerconaProxies with cooperative monitoring. Does not really break replication but mark as such anyway
 # to move test exec to a separate MV. Also MXS-4902.
 add_test_executable_ex(NAME mdbmon_cooperative_monitoring SOURCE mdbmon_cooperative_monitoring.cc
         CONFIG mdbmon_cooperative_monitoring.cnf1 mdbmon_cooperative_monitoring.cnf2
-        VMS repl_backend second_maxscale
+        VMS repl_backend second_percona_proxy
         LABELS mysqlmon BREAKS_REPL LIBS mariadbmon_utils)
 
-# Two MaxScales with cooperative monitoring + two MariaDB Servers.
+# Two PerconaProxies with cooperative monitoring + two MariaDB Servers.
 add_test_executable_ex(NAME mdbmon_cooperative_monitoring_2srv SOURCE mdbmon_cooperative_monitoring_2srv.cc
-        CONFIG mdbmon_cooperative_monitoring_2srv.cnf VMS repl_backend second_maxscale
+        CONFIG mdbmon_cooperative_monitoring_2srv.cnf VMS repl_backend second_percona_proxy
         LABELS mysqlmon BREAKS_REPL LIBS mariadbmon_utils)

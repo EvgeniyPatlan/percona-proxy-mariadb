@@ -12,10 +12,10 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <istream>
 
-namespace maxscale
+namespace percona_proxy
 {
 
 /**

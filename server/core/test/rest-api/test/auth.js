@@ -5,13 +5,13 @@ const tough = require("tough-cookie");
 
 function set_auth(auth, value) {
   return request
-    .get(auth + host + "/maxscale")
+    .get(auth + host + "/percona-proxy")
     .then(function (d) {
       d.data.attributes.parameters.admin_auth = value;
-      return request.patch(auth + host + "/maxscale", { json: d });
+      return request.patch(auth + host + "/percona-proxy", { json: d });
     })
     .then(function () {
-      return request.get(auth + host + "/maxscale");
+      return request.get(auth + host + "/percona-proxy");
     })
     .then(function (d) {
       d.data.attributes.parameters.admin_auth.should.equal(value);
@@ -66,11 +66,11 @@ describe("Authentication", function () {
     });
 
     it("unauthorized request with authentication", function () {
-      return request.get(base_url + "/maxscale", { auth: {} }).should.be.rejected;
+      return request.get(base_url + "/percona-proxy", { auth: {} }).should.be.rejected;
     });
 
     it("authorized request with authentication", function () {
-      return request.get(base_url + "/maxscale", { auth: auth1 }).should.be.fulfilled;
+      return request.get(base_url + "/percona-proxy", { auth: auth1 }).should.be.fulfilled;
     });
 
     it("replace user", function () {
@@ -99,11 +99,11 @@ describe("Authentication", function () {
     });
 
     it("request with wrong user", function () {
-      return request.get(base_url + "/maxscale", { auth: auth1 }).should.be.rejected;
+      return request.get(base_url + "/percona-proxy", { auth: auth1 }).should.be.rejected;
     });
 
     it("request with correct user", function () {
-      return request.get(base_url + "/maxscale", { auth: auth2 }).should.be.fulfilled;
+      return request.get(base_url + "/percona-proxy", { auth: auth2 }).should.be.fulfilled;
     });
 
     after(() => {
@@ -200,7 +200,7 @@ describe("Authentication", function () {
         headers: { Authorization: "Bearer " + token },
       }).should.not.be.rejected;
 
-      await request.post(base_url + "/maxscale/tls/reload");
+      await request.post(base_url + "/percona-proxy/tls/reload");
 
       await axios.get("http://" + host + "/servers", {
         headers: { Authorization: "Bearer " + token },

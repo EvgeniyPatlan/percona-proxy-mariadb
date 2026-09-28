@@ -35,7 +35,7 @@
 //#include "commands/system_events_auditing.hh"
 
 #include "commands/sasl.hh"
-#include "commands/maxscale.hh"
+#include "commands/percona-proxy.hh"
 
 using namespace std;
 

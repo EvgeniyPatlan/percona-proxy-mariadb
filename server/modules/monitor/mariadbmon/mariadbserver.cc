@@ -22,8 +22,8 @@
 #include <mysqld_error.h>
 #include <maxbase/format.hh>
 #include <maxsql/mariadb.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/protocol/mariadb/maxscale.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/protocol/mariadb/percona-proxy.hh>
 
 #define SLAVE_OF_EXT "Slave of External Server"
 
@@ -33,8 +33,8 @@ using maxbase::Duration;
 using maxbase::StopWatch;
 using maxbase::QueryResult;
 using Guard = std::lock_guard<std::mutex>;
-using maxscale::MonitorServer;
-using ConnectResult = maxscale::MonitorServer::ConnectResult;
+using percona_proxy::MonitorServer;
+using ConnectResult = percona_proxy::MonitorServer::ConnectResult;
 using GtidMode = SlaveStatus::Settings::GtidMode;
 using namespace std::chrono_literals;
 
@@ -159,7 +159,7 @@ bool MariaDBServer::execute_cmd_ex(const string& cmd, const std::string& masked_
                 *errmsg_out = string_printf(
                     "Query '%s' failed on '%s': '%s' (%i). Monitor lacks the required privileges for the "
                     "operation. Please GRANT '%s' the appropriate privileges. Then, either restart the "
-                    "monitor ('maxctrl stop monitor %s' and 'maxctrl start monitor %s') or retry "
+                    "monitor ('percona-proxyctl stop monitor %s' and 'percona-proxyctl start monitor %s') or retry "
                     "the operation twice.",
                     logged_query.c_str(), name(), mysql_error(conn), error_num,
                     conn_settings().username.c_str(), monitor_name(), monitor_name());
@@ -1836,7 +1836,7 @@ bool MariaDBServer::demote_master(GeneralOpData& general, OperationType type)
     const bool is_switchover = (type == OperationType::SWITCHOVER || force_switch);
     // Step 2a: Remove [Master] from this server. This prevents compatible routers (RWS)
     // from routing writes to this server. Writes in flight will go through, at least until
-    // read_only is set. Also set draining so that no new connections come from MaxScale.
+    // read_only is set. Also set draining so that no new connections come from Percona Proxy.
     server->clear_status(SERVER_MASTER);
     bool was_draining = server->is_draining();
     if (!was_draining)
@@ -1857,7 +1857,7 @@ bool MariaDBServer::demote_master(GeneralOpData& general, OperationType type)
         if (is_switchover)
         {
             // Step 2c: If other users with SUPER privileges are on, kick them out now since
-            // read_only doesn't stop them from doing writes. As the server is draining, MaxScale
+            // read_only doesn't stop them from doing writes. As the server is draining, Percona Proxy
             // should not make new routing connections. Outside connections cannot be prevented.
             // Kick super-users while "FLUSH TABLES WITH READ LOCK" is on to ensure no trx from
             // super-users are committing.
@@ -2617,7 +2617,7 @@ void MariaDBServer::update_server(bool time_to_update_disk_space, bool first_tic
 
                 if (m_settings.server_locks_enabled)
                 {
-                    // Update lock status every tick. This is especially required for the secondary MaxScale,
+                    // Update lock status every tick. This is especially required for the secondary Percona Proxy,
                     // as it needs to quickly react if the primary dies.
                     update_locks_status();
                 }
@@ -2712,7 +2712,7 @@ bool MariaDBServer::kick_out_super_users(GeneralOpData& op)
                 }
                 else
                 {
-                    // Give up. Print one username as example so that dba can believe MaxScale and perhaps
+                    // Give up. Print one username as example so that dba can believe Percona Proxy and perhaps
                     // investigates further.
                     PRINT_JSON_ERROR(op.error_out,
                                      "Could not kick out all super or read-only admin users. %li such users "
@@ -2749,7 +2749,7 @@ void MariaDBServer::update_locks_status()
         else
         {
             auto lock_owner_id = is_used_row.get_int(ind);
-            // Either owned by this MaxScale or another.
+            // Either owned by this Percona Proxy or another.
             auto new_status = (lock_owner_id == conn_id()) ? ServerLock::Status::OWNED_SELF :
                 ServerLock::Status::OWNED_OTHER;
             rval.set_status(new_status, lock_owner_id);
@@ -2762,7 +2762,7 @@ void MariaDBServer::update_locks_status()
         bool owned_lock = (old_status.status() == ServerLock::Status::OWNED_SELF);
         if (new_status.status() == ServerLock::Status::OWNED_SELF)
         {
-            // This MaxScale has the lock. Print warning if it got the lock without knowing it.
+            // This Percona Proxy has the lock. Print warning if it got the lock without knowing it.
             if (!owned_lock)
             {
                 MXB_WARNING("Acquired the lock '%s' on server '%s' without locking it.",
@@ -2786,7 +2786,7 @@ void MariaDBServer::update_locks_status()
         }
     };
 
-    // First, check who currently has the locks. If the query fails, assume that this MaxScale does not
+    // First, check who currently has the locks. If the query fails, assume that this Percona Proxy does not
     // have the locks. This is correct if connection failed.
     string cmd = string_printf("SELECT IS_USED_LOCK('%s'), IS_USED_LOCK('%s');",
                                SERVER_LOCK_NAME, MASTER_LOCK_NAME);
@@ -2953,7 +2953,7 @@ bool MariaDBServer::marked_as_master(string* why_not) const
         rval = false;
         if (why_not)
         {
-            *why_not = "it's not marked as master by the primary MaxScale";
+            *why_not = "it's not marked as master by the primary Percona Proxy";
         }
     }
     else if (!(m_masterlock == m_serverlock))

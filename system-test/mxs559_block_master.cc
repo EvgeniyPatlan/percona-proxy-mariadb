@@ -25,7 +25,7 @@ std::atomic<bool> running {true};
 
 void do_work(TestConnections& test)
 {
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
 
     while (running)
     {
@@ -62,12 +62,12 @@ int main(int argc, char* argv[])
         test.reset_timeout();
         test.log_printf("Block master");
         test.repl->block_node(0);
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
 
         test.reset_timeout();
         test.log_printf("Unblock master");
         test.repl->unblock_node(0);
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
     }
 
     running = false;
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
     }
 
     test.log_printf("Check that replication works");
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     mxs.wait_for_monitor(2);
     mxs.check_servers_status({mxt::ServerInfo::master_st, mxt::ServerInfo::slave_st});
     if (!test.ok())
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
         return test.global_result;
     }
 
-    test.check_maxscale_alive();
+    test.check_percona_proxy_alive();
     test.log_excludes("due to authentication failure");
     test.log_excludes("due to handshake failure");
     test.log_excludes("Refresh rate limit exceeded for load of users' table");

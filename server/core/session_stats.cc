@@ -12,10 +12,10 @@
  * Public License.
  */
 
-#include <maxscale/session_stats.hh>
+#include <percona-proxy/session_stats.hh>
 #include <iostream>
 
-void maxscale::SessionStats::update(maxbase::Duration sess_duration,
+void percona_proxy::SessionStats::update(maxbase::Duration sess_duration,
                                     maxbase::Duration active_duration,
                                     int64_t num_selects)
 {
@@ -24,7 +24,7 @@ void maxscale::SessionStats::update(maxbase::Duration sess_duration,
     m_num_ave_session_selects.add(num_selects);
 }
 
-maxscale::SessionStats& maxscale::SessionStats::operator+=(const maxscale::SessionStats& rhs)
+percona_proxy::SessionStats& percona_proxy::SessionStats::operator+=(const percona_proxy::SessionStats& rhs)
 {
     m_total += rhs.m_total;
     m_read += rhs.m_read;
@@ -36,7 +36,7 @@ maxscale::SessionStats& maxscale::SessionStats::operator+=(const maxscale::Sessi
     return *this;
 }
 
-maxscale::SessionStats::CurrentStats maxscale::SessionStats::current_stats() const
+percona_proxy::SessionStats::CurrentStats percona_proxy::SessionStats::current_stats() const
 {
     double sess_secs = m_ave_session_dur.average();
     double active_secs = m_ave_active_dur.average();

@@ -43,7 +43,7 @@ void test_special_chars(TestConnections& test);
 int read_incremented_field(TestConnections& test)
 {
     int rval = -1;
-    auto conn = test.maxscale->open_rwsplit_connection2();
+    auto conn = test.percona_proxy->open_rwsplit_connection2();
     auto res = conn->query("SELECT * FROM test.t1;");
     if (res && res->get_col_count() == 1 && res->next_row())
     {
@@ -67,7 +67,7 @@ bool field_is_incrementing(TestConnections& test)
 
 void create_event(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     // Create table, enable scheduler and add an event
     test.tprintf("Creating table, inserting data and scheduling an event.");
@@ -94,7 +94,7 @@ void create_event(TestConnections& test)
 
 void delete_event(TestConnections& test)
 {
-    auto conn = test.maxscale->open_rwsplit_connection2();
+    auto conn = test.percona_proxy->open_rwsplit_connection2();
     conn->cmd_f(EVENT_SHCEDULER, "OFF");
     conn->cmd(USE_TEST);
     conn->cmd_f("DROP EVENT IF EXISTS %s;", EVENT_NAME);
@@ -132,7 +132,7 @@ void expect_event_status(TestConnections& test, int node,
 
 void set_event_state(TestConnections& test, const string& event_name, const string& new_state)
 {
-    auto conn = test.maxscale->open_rwsplit_connection2();
+    auto conn = test.percona_proxy->open_rwsplit_connection2();
     const char alter_fmt[] = "ALTER EVENT %s %s;";
 
     if (conn->try_cmd(USE_TEST) && conn->try_cmd_f(SET_NAMES, def_charset, def_collation)
@@ -149,10 +149,10 @@ void set_event_state(TestConnections& test, const string& event_name, const stri
 void switchover(TestConnections& test, const string& new_master)
 {
     string switch_cmd = "call command mysqlmon switchover MariaDB-Monitor " + new_master;
-    test.check_maxctrl(switch_cmd);
-    test.maxscale->wait_for_monitor(2);
+    test.check_percona_proxyctl(switch_cmd);
+    test.percona_proxy->wait_for_monitor(2);
     // Check success.
-    auto new_master_status = test.maxscale->get_servers().get(new_master);
+    auto new_master_status = test.percona_proxy->get_servers().get(new_master);
     test.expect(new_master_status.status == mxt::ServerInfo::master_st,
                 "%s is not master as expected. Status: %s.",
                 new_master.c_str(), new_master_status.status_to_string().c_str());
@@ -160,7 +160,7 @@ void switchover(TestConnections& test, const string& new_master)
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     auto servers = mxs.get_servers();
@@ -340,7 +340,7 @@ void expect_event_charset_collation(TestConnections& test, int node,
 
 void test_special_chars(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     auto master = mxt::ServerInfo::master_st;
     auto slave = mxt::ServerInfo::slave_st;

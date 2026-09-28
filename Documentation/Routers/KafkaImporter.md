@@ -40,8 +40,8 @@ available to the service. The first server labeled as the `Master` with the best
 rank will be chosen. This means that a monitor must be configured for the
 MariaDB server where the data is to be inserted.
 
-In MaxScale versions 21.06.18, 22.08.15, 23.02.12, 23.08.8, 24.02.4 and 24.08.2
-the `_id` field is not required to be present. Older versions of MaxScale used
+In Percona Proxy versions 21.06.18, 22.08.15, 23.02.12, 23.08.8, 24.02.4 and 24.08.2
+the `_id` field is not required to be present. Older versions of Percona Proxy used
 the following SQL where the `_id` field was mandatory:
 
 ```sql

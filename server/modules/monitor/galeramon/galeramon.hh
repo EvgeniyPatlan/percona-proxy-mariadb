@@ -17,9 +17,9 @@
  * @file galeramon.hh - The Galera cluster monitor
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <unordered_map>
-#include <maxscale/monitor.hh>
+#include <percona-proxy/monitor.hh>
 
 /**
  *  Galera status variables
@@ -42,7 +42,7 @@ struct GaleraNode
 typedef std::unordered_map<mxs::MonitorServer*, GaleraNode> NodeMap;
 class GaleraServer;
 
-class GaleraMonitor : public maxscale::SimpleMonitor
+class GaleraMonitor : public percona_proxy::SimpleMonitor
 {
 public:
     GaleraMonitor(const GaleraMonitor&) = delete;

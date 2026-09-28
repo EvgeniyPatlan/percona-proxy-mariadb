@@ -12,13 +12,13 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <maxbase/jansson.hh>
 
 #include <array>
 #include <atomic>
 
-namespace maxscale
+namespace percona_proxy
 {
 class Profiler
 {

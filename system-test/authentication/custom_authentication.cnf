@@ -1,4 +1,4 @@
-[maxscale]
+[percona-proxy]
 users_refresh_time=0s
 
 ###server_definitions###

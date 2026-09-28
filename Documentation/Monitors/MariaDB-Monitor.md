@@ -11,38 +11,38 @@ the replication cluster by performing failover, switchover and rejoin. Backend
 server versions older than MariaDB/MySQL 5.5 are not supported. Failover and
 other similar operations require MariaDB 10.0.2 or later.
 
-Up until MariaDB MaxScale 2.2.0, this monitor was called _MySQL Monitor_.
+Up until Percona Proxy for MariaDB 2.2.0, this monitor was called _MySQL Monitor_.
 
 ## Required Grants
 
 The monitor user requires the following grant:
 ```
-CREATE USER 'maxscale'@'maxscalehost' IDENTIFIED BY 'maxscale-password';
-GRANT REPLICATION CLIENT ON *.* TO 'maxscale'@'maxscalehost';
+CREATE USER 'percona-proxy'@'percona_proxy_host' IDENTIFIED BY 'percona-proxy-password';
+GRANT REPLICATION CLIENT ON *.* TO 'percona-proxy'@'percona_proxy_host';
 ```
 
 In MariaDB Server versions 10.5.0 to 10.5.8, the monitor user instead requires
 REPLICATION SLAVE ADMIN:
 ```
-GRANT REPLICATION SLAVE ADMIN ON *.* TO 'maxscale'@'maxscalehost';
+GRANT REPLICATION SLAVE ADMIN ON *.* TO 'percona-proxy'@'percona_proxy_host';
 ```
 
 In MariaDB Server 10.5.9 and later, REPLICA MONITOR is required:
 ```
-GRANT REPLICA MONITOR ON *.* TO 'maxscale'@'maxscalehost';
+GRANT REPLICA MONITOR ON *.* TO 'percona-proxy'@'percona_proxy_host';
 ```
 
 If the monitor needs to query server disk space (i.e. `disk_space_threshold` is
 set), then the FILE-grant is required with MariaDB Server versions 10.4.7,
 10.3.17, 10.2.26 and 10.1.41 and later.
 ```
-GRANT FILE ON *.* TO 'maxscale'@'maxscalehost';
+GRANT FILE ON *.* TO 'percona-proxy'@'percona_proxy_host';
 ```
 
 MariaDB Server 10.5.2 introduces CONNECTION ADMIN. This is recommended since it
 allows the monitor to log in even if server connection limit has been reached.
 ```
-GRANT CONNECTION ADMIN ON *.* TO 'maxscale'@'maxscalehost';
+GRANT CONNECTION ADMIN ON *.* TO 'percona-proxy'@'percona_proxy_host';
 ```
 
 ### Cluster Manipulation Grants
@@ -50,21 +50,21 @@ GRANT CONNECTION ADMIN ON *.* TO 'maxscale'@'maxscalehost';
 If [cluster manipulation operations](#cluster-manipulation-operations) are used,
 the following additional grants are required:
 ```
-GRANT SUPER, RELOAD, PROCESS, SHOW DATABASES, EVENT ON *.* TO 'maxscale'@'maxscalehost';
-GRANT SELECT ON mysql.user TO 'maxscale'@'maxscalehost';
+GRANT SUPER, RELOAD, PROCESS, SHOW DATABASES, EVENT ON *.* TO 'percona-proxy'@'percona_proxy_host';
+GRANT SELECT ON mysql.user TO 'percona-proxy'@'percona_proxy_host';
 ```
 MariaDB 10.5.2 and later require read access to *mysql.global_priv*:
 ```
-GRANT SELECT ON mysql.global_priv TO 'maxscale'@'maxscalehost';
+GRANT SELECT ON mysql.global_priv TO 'percona-proxy'@'percona_proxy_host';
 ```
 
 As of MariaDB Server 11.0.1, the SUPER-privilege no longer contains several of
 its former sub-privileges. These must be given separately.
 ```
-GRANT RELOAD, PROCESS, SHOW DATABASES, EVENT, SET USER, READ_ONLY ADMIN ON *.* TO 'maxscale'@'maxscalehost';
-GRANT REPLICATION SLAVE ADMIN, BINLOG ADMIN, CONNECTION ADMIN ON *.* TO 'maxscale'@'maxscalehost';
-GRANT SELECT ON mysql.user TO 'maxscale'@'maxscalehost';
-GRANT SELECT ON mysql.global_priv TO 'maxscale'@'maxscalehost';
+GRANT RELOAD, PROCESS, SHOW DATABASES, EVENT, SET USER, READ_ONLY ADMIN ON *.* TO 'percona-proxy'@'percona_proxy_host';
+GRANT REPLICATION SLAVE ADMIN, BINLOG ADMIN, CONNECTION ADMIN ON *.* TO 'percona-proxy'@'percona_proxy_host';
+GRANT SELECT ON mysql.user TO 'percona-proxy'@'percona_proxy_host';
+GRANT SELECT ON mysql.global_priv TO 'percona-proxy'@'percona_proxy_host';
 ```
 
 If a separate replication user is defined (with `replication_user` and
@@ -107,7 +107,7 @@ is now replicating.
 multiprimary group is replicating from a server not in the group.
 
 Cases 1 and 2 cover the situations in which the DBA, an external script or even
-another MaxScale has modified the cluster such that the old primary can no longer
+another Percona Proxy has modified the cluster such that the old primary can no longer
 act as primary. Cases 3 and 4 are less severe. In these cases the topology has
 changed significantly and the primary should be re-selected, although the old
 primary may still be the best choice.
@@ -115,7 +115,7 @@ primary may still be the best choice.
 The primary change described above is different from failover and switchover
 described in section
 [Failover, switchover and auto-rejoin](#failover,-switchover-and-auto-rejoin).
-A primary change only modifies the server roles inside MaxScale but does not
+A primary change only modifies the server roles inside Percona Proxy but does not
 modify the cluster other than changing the targets of read and write queries.
 Failover and switchover perform a primary change on their own.
 
@@ -141,7 +141,7 @@ user=myuser
 password=mypwd
 ```
 
-From MaxScale 2.2.1 onwards, the module name is `mariadbmon` instead of
+From Percona Proxy 2.2.1 onwards, the module name is `mariadbmon` instead of
 `mysqlmon`. The old name can still be used.
 
 The grants required by `user` depend on which monitor features are used.  A full
@@ -169,30 +169,30 @@ parameters are described in the [ColumnStore commands-section](#settings).
 - **Default**: `true`
 
 When active, the monitor assumes that server hostnames and
-ports are consistent between the server definitions in the MaxScale
+ports are consistent between the server definitions in the Percona Proxy
 configuration file  and the "SHOW ALL SLAVES STATUS" outputs of the servers
 themselves. Specifically, the monitor assumes that if server A is replicating
 from server B, then A must have a replica connection with `Master_Host` and
 `Master_Port` equal to B's address and port in the configuration file. If this
 is not the case, e.g. an IP is used in the server while a hostname is given in
-the file, the monitor may misinterpret the topology. In MaxScale 2.4.1, the
+the file, the monitor may misinterpret the topology. In Percona Proxy 2.4.1, the
 monitor attempts name resolution on the addresses if a simple string comparison
 does not find a match. Using exact matching addresses is, however, more
 reliable.
 
 This setting must be ON to use any cluster operation features such as failover
-or switchover, because MaxScale uses the addresses and ports in the
+or switchover, because Percona Proxy uses the addresses and ports in the
 configuration file when issuing "CHANGE MASTER TO"-commands.
 
-If the network configuration is such that the addresses MaxScale uses to connect
+If the network configuration is such that the addresses Percona Proxy uses to connect
 to backends are different from the ones the servers use to connect to each
-other, `assume_unique_hostnames` should be set to OFF. In this mode, MaxScale
+other, `assume_unique_hostnames` should be set to OFF. In this mode, Percona Proxy
 uses server id:s it queries from the servers and the `Master_Server_Id` fields
 of the replica connections to deduce which server is replicating from which. This
-is not perfect though, since MaxScale doesn't know the id:s of servers it has
-never connected to (e.g. server has been down since MaxScale was started). Also,
+is not perfect though, since Percona Proxy doesn't know the id:s of servers it has
+never connected to (e.g. server has been down since Percona Proxy was started). Also,
 the `Master_Server_Id`-field may have an incorrect value if the replica connection
-has not been established. MaxScale will only trust the value if the monitor has
+has not been established. Percona Proxy will only trust the value if the monitor has
 seen the replica connection IO thread connected at least once. If this is not the
 case, the replica connection is ignored.
 
@@ -208,7 +208,7 @@ Designate additional conditions for
 *Master*-status, i.e. qualified for read and write queries.
 
 Normally, if a suitable primary candidate server is found as described in
-[Primary selection](#primary-selection), MaxScale designates it *Master*.
+[Primary selection](#primary-selection), Percona Proxy designates it *Master*.
 *master_conditions* sets additional conditions for a primary server. This
 setting is an enum_mask, allowing multiple conditions to be set simultaneously.
 Conditions 2, 3 and 4 refer to replica servers. A single replica must
@@ -230,14 +230,14 @@ connection must be up (Slave_IO_Running is 'Yes'). If the replica is currently
 down, results from the last successful monitor tick are used.
 4. running_slave : Same as *connecting_slave*, with the addition that the
 replica must also be *Running*.
-5. primary_monitor_master : If this MaxScale is
-[cooperating](#cooperative-monitoring) with another MaxScale and this is the
-secondary MaxScale, require that the candidate primary is selected also by the
-primary MaxScale.
+5. primary_monitor_master : If this Percona Proxy is
+[cooperating](#cooperative-monitoring) with another Percona Proxy and this is the
+secondary Percona Proxy, require that the candidate primary is selected also by the
+primary Percona Proxy.
 6. disk_space_ok : The candidate primary must not be low on disk space. This
 option only takes effect if
 [disk space check](Monitor-Common.md#disk_space_threshold) is enabled. Added in
-MaxScale 23.08.5.
+Percona Proxy 23.08.5.
 
 The default value of this setting is
 `master_requirements=primary_monitor_master,disk_space_ok` to ensure that both
@@ -277,14 +277,14 @@ and Slave_SQL_Running are 'Yes') and the primary must be *Running*. The same
 applies to any relays between the replica and the primary.
 3. running_master : The primary must be running. Relays may be down.
 4. writable_master : The primary must be writable, i.e. labeled *Master*.
-5. primary_monitor_master : If this MaxScale is
-[cooperating](#cooperative-monitoring) with another MaxScale and this is the
-secondary MaxScale, require that the candidate primary is selected also by the
-primary MaxScale.
+5. primary_monitor_master : If this Percona Proxy is
+[cooperating](#cooperative-monitoring) with another Percona Proxy and this is the
+secondary Percona Proxy, require that the candidate primary is selected also by the
+primary Percona Proxy.
 6. disk_space_ok : The replica must not be low on disk space. This
 option only takes effect if
 [disk space check](Monitor-Common.md#disk_space_threshold) is enabled. Added in
-MaxScale 23.08.5.
+Percona Proxy 23.08.5.
 
 For example, to require that the primary server of the cluster must be running
 and writable for any servers to have *Slave*-status, set
@@ -331,7 +331,7 @@ checked every monitor tick. The monitor user requires the SUPER-privilege for
 this feature to work.
 
 Typically, the primary server should never be in read-only-mode. Such a situation
-may arise due to misconfiguration or accident, or perhaps if MaxScale crashed
+may arise due to misconfiguration or accident, or perhaps if Percona Proxy crashed
 during switchover.
 
 When this feature is enabled, setting the primary manually to *read_only* will no
@@ -398,7 +398,7 @@ of that server is no longer updated. The server will not be taken out of
 maintenance mode even if more disk space becomes available. The maintenance
 flag must be removed manually:
 ```
-maxctrl clear server server2 Maint
+percona-proxyctl clear server server2 Maint
 ```
 
 ### `cooperative_monitoring_locks`
@@ -409,7 +409,7 @@ maxctrl clear server server2 Maint
 - **Values**: `none`, `majority_of_all`, `majority_of_running`
 - **Default**: `none`
 
-Using this setting is recommended when multiple MaxScales are monitoring the
+Using this setting is recommended when multiple PerconaProxies are monitoring the
 same backend cluster. When enabled, the monitor attempts to acquire exclusive
 locks on the backend servers. The monitor considers itself the primary monitor
 if it has a majority of locks. The majority can be either over all configured
@@ -424,7 +424,7 @@ servers which are [Down].
 3. `majority_of_running` Primary monitor requires a majority of locks over
 [Running] servers.
 
-This setting is separate from the global MaxScale setting *passive*. If
+This setting is separate from the global Percona Proxy setting *passive*. If
 *passive* is set to `true`, cluster operations are disabled even if monitor has
 acquired the locks. Generally, it's best not to mix cooperative monitoring with
 *passive*. Either set `passive=false` or do not set it at all.
@@ -447,7 +447,7 @@ see [general monitor documentation](./Monitor-Common.md#script).
 
 ## Cluster manipulation operations
 
-Starting with MaxScale 2.2.1, MariaDB Monitor supports replication cluster
+Starting with Percona Proxy 2.2.1, MariaDB Monitor supports replication cluster
 modification. The operations implemented are:
 - [failover](#failover), which replaces a failed primary with a replica
 - [switchover](#switchover), which swaps a running primary with a replica
@@ -455,7 +455,7 @@ modification. The operations implemented are:
   most errors. Can break replication.
 - [async-switchover](#queued-switchover), which schedules a switchover and returns
 - [rejoin](#rejoin), which directs servers to replicate from the primary
-- [reset-replication](#reset-replication) (added in MaxScale 2.3.0), which deletes binary logs and
+- [reset-replication](#reset-replication) (added in Percona Proxy 2.3.0), which deletes binary logs and
 resets gtid:s
 
 See [operation details](#operation-details) for more information on the
@@ -478,7 +478,7 @@ A list of the grants can be found in the [Required Grants](#required-grants)
 section.
 
 The privilege system was changed in MariaDB Server 10.5. The effects of this on
-the MaxScale monitor user are minor, as the SUPER-privilege contains many of the
+the Percona Proxy monitor user are minor, as the SUPER-privilege contains many of the
 required privileges and is still required to kill connections from other
 super-users.
 
@@ -507,7 +507,7 @@ being demoted or promoted by cluster manipulation commands. See the sections on
 The monitor can manipulate scheduled server events when promoting or demoting a
 server. See the section on `handle_events` for more information.
 
-All cluster operations can be activated manually through MaxCtrl. See
+All cluster operations can be activated manually through Percona Proxyctl. See
 section [Manual activation](#manual-activation) for more details.
 
 See [Limitations and requirements](#limitations-and-requirements) for
@@ -611,10 +611,10 @@ STOP SLAVE, RESET SLAVE, CHANGE MASTER TO and START SLAVE commands.
 #### Reset Replication
 
 ```
-maxctrl call command mariadbmon reset-replication MONITOR [NEW_PRIMARY]
+percona-proxyctl call command mariadbmon reset-replication MONITOR [NEW_PRIMARY]
 ```
 
-**Reset-replication** (added in MaxScale 2.3.0) deletes binary logs and resets
+**Reset-replication** (added in Percona Proxy 2.3.0) deletes binary logs and resets
 gtid:s. This destructive command is meant for situations where the gtid:s in the
 cluster are out of sync while the actual data is known to be in sync. The
 operation  proceeds as follows:
@@ -637,8 +637,8 @@ operations.
 
 ### Manual activation
 
-Cluster operations can be activated manually through the REST API or MaxCtrl.
-The commands are only performed when MaxScale is in active mode. The commands
+Cluster operations can be activated manually through the REST API or Percona Proxyctl.
+The commands are only performed when Percona Proxy is in active mode. The commands
 generally match their automatic versions. The exception is _rejoin_, in which
 the manual command allows rejoining even when the joining server has empty
 gtid:s. This rule allows the user to force a rejoin on a server without binary
@@ -660,14 +660,14 @@ are unequal, an error is given.
 
 Example commands are below:
 ```
-maxctrl call command mariadbmon failover MyMonitor
-maxctrl call command mariadbmon rejoin MyMonitor OldPrimaryServ
-maxctrl call command mariadbmon reset-replication MyMonitor
-maxctrl call command mariadbmon reset-replication MyMonitor NewPrimaryServ
-maxctrl call command mariadbmon switchover MyMonitor
-maxctrl call command mariadbmon switchover MyMonitor NewPrimaryServ
-maxctrl call command mariadbmon switchover MyMonitor NewPrimaryServ OldPrimaryServ
-maxctrl call command mariadbmon switchover-force MyMonitor NewPrimaryServ
+percona-proxyctl call command mariadbmon failover MyMonitor
+percona-proxyctl call command mariadbmon rejoin MyMonitor OldPrimaryServ
+percona-proxyctl call command mariadbmon reset-replication MyMonitor
+percona-proxyctl call command mariadbmon reset-replication MyMonitor NewPrimaryServ
+percona-proxyctl call command mariadbmon switchover MyMonitor
+percona-proxyctl call command mariadbmon switchover MyMonitor NewPrimaryServ
+percona-proxyctl call command mariadbmon switchover MyMonitor NewPrimaryServ OldPrimaryServ
+percona-proxyctl call command mariadbmon switchover-force MyMonitor NewPrimaryServ
 ```
 
 The commands follow the standard module command syntax. All require the monitor
@@ -683,16 +683,16 @@ with manual ones.
 When a cluster modification is initiated via the REST-API, the URL path is of the
 form:
 ```
-/v1/maxscale/modules/mariadbmon/<operation>?<monitor-name>&<server-name1>&<server-name2>
+/v1/percona-proxy/modules/mariadbmon/<operation>?<monitor-name>&<server-name1>&<server-name2>
 ```
 - `<operation>` is the name of the command e.g. _failover_, _switchover_,
   _rejoin_ or _reset-replication_.
-- `<monitor-name>` is the monitor name from the MaxScale configuration file.
+- `<monitor-name>` is the monitor name from the Percona Proxy configuration file.
 - `<server-name1>` and `<server-name2>` are server names as described
-above for MaxCtrl. Only _switchover_ accepts both, _failover_ doesn't need any
+above for Percona Proxyctl. Only _switchover_ accepts both, _failover_ doesn't need any
 and both _rejoin_ and _reset-replication_ accept one.
 
-Given a MaxScale configuration file like
+Given a Percona Proxy configuration file like
 ```
 [Cluster1]
 type=monitor
@@ -703,14 +703,14 @@ servers=server1, server2, server3, server 4
 with the assumption that `server2` is the current primary, then the URL
 path for making `server4` the new primary would be:
 ```
-/v1/maxscale/modules/mariadbmon/switchover?Cluster1&server4&server2
+/v1/percona-proxy/modules/mariadbmon/switchover?Cluster1&server4&server2
 ```
 
 Example REST-API paths for other commands are listed below.
 ```
-/v1/maxscale/modules/mariadbmon/failover?Cluster1
-/v1/maxscale/modules/mariadbmon/rejoin?Cluster1&server3
-/v1/maxscale/modules/mariadbmon/reset-replication?Cluster1&server3
+/v1/percona-proxy/modules/mariadbmon/failover?Cluster1
+/v1/percona-proxy/modules/mariadbmon/rejoin?Cluster1&server3
+/v1/percona-proxy/modules/mariadbmon/reset-replication?Cluster1&server3
 ```
 
 #### Queued switchover
@@ -722,12 +722,12 @@ module command _fetch-cmd-result_ to view the result of the queued command.
 _fetch-cmd-result_ returns the status or result of the latest manual command,
 whether queued or not.
 ```
-maxctrl call command mariadbmon async-switchover Cluster1
+percona-proxyctl call command mariadbmon async-switchover Cluster1
 OK
-maxctrl call command mariadbmon fetch-cmd-result Cluster1
+percona-proxyctl call command mariadbmon fetch-cmd-result Cluster1
 {
     "links": {
-        "self": "http://localhost:8989/v1/maxscale/modules/mariadbmon/fetch-cmd-result"
+        "self": "http://localhost:8989/v1/percona-proxy/modules/mariadbmon/fetch-cmd-result"
     },
     "meta": "switchover completed successfully."
 }
@@ -782,8 +782,8 @@ The backends must all use GTID-based replication, and the domain id should not
 change during a switchover or failover. Replicas should not have extra
 local events so that GTIDs are compatible across the cluster.
 
-Failover cannot be performed if MaxScale was started only after the primary
-server went down. This is because MaxScale needs reliable information on the
+Failover cannot be performed if Percona Proxy was started only after the primary
+server went down. This is because Percona Proxy needs reliable information on the
 gtid domain of the cluster and the replication topology in general to properly
 select the new primary. `enforce_simple_topology=1` relaxes this requirement.
 
@@ -822,7 +822,7 @@ writes have a high chance of breaking replication, because the write may not be
 replicated to all replicas before they switch to the new primary. To prevent this,
 any users who commonly do updates should NOT have the SUPER-privilege. For even
 more security, the only SUPER-user session during a switchover should be the
-MaxScale monitor user. This also applies to users running scheduled server
+Percona Proxy monitor user. This also applies to users running scheduled server
 events. Although the monitor by default disables events on the master, an
 event may already be executing. If the event definer has SUPER-privilege, the
 event can write to the database even through *read_only*.
@@ -868,12 +868,12 @@ primary.
 - **Dynamic**: Yes
 - **Default**: `false`
 
-Enable automatic primary failover. When automatic failover is enabled, MaxScale
+Enable automatic primary failover. When automatic failover is enabled, Percona Proxy
 will elect a new primary server for the cluster if the old primary goes down. A
 server is assumed *Down* if it cannot be connected to, even if this is caused by
 incorrect credentials. Failover triggers if the primary stays down for
 [failcount](#failcount) monitor intervals. Failover will not take place if
-MaxScale is set [passive](../Getting-Started/Configuration-Guide.md#passive).
+Percona Proxy is set [passive](../Getting-Started/Configuration-Guide.md#passive).
 
 As failover alters replication, it requires more privileges than normal
 monitoring. See [here](#cluster-manipulation-grants) for a list of grants.
@@ -890,7 +890,7 @@ setups.
 - **Dynamic**: Yes
 - **Default**: `false`
 
-Enable automatic joining of servers to the cluster. When enabled, MaxScale will
+Enable automatic joining of servers to the cluster. When enabled, Percona Proxy will
 attempt to direct servers to replicate from the current cluster primary if they
 are not currently doing so. Replication will be started on any standalone
 servers. Servers that are replicating from another server will be redirected.
@@ -954,14 +954,14 @@ This setting tells the monitor to assume that the servers should be arranged in 
 settings.
 
 By default, mariadbmon will not rejoin servers with more than one replication
-stream configured into the cluster. Starting with MaxScale 6.2.0, when
+stream configured into the cluster. Starting with Percona Proxy 6.2.0, when
 `enforce_simple_topology` is enabled, all servers will be rejoined into the
 cluster and any extra replication sources will be removed. This is done to make
 automated failover with multi-source external replication possible.
 
 This setting also allows the monitor to perform a failover to a cluster where the primary
 server has not been seen [Running]. This is usually the case when the primary goes down
-before MaxScale is started. When using this feature, the monitor will guess the GTID
+before Percona Proxy is started. When using this feature, the monitor will guess the GTID
 domain id of the primary from the replicas. For reliable results, the GTID:s of the cluster
 should be simple.
 ```
@@ -1013,10 +1013,10 @@ Type: string
 
 A custom string added to "CHANGE MASTER TO"-commands sent by the monitor
 whenever setting up replication (e.g. during switchover). Useful for defining
-ssl certificates or other specialized replication options. MaxScale does not
+ssl certificates or other specialized replication options. Percona Proxy does not
 check the contents of the string, so care should be taken to ensure that
 only valid options are set and that the contents do not interfere with
-the options MaxScale sets on its own (e.g. MASTER_HOST). This setting can
+the options Percona Proxy sets on its own (e.g. MASTER_HOST). This setting can
 also be configured for an individual server. If configured for both
 the monitor and a server, the server setting takes priority.
 
@@ -1041,7 +1041,7 @@ faster operation than switchover.
 
 The timeouts are specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeouts is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second.
@@ -1063,7 +1063,7 @@ Enable additional primary failure verification for automatic failover.
 
 The primary failure timeout is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second.
@@ -1073,7 +1073,7 @@ still connected to the primary and receiving events. An event is either a change
 in the *Gtid_IO_Pos*-field of the `SHOW SLAVE STATUS` output or a heartbeat
 event. Effectively, if a replica has received an event within
 `master_failure_timeout` duration, the primary is not considered down when
-deciding whether to failover, even if MaxScale cannot connect to the primary.
+deciding whether to failover, even if Percona Proxy cannot connect to the primary.
 `master_failure_timeout` should be longer than the `Slave_heartbeat_period` of
 the replica connection to be effective.
 
@@ -1093,7 +1093,7 @@ met.
 
 `master_failure_timeout` is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second.
@@ -1191,26 +1191,26 @@ immediately after the server has restarted.
 
 ## Cooperative monitoring
 
-As of MaxScale 2.5, MariaDB-Monitor supports cooperative monitoring. This means
-that multiple monitors (typically in different MaxScale instances) can monitor
+As of Percona Proxy 2.5, MariaDB-Monitor supports cooperative monitoring. This means
+that multiple monitors (typically in different Percona Proxy instances) can monitor
 the same backend server cluster and only one will be the primary monitor. Only
 the primary monitor may perform *switchover*, *failover* or *rejoin* operations.
 The primary also decides which server is the primary. Cooperative monitoring is
 enabled with the
 [cooperative_monitoring_locks](#cooperative_monitoring_locks)-setting.
-Even with this setting, only one monitor per server per MaxScale is allowed.
+Even with this setting, only one monitor per server per Percona Proxy is allowed.
 This limitation can be circumvented by defining multiple copies of a server in
 the configuration file.
 
 Cooperative monitoring uses
 [server locks](https://mariadb.com/kb/en/get_lock/)
 for coordinating between monitors. When cooperating, the monitor regularly
-checks the status of a lock named *maxscale_mariadbmonitor* on every server and
+checks the status of a lock named *percona_proxy_mariadbmonitor* on every server and
 acquires it if free. If the monitor acquires a majority of locks, it is the
 primary. If a monitor cannot claim majority locks, it is a secondary monitor.
 
 The primary monitor of a cluster also acquires the lock
-*maxscale_mariadbmonitor_master* on the primary server. Secondary monitors check
+*percona_proxy_mariadbmonitor_master* on the primary server. Secondary monitors check
 which server this lock is taken on and only accept that server as the primary.
 This arrangement is required so that multiple monitors can agree on which server
 is the primary regardless of replication topology. If a secondary monitor does
@@ -1230,11 +1230,11 @@ server won't be detected.
 Even without a network split, `cooperative_monitoring_locks=majority_of_all`
 will lead to neither monitor claiming lock majority once too many servers go
 down. This scenario is depicted in the image below. Only two out of four servers
-are running when three are needed for majority. Although both MaxScales see both
+are running when three are needed for majority. Although both PerconaProxies see both
 running servers, neither is certain they have majority and the cluster stays in
 read-only mode. If the primary server is down, no failover is performed either.
 
-![Neither MaxScale can claim majority if too many servers go down when using majority_of_all](images/coop_lock_no_majority.png)
+![Neither Percona Proxy can claim majority if too many servers go down when using majority_of_all](images/coop_lock_no_majority.png)
 
 Setting `cooperative_monitoring_locks=majority_of_running` changes the way
 *n_servers* is calculated. Instead of using the total number of servers, only
@@ -1242,15 +1242,15 @@ servers currently [Running] are considered. This scheme adapts to multiple
 servers going down, ensuring that claiming lock majority is always possible.
 However, it can lead to multiple monitors claiming primary status in a
 split-brain situation. As an example, consider a cluster with servers 1 to 4
-with MaxScales A and B, as in the image below. MaxScale A can connect to
+with PerconaProxies A and B, as in the image below. Percona Proxy A can connect to
 servers 1 and 2 (and claim their locks) but not to servers 3 and 4 due to
-a network split. MaxScale A thus assumes servers 3 and 4 are down. MaxScale B
+a network split. Percona Proxy A thus assumes servers 3 and 4 are down. Percona Proxy B
 does the opposite, claiming servers 3 and 4 and assuming 1 and 2 are down.
-Both MaxScales claim two locks out of two available and assume that they have
-lock majority. Both MaxScales may then promote their own primaries and route
+Both PerconaProxies claim two locks out of two available and assume that they have
+lock majority. Both PerconaProxies may then promote their own primaries and route
 writes to different servers.
 
-![Both MaxScales claim majority in split-brain situation when using majority_of_running](images/coop_lock_split_brain.png)
+![Both PerconaProxies claim majority in split-brain situation when using majority_of_running](images/coop_lock_split_brain.png)
 
 The recommended strategy depends on which failure scenario is more likely and/or
 more destructive. If it's unlikely that multiple servers are ever down
@@ -1258,18 +1258,18 @@ simultaneously, then *majority_of_all* is likely the safer choice. On the other
 hand, if split-brain is unlikely but multiple servers may be down
 simultaneously, then *majority_of_running* would keep the cluster operational.
 
-To check if a monitor is primary, fetch monitor diagnostics with `maxctrl show
+To check if a monitor is primary, fetch monitor diagnostics with `percona-proxyctl show
 monitors` or the REST API. The boolean field **primary** indicates whether the
 monitor has lock majority on the cluster. If cooperative monitoring is disabled,
 the field value is *null*. Lock information for individual servers is listed in
 the server-specific field **lock_held**. Again, *null* indicates that locks are
 not in use or the lock status is unknown.
 
-If a MaxScale instance tries to acquire the locks but fails to get majority
-(perhaps another MaxScale was acquiring locks simultaneously) it will release
+If a Percona Proxy instance tries to acquire the locks but fails to get majority
+(perhaps another Percona Proxy was acquiring locks simultaneously) it will release
 any acquired locks and try again after a random number of monitor ticks. This
-prevents multiple MaxScales from fighting over the locks continuously as one
-MaxScale will eventually wait less time than the others. Conflict probability
+prevents multiple PerconaProxies from fighting over the locks continuously as one
+Percona Proxy will eventually wait less time than the others. Conflict probability
 can be further decreased by configuring each monitor with a different
 *monitor_interval*.
 
@@ -1284,11 +1284,11 @@ connection-specific. The owning connection can manually release a lock, allowing
 another connection to claim it. Also, if the owning connection closes, the
 MariaDB Server process releases the lock. How quickly a lost connection is
 detected affects how quickly the primary monitor status moves from one monitor
-and MaxScale to another.
+and Percona Proxy to another.
 
-If the primary MaxScale or its monitor is stopped normally, the monitor
+If the primary Percona Proxy or its monitor is stopped normally, the monitor
 connections are properly closed, releasing the locks. This allows the secondary
-MaxScale to quickly claim the locks. However, if the primary simply vanishes
+Percona Proxy to quickly claim the locks. However, if the primary simply vanishes
 (broken network), the connection may just look idle. In this case, the
 MariaDB Server may take a long time before it considers the monitor connection
 lost. This time ultimately depends on TCP keepalive settings on the machines
@@ -1302,21 +1302,21 @@ for information on settings *tcp_keepalive_interval*, *tcp_keepalive_probes* and
 level, as described
 [here](http://www.tldp.org/HOWTO/TCP-Keepalive-HOWTO/usingkeepalive.html).
 
-As of MaxScale  6.4.16, 22.08.13, 23.02.10, 23.08.6 and 24.02.2, configuring
+As of Percona Proxy  6.4.16, 22.08.13, 23.02.10, 23.08.6 and 24.02.2, configuring
 TCP keepalive is no longer necessary as monitor sets the session *wait_timeout*
 variable when acquiring a lock. This causes the MariaDB Server to close the
 monitor connection if the connection appears idle for too long. The value of
 *wait_timeout* used depends on the monitor interval and connection timeout
-settings, and is logged at MaxScale startup.
+settings, and is logged at Percona Proxy startup.
 
 A monitor can also be ordered to manually release its locks via the module
 command *release-locks*. This is useful for manually changing the primary
 monitor. After running the release-command, the monitor will not attempt to
 reacquire the locks for one minute, even if it wasn't the primary monitor to
 begin with. This command can cause the cluster to become temporarily unusable by
-MaxScale. Only use it when there is another monitor ready to claim the locks.
+Percona Proxy. Only use it when there is another monitor ready to claim the locks.
 ```
-maxctrl call command mariadbmon release-locks MyMonitor1
+percona-proxyctl call command mariadbmon release-locks MyMonitor1
 ```
 
 ## Backup operations
@@ -1334,16 +1334,16 @@ backup.
 These operations do not modify server config files, only files in the data
 directory */var/lib/mysql* are affected.
 
-All of these operations are monitor commands and best launched with MaxCtrl.
-The operations are asynchronous, which means MaxCtrl won't wait for the
+All of these operations are monitor commands and best launched with Percona Proxyctl.
+The operations are asynchronous, which means Percona Proxyctl won't wait for the
 operation to complete and instead immediately returns "OK". To see the current
-status of an operation, either check MaxScale log or use the
+status of an operation, either check Percona Proxy log or use the
 fetch-cmd-result-command
-(e.g. `maxctrl call command mariadbmon fetch-cmd-result MyMonitor`).
+(e.g. `percona-proxyctl call command mariadbmon fetch-cmd-result MyMonitor`).
 
-To perform backup operations, MaxScale requires ssh-access on all affected
+To perform backup operations, Percona Proxy requires ssh-access on all affected
 machines. The *ssh_user* and *ssh_keyfile*-settings define the SSH credentials
-MaxScale uses to access the servers. MaxScale must be able to run commands with
+Percona Proxy uses to access the servers. Percona Proxy must be able to run commands with
 *sudo* on both the source and target servers. See [settings](#settings) and
 [sudoers.d configuration](#sudoersd-configuration) below
 for more information.
@@ -1360,7 +1360,7 @@ information.
 installed. If not, can be installed e.g. with `yum install socat`.
 
 Mariabackup needs server credentials to log in and authenticate to the
-MariaDB Server being copied from. For this, MaxScale uses the monitor user.
+MariaDB Server being copied from. For this, Percona Proxy uses the monitor user.
 The monitor user may thus require additional privileges. See
 [Mariabackup documentation](https://mariadb.com/kb/en/mariabackup-overview/#authentication-and-privileges)
 for more details.
@@ -1371,7 +1371,7 @@ The rebuild server-operation replaces the contents of a database server with the
 contents of another server. The source server is effectively cloned and all data
 on the target server is lost. This is useful when a replica server has diverged
 from the primary server, or when adding a new server to the cluster.
-MaxScale performs this operation by running Mariabackup on both the
+Percona Proxy performs this operation by running Mariabackup on both the
 source and target servers.
 
 When launched, the rebuild operation proceeds as below. If any step fails, the
@@ -1411,7 +1411,7 @@ avoid increasing load on a primary server.
 Due to the `--safe-slave-backup`-option, the replica will stop
 replicating until the backup data has been transferred.
 ```
-maxctrl call command mariadbmon async-rebuild-server MyMonitor MyTargetServer MySourceServer
+percona-proxyctl call command mariadbmon async-rebuild-server MyMonitor MyTargetServer MySourceServer
 ```
 The operation does not launch if the target server is already replicating or if
 the source server is not a primary or replica.
@@ -1426,7 +1426,7 @@ automatic, can run until the rebuild completes.
 
 The create backup-operation copies the contents of a database server to the
 backup storage. The source server is not modified but may slow down during
-backup creation. MaxScale performs this operation by running
+backup creation. Percona Proxy performs this operation by running
 Mariabackup on both the source and storage servers. The storage location is
 defined by the *backup_storage_address* and *backup_storage_path* settings.
 Normal ssh-settings are used to access the storage server. The backup storage
@@ -1454,7 +1454,7 @@ arguments: the monitor name, source server name and backup name. Backup name
 defines the subdirectory where the backup is saved and should be a valid
 directory name. The command
 ```
-maxctrl call command mariadbmon async-create-backup MyMonitor MySourceServer wednesday_161122
+percona-proxyctl call command mariadbmon async-create-backup MyMonitor MySourceServer wednesday_161122
 ```
 would save the backup of MySourceServer to
 `<backup_storage_path>/wednesday_161122` on the host defined in
@@ -1468,7 +1468,7 @@ while the backup is transferred.
 
 The restore-operation is the reverse of create-backup. It overwrites the
 contents of an existing MariaDB Server with a backup from the backup storage.
-The backup is not removed and can be used again. MaxScale performs this
+The backup is not removed and can be used again. Percona Proxy performs this
 operation by transferring the backup contents as a tar archive and overwriting
 the target server data directory. The backup storage is defined in monitor
 settings similar to create-backup.
@@ -1500,7 +1500,7 @@ arguments: the monitor name, target server name and backup name. Backup name
 defines the subdirectory where the backup is read from and should be an
 existing directory on the backup storage host. The command
 ```
-maxctrl call command mariadbmon async-restore-from-backup MyMonitor MyTargetServer wednesday_161122
+percona-proxyctl call command mariadbmon async-restore-from-backup MyMonitor MyTargetServer wednesday_161122
 ```
 would erase the contents of MyTargetServer and replace them with the backup
 contained in
@@ -1541,7 +1541,7 @@ run commands.
 - **Default**: `true`
 
 Boolean, default: true. When logging in to backends, require that the server is
-already listed in the known_hosts-file of the user running MaxScale.
+already listed in the known_hosts-file of the user running Percona Proxy.
 
 #### `ssh_timeout`
 
@@ -1575,7 +1575,7 @@ SSH port. Used for running remote commands on servers.
 The port which the source server listens on for a
 connection. The port must not be blocked by a firewall or listened on by any
 other program. If another process is listening on the port when rebuild is
-starting, MaxScale will attempt to kill the process.
+starting, Percona Proxy will attempt to kill the process.
 
 #### `backup_storage_address`
 
@@ -1601,12 +1601,12 @@ backup_storage_address=192.168.1.11
 Path to main backup storage directory on backup storage host. *ssh_user*
 needs to have full access to this directory to save and read backups.
 ```
-backup_storage_path=/home/maxscale_ssh_user/backup_storage
+backup_storage_path=/home/percona_proxy_ssh_user/backup_storage
 ```
 
 ### sudoers.d configuration
 
-If giving MaxScale general sudo-access is out of the question, MaxScale must be
+If giving Percona Proxy general sudo-access is out of the question, Percona Proxy must be
 allowed to run the specific commands required by the backup operations. This can
 be achieved by creating a file with the commands in the
 `/etc/sudoers.d`-directory. In the example below, the user *johnny* is given the
@@ -1627,7 +1627,7 @@ johnny ALL= NOPASSWD: /bin/tar -xz -C /var/lib/mysql/
 
 ## ColumnStore commands
 
-Since MaxScale version 22.08, MariaDB Monitor can run ColumnStore administrative
+Since Percona Proxy version 22.08, MariaDB Monitor can run ColumnStore administrative
 commands against a ColumnStore cluster. The commands interact with the
 ColumnStore REST-API present in recent ColumnStore versions and have been tested
 with MariaDB-Server 10.6 running the ColumnStore plugin version 6.2. None of the
@@ -1635,7 +1635,7 @@ commands affect monitor configuration or replication topology. MariaDB Monitor
 simply relays the commands to the backend cluster.
 
 MariaDB Monitor can fetch cluster status, add and remove nodes, start and stop
-the cluster, and set cluster read-only or readwrite. MaxScale only communicates
+the cluster, and set cluster read-only or readwrite. Percona Proxy only communicates
 with the first server in the `servers`-list.
 
 Most of the commands are asynchronous, i.e. they do not wait for the operation
@@ -1643,7 +1643,7 @@ to complete on the ColumnStore backend before returning to the command prompt.
 MariaDB Monitor itself, however, runs the command in the background and does not
 perform normal monitoring until the operation completes or fails. After an
 operation has started the user should use _fetch-cmd-result_ to check its
-status. The examples below show how to run the commands using MaxCtrl. If a
+status. The examples below show how to run the commands using Percona Proxyctl. If a
 command takes a timeout-parameter, the timeout can be given in seconds (s),
 minutes (m) or hours (h).
 
@@ -1655,22 +1655,22 @@ ColumnStore command settings are listed [here](#settings). At least
 Fetch cluster status. Returns the result as is. Status fetching has an automatic
 timeout of ten seconds.
 ```
-maxctrl call command mariadbmon cs-get-status <monitor-name>
-maxctrl call command mariadbmon async-cs-get-status <monitor-name>
+percona-proxyctl call command mariadbmon cs-get-status <monitor-name>
+percona-proxyctl call command mariadbmon async-cs-get-status <monitor-name>
 ```
 
 Examples:
 ```
-maxctrl call command mariadbmon cs-get-status MyMonitor
+percona-proxyctl call command mariadbmon cs-get-status MyMonitor
 {
     "mcs1": {
         "cluster_mode": "readwrite",
         "dbrm_mode": "master",
 <snip>
 
-maxctrl call command mariadbmon async-cs-get-status MyMonitor
+percona-proxyctl call command mariadbmon async-cs-get-status MyMonitor
 OK
-maxctrl call command mariadbmon fetch-cmd-result MyMonitor
+percona-proxyctl call command mariadbmon fetch-cmd-result MyMonitor
 {
     "mcs1": {
         "cluster_mode": "readwrite",
@@ -1682,23 +1682,23 @@ maxctrl call command mariadbmon fetch-cmd-result MyMonitor
 
 Add or remove a node to/from the ColumnStore cluster.
 ```
-maxctrl call command mariadbmon async-cs-add-node <monitor-name> <node-host> <timeout>
-maxctrl call command mariadbmon async-cs-remove-node <monitor-name> <node-host> <timeout>
+percona-proxyctl call command mariadbmon async-cs-add-node <monitor-name> <node-host> <timeout>
+percona-proxyctl call command mariadbmon async-cs-remove-node <monitor-name> <node-host> <timeout>
 ```
 `<node-host>` is the hostname or IP of the node being added or removed.
 
 Examples:
 ```
-maxctrl call command mariadbmon async-cs-add-node MyMonitor mcs3 1m
+percona-proxyctl call command mariadbmon async-cs-add-node MyMonitor mcs3 1m
 OK
-maxctrl call command mariadbmon fetch-cmd-result MyMonitor
+percona-proxyctl call command mariadbmon fetch-cmd-result MyMonitor
 {
     "node_id": "mcs3",
     "timestamp": "2022-05-05 08:07:51.518268"
 }
-maxctrl call command mariadbmon async-cs-remove-node MyMonitor mcs3 1m
+percona-proxyctl call command mariadbmon async-cs-remove-node MyMonitor mcs3 1m
 OK
-maxctrl call command mariadbmon fetch-cmd-result MyMonitor
+percona-proxyctl call command mariadbmon fetch-cmd-result MyMonitor
 {
     "node_id": "mcs3",
     "timestamp": "2022-05-05 10:46:46.506947"
@@ -1708,21 +1708,21 @@ maxctrl call command mariadbmon fetch-cmd-result MyMonitor
 ### Start and stop cluster
 
 ```
-maxctrl call command mariadbmon async-cs-start-cluster <monitor-name> <timeout>
-maxctrl call command mariadbmon async-cs-stop-cluster <monitor-name> <timeout>
+percona-proxyctl call command mariadbmon async-cs-start-cluster <monitor-name> <timeout>
+percona-proxyctl call command mariadbmon async-cs-stop-cluster <monitor-name> <timeout>
 ```
 
 Examples:
 ```
-maxctrl call command mariadbmon async-cs-start-cluster MyMonitor 1m
+percona-proxyctl call command mariadbmon async-cs-start-cluster MyMonitor 1m
 OK
-maxctrl call command mariadbmon fetch-cmd-result MyMonitor
+percona-proxyctl call command mariadbmon fetch-cmd-result MyMonitor
 {
     "timestamp": "2022-05-05 09:41:57.140732"
 }
-maxctrl call command mariadbmon async-cs-stop-cluster MyMonitor 1m
+percona-proxyctl call command mariadbmon async-cs-stop-cluster MyMonitor 1m
 OK
-maxctrl call command mariadbmon fetch-cmd-result MyMonitor
+percona-proxyctl call command mariadbmon fetch-cmd-result MyMonitor
 {
     "mcs1": {
         "timestamp": "2022-05-05 09:45:33.779837"
@@ -1733,22 +1733,22 @@ maxctrl call command mariadbmon fetch-cmd-result MyMonitor
 ### Set read-only or readwrite
 
 ```
-maxctrl call command mariadbmon async-cs-set-readonly <monitor-name> <timeout>
-maxctrl call command mariadbmon async-cs-set-readwrite <monitor-name> <timeout>
+percona-proxyctl call command mariadbmon async-cs-set-readonly <monitor-name> <timeout>
+percona-proxyctl call command mariadbmon async-cs-set-readwrite <monitor-name> <timeout>
 ```
 
 Examples:
 ```
-maxctrl call command mariadbmon async-cs-set-readonly MyMonitor 30s
+percona-proxyctl call command mariadbmon async-cs-set-readonly MyMonitor 30s
 OK
-maxctrl call command mariadbmon fetch-cmd-result MyMonitor
+percona-proxyctl call command mariadbmon fetch-cmd-result MyMonitor
 {
     "cluster-mode": "readonly",
     "timestamp": "2022-05-05 09:49:18.365444"
 }
-maxctrl call command mariadbmon async-cs-set-readwrite MyMonitor 30s
+percona-proxyctl call command mariadbmon async-cs-set-readwrite MyMonitor 30s
 OK
-maxctrl call command mariadbmon fetch-cmd-result MyMonitor
+percona-proxyctl call command mariadbmon fetch-cmd-result MyMonitor
 {
     "cluster-mode": "readwrite",
     "timestamp": "2022-05-05 09:50:30.718972"
@@ -1766,7 +1766,7 @@ cs_admin_port=8641
 
 #### `cs_admin_api_key`
 
-String. The API-key MaxScale sends to the ColumnStore nodes when making a
+String. The API-key Percona Proxy sends to the ColumnStore nodes when making a
 REST-API request. Should match the value configured on the ColumnStore nodes.
 ```
 cs_admin_api_key=somekey123
@@ -1785,7 +1785,7 @@ parameter. Most commands only return a generic success message or an error
 description. ColumnStore commands may return more data. Scheduling another
 command clears a stored result.
 ```
-maxctrl call command mariadbmon fetch-cmd-result MariaDB-Monitor
+percona-proxyctl call command mariadbmon fetch-cmd-result MariaDB-Monitor
 "switchover completed successfully."
 ```
 
@@ -1798,7 +1798,7 @@ possible. The *cancel-cmd* itself does not wait for a running operation to stop.
 Use *fetch-cmd-result* or check the log to see if the operation has truly
 completed. Canceling is most useful for stopping a stalled rebuild operation.
 ```
-maxctrl call command mariadbmon cancel-cmd MariaDB-Monitor
+percona-proxyctl call command mariadbmon cancel-cmd MariaDB-Monitor
 OK
 ```
 
@@ -1821,7 +1821,7 @@ monitor will retry most such queries if the failure was caused by a timeout. The
 continues until the total time for a failover or switchover has been spent. If the log
 shows warnings or errors about commands timing out, increasing the backend timeout
 settings of the monitor should help. Other settings to look at are `query_retries` and
-`query_retry_timeout`. These are general MaxScale settings described in the
+`query_retry_timeout`. These are general Percona Proxy settings described in the
 [Configuration guide](../Getting-Started/Configuration-Guide.md). Setting
 `query_retries` to 2 is a reasonable first try.
 
@@ -1837,22 +1837,22 @@ The server configuration files should have `log-slave-updates=1` to ensure that
 a newly promoted primary has binary logs of previous events. This allows the new
 primary to replicate past events to any lagging replicas.
 
-To print out all queries sent to the servers, start MaxScale with
+To print out all queries sent to the servers, start Percona Proxy with
 `--debug=enable-statement-logging`. This setting prints all queries sent to the
 backends by monitors and authenticators. The printed queries may include
 usernames and passwords.
 
 ### Replica detection shows external primaries
 
-If a replica is shown in _maxctrl_ as "Slave of External Server" instead of
+If a replica is shown in _percona-proxyctl_ as "Slave of External Server" instead of
 "Slave", the reason is likely that the "Master_Host"-setting of the replication connection
-does not match the MaxScale server definition. As of 2.3.2, the MariaDB Monitor by default
+does not match the Percona Proxy server definition. As of 2.3.2, the MariaDB Monitor by default
 assumes that the replica connections (as shown by `SHOW ALL SLAVES STATUS`) use the exact
-same "Master_Host" as used the MaxScale configuration file server definitions. This is
+same "Master_Host" as used the Percona Proxy configuration file server definitions. This is
 controlled by the setting [assume_unique_hostnames](#assume_unique_hostnames).
 
 ## Using the MariaDB Monitor With Binlogrouter
 
-Since MaxScale 2.2 it's possible to detect a replication setup
+Since Percona Proxy 2.2 it's possible to detect a replication setup
 which includes Binlog Server: the required action is to add the
 binlog server to the list of servers only if _master_id_ identity is set.

@@ -36,21 +36,21 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "log_dir:         $logs_dir"
-echo "maxscale_sshkey: $maxscale_000_keyfile"
-echo "maxscale_IP:     $maxscale_000_network"
+echo "percona_proxy_sshkey: $percona_proxy_000_keyfile"
+echo "percona_proxy_IP:     $percona_proxy_000_network"
 
-if [ $maxscale_IP != "127.0.0.1" ] ; then
-    ssh -i ${maxscale_000_keyfile} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet ${maxscale_000_whoami}@${maxscale_000_network} "rm -rf logs; mkdir logs; ${maxscale_000_access_sudo} cp ${maxscale_log_dir}/*.log logs/; ${maxscale_000_access_sudo} cp /tmp/core* logs; ${maxscale_000_access_sudo} chmod 777 -R logs"
-    scp -i ${maxscale_000_keyfile} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet ${maxscale_000_whoami}@${maxscale_000_network}:logs/* $logs_dir
+if [ $percona_proxy_IP != "127.0.0.1" ] ; then
+    ssh -i ${percona_proxy_000_keyfile} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet ${percona_proxy_000_whoami}@${percona_proxy_000_network} "rm -rf logs; mkdir logs; ${percona_proxy_000_access_sudo} cp ${percona_proxy_log_dir}/*.log logs/; ${percona_proxy_000_access_sudo} cp /tmp/core* logs; ${percona_proxy_000_access_sudo} chmod 777 -R logs"
+    scp -i ${percona_proxy_000_keyfile} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet ${percona_proxy_000_whoami}@${percona_proxy_000_network}:logs/* $logs_dir
     if [ $? -ne 0 ]; then
 	echo "Error copying Maxscale logs"
     fi
-    scp -i ${maxscale_000_keyfile} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet ${maxscale_000_whoami}@${maxscale_000_network}:$maxscale_cnf $logs_dir
+    scp -i ${percona_proxy_000_keyfile} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet ${percona_proxy_000_whoami}@${percona_proxy_000_network}:$percona_proxy_cnf $logs_dir
     chmod a+r $logs_dir/*
 else
-    sudo cp $maxscale_log_dir/*.log $logs_dir
+    sudo cp $percona_proxy_log_dir/*.log $logs_dir
     sudo cp /tmp/core* $logs_dir
-    sudo cp $maxscale_cnf $logs_dir
+    sudo cp $percona_proxy_cnf $logs_dir
     sudo chmod a+r $logs_dir/*
 fi
 

@@ -45,8 +45,8 @@ void connect_as_user(TestConnections& test, const string& user)
 
     if (pMysql)
     {
-        const char* zHost = test.maxscale->ip4();
-        int port = test.maxscale->rwsplit_port;
+        const char* zHost = test.percona_proxy->ip4();
+        int port = test.percona_proxy->rwsplit_port;
         const char* zUser = user.c_str();
         const char* zPassword = "nonexistent";
 
@@ -64,7 +64,7 @@ bool found_in_file(TestConnections& test, const string& file, const string& patt
     command += " ";
     command += file;
 
-    return test.maxscale->ssh_node_f(true, "%s", command.c_str()) == 0;
+    return test.percona_proxy->ssh_node_f(true, "%s", command.c_str()) == 0;
 }
 }
 
@@ -77,13 +77,13 @@ int main(int argc, char* argv[])
     int rc;
 
     secure_log = "/var/log/auth.log";
-    rc = test.maxscale->ssh_node_f(true, "test -f %s", secure_log.c_str());
+    rc = test.percona_proxy->ssh_node_f(true, "test -f %s", secure_log.c_str());
     if (rc != 0)
     {
         test.tprintf("'/var/log/auth.log` does not exist. trying with '/var/log/secure'");
 
         secure_log = "/var/log/secure";
-        rc = test.maxscale->ssh_node_f(true, "test -f %s", secure_log.c_str());
+        rc = test.percona_proxy->ssh_node_f(true, "test -f %s", secure_log.c_str());
     }
 
     if (rc != 0)
@@ -93,16 +93,16 @@ int main(int argc, char* argv[])
     }
 
     // Ensure that non-root programs can log to the authentication log.
-    rc = test.maxscale->ssh_node_f(true,
-                                   "echo 'auth,authpriv.*  %s' > /etc/rsyslog.d/99-maxscale.conf; "
+    rc = test.percona_proxy->ssh_node_f(true,
+                                   "echo 'auth,authpriv.*  %s' > /etc/rsyslog.d/99-percona-proxy.conf; "
                                    "service rsyslog restart", secure_log.c_str());
 
     if (rc != 0)
     {
-        test.tprintf("Could not add /etc/rsyslog.d/99-maxscale.conf or not restart rsyslog. Test may fail.");
+        test.tprintf("Could not add /etc/rsyslog.d/99-percona-proxy.conf or not restart rsyslog. Test may fail.");
     }
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
 
     string user;
 
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
     cout << "user: " << user << endl;
     connect_as_user(test, user);
     sleep(2);
-    // There should be an error in maxscale.log
+    // There should be an error in percona-proxy.log
     test.log_includes(user.c_str());
     // But not in the authentication log.
     test.expect(!found_in_file(test, secure_log.c_str(), user),
@@ -120,14 +120,14 @@ int main(int argc, char* argv[])
                 secure_log.c_str());
 
     // Turn on 'event.authentication_failure.facility=LOG_AUTH'
-    test.maxscale->stop();
+    test.percona_proxy->stop();
 
     std::string replacement = "event.authentication_failure.facility=LOG_AUTH\\\n"
                               "event.authentication_failure.level=LOG_ERR\\\n";
-    test.maxscale->ssh_node_f(
-        true, "sed -i 's/\\[maxscale\\]/\\[maxscale\\]\\\n%s/' /etc/maxscale.cnf", replacement.c_str());
+    test.percona_proxy->ssh_node_f(
+        true, "sed -i 's/\\[percona-proxy\\]/\\[percona-proxy\\]\\\n%s/' /etc/percona-proxy.cnf", replacement.c_str());
 
-    test.maxscale->start();
+    test.percona_proxy->start();
 
     // Connect again. This should cause an error to be logged to the authentication log.
     user = get_unique_user();
@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
     connect_as_user(test, user);
     sleep(2);
 
-    // There should be an error in maxscale.log, as maxlog is not affected by the syslog setting.
+    // There should be an error in percona-proxy.log, as maxlog is not affected by the syslog setting.
     test.log_includes(user.c_str());
     // And in the authentication log as that's where authentication errors now should go.
     test.expect(found_in_file(test, secure_log.c_str(), user),

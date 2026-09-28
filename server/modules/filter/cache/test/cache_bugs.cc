@@ -12,13 +12,13 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <maxbase/log.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/modinfo.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/modinfo.hh>
 #include "../cachemt.hh"
 
 using namespace std;

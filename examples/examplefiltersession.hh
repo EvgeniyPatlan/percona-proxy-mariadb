@@ -13,8 +13,8 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/filter.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/filter.hh>
 
 class ExampleFilter;
 
@@ -23,7 +23,7 @@ class ExampleFilter;
  * and deleted on disconnect. The object is only accessed from one thread because sessions are locked to
  * a thread when created.
  */
-class ExampleFilterSession : public maxscale::FilterSession
+class ExampleFilterSession : public percona_proxy::FilterSession
 {
     // Prevent copy-constructor and assignment operator usage
     ExampleFilterSession(const ExampleFilterSession&);
@@ -38,7 +38,7 @@ public:
     /**
      * Called by ExampleFilter::newSession() to create the session.
      *
-     * @param pSession pSession The generic MaxScale session object
+     * @param pSession pSession The generic Percona Proxy session object
      * @param pFilter The shared filter object
      * @return A new session or NULL on failure
      */

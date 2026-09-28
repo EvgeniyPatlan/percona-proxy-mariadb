@@ -16,8 +16,8 @@
  * @file cdc.c - Change Data Capture Listener protocol module
  *
  * The change data capture protocol module is intended as a mechanism to allow connections
- * into maxscale for the purpose of accessing information within
- * the maxscale with a Change Data Capture API interface (supporting Avro right now)
+ * into percona-proxy for the purpose of accessing information within
+ * the percona-proxy with a Change Data Capture API interface (supporting Avro right now)
  * databases.
  *
  * In the first instance it is intended to connect, authenticate and retieve data in the Avro format
@@ -31,17 +31,17 @@
  * @endverbatim
  */
 
-#include <maxscale/protocol/cdc/module_names.hh>
+#include <percona-proxy/protocol/cdc/module_names.hh>
 #define MXB_MODULE_NAME MXS_CDC_PROTOCOL_NAME
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <cstdio>
 #include <cstring>
-#include <maxscale/protocol/cdc/cdc.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/dcb.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/session.hh>
+#include <percona-proxy/protocol/cdc/cdc.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/session.hh>
 #include "cdc_plain_auth.hh"
 
 namespace

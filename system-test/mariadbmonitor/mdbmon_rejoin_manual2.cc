@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     auto maxconn = mxs.open_rwsplit_connection2("test");
@@ -79,8 +79,8 @@ void test_main(TestConnections& test)
     {
         cout << "Sending rejoin commands for servers 3 & 4. Server 4 should not rejoin the cluster.\n";
 
-        mxs.maxctrl(rejoin_s3);
-        mxs.maxctrl(rejoin_s4);
+        mxs.percona_proxyctl(rejoin_s3);
+        mxs.percona_proxyctl(rejoin_s4);
         mxs.wait_for_monitor(2);
 
         mxs.check_print_servers_status({mxt::ServerInfo::master_st, mxt::ServerInfo::slave_st,
@@ -98,13 +98,13 @@ void test_main(TestConnections& test)
     conn->cmd("START SLAVE;");
     mxs.wait_for_monitor(2);
     string rejoin_s2 = REJOIN_CMD + " server2";
-    mxs.maxctrl(rejoin_s2);
-    mxs.maxctrl(rejoin_s3);
+    mxs.percona_proxyctl(rejoin_s2);
+    mxs.percona_proxyctl(rejoin_s3);
     mxs.wait_for_monitor(2);
 
     mxs.check_print_servers_status({mxt::ServerInfo::slave_st, mxt::ServerInfo::slave_st,
                                     mxt::ServerInfo::slave_st, mxt::ServerInfo::master_st});
-    mxs.maxctrl("call command mysqlmon switchover MariaDB-Monitor server1");
+    mxs.percona_proxyctl("call command mysqlmon switchover MariaDB-Monitor server1");
     mxs.wait_for_monitor(2);
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
 }

@@ -13,8 +13,8 @@
  */
 
 #include "dbconnection.hh"
-#include <maxscale/log.hh>
-#include <maxscale/config.hh>
+#include <percona-proxy/log.hh>
+#include <percona-proxy/config.hh>
 #include <algorithm>
 #include <cassert>
 #include <iostream>

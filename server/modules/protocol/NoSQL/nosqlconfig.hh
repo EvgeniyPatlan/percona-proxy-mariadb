@@ -14,7 +14,7 @@
 #pragma once
 
 #include "nosqlprotocol.hh"
-#include <maxscale/config2.hh>
+#include <percona-proxy/config2.hh>
 #include "configuration.hh"
 #include "nosqlbase.hh"
 #include "nosqlcrypto.hh"
@@ -93,7 +93,7 @@ public:
     void copy_from(const std::string& command, const bsoncxx::document::view& doc);
     void copy_to(nosql::DocumentBuilder& doc) const;
 
-    // Can only be changed via MaxScale or by nosqlprotocol itself.
+    // Can only be changed via Percona Proxy or by nosqlprotocol itself.
     const std::string          config_user;
     const std::vector<uint8_t> config_password;
     std::string                user;

@@ -23,7 +23,7 @@ ExternalProject_add(hiredis
   BUILD_COMMAND make USE_SSL=1
 # The install command is intentionally left out: for some strange and
 # unknown reason it causes the library to be installed as a part of the
-# MaxScale package in the location where it would be installed. This is
+# Percona Proxy package in the location where it would be installed. This is
 # definitely not wanted and in addition to that it can break the generated
 # package by changing the ownership of home directories to root.
   INSTALL_COMMAND ""

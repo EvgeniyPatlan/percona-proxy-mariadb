@@ -20,16 +20,16 @@
 #
 
 # TODO: Don't copy this and "unmangle" the test instead
-cp -r $src_dir/Hartmut_tests/maxscale-mysqltest ./Hartmut_tests/maxscale-mysqltest/
+cp -r $src_dir/Hartmut_tests/percona-proxy-mysqltest ./Hartmut_tests/percona-proxy-mysqltest/
 
 master_id=`echo "SELECT @@server_id" | mariadb --ssl-verify-server-cert=0 -u$node_user -p$node_password -h $node_000_network $ssl_options -P $node_000_port | tail -n1`
-echo "--disable_query_log" > Hartmut_tests/maxscale-mysqltest/testconf.inc
-echo "SET @TMASTER_ID=$master_id;" >> Hartmut_tests/maxscale-mysqltest/testconf.inc
-echo "--enable_query_log" >> Hartmut_tests/maxscale-mysqltest/testconf.inc
+echo "--disable_query_log" > Hartmut_tests/percona-proxy-mysqltest/testconf.inc
+echo "SET @TMASTER_ID=$master_id;" >> Hartmut_tests/percona-proxy-mysqltest/testconf.inc
+echo "--enable_query_log" >> Hartmut_tests/percona-proxy-mysqltest/testconf.inc
 
 echo "--disable_query_log" > testconf.inc
 echo "SET @TMASTER_ID=$master_id;" >> testconf.inc
 echo "--enable_query_log" >> testconf.inc
 
-$src_dir/mysqltest_driver.sh "$1" "$PWD/Hartmut_tests/maxscale-mysqltest" 4006
+$src_dir/mysqltest_driver.sh "$1" "$PWD/Hartmut_tests/percona-proxy-mysqltest" 4006
 

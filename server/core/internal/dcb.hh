@@ -13,9 +13,9 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
-#include <maxscale/dcb.hh>
+#include <percona-proxy/dcb.hh>
 
 /**
  * @brief Return the DCB currently being handled by the calling thread.

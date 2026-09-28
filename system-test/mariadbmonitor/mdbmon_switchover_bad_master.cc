@@ -48,7 +48,7 @@ namespace
 
 void create_table(TestConnections& test)
 {
-    MYSQL* pConn = test.maxscale->conn_rwsplit;
+    MYSQL* pConn = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pConn, "DROP TABLE IF EXISTS test.t1");
     test.try_query(pConn, "CREATE TABLE test.t1(id INT)");
@@ -60,7 +60,7 @@ static int i_end = 0;
 
 void insert_data(TestConnections& test)
 {
-    MYSQL* pConn = test.maxscale->conn_rwsplit;
+    MYSQL* pConn = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pConn, "BEGIN");
 
@@ -122,7 +122,7 @@ void expect(TestConnections& test, const char* zServer, const char* zState1, con
 
 void run(TestConnections& test)
 {
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     const int N = 4;
 
@@ -131,8 +131,8 @@ void run(TestConnections& test)
     expect(test, "server3", "Slave", "Running");
     expect(test, "server4", "Slave", "Running");
 
-    cout << "\nConnecting to MaxScale." << endl;
-    test.maxscale->connect_maxscale();
+    cout << "\nConnecting to Percona Proxy." << endl;
+    test.percona_proxy->connect_percona_proxy();
 
     cout << "\nCreating table." << endl;
     create_table(test);
@@ -146,7 +146,7 @@ void run(TestConnections& test)
     cout << "\nStopping slave " << N - 1 << endl;
     test.repl->stop_node(N - 1);
 
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     // server4 was stopped, so we expect the state of it to be /Down/,
     // and the states of the other ones not to have changed.
@@ -155,11 +155,11 @@ void run(TestConnections& test)
     expect(test, "server3", "Slave", "Running");
     expect(test, "server4", "Down");
 
-    cout << "\nClosing connection to MaxScale." << endl;
-    test.maxscale->close_maxscale_connections();
+    cout << "\nClosing connection to Percona Proxy." << endl;
+    test.percona_proxy->close_percona_proxy_connections();
 
-    cout << "\nConnecting to MaxScale." << endl;
-    test.maxscale->connect_maxscale();
+    cout << "\nConnecting to Percona Proxy." << endl;
+    test.percona_proxy->connect_percona_proxy();
 
     cout << "\nInserting data." << endl;
     insert_data(test);
@@ -170,7 +170,7 @@ void run(TestConnections& test)
     cout << "\nStopping master." << endl;
     test.repl->stop_node(0);
 
-    test.maxscale->wait_for_monitor(3);
+    test.percona_proxy->wait_for_monitor(3);
 
     // server1 (previous master) was taken down, so its state should be /Down/.
     // server2 should have been made into master, and server4 should still be down.
@@ -182,7 +182,7 @@ void run(TestConnections& test)
     cout << "\nBringing up slave " << N - 1 << endl;
     test.repl->start_node(N - 1, (char*)"");
 
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     // server1 should still be down, server2 still master, and server3 still
     // a slave. server4 was brought up, but as auto_rejoin is false, it should
@@ -195,9 +195,9 @@ void run(TestConnections& test)
 
     cout << "\nTrying to do manual switchover to server4" << endl;
     const char* zCommand = "call command mysqlmon switchover MySQL-Monitor server4 server2";
-    test.maxctrl(zCommand);
+    test.percona_proxyctl(zCommand);
 
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     // The state should not change, as server4 is not good enough as master.
     expect(test, "server1", "Down");

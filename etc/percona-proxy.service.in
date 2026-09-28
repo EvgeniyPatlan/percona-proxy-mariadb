@@ -1,0 +1,37 @@
+[Unit]
+Description=Percona Proxy for MariaDB Database Proxy
+After=network.target
+
+[Service]
+Type=forking
+Restart=on-abort
+@SERVICE_FILE_DEBUG_OPTIONS@
+@SERVICE_FILE_ASAN_OPTIONS@
+@SERVICE_FILE_UBSAN_OPTIONS@
+
+# Make sure /var/cache/percona-proxy exists. Downgrading from 24.02 to 23.08 will
+# remove it due to how the packaging has been changed.
+ExecStartPre=+/usr/bin/install -d @PERCONA_PROXY_VARDIR@/cache/percona-proxy -o percona-proxy -g percona-proxy
+
+# This makes sure /var/run/percona-proxy exists. The directory is created as
+# /run/percona-proxy but /var/run is always a symlink to /run which makes it
+# work even with the legacy /var/run that Percona Proxy uses.
+RuntimeDirectory=percona-proxy
+PIDFile=@PERCONA_PROXY_VARDIR@/run/percona-proxy/percona-proxy.pid
+
+# Use the default user and group
+User=percona-proxy
+Group=percona-proxy
+
+ExecStart=@CMAKE_INSTALL_PREFIX@/@PERCONA_PROXY_BINDIR@/percona-proxy
+TimeoutStartSec=120
+LimitNOFILE=65535
+StartLimitBurst=0
+WatchdogSec=60s
+NotifyAccess=all
+
+# Percona Proxy should be restarted if it exits with 75 (BSD's EX_TEMPFAIL)
+RestartForceExitStatus=75
+
+[Install]
+WantedBy=multi-user.target

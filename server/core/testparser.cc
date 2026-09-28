@@ -11,8 +11,8 @@
  * Public License.
  */
 
-#include <maxscale/testparser.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/testparser.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
 #include <sstream>
 
 using namespace std;
@@ -61,7 +61,7 @@ std::unique_ptr<mxs::Parser> create_parser(const mxs::Parser::Helper* pHelper,
 
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 TestParser::TestParser()

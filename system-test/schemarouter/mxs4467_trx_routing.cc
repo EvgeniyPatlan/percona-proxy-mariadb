@@ -24,7 +24,7 @@ void test_trx(TestConnections& test, const char* before, const char* after)
         n.query("CREATE OR REPLACE TABLE test.t" + std::to_string(i) + "(id INT)");
     }
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     test.expect(c.query(before), "Failed to start transaction with '%s': %s", before, c.error());
 
@@ -40,7 +40,7 @@ void test_trx(TestConnections& test, const char* before, const char* after)
     // To make sure that the COMMIT actually ends up being executed successfully on all nodes, we need to do a
     // read on each shard to check that the values are there. The latest participating shard in the
     // transaction returns the response to the client. This guarantees that transactions that only use one
-    // shard will always be successfully committed if MaxScale returns an OK packet to the client.
+    // shard will always be successfully committed if Percona Proxy returns an OK packet to the client.
     for (int i = 0; i < test.repl->N; i++)
     {
         auto num = c.field("SELECT COUNT(id) FROM test.t" + std::to_string(i));
@@ -80,7 +80,7 @@ void test_rollback(TestConnections& test, const char* before)
     // to get routed correctly.
     sleep(2);
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     test.expect(c.query(before), "Failed to start transaction with '%s': %s", before, c.error());
     test.expect(c.query("INSERT INTO test.testing_rollback VALUES (1)"),

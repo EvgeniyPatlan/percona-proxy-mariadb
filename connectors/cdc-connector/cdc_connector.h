@@ -53,7 +53,7 @@ public:
     /**
      * Create a new CDC connection
      *
-     * @param address  The address of the MaxScale server
+     * @param address  The address of the Percona Proxy server
      * @param port     The port where the CDC service listens
      * @param user     Username for the service
      * @param password Password for the user
@@ -67,7 +67,7 @@ public:
     virtual ~Connection();
 
     /**
-     * Connect to MaxScale and request a data stream for a table
+     * Connect to Percona Proxy and request a data stream for a table
      *
      * @param table The table to stream in `database.table` format
      * @param gtid The optional starting GTID position in `domain-server_id-sequence` format

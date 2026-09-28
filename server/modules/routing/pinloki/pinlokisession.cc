@@ -15,8 +15,8 @@
 #include "pinlokisession.hh"
 #include "rpl_event.hh"
 
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/resultset.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/resultset.hh>
 #include <maxbase/string.hh>
 
 using std::chrono::duration_cast;

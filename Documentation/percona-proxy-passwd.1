@@ -1,0 +1,30 @@
+.TH MAXPASSWD "1" "August 2024" "percona-proxy-passwd  " "User Commands"
+.SH NAME
+percona-proxy-passwd
+.SH SYNOPSIS
+.B percona-proxy-passwd
+[\fI\,-h|--help\/\fR] [\fI\,-i|--interactive\/\fR] [\fI\,-d|--decrypt\/\fR] [\fI\,path\/\fR] \fI\,password\/\fR
+.SH DESCRIPTION
+Encrypt a Percona Proxy plaintext password using the encryption key in the key file
+\&'.secrets'. The key file may be generated using the 'percona-proxy-keys'\-utility.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Display this help.
+.TP
+\fB\-d\fR, \fB\-\-decrypt\fR
+Decrypt an encrypted password instead.
+.TP
+\fB\-i\fR, \fB\-\-interactive\fR  \- If percona-proxy-passwd is reading from a pipe, it will read a line and
+use that as the password.
+.TP
+\- If percona-proxy-passwd is connected to a terminal console, it will prompt
+for the password.
+.TP
+If '\-i' is specified, a single argument is assumed to be the path
+and two arguments is treated like an error.
+.TP
+path
+The key file directory (default: '/home/markusjm/build\-develop/data/lib/percona-proxy')
+.TP
+password
+The password to encrypt or decrypt

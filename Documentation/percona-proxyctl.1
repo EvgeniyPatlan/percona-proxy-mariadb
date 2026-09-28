@@ -1,0 +1,161 @@
+.TH MAXCTRL "1" "August 2024" "percona-proxyctl  " "User Commands"
+.SH NAME
+percona-proxyctl
+.SH DESCRIPTION
+Percona Proxyctl is a command line administrative client for Percona Proxy which uses
+the Percona Proxy REST API for communication.
+
+By default, the Percona Proxy REST API listens on port 8989 on the local host.
+
+.SH CONFIGURATION FILE
+If the file
+.B ~/.percona-proxyctl.cnf
+exists, percona-proxyctl will use any values in the
+section
+.B [percona-proxyctl]
+as defaults for command line arguments. For instance,
+to avoid having to specify the user and password on the command line,
+create the file
+.B .percona-proxyctl.cnf
+in your home directory, with the following content:
+
+.nf
+.RS 4
+[percona-proxyctl]
+u = my-name
+p = my-password
+.RE
+.fi
+
+Note that all access rights to the file must be removed from everybody else
+but the owner. Percona Proxyctl refuses to use the file unless the rights have been
+removed.
+
+Another file from which to read the defaults can be specified with the
+.B -c
+flag.
+
+.SH COMMANDS
+
+To display the help output for a command group and for subcommands, use
+.B percona-proxyctl <command> --help.
+
+.SS "Commands:"
+.TP
+percona-proxyctl list <command>
+List objects
+.TP
+percona-proxyctl show <command>
+Show objects
+.TP
+percona-proxyctl set <command>
+Set object state
+.TP
+percona-proxyctl clear <command>
+Clear object state
+.TP
+percona-proxyctl drain <command>
+Drain objects (deprecated)
+.TP
+percona-proxyctl enable <command>
+Enable functionality
+.TP
+percona-proxyctl disable <command>
+Disable functionality
+.TP
+percona-proxyctl create <command>
+Create objects
+.TP
+percona-proxyctl destroy <command>
+Destroy objects
+.TP
+percona-proxyctl link <command>
+Link objects
+.TP
+percona-proxyctl unlink <command>
+Unlink objects
+.TP
+percona-proxyctl start <command>
+Start objects
+.TP
+percona-proxyctl stop <command>
+Stop objects
+.TP
+percona-proxyctl alter <command>
+Alter objects
+.TP
+percona-proxyctl rotate <command>
+Rotate log files
+.TP
+percona-proxyctl reload <command>
+Reload objects
+.TP
+percona-proxyctl call <command>
+Call module commands
+.TP
+percona-proxyctl cluster <command>
+Cluster objects
+.TP
+percona-proxyctl api <command>
+Raw REST API access
+.TP
+percona-proxyctl classify <statement>
+Classify statement
+.SS "Global Options:"
+.TP
+\fB\-c\fR, \fB\-\-config\fR
+Percona Proxyctl configuration file. [default: "~/.percona-proxyctl.cnf"]
+.TP
+\fB\-u\fR, \fB\-\-user\fR
+Username to use. [default: "admin"]
+.TP
+\fB\-p\fR, \fB\-\-password\fR
+Password for the user. To input the password manually, use \fB\-p\fR
+\&'' or \fB\-\-password=\fR'' [default: "mariadb"]
+.TP
+\fB\-h\fR, \fB\-\-hosts\fR
+List of Percona Proxy hosts. The hosts must be in HOST:PORT format
+and each value must be separated by a comma. [default: "127.0.0.1:8989"]
+.TP
+\fB\-t\fR, \fB\-\-timeout\fR
+Request timeout in plain milliseconds, e.g '\-t 1000', or as
+duration with suffix [h|m|s|ms], e.g. '\-t 10s' [default: "10000"]
+.TP
+\fB\-q\fR, \fB\-\-quiet\fR
+Silence all output. Ignored while in interactive mode. [default: false]
+.TP
+\fB\-\-tsv\fR
+Print tab separated output. [default: false]
+.TP
+\fB\-\-skip\-sync\fR
+Disable configuration synchronization for this command. [default: false]
+.SS "HTTPS/TLS Options:"
+.TP
+\fB\-s\fR, \fB\-\-secure\fR
+Enable HTTPS requests [default: false]
+.TP
+\fB\-\-tls\-key\fR
+Path to TLS private key.
+.TP
+\fB\-\-tls\-passphrase\fR
+Password for the TLS private key.
+.TP
+\fB\-\-tls\-cert\fR
+Path to TLS public certificate.
+.TP
+\fB\-\-tls\-ca\-cert\fR
+Path to TLS CA certificate.
+.TP
+\fB\-n\fR, \fB\-\-tls\-verify\-server\-cert\fR
+Whether to verify server TLS certificates. [default: true]
+.SH OPTIONS
+.TP
+\fB\-\-version\fR
+Show version number.
+.TP
+\fB\-\-help\fR
+Show help.
+.PP
+If no commands are given, percona-proxyctl is started in interactive mode. Use the
+.B exit
+command to exit the interactive mode.

@@ -17,7 +17,7 @@
 #include <dlfcn.h>
 #include <sys/param.h>
 #include <new>
-#include <maxscale/paths.hh>
+#include <percona-proxy/paths.hh>
 #include "cachefilter.hh"
 #include "lrustoragest.hh"
 #include "lrustoragemt.hh"

@@ -33,27 +33,27 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
     std::vector<std::thread> connections;
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
 
-    Row original_row = get_row(test.maxscale->conn_rwsplit, "SELECT @@server_id");
+    Row original_row = get_row(test.percona_proxy->conn_rwsplit, "SELECT @@server_id");
 
     for (int i = 0; i < 10; i++)
     {
-        connections.emplace_back(query, test.maxscale->open_rwsplit_connection(), "SELECT SLEEP(10)");
+        connections.emplace_back(query, test.percona_proxy->open_rwsplit_connection(), "SELECT SLEEP(10)");
         sleep(1);
-        Row row = get_row(test.maxscale->conn_rwsplit, "SELECT @@server_id");
+        Row row = get_row(test.percona_proxy->conn_rwsplit, "SELECT @@server_id");
         test.expect(row == original_row, "Value of @@server_id should not change: %s", row.at(0).c_str());
     }
 
     for (auto& a : connections)
     {
         a.join();
-        Row row = get_row(test.maxscale->conn_rwsplit, "SELECT @@server_id");
+        Row row = get_row(test.percona_proxy->conn_rwsplit, "SELECT @@server_id");
         test.expect(row == original_row, "Value of @@server_id should not change: %s", row.at(0).c_str());
     }
 
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

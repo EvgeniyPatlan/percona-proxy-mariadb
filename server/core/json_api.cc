@@ -12,13 +12,13 @@
  * Public License.
  */
 
-#include <maxscale/json_api.hh>
+#include <percona-proxy/json_api.hh>
 
 #include <string>
 
 #include <maxbase/format.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/listener.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/listener.hh>
 
 #include "internal/filter.hh"
 #include "internal/monitormanager.hh"
@@ -106,7 +106,7 @@ std::string validate_relationships(json_t* json)
             }
             else if (valid_relationships.count(key) == 0)
             {
-                return "'"s + key + "' is not a valid MaxScale relationship type";
+                return "'"s + key + "' is not a valid Percona Proxy relationship type";
             }
             else if (!json_is_array(arr) && !json_is_null(arr))
             {

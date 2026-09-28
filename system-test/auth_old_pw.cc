@@ -30,11 +30,11 @@ int main(int argc, char* argv[])
 
     test.tprintf("Trying to connect using user with old style password");
 
-    MYSQL* conn = open_conn(test.maxscale->rwsplit_port,
-                            test.maxscale->ip4(),
+    MYSQL* conn = open_conn(test.percona_proxy->rwsplit_port,
+                            test.percona_proxy->ip4(),
                             (char*) "old",
                             (char*)  "old",
-                            test.maxscale_ssl);
+                            test.percona_proxy_ssl);
     test.add_result(mysql_errno(conn) == 0, "Connections is open for the user with old style password.\n");
     mysql_close(conn);
 

@@ -1,7 +1,7 @@
 # Configuring the MariaDB Monitor
 
 This document describes how to configure a MariaDB primary-replica cluster monitor
-to be used with MaxScale.
+to be used with Percona Proxy.
 
 ## Configuring the Monitor
 

@@ -47,22 +47,22 @@ private:
 
         auto master_ip = master.host();
         auto regular_slave_ip = regular_slave.host();   // the second regular slave doesn't come into play
-        auto& mxs = *test.maxscale;
+        auto& mxs = *test.percona_proxy;
 
         mxs.wait_for_monitor(2);
 
         // Pinloki should be replicating from the master
-        auto repl_from = replicating_from(maxscale);
+        auto repl_from = replicating_from(percona_proxy);
         test.expect(repl_from == master_ip, "Pinloki should replicate from the master");
 
         // Do switchover to the (first) regular slave
         test.tprintf("Do switchover from %s to %s", master_ip.c_str(), regular_slave_ip.c_str());
-        test.maxctrl("call command mysqlmon switchover mariadb-cluster server3 server1");
+        test.percona_proxyctl("call command mysqlmon switchover mariadb-cluster server3 server1");
 
         mxs.wait_for_monitor(5);
 
         // Check that pinloki was redirected
-        repl_from = replicating_from(maxscale);
+        repl_from = replicating_from(percona_proxy);
         test.expect(repl_from == regular_slave_ip, "Pinloki should replicate from the switchover master");
 
         // Kill the new master, the original master should become master again
@@ -72,7 +72,7 @@ private:
         // Check that pinloki was redirected again
         for (int i = 0; i < 60; ++i)
         {
-            repl_from = replicating_from(maxscale);
+            repl_from = replicating_from(percona_proxy);
             if (repl_from == master_ip)
             {
                 break;

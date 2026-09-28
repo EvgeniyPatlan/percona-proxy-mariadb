@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    auto other = test.maxscale->rwsplit();
+    auto other = test.percona_proxy->rwsplit();
     test.expect(other.connect(), "Failed to connect: %s", other.error());
     other.query("SET NAMES utf8mb4");
 
@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 
     for (std::string db : test_cases)
     {
-        auto c = test.maxscale->rwsplit();
+        auto c = test.percona_proxy->rwsplit();
         c.set_charset("utf8mb4");
         c.set_database(db);
 

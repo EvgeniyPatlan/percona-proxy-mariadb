@@ -13,7 +13,7 @@
 #pragma once
 
 #include "postgresprotocol.hh"
-#include <maxscale/authenticator.hh>
+#include <percona-proxy/authenticator.hh>
 #include <optional>
 
 class PgAuthenticatorModule;

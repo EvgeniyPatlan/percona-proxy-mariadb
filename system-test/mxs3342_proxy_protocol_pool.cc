@@ -22,9 +22,9 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    std::string ip = test.maxscale->ip();
+    std::string ip = test.percona_proxy->ip();
     test.repl->execute_query_all_nodes(("SET GLOBAL proxy_protocol_networks='" + ip + "'").c_str());
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     Connection node = test.repl->get_connection(0);
     test.expect(node.connect(), "Connection should work: %s", node.error());
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     for (int i = 0; i < 100 && test.ok(); i++)
     {
-        connections.emplace_back(test.maxscale->rwsplit());
+        connections.emplace_back(test.percona_proxy->rwsplit());
         Connection& c = connections.back();
         c.set_credentials("bob", "bob");
         test.expect(c.connect(), "Readwritesplit connection should work: %s", c.error());

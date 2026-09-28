@@ -12,7 +12,7 @@ does not detect replication.
 
 The pg_hba.conf-file should have a line that allows the monitor user (e.g.
 "maxmon") to log in to database "postgres". Change the ip to match the
-MaxScale host ip or use "all".
+Percona Proxy host ip or use "all".
 ```
 host    postgres     maxmon    127.0.0.1/32      scram-sha-256
 ```

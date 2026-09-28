@@ -82,9 +82,9 @@ int main(int argc, char* argv[])
         Test->tprintf("Connection to backend\n");
         Test->repl->connect();
         Test->tprintf("Connection to Maxscale\n");
-        if (Test->maxscale->connect_maxscale() != 0)
+        if (Test->percona_proxy->connect_percona_proxy() != 0)
         {
-            Test->add_result(1, "Error connecting to MaxScale");
+            Test->add_result(1, "Error connecting to Percona Proxy");
             break;
         }
 
@@ -92,9 +92,9 @@ int main(int argc, char* argv[])
         Test->add_result(Test->insert_select(N), "insert-select check failed\n");
 
         Test->tprintf("Creating database test1\n");
-        Test->try_query(Test->maxscale->conn_rwsplit, "DROP TABLE t1");
-        Test->try_query(Test->maxscale->conn_rwsplit, "DROP DATABASE IF EXISTS test1;");
-        Test->try_query(Test->maxscale->conn_rwsplit, "CREATE DATABASE test1;");
+        Test->try_query(Test->percona_proxy->conn_rwsplit, "DROP TABLE t1");
+        Test->try_query(Test->percona_proxy->conn_rwsplit, "DROP DATABASE IF EXISTS test1;");
+        Test->try_query(Test->percona_proxy->conn_rwsplit, "CREATE DATABASE test1;");
         Test->reset_timeout();
         Test->repl->sync_slaves();
 
@@ -109,12 +109,12 @@ int main(int argc, char* argv[])
         Test->tprintf("Trying queries with syntax errors\n");
         for (j = 0; j < 3; j++)
         {
-            execute_query(Test->maxscale->routers[j], "DROP DATABASE I EXISTS test1;");
-            execute_query(Test->maxscale->routers[j], "CREATE TABLE ");
+            execute_query(Test->percona_proxy->routers[j], "DROP DATABASE I EXISTS test1;");
+            execute_query(Test->percona_proxy->routers[j], "CREATE TABLE ");
         }
 
         // close connections
-        Test->maxscale->close_maxscale_connections();
+        Test->percona_proxy->close_percona_proxy_connections();
         Test->repl->close_connections();
     }
 
@@ -122,10 +122,10 @@ int main(int argc, char* argv[])
     Test->log_excludes("Unable to parse query");
     Test->log_excludes("query string allocation failed");
 
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
 
-    Test->maxscale->restart_maxscale();
-    Test->check_maxscale_alive();
+    Test->percona_proxy->restart_percona_proxy();
+    Test->check_percona_proxy_alive();
 
     int rval = Test->global_result;
     delete Test;

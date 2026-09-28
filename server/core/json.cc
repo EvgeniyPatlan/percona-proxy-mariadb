@@ -12,11 +12,11 @@
  * Public License.
  */
 
-#include <maxscale/json.hh>
+#include <percona-proxy/json.hh>
 
 #include <string>
 
-namespace maxscale
+namespace percona_proxy
 {
 
 bool get_json_string(json_t* json, const char* ptr, std::string* out)

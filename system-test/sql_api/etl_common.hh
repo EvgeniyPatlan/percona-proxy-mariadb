@@ -84,7 +84,7 @@ public:
         static mxb::http::Init initer;
 
         // TODO: Replace this with something universal
-        auto res = m_test.maxscale->ssh_output("yum -y install postgresql-odbc");
+        auto res = m_test.percona_proxy->ssh_output("yum -y install postgresql-odbc");
         m_test.expect(res.rc == 0, "Failed to install ODBC drivers: %s", res.output.c_str());
     }
 
@@ -166,8 +166,8 @@ public:
     {
         return query({
             {"target", server},
-            {"user", m_test.maxscale->user_name()},
-            {"password", m_test.maxscale->password()}
+            {"user", m_test.percona_proxy->user_name()},
+            {"password", m_test.percona_proxy->password()}
         }, sql);
     }
 
@@ -179,8 +179,8 @@ public:
         ss << "DRIVER=libmaodbc.so;"
            << "SERVER=" << m_test.repl->ip(node) << ";"
            << "PORT=" << m_test.repl->port(node) << ";"
-           << "UID=" << m_test.maxscale->user_name() << ";"
-           << "PWD={" << m_test.maxscale->password() << "}";
+           << "UID=" << m_test.percona_proxy->user_name() << ";"
+           << "PWD={" << m_test.percona_proxy->password() << "}";
 
         auto source = query_odbc(dsn, sql_src).at("data/attributes/results");
 
@@ -245,8 +245,8 @@ public:
 
         auto dest = connect({
             {"target", destination},
-            {"user", m_test.maxscale->user_name()},
-            {"password", m_test.maxscale->password()},
+            {"user", m_test.percona_proxy->user_name()},
+            {"password", m_test.percona_proxy->password()},
             {"timeout", std::to_string(timeout.count())},
         });
 
@@ -397,7 +397,7 @@ private:
 
     std::string url(std::string_view endpoint)
     {
-        return mxb::cat("http://", m_test.maxscale->ip(), ":8989/v1/", endpoint);
+        return mxb::cat("http://", m_test.percona_proxy->ip(), ":8989/v1/", endpoint);
     }
 
     TestConnections&                   m_test;

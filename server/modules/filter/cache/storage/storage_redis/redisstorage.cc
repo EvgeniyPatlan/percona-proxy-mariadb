@@ -13,7 +13,7 @@
  */
 
 //
-// REDIS implementation of the storage API of the MaxScale cache filter
+// REDIS implementation of the storage API of the Percona Proxy cache filter
 //
 // Documentation:
 // - /usr/include/hiredis
@@ -138,7 +138,7 @@
 #include <hiredis_ssl.h>
 #include <maxbase/alloc.hh>
 #include <maxbase/worker.hh>
-#include <maxscale/threadpool.hh>
+#include <percona-proxy/threadpool.hh>
 #include "redisconfig.hh"
 
 using std::map;

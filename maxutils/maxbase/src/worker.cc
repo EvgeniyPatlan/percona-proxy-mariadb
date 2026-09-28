@@ -87,7 +87,7 @@ void warn_slow_dns_lookup()
     auto normal = mxb::to_secs(mxb::name_lookup_duration(mxb::NameLookupTimer::NORMAL));
     auto reverse = mxb::to_secs(mxb::name_lookup_duration(mxb::NameLookupTimer::REVERSE));
     const char* suggestion = " Consider disabling reverse hostname resolution by"
-                             " adding skip_name_resolve=true under the [maxscale] section.";
+                             " adding skip_name_resolve=true under the [percona-proxy] section.";
     MXB_WARNING("Spent %.1f seconds on hostname resolution and %0.1f in reverse hostname resolution.%s",
                 normal, reverse, reverse > 1.0 ? suggestion : "");
 }
@@ -362,7 +362,7 @@ Worker::Callable::~Callable()
 {
     if (!m_dcalls.empty())
     {
-        // Before MaxScale 22.8, if the target of a delayed call was deleted before the
+        // Before Percona Proxy 22.8, if the target of a delayed call was deleted before the
         // delayed call was due, it would have resulted in a random crash, so it should
         // be a very rare occurrence. If we ever see this, then we know that some
         // unexplained crash may have been caused by this.

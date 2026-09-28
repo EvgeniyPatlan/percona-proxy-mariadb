@@ -20,8 +20,8 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     auto get_gtid = [&](std::string name) {
-            auto rv = test.maxscale->ssh_output(
-                "cat /var/lib/maxscale/" + name + "/current_gtid.txt 2>/dev/null");
+            auto rv = test.percona_proxy->ssh_output(
+                "cat /var/lib/percona-proxy/" + name + "/current_gtid.txt 2>/dev/null");
             return mxb::trimmed_copy(rv.output);
         };
 
@@ -31,8 +31,8 @@ int main(int argc, char** argv)
 
             while (Clock::now() - start < std::chrono::seconds(15))
             {
-                auto rv = test.maxscale->ssh_output(
-                    "maxctrl api get monitors/" + name + " data.attributes.monitor_diagnostics.primary");
+                auto rv = test.percona_proxy->ssh_output(
+                    "percona-proxyctl api get monitors/" + name + " data.attributes.monitor_diagnostics.primary");
 
                 if (mxb::trimmed_copy(rv.output) == "true")
                 {
@@ -40,17 +40,17 @@ int main(int argc, char** argv)
                 }
                 else
                 {
-                    test.maxscale->wait_for_monitor();
+                    test.percona_proxy->wait_for_monitor();
                 }
             }
         };
 
     // Make sure we're starting from a clean state, this will prevent excessive slowness if there are lots of
     // stale events in the binlogs.
-    test.maxctrl("call command mariadbmon reset-replication A-Monitor");
-    test.maxscale->stop();
-    test.maxscale->ssh_node_f(true, "rm -r /var/lib/maxscale/{A-avro,B-avro}/");
-    test.maxscale->start();
+    test.percona_proxyctl("call command mariadbmon reset-replication A-Monitor");
+    test.percona_proxy->stop();
+    test.percona_proxy->ssh_node_f(true, "rm -r /var/lib/percona-proxy/{A-avro,B-avro}/");
+    test.percona_proxy->start();
 
     auto conn = test.repl->get_connection(0);
     conn.connect();
@@ -59,9 +59,9 @@ int main(int argc, char** argv)
     conn.query("INSERT INTO test.t1 VALUES (1)");
 
     test.log_printf("Stop B-Monitor, A-Monitor will take ownership of the cluster");
-    test.maxctrl("stop monitor B-Monitor");
+    test.percona_proxyctl("stop monitor B-Monitor");
     wait_until_primary("A-Monitor");
-    test.maxctrl("start monitor B-Monitor");
+    test.percona_proxyctl("start monitor B-Monitor");
 
     conn.query("INSERT INTO test.t1 VALUES (1)");
     sleep(5);
@@ -77,9 +77,9 @@ int main(int argc, char** argv)
                     "instance does not start replicating.");
     auto old_master = master;
 
-    test.maxctrl("stop monitor A-Monitor");
+    test.percona_proxyctl("stop monitor A-Monitor");
     wait_until_primary("B-Monitor");
-    test.maxctrl("start monitor A-Monitor");
+    test.percona_proxyctl("start monitor A-Monitor");
 
     conn.query("INSERT INTO test.t1 VALUES (2)");
     sleep(5);
@@ -96,8 +96,8 @@ int main(int argc, char** argv)
     old_master = master;
 
     test.log_printf("Stop both monitors");
-    test.maxctrl("stop monitor B-Monitor");
-    test.maxctrl("stop monitor A-Monitor");
+    test.percona_proxyctl("stop monitor B-Monitor");
+    test.percona_proxyctl("stop monitor A-Monitor");
     sleep(5);
 
     conn.query("INSERT INTO test.t1 VALUES (3)");

@@ -1,11 +1,11 @@
-# MariaDB MaxScale Configuration Guide
+# Percona Proxy for MariaDB Configuration Guide
 
 [TOC]
 
 # Introduction
 
-This document describes how to configure MariaDB MaxScale and presents some
-possible usage scenarios. MariaDB MaxScale is designed with flexibility in mind,
+This document describes how to configure Percona Proxy for MariaDB and presents some
+possible usage scenarios. Percona Proxy for MariaDB is designed with flexibility in mind,
 and consists of an event processing core with various support functions and
 plugin modules that tailor the behavior of the program.
 
@@ -15,11 +15,11 @@ plugin modules that tailor the behavior of the program.
 
 Word | Description
 --------------------|----------------------------------------------------
-connection routing  | Connection routing is a method of handling requests in which MariaDB MaxScale will accept connections from a client and route data on that connection to a single database using a single connection. Connection based routing will not examine individual requests on a connection and it will not move that connection once it is established.
+connection routing  | Connection routing is a method of handling requests in which Percona Proxy for MariaDB will accept connections from a client and route data on that connection to a single database using a single connection. Connection based routing will not examine individual requests on a connection and it will not move that connection once it is established.
 statement routing   | Statement routing is a method of handling requests in which each request within a connection will be handled individually. Requests may be sent to one or more servers and connections may be dynamically added or removed from the session.
-module              | A module is a separate code entity that may be loaded dynamically into MariaDB MaxScale to increase the available functionality. Modules are implemented as run-time loadable shared objects.
-connection failover | When a connection currently being used between MariaDB MaxScale and the database server fails a replacement will be automatically created to another server by MariaDB MaxScale without client intervention
-backend database    | A term used to refer to a database that sits behind MariaDB MaxScale and is accessed by applications via MariaDB MaxScale.
+module              | A module is a separate code entity that may be loaded dynamically into Percona Proxy for MariaDB to increase the available functionality. Modules are implemented as run-time loadable shared objects.
+connection failover | When a connection currently being used between Percona Proxy for MariaDB and the database server fails a replacement will be automatically created to another server by Percona Proxy for MariaDB without client intervention
+backend database    | A term used to refer to a database that sits behind Percona Proxy for MariaDB and is accessed by applications via Percona Proxy for MariaDB.
 REST API | HTTP administrative interface
 
 ## Objects
@@ -27,7 +27,7 @@ REST API | HTTP administrative interface
 ### Server
 
 A server represents an individual database server to which a client can be
-connected via MariaDB MaxScale. The status of a server varies during the lifetime
+connected via Percona Proxy for MariaDB. The status of a server varies during the lifetime
 of the server and typically the status is updated by some monitor. However, it
 is also possible to update the status of a server manually.
 
@@ -36,33 +36,33 @@ Status | Description
 Running       | The server is running.
 Master        | The server is the primary.
 Slave         | The server is a replica.
-Draining      | The server is being drained. Existing connections can continue to be used, but no new connections will be created to the server. Typically this status bit is turned on manually using _maxctrl_, but a monitor may also turn it on.
+Draining      | The server is being drained. Existing connections can continue to be used, but no new connections will be created to the server. Typically this status bit is turned on manually using _percona-proxyctl_, but a monitor may also turn it on.
 Drained       | The server has been drained. The server was being drained and now the number of connections to the server has dropped to 0.
 Auth Error    | The monitor cannot login and query the server due to insufficient privileges.
-Maintenance   | The server is under maintenance. Typically this status bit is turned on manually using _maxctrl_, but it will also be turned on for a server that for some reason is blocking connections from MaxScale. When a server is in maintenace mode, no connections will be created to it and existing connections will be closed.
+Maintenance   | The server is under maintenance. Typically this status bit is turned on manually using _percona-proxyctl_, but it will also be turned on for a server that for some reason is blocking connections from Percona Proxy. When a server is in maintenace mode, no connections will be created to it and existing connections will be closed.
 Slave of External Master | The server is a replica of a primary that is not being monitored.
 Master Stickiness | The server is monitored by a galeramon with `disable_master_failback=true`. See [disable_master_failback](./Monitors/Galera-Monitor.md#disable_master_failback) for more information.
 
-For more information on how to manually set these states via MaxCtrl, read the
+For more information on how to manually set these states via Percona Proxyctl, read the
 [Administration Tutorial](../Tutorials/Administration-Tutorial.md).
 
 ### Monitor
 
 A monitor module is capable of monitoring the state of a particular kind
-of cluster and making that state available to the routers of MaxScale.
+of cluster and making that state available to the routers of Percona Proxy.
 
 Examples of monitor modules are `mariadbmon` that is capable of monitoring
 a regular primary-replica cluster and in addition of performing both _switchover_
 and _failover_, `galeramon` that is capable of monitoring a Galera cluster,
 and `csmon` that is capable of monitoring a Columnstore cluster.
 
-Monitor modules have sections of their own in the MaxScale configuration
+Monitor modules have sections of their own in the Percona Proxy configuration
 file.
 
 ### Filter
 
 A filter module resides in front of routers in the request processing chain
-of MaxScale. That is, a filter will see a request before it reaches the router
+of Percona Proxy. That is, a filter will see a request before it reaches the router
 and before a response is sent back to the client. This allows filters to
 reject, handle, alter or log information about a request.
 
@@ -70,7 +70,7 @@ Examples of filters `cache` that provides query caching according to rules,
 `regexfilter` that can rewrite requests according to regular expressions, and
 `qlafilter` that logs information about requests.
 
-Filters have sections of their own in the MaxScale configuration file that are
+Filters have sections of their own in the Percona Proxy configuration file that are
 referred to from _services_.
 
 ### Router
@@ -83,7 +83,7 @@ session is created and all requests are subsequently routed to that server,
 and `readwritesplit` that provides _statement routing_, that is, each
 individual request is routed to the most appropriate server.
 
-Routers do not have sections of their own in the MaxScale configuration file,
+Routers do not have sections of their own in the Percona Proxy configuration file,
 but are referred to from _services_.
 
 ### Service
@@ -94,16 +94,16 @@ to the client. Depending on what router (e.g. `readconnroute` or
 way. If the service uses filters, then all requests will be pre-processed in
 some way before they reach the router.
 
-Services have sections of their own in the MaxScale configuration file.
+Services have sections of their own in the Percona Proxy configuration file.
 
 ### Listener
 
-A listener defines a port MaxScale listens on. Connection requests arriving on
+A listener defines a port Percona Proxy listens on. Connection requests arriving on
 that port will be forwarded to the service the listener is associated with. A
 listener may be associated with a single service, but several listeners may be
 associated with the same service.
 
-Listeners have sections of their own in the MaxScale configuration file.
+Listeners have sections of their own in the Percona Proxy configuration file.
 
 ### Include
 
@@ -112,33 +112,33 @@ configuration sections.
 
 # Administration
 
-The administation of MaxScale can be divided in two parts:
+The administation of Percona Proxy can be divided in two parts:
 
-* Writing the MaxScale configuration file, which is described in the following
+* Writing the Percona Proxy configuration file, which is described in the following
   [section](#configuration).
-* Performing runtime modifications using [MaxCtrl](../Reference/MaxCtrl.md)
+* Performing runtime modifications using [Percona Proxyctl](../Reference/Percona Proxyctl.md)
 
-For detailed information about _MaxCtrl_ please refer to the specific
+For detailed information about _Percona Proxyctl_ please refer to the specific
 documentation referred to above. In the following it will only be explained how
-MaxCtrl relate to each other, as far as user credentials go.
+Percona Proxyctl relate to each other, as far as user credentials go.
 
 **Note**: By default all runtime configuration changes are saved on disk and
   loaded on startup. Refer to the
   [Dynamic Configuration](#dynamic-configuration) section for more details
   on how it works and how to disable it.
 
-MaxCtrl can connect using TCP/IP sockets. When connecting with MaxCtrl using
+Percona Proxyctl can connect using TCP/IP sockets. When connecting with Percona Proxyctl using
 TCP/IP sockets, the user and password must be provided and are checked against a
 separate user credentials database. By default, that database contains the user
 `admin` whose password is `mariadb`.
 
-Note that if MaxCtrl is invoked without explicitly providing a user and password
+Note that if Percona Proxyctl is invoked without explicitly providing a user and password
 then it will by default use `admin` and `mariadb`. That means that when the
 default user is removed, the credentials must always be provided.
 
 ## Administration audit file
 
-The REST API calls to MaxScale can be logged
+The REST API calls to Percona Proxy can be logged
 by enabling [admin_audit](#admin_audit).
 
 For more detail see the admin audit configuration values `admin_audit`,
@@ -193,17 +193,17 @@ changed by destroying and recreating the object in question.
 
 # Configuration
 
-MaxScale by default reads configuration from the file `/etc/maxscale.cnf`. If
-the command line argument `--configdir=<path>` is given, `maxscale.cnf` is
+Percona Proxy by default reads configuration from the file `/etc/percona-proxy.cnf`. If
+the command line argument `--configdir=<path>` is given, `percona-proxy.cnf` is
 searched for in *\<path\>* instead.  If the argument `--config=<file>` is given,
 configuration is read from the file *\<file\>*.
 
-MaxScale also looks for a directory with the same name as the configuration
-file, followed by ".d" (for example `/etc/maxscale.cnf.d`). If found, MaxScale
+Percona Proxy also looks for a directory with the same name as the configuration
+file, followed by ".d" (for example `/etc/percona-proxy.cnf.d`). If found, Percona Proxy
 recursively reads all files with the ".cnf" suffix in the directory hierarchy.
 Other files are ignored.
 
-After loading normal configuration files, MaxScale reads runtime-generated
+After loading normal configuration files, Percona Proxy reads runtime-generated
 configuration files, if any, from the
 [persisted configuration files directory](#persistdir).
 
@@ -243,26 +243,26 @@ servers=server1,
 Section names may not contain whitespace and must not start with the characters
 `@@`.
 
-As the object names are used to form URLs in the MaxScale REST API, they must be
+As the object names are used to form URLs in the Percona Proxy REST API, they must be
 safe for use in URLs. This means that only alphanumeric characters (i.e. `a-z`
 `A-Z` and `0-9`) and the special characters `_.~-` can be used.
 
 ## Dynamic Configuration
 
-By default all changes done at runtime via the MaxScale GUI, MaxCtrl or the REST
+By default all changes done at runtime via the Percona Proxy GUI, Percona Proxyctl or the REST
 API will be saved on disk, inside the [persistdir](#persistdir) directory. The
 changes done at runtime will override the configuration found in the static
 configuration files for that particular object.
 
-This means that if an object that is found in `/etc/maxscale.cnf` is modified at
+This means that if an object that is found in `/etc/percona-proxy.cnf` is modified at
 runtime, all future changes to it must also be done at runtime. Any
-modifications done to `/etc/maxscale.cnf` after a runtime change has been made
+modifications done to `/etc/percona-proxy.cnf` after a runtime change has been made
 are ignored for that object.
 
 To prevent the saving of runtime changes and to make all runtime changes
 volatile, add [`persist_runtime_changes=false`](#persist_runtime_changes) and
-[`load_persisted_configs=false`](#load_persisted_configs) under the `[maxscale]`
-section. This will make MaxScale behave like the MariaDB server does: any
+[`load_persisted_configs=false`](#load_persisted_configs) under the `[percona-proxy]`
+section. This will make Percona Proxy behave like the MariaDB server does: any
 changes done with `SET GLOBAL` statements are lost if the process is restarted.
 
 ## Special Parameter Types
@@ -271,7 +271,7 @@ changes done with `SET GLOBAL` statements are lost if the process is restarted.
 
 Boolean type parameters interpret the values `true`, `yes`, `on` and `1` as
 _true_ values and `false`, `no`, `off` and `0` as _false_ values. Starting with
-MaxScale 23.02, the REST API also accepts the same boolean values for boolean
+Percona Proxy 23.02, the REST API also accepts the same boolean values for boolean
 type parameters.
 
 ### Sizes
@@ -320,27 +320,27 @@ Note that if an explicit unit is not specified, then it is specific to the
 configuration parameter whether the duration is interpreted as seconds or
 milliseconds.
 
-_Not_ providing an explicit unit has been deprecated in MaxScale 2.4.
+_Not_ providing an explicit unit has been deprecated in Percona Proxy 2.4.
 
 ### Regular Expressions
 
 Many modules have settings which accept a regular expression. In most cases, these
 settings are named either *match* or *exclude*, and are used to filter users or queries.
-MaxScale uses the [PCRE2-library](https://www.pcre.org/current/doc/html/) for matching
+Percona Proxy uses the [PCRE2-library](https://www.pcre.org/current/doc/html/) for matching
 regular expressions.
 
-When writing a regular expression (regex) type parameter to a MaxScale configuration file,
+When writing a regular expression (regex) type parameter to a Percona Proxy configuration file,
 the pattern string should be enclosed in slashes e.g. `^select` -> `match=/^select/`. This
 clarifies where the pattern begins and ends, even if it includes whitespace. Without
 slashes the configuration loader trims the pattern from the ends. The slashes are removed
 before compiling the pattern. For backwards compatibility, the slashes are not yet
 mandatory. Omitting them is, however, deprecated and will be rejected in a future release
-of MaxScale. Currently, *binlogfilter*, *ccrfilter*, *qlafilter*, *tee* and *avrorouter*
+of Percona Proxy. Currently, *binlogfilter*, *ccrfilter*, *qlafilter*, *tee* and *avrorouter*
 accept parameters in this type of regular expression form. Some other modules may not
 handle the slashes yet correctly.
 
 PCRE2 supports a complicated regular expression
-[syntax](https://www.pcre.org/current/doc/html/pcre2syntax.html). MaxScale typically uses
+[syntax](https://www.pcre.org/current/doc/html/pcre2syntax.html). Percona Proxy typically uses
 regular expressions simply, only checking whether the pattern and subject match at some
 point. For example, using the QLAFilter and setting `match=/SELECT/` causes the filter to
 accept any query with the text "SELECT" somewhere within. To force the pattern to only
@@ -397,7 +397,7 @@ passed on to the next module in the processing chain as if the filter was not th
 Enumeration type parameters have a pre-defined set of accepted values. For types
 declared as `enum`, only one value is accepted. For `enum_mask` types, multiple
 values can be defined by separating them with commas. All enumeration values in
-MaxScale are case-sensitive.
+Percona Proxy are case-sensitive.
 
 For example the `router_options` parameter in the `readconnroute` router is a
 mask type enumeration:
@@ -412,17 +412,17 @@ A `pathlist` type parameter expects one or more filesystem paths separated by
 colons. The value must not include space between the separators.
 
 Here is an example path list parameter that points to `/tmp/something.log` and
-`/var/log/maxscale/maxscale.log`:
+`/var/log/percona-proxy/percona-proxy.log`:
 
 ```
-path_list_parameter=/tmp/something.log:/var/log/maxscale/maxscale.log
+path_list_parameter=/tmp/something.log:/var/log/percona-proxy/percona-proxy.log
 ```
 
 ## Global Settings
 
-The global settings, in a section named `[MaxScale]`, allow various parameters
-that affect MariaDB MaxScale as a whole to be tuned. This section must be
-defined in the root configuration file which by default is `/etc/maxscale.cnf`.
+The global settings, in a section named `[Percona Proxy]`, allow various parameters
+that affect Percona Proxy for MariaDB as a whole to be tuned. This section must be
+defined in the root configuration file which by default is `/etc/percona-proxy.cnf`.
 
 ### `core_file`
 
@@ -430,9 +430,9 @@ defined in the root configuration file which by default is `/etc/maxscale.cnf`.
 - **Default**: true
 - **Dynamic**: No
 
-This parameter specifies whether a core file should be generated if MaxScale
+This parameter specifies whether a core file should be generated if Percona Proxy
 crashes. The default is `true` although usually a core file is not needed,
-as MaxScale is capable of logging the full strack trace of all threads
+as Percona Proxy is capable of logging the full strack trace of all threads
 when it crashes.
 
 ### `auto_tune`
@@ -449,7 +449,7 @@ particular server variable. With this parameter it can be specified whether
 
 The current auto tunable parameters are:
 
-|MaxScale Parameter|Server Variable Dependency|
+|Percona Proxy Parameter|Server Variable Dependency|
 |------------------|--------------------------|
 |[connection_keepalive](#connection_keepalive)|80% of the smallest [`wait_timeout`](https://mariadb.com/docs/reference/mdb/system-variables/wait_timeout/) value of the servers used by the service|
 |[wait_timeout](#wait_timeout)|The smallest [`wait_timeout`](https://mariadb.com/docs/reference/mdb/system-variables/wait_timeout/) value of the servers used by the service|
@@ -459,7 +459,7 @@ if the servers of a service are not monitored by a monitor, then the parameters
 of that service will not be auto tuned.
 
 Note that even if `auto_tune` is set to `all`, the auto tunable parameters
-can still be set in the configuration file and modified with _maxctrl_.
+can still be set in the configuration file and modified with _percona-proxyctl_.
 However, the specified value will be overwritten at the next auto tuning
 round, but only if the servers of the service are monitored by a monitor.
 
@@ -472,15 +472,15 @@ round, but only if the servers of the service are monitored by a monitor.
 
 This parameter controls the number of worker threads that are handling the
 events coming from the kernel. The default is `auto` which uses as many threads
-as there are CPU cores. MaxScale versions older than 6 used one thread by
+as there are CPU cores. Percona Proxy versions older than 6 used one thread by
 default.
 
 You can explicitly enable automatic configuration of this value by setting the
-value to `auto`. This way MariaDB MaxScale will detect the number of available
+value to `auto`. This way Percona Proxy for MariaDB will detect the number of available
 processors and set the amount of threads to be equal to that number.
 
-Note that if MaxScale is running in a container where the CPU resources
-have been limited, the use of `auto` may cause MaxScale to use more resources
+Note that if Percona Proxy is running in a container where the CPU resources
+have been limited, the use of `auto` may cause Percona Proxy to use more resources
 than what is available. In such a situation `auto` should not be used, but instead
 an explicit number that corresponds to the amount of CPU resources available in
 the container. As a rule of thumb, an appropriate value for `threads` is the
@@ -494,7 +494,7 @@ The maximum value for `threads` is specified by [threads_max](#threads_max).
 # Valid options are:
 #       threads=[<number of threads> | auto ]
 
-[MaxScale]
+[Percona Proxy]
 threads=auto
 ```
 
@@ -502,7 +502,7 @@ From 23.02 onwards it is possible to change the number threads at runtime.
 Please see [Threads](#threads-1) for more details.
 
 Additional threads will be created to execute other internal services within
-MariaDB MaxScale. This setting is used to configure the number of threads that
+Percona Proxy for MariaDB. This setting is used to configure the number of threads that
 will be used to manage the user connections.
 
 ### `threads_max`
@@ -545,7 +545,7 @@ moved from one thread to another.
 - **Dynamic**: Yes
 - **Default**: `20`
 
-This integer parameter controls at which point MaxScale should start
+This integer parameter controls at which point Percona Proxy should start
 moving work from one worker thread to another.
 
 If the difference in load between the thread with the maximum load and
@@ -603,7 +603,7 @@ an IP address.
 Duration, default 10s. This setting defines the connection timeout when
 attempting to fetch MariaDB/MySQL/Clustrix users from a backend server. The same
 value is also used for read and write timeouts. Increasing this value causes
-MaxScale to wait longer for a response from a server before user fetching fails.
+Percona Proxy to wait longer for a response from a server before user fetching fails.
 Other servers may then be attempted.
 
 ```
@@ -618,11 +618,11 @@ than a second.
 
 ### `auth_read_timeout`
 
-Deprecated and ignored as of MaxScale 2.5.0. See *auth_connect_timeout* above.
+Deprecated and ignored as of Percona Proxy 2.5.0. See *auth_connect_timeout* above.
 
 ### `auth_write_timeout`
 
-Deprecated and ignored as of MaxScale 2.5.0. See *auth_connect_timeout* above.
+Deprecated and ignored as of Percona Proxy 2.5.0. See *auth_connect_timeout* above.
 
 ### `query_retries`
 
@@ -632,8 +632,8 @@ Deprecated and ignored as of MaxScale 2.5.0. See *auth_connect_timeout* above.
 - **Default**: `1`
 
 The number of times an interrupted internal query will be retried. The default
-is to retry the query once. This feature was added in MaxScale 2.1.10 and was
-disabled by default until MaxScale 2.3.0.
+is to retry the query once. This feature was added in Percona Proxy 2.1.10 and was
+disabled by default until Percona Proxy 2.3.0.
 
 An interrupted query is any query that is interrupted by a network
 error. Connection timeouts are included in network errors and thus is it
@@ -655,7 +655,7 @@ An interrupted query is retried for either the configured amount of attempts or
 until the configured timeout is reached.
 
 The value is specified as documented [here](#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second.
@@ -667,10 +667,10 @@ even if the duration is longer than a second.
 - **Dynamic**: Yes
 - **Default**: `false`
 
-Controls whether MaxScale is a passive node in a cluster of multiple MaxScale
+Controls whether Percona Proxy is a passive node in a cluster of multiple Percona Proxy
 instances.
 
-This parameter is intended to be used with multiple MaxScale instances that use
+This parameter is intended to be used with multiple Percona Proxy instances that use
 failover functionality to manipulate the cluster in some form. Passive nodes
 only observe the clusters being monitored and take no direct actions.
 
@@ -680,7 +680,7 @@ The following functionality is disabled when passive mode is enabled:
  * Automatic rejoin in the `mariadbmon` module
  * Launching of monitor scripts
 
-**NOTE:** Even if MaxScale is in passive mode, it will still accept clients and
+**NOTE:** Even if Percona Proxy is in passive mode, it will still accept clients and
   route any traffic sent to it. The **only** operations affected by the passive
   mode are the ones listed above.
 
@@ -704,10 +704,10 @@ millisecond precision to all logfile timestamps.
 Log messages to the system journal. This logs messages using the native SystemD
 journal interface. The logs can be viewed with `journalctl`.
 
-MaxScale 22.08 changed the default value of `syslog` from `true` to
+Percona Proxy 22.08 changed the default value of `syslog` from `true` to
 `false`. This was done to remove the redundant logging that it caused as both
 `syslog` and `maxlog` were enabled by default. This caused each message to be
-logged twice: once into the system journal and once into MaxScale's own logfile.
+logged twice: once into the system journal and once into Percona Proxy's own logfile.
 
 ### `maxlog`
 
@@ -716,8 +716,8 @@ logged twice: once into the system journal and once into MaxScale's own logfile.
 - **Dynamic**: Yes
 - **Default**: `true`
 
-Log messages to MariaDB MaxScale's log file. The name of the log file is
-`maxscale.log` and it is located in the directory pointed by [logdir](#logdir).
+Log messages to Percona Proxy for MariaDB's log file. The name of the log file is
+`percona-proxy.log` and it is located in the directory pointed by [logdir](#logdir).
 
 ### `log_warning`
 
@@ -728,7 +728,7 @@ Log messages to MariaDB MaxScale's log file. The name of the log file is
 
 Log messages whose syslog priority is *warning*.
 
-MaxScale logs warning level messages whenever a condition is encountered that
+Percona Proxy logs warning level messages whenever a condition is encountered that
 the user should be notified of but does not require immediate action or it
 indicates a minor problem.
 
@@ -743,7 +743,7 @@ Log messages whose syslog priority is *notice*.
 
 These messages contain information that is helpful for the user and they usually
 do not indicate a problem. These are logged whenever something worth nothing
-happens in either MaxScale or in the servers it monitors.
+happens in either Percona Proxy or in the servers it monitors.
 
 ### `log_info`
 
@@ -755,8 +755,8 @@ happens in either MaxScale or in the servers it monitors.
 Log messages whose syslog priority is *info*.
 
 These messages provide detailed information about the internal workings of
-MariaDB MaxScale. These messages should only be enabled when there is a need to
-inspect the internal logic of MaxScale. A common use-case is to see why a
+Percona Proxy for MariaDB. These messages should only be enabled when there is a need to
+inspect the internal logic of Percona Proxy. A common use-case is to see why a
 particular query was handled in a certain way. Almost all modules log some
 messages on the info level and this can be very helpful when trying to solve
 routing related problems.
@@ -771,9 +771,9 @@ routing related problems.
 Log messages whose syslog priority is *debug*.
 
 These messages are intended for development purposes and are disabled by
-default. These are rarely useful outside of debugging core MaxScale issues.
+default. These are rarely useful outside of debugging core Percona Proxy issues.
 
-**Note:** If MariaDB MaxScale has been built in release mode, then debug
+**Note:** If Percona Proxy for MariaDB has been built in release mode, then debug
 messages are excluded from the build and this setting will not have any
 effect. If an attempt to enable these is made, a warning is logged.
 
@@ -861,7 +861,7 @@ or one where any of the integers is 0.
 log_throttling=0, 0, 0
 ```
 The durations can be specified as documented [here](#durations). If no explicit
-unit is provided, the value is interpreted as milliseconds in MaxScale 2.4. In
+unit is provided, the value is interpreted as milliseconds in Percona Proxy 2.4. In
 subsequent versions a value without a unit may be rejected.
 
 Note that *notice*, *info* and *debug* messages are never throttled.
@@ -871,13 +871,13 @@ Note that *notice*, *info* and *debug* messages are never throttled.
 - **Type**: path
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `/var/log/maxscale`
+- **Default**: `/var/log/percona-proxy`
 
 Set the directory where the logfiles are stored. The folder needs to be both
-readable and writable by the user running MariaDB MaxScale.
+readable and writable by the user running Percona Proxy for MariaDB.
 
 ```
-logdir=/var/log/maxscale/
+logdir=/var/log/percona-proxy/
 ```
 
 ### `datadir`
@@ -885,17 +885,17 @@ logdir=/var/log/maxscale/
 - **Type**: path
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `/var/lib/maxscale`
+- **Default**: `/var/lib/percona-proxy`
 
-Set the directory where the data files used by MariaDB MaxScale are stored.
+Set the directory where the data files used by Percona Proxy for MariaDB are stored.
 Modules can write to this directory and for example the binlogrouter uses this
 folder as the default location for storing binary logs.
 
 This is also the directory where the password encryption key is read from that
-is generated by `maxkeys`.
+is generated by `percona-proxy-keys`.
 
 ```
-datadir=/var/lib/maxscale/
+datadir=/var/lib/percona-proxy/
 ```
 
 ### `secretsdir`
@@ -908,7 +908,7 @@ datadir=/var/lib/maxscale/
 The location where the `.secrets` file is read from. If `secretsdir` is not
 defined, the file is read from [datadir](#datadir).
 
-This parameter was added in MaxScale 6.4.16, 22.08.13, 23.02.10, 23.08.6
+This parameter was added in Percona Proxy 6.4.16, 22.08.13, 23.02.10, 23.08.6
 and 24.02.2.
 
 ### `libdir`
@@ -918,17 +918,17 @@ and 24.02.2.
 - **Dynamic**: No
 - **Default**: OS Dependent
 
-Set the directory where MariaDB MaxScale looks for modules. The library
-directory is the only directory that MariaDB MaxScale uses when it searches for
-modules. If you have custom modules for MariaDB MaxScale, make sure you have
+Set the directory where Percona Proxy for MariaDB looks for modules. The library
+directory is the only directory that Percona Proxy for MariaDB uses when it searches for
+modules. If you have custom modules for Percona Proxy for MariaDB, make sure you have
 them in this folder.
 
 The default value depends on the operating system. For RHEL versions the value
-is `/usr/lib64/maxscale/`. For Debian and Ubuntu it is
-`/usr/lib/x86_64-linux-gnu/maxscale/`
+is `/usr/lib64/percona-proxy/`. For Debian and Ubuntu it is
+`/usr/lib/x86_64-linux-gnu/percona-proxy/`
 
 ```
-libdir=/usr/lib64/maxscale/
+libdir=/usr/lib64/percona-proxy/
 ```
 
 ### `sharedir`
@@ -936,18 +936,18 @@ libdir=/usr/lib64/maxscale/
 - **Type**: path
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `/usr/share/maxscale`
+- **Default**: `/usr/share/percona-proxy`
 
 Sets the directory where static data assets are loaded.
 
-The MaxScale GUI static files are located in the `gui/` subdirectory. If the GUI
+The Percona Proxy GUI static files are located in the `gui/` subdirectory. If the GUI
 files have been manually moved somewhere else, this path must be configured to
 point to the parent directory of the `gui/` subdirectory.
 
-The MaxScale REST API only serves files for the GUI that are located in the
+The Percona Proxy REST API only serves files for the GUI that are located in the
 `gui/` subdirectory of the configured `sharedir`. Any files whose real path
-resolves to outside of this directory are not served by the MaxScale GUI: this
-is done to prevent other files from being accessible via the MaxScale REST
+resolves to outside of this directory are not served by the Percona Proxy GUI: this
+is done to prevent other files from being accessible via the Percona Proxy REST
 API. This means that path to the GUI source directory can contain symbolic links
 but all parts after the `/gui/` directory must reside inside it.
 
@@ -956,12 +956,12 @@ but all parts after the `/gui/` directory must reside inside it.
 - **Type**: path
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `/var/cache/maxscale`
+- **Default**: `/var/cache/percona-proxy`
 
-Configure the directory MariaDB MaxScale uses to store cached data.
+Configure the directory Percona Proxy for MariaDB uses to store cached data.
 
 ```
-cachedir=/var/cache/maxscale/
+cachedir=/var/cache/percona-proxy/
 ```
 
 ### `piddir`
@@ -969,13 +969,13 @@ cachedir=/var/cache/maxscale/
 - **Type**: path
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `/var/run/maxscale`
+- **Default**: `/var/run/percona-proxy`
 
-Configure the directory for the PID file for MariaDB MaxScale. This file
-contains the Process ID for the running MariaDB MaxScale process.
+Configure the directory for the PID file for Percona Proxy for MariaDB. This file
+contains the Process ID for the running Percona Proxy for MariaDB process.
 
 ```
-piddir=/var/run/maxscale/
+piddir=/var/run/percona-proxy/
 ```
 
 ### `execdir`
@@ -1001,20 +1001,20 @@ execdir=/usr/bin/
 - **Default**: OS Dependent
 
 Location of the MariaDB Connector-C plugin directory. The MariaDB Connector-C
-used in MaxScale can use this directory to load authentication plugins. The
+used in Percona Proxy can use this directory to load authentication plugins. The
 versions of the plugins must be binary compatible with the connector version
-that MaxScale was built with.
+that Percona Proxy was built with.
 
-Starting with version 6.2.0, the plugins are bundled with MaxScale and the
+Starting with version 6.2.0, the plugins are bundled with Percona Proxy and the
 default value now points to the bundled plugins. The location where the plugins
 are stored depends on the operating system. For RHEL versions the value is
-`/usr/lib64/maxscale/plugin/`. For Debian and Ubuntu it is
-`/usr/lib/x86_64-linux-gnu/maxscale/plugin/`.
+`/usr/lib64/percona-proxy/plugin/`. For Debian and Ubuntu it is
+`/usr/lib/x86_64-linux-gnu/percona-proxy/plugin/`.
 
-Older versions of MaxScale used `/usr/lib/mysql/plugin/` as the default value.
+Older versions of Percona Proxy used `/usr/lib/mysql/plugin/` as the default value.
 
 ```
-connector_plugindir=/usr/lib64/maxscale/plugin/
+connector_plugindir=/usr/lib64/percona-proxy/plugin/
 ```
 
 ### `persistdir`
@@ -1022,16 +1022,16 @@ connector_plugindir=/usr/lib64/maxscale/plugin/
 - **Type**: path
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `/var/lib/maxscale/maxscale.cnf.d/`
+- **Default**: `/var/lib/percona-proxy/percona-proxy.cnf.d/`
 
 Configure the directory where persisted configurations are stored. When a new
-object is created via MaxCtrl, it will be stored in this directory. Do not use
-this directory for normal configuration files, use _/etc/maxscale.cnf.d/_
-instead. The user MaxScale is running as must be able to write into this
+object is created via Percona Proxyctl, it will be stored in this directory. Do not use
+this directory for normal configuration files, use _/etc/percona-proxy.cnf.d/_
+instead. The user Percona Proxy is running as must be able to write into this
 directory.
 
 ```
-persistdir=/var/lib/maxscale/maxscale.cnf.d/
+persistdir=/var/lib/percona-proxy/percona-proxy.cnf.d/
 ```
 
 ### `module_configdir`
@@ -1039,7 +1039,7 @@ persistdir=/var/lib/maxscale/maxscale.cnf.d/
 - **Type**: path
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `/etc/maxscale.modules.d/`
+- **Default**: `/etc/percona-proxy.modules.d/`
 
 Configure the directory where module configurations are stored. Path arguments
 are resolved relative to this directory. This directory should be used to store
@@ -1050,11 +1050,11 @@ a relative path. The relative paths use the module configuration directory as
 the working directory.
 
 For example, the configuration parameter `file=my_file.txt` would be interpreted
-as `/etc/maxscale.modules.d/my_file.txt` whereas `file=/home/user/my_file.txt` would
+as `/etc/percona-proxy.modules.d/my_file.txt` whereas `file=/home/user/my_file.txt` would
 be interpreted as `/home/user/my_file.txt`.
 
 ```
-module_configdir=/etc/maxscale.modules.d/
+module_configdir=/etc/percona-proxy.modules.d/
 ```
 
 ### `language`
@@ -1062,18 +1062,18 @@ module_configdir=/etc/maxscale.modules.d/
 - **Type**: path
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `/var/lib/maxscale/`
+- **Default**: `/var/lib/percona-proxy/`
 
-Set the folder where the errmsg.sys file is located in. MariaDB MaxScale will
-look for the errmsg.sys file installed with MariaDB MaxScale from this folder.
+Set the folder where the errmsg.sys file is located in. Percona Proxy for MariaDB will
+look for the errmsg.sys file installed with Percona Proxy for MariaDB from this folder.
 
 ```
-language=/var/lib/maxscale/
+language=/var/lib/percona-proxy/
 ```
 
 ### `query_classifier`
 
-Deprecated since MariaDB MaxScale 23.08.
+Deprecated since Percona Proxy for MariaDB 23.08.
 
 ### `query_classifier_cache_size`
 
@@ -1083,15 +1083,15 @@ Deprecated since MariaDB MaxScale 23.08.
 - **Default**: System Dependent
 
 Specifies the maximum size of the query classifier cache. The default limit is
-15% of total system memory starting with MaxScale 2.3.7. In older versions the
-default limit was 40% of total system memory. This feature was added in MaxScale
+15% of total system memory starting with Percona Proxy 2.3.7. In older versions the
+default limit was 40% of total system memory. This feature was added in Percona Proxy
 2.3.0.
 
-When the query classifier cache has been enabled, MaxScale will, after a
+When the query classifier cache has been enabled, Percona Proxy will, after a
 statement has been parsed, store the classification result using the
 canonicalized version of the statement as the key.
 
-If the classification result for a statement is needed, MaxScale will first
+If the classification result for a statement is needed, Percona Proxy will first
 canonicalize the statement and check whether the result can be found in the
 cache.  If it can, the statement will not be parsed at all but the cached result
 is used.
@@ -1104,7 +1104,7 @@ the cache. The size of the cache can be specifed as explained [here](#sizes).
 query_classifier_cache_size=1MB
 ```
 
-Note that MaxScale uses a separate cache for each worker thread. To obtain the
+Note that Percona Proxy uses a separate cache for each worker thread. To obtain the
 amount of memory available for each thread, divide the cache size with the value
 of `threads`. If statements are evicted from the cache (visible in the
 diagnostic output), consider increasing the cache size.
@@ -1114,7 +1114,7 @@ the memory needed for storing the canonicalized statement and the classification
 result is correctly accounted for, there is additional overhead whose size is not
 exactly known and over which we do not have direct control.
 
-Using `maxctrl show threads` it is possible to check what the actual size of
+Using `percona-proxyctl show threads` it is possible to check what the actual size of
 the cache is and to see performance statistics.
 
 Key|Meaning
@@ -1127,7 +1127,7 @@ QC cache evictions|How many times a cache entry has had to be removed from the c
 
 ### `query_classifier_args`
 
-Deprecated since MariaDB MaxScale 23.08.
+Deprecated since Percona Proxy for MariaDB 23.08.
 
 ### `substitute_variables`
 
@@ -1136,7 +1136,7 @@ Deprecated since MariaDB MaxScale 23.08.
 - **Dynamic**: No
 - **Default**: `false`
 
-Enable or disable the substitution of environment variables in the MaxScale
+Enable or disable the substitution of environment variables in the Percona Proxy
 configuration file. If the substitution of variables is enabled and a
 configuration line like
 ```
@@ -1155,8 +1155,8 @@ substitute_variables=true
 ```
 
 The setting of `substitute_variables` will have an effect on all parameters
-in the all other sections, irrespective of where the `[maxscale]` section
-is placed in the configuration file. However, in the `[maxscale]` section,
+in the all other sections, irrespective of where the `[percona-proxy]` section
+is placed in the configuration file. However, in the `[percona-proxy]` section,
 to ensure that substitution will take place, place the
 `substitute_variables=true` line first.
 
@@ -1179,10 +1179,10 @@ The allowed values are:
 sql_mode=oracle
 ```
 
-**NOTE** If `sql_mode` is set to `oracle`, then MaxScale will also assume
+**NOTE** If `sql_mode` is set to `oracle`, then Percona Proxy will also assume
 that `autocommit` initially is off.
 
-At runtime, MariaDB MaxScale will recognize statements like
+At runtime, Percona Proxy for MariaDB will recognize statements like
 ```
 set sql_mode=oracle;
 ```
@@ -1192,12 +1192,12 @@ set sql_mode=default;
 ```
 and change mode accordingly.
 
-**NOTE** If `set sql_mode=oracle;` is encountered, then MaxScale will also
+**NOTE** If `set sql_mode=oracle;` is encountered, then Percona Proxy will also
 behave as if `autocommit` had been turned off and conversely, if
-`set sql_mode=default;` is encountered, then MaxScale will also behave
+`set sql_mode=default;` is encountered, then Percona Proxy will also behave
 as if `autocommit` had been turned on.
 
-Note that MariaDB MaxScale is **not** explicitly aware of the sql mode of
+Note that Percona Proxy for MariaDB is **not** explicitly aware of the sql mode of
 the server, so the value of `sql_mode` should reflect the sql mode used
 when the server is started.
 
@@ -1210,8 +1210,8 @@ when the server is started.
 
 What specific local address/interface to use when connecting to servers.
 
-This can be used for ensuring that MaxScale uses a particular interface
-when connecting to servers, in case the computer MaxScale is running on
+This can be used for ensuring that Percona Proxy uses a particular interface
+when connecting to servers, in case the computer Percona Proxy is running on
 has multiple interfaces.
 ```
 local_address=192.168.1.254
@@ -1224,12 +1224,12 @@ local_address=192.168.1.254
 - **Dynamic**: Yes
 - **Default**: `30s`
 
-How often, in seconds, MaxScale at most may refresh the users from the
+How often, in seconds, Percona Proxy at most may refresh the users from the
 backend server.
 
-MaxScale will at startup load the users from the backend server, but if
-the authentication of a user fails, MaxScale assumes it is because a new
-user has been created and will thus refresh the users. By default, MaxScale
+Percona Proxy will at startup load the users from the backend server, but if
+the authentication of a user fails, Percona Proxy assumes it is because a new
+user has been created and will thus refresh the users. By default, Percona Proxy
 will do that at most once per 30 seconds and with this configuration option
 that can be changed. A value of 0 allows infinite refreshes and a negative
 value disables the refreshing entirely.
@@ -1239,12 +1239,12 @@ users_refresh_time=120s
 ```
 
 The value is specified as documented [here](#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second.
 
-In MaxScale 2.3.9 and older versions, the minimum allowed value was 10 seconds
+In Percona Proxy 2.3.9 and older versions, the minimum allowed value was 10 seconds
 but, due to a bug, the default value was 0 which allowed infinite refreshes.
 
 ### `users_refresh_interval`
@@ -1254,7 +1254,7 @@ but, due to a bug, the default value was 0 which allowed infinite refreshes.
 - **Dynamic**: Yes
 - **Default**: `0s`
 
-How often, in seconds, MaxScale will automatically refresh the users from the
+How often, in seconds, Percona Proxy will automatically refresh the users from the
 backend server.
 
 This configuration is used to periodically refresh the backend users, making sure
@@ -1272,7 +1272,7 @@ users_refresh_interval=2h
 - **Dynamic**: Yes
 - **Default**: `0`
 
-How many statements MaxScale should store for each session. This is for
+How many statements Percona Proxy should store for each session. This is for
 debugging purposes, as in case of problems it is often of value to be able
 to find out exactly what statements were sent before a particular
 problem turned up.
@@ -1293,7 +1293,7 @@ retain_last_statements=20
 - **Values**: `on_close`, `on_error`, `never`
 - **Default**: `never`
 
-With this configuration item it is specified in what circumstances MaxScale
+With this configuration item it is specified in what circumstances Percona Proxy
 should dump the last statements that a client sent. The allowed values are
 `never`, `on_error` and `on_close`. With `never` the statements are never
 logged, with `on_error` they are logged if the client closes the connection
@@ -1304,7 +1304,7 @@ dump_last_statements=on_error
 ```
 
 Note that you need to specify with `retain_last_statements` how many statements
-MaxScale should retain for each session. Unless it has been set to another value
+Percona Proxy should retain for each session. Unless it has been set to another value
 than `0`, this configuration setting will not have an effect.
 
 ### `session_trace`
@@ -1318,7 +1318,7 @@ How many log entries are stored in the session specific trace log. This log is
 written to disk when a session ends abnormally and can be used for debugging
 purposes. Currently the session trace log is written to the log in the following situations:
 
-* When MaxScale receives a fatal signal and is about to crash.
+* When Percona Proxy receives a fatal signal and is about to crash.
 * Whenever an unexpected response is read from a server
 * If the session is not closed gracefully (i.e. client doesn't send a  COM_QUIT packet)
 * Whenever readwritesplit receives a responce that is was not expecting.
@@ -1333,12 +1333,12 @@ session_trace=20
 Default is `0`.
 
 The session trace log is also exposed by REST API and is shown with
-`maxctrl show sessions`.
+`percona-proxyctl show sessions`.
 
 The order in which the session trace messages are logged into the log changed in
-MaxScale 6.4.9 (MXS-4716). Newer versions will log the messages in the "normal
+Percona Proxy 6.4.9 (MXS-4716). Newer versions will log the messages in the "normal
 log order" of older events coming first and newer events appearing later in the
-file. Older versions of MaxScale logged the trace dump in the reverse order with
+file. Older versions of Percona Proxy logged the trace dump in the reverse order with
 the newest messages first and oldest ones last.
 
 ### `session_trace_match`
@@ -1352,8 +1352,8 @@ If both `session_trace` and `session_trace_match` are defined, and a trace log
 entry of a session matches the regular expression, the trace log is written to
 disk. The check for the match is done when the session is stopping.
 
-The most effective way to debug MaxScale related issues is to turn on `log_info`
-and observe the events written into the MaxScale log. The only problem with this
+The most effective way to debug Percona Proxy related issues is to turn on `log_info`
+and observe the events written into the Percona Proxy log. The only problem with this
 approach is that it can cause a severe performance bottleneck and can easily
 fill up the disk as the amount of data written to it is significant. With
 `session_trace` and `session_trace_match`, the content that actually gets logged
@@ -1369,9 +1369,9 @@ session_trace_match=/You have an error in your SQL syntax/
 
 This could be used to easily identify which applications execute the queries
 without having to gather the info level log output from all the sessions that
-connect to MaxScale. For every session that ends up logging a syntax error
+connect to Percona Proxy. For every session that ends up logging a syntax error
 message, the last 1000 lines of log output done by that session is written into
-the MaxScale log.
+the Percona Proxy log.
 
 ### `writeq_high_water`
 
@@ -1381,7 +1381,7 @@ the MaxScale log.
 - **Default**: `65536`
 
 High water mark for network write buffer. When the size of the outbound network
-buffer in MaxScale for a single connection exceeds this value, network traffic
+buffer in Percona Proxy for a single connection exceeds this value, network traffic
 throtting for that connection is started. The parameter accepts [size type
 values](#sizes). The default value was 16777216 bytes before 22.08.4.
 
@@ -1389,13 +1389,13 @@ More specifically, if the client side write queue is above this value, it will
 block traffic coming from backend servers. If the backend side write queue is
 above this value, it will block traffic from client.
 
-The buffer that this parameter controls is the buffer internal to MaxScale and
+The buffer that this parameter controls is the buffer internal to Percona Proxy and
 is not the kernel TCP send buffer. This means that the total amount of buffered
 data is determined by both the kernel TCP buffers and the value of
 `writeq_high_water`.
 
 Network throttling is only enabled when `writeq_high_water` is non-zero. In
-MaxScale 23.02 and earlier, also `writeq_low_water` had to be non-zero.
+Percona Proxy 23.02 and earlier, also `writeq_low_water` had to be non-zero.
 
 ### `writeq_low_water`
 
@@ -1418,13 +1418,13 @@ The value of `writeq_high_water` must always be greater than the value of
 - **Default**: true
 - **Dynamic**: No
 
-Persist changes done at runtime. This parameter was added in MaxScale 22.08.0.
+Persist changes done at runtime. This parameter was added in Percona Proxy 22.08.0.
 
 When `persist_runtime_changes` is enabled, runtime configuration changes done
-with the GUI, MaxCtrl or via the REST API cause a new configuration file to be
-saved in `/var/lib/maxscale/maxscale.cnf.d/`. If `load_persisted_configs` is
+with the GUI, Percona Proxyctl or via the REST API cause a new configuration file to be
+saved in `/var/lib/percona-proxy/percona-proxy.cnf.d/`. If `load_persisted_configs` is
 enabled, these files will be applied on top of any existing values found in
-static configuration files whenever MaxScale is starting up.
+static configuration files whenever Percona Proxy is starting up.
 
 ### `load_persisted_configs`
 
@@ -1433,15 +1433,15 @@ static configuration files whenever MaxScale is starting up.
 - **Dynamic**: No
 - **Default**: `true`
 
-Load persisted runtime changes on startup. This parameter was added in MaxScale
+Load persisted runtime changes on startup. This parameter was added in Percona Proxy
 2.3.6.
 
 All runtime configuration changes are persisted in generated configuration files
-located by default in `/var/lib/maxscale/maxscale.cnf.d/` and are loaded on
+located by default in `/var/lib/percona-proxy/percona-proxy.cnf.d/` and are loaded on
 startup after main configuration files have been read. To make runtime
-configurations volatile (i.e. they are lost when maxscale is restarted), use
+configurations volatile (i.e. they are lost when percona-proxy is restarted), use
 `load_persisted_configs=false`. All changes are still persisted since it stores
-the current runtime state of MaxScale. This makes problem analysis easier if an
+the current runtime state of Percona Proxy. This makes problem analysis easier if an
 unexpected outage happens.
 
 ### `max_auth_errors_until_block`
@@ -1475,10 +1475,10 @@ only for testing purposes and are not to be used in production.
 
 ### REST API Configuration
 
-The MaxScale REST API is an HTTP interface that provides JSON format data
+The Percona Proxy REST API is an HTTP interface that provides JSON format data
 intended to be consumed by monitoring appllications and visualization tools.
 
-The following options must be defined under the `[maxscale]` section in the
+The following options must be defined under the `[percona-proxy]` section in the
 configuration file.
 
 ### `admin_host`
@@ -1527,7 +1527,7 @@ interface will use encrypted HTTPS instead of plain HTTP.
 
 The REST-API only supports PKCS#8 PEM private keys and using a PKCS#1 PEM
 private key will result in an error. If your private key is in PKCS#1 PEM
-format, convert it to PKCS#8 PEM format first before starting up MaxScale.
+format, convert it to PKCS#8 PEM format first before starting up Percona Proxy.
 
 ### `admin_ssl_cert`
 
@@ -1541,7 +1541,7 @@ documentation for more details.
 
 ### `admin_ssl_ca_cert`
 
-Deprecated since MariaDB MaxScale 22.08. See `admin_ssl_ca`.
+Deprecated since Percona Proxy for MariaDB 22.08. See `admin_ssl_ca`.
 
 ### `admin_ssl_ca`
 
@@ -1552,9 +1552,9 @@ Deprecated since MariaDB MaxScale 22.08. See `admin_ssl_ca`.
 
 The path to the TLS CA certificate in PEM format. If defined, the client
 certificate, if provided, will be validated against it. This parameter is
-optional starting with MaxScale 2.3.19.
+optional starting with Percona Proxy 2.3.19.
 
-**NOTE** Up until MariaDB MaxScale 6, the parameter was called `admin_ssl_ca_cert`,
+**NOTE** Up until Percona Proxy for MariaDB 6, the parameter was called `admin_ssl_ca_cert`,
          which is still accepted as an alias for `admin_ssl_ca`.
 
 ### `admin_ssl_version`
@@ -1574,7 +1574,7 @@ values are:
  * `TLSv13` (not supported on OpenSSL 1.0)
  * `MAX`
 
-MaxScale versions 6.4.16, 22.08.13, 23.02.10, 23.08.6, 24.02.2 and all newer
+Percona Proxy versions 6.4.16, 22.08.13, 23.02.10, 23.08.6, 24.02.2 and all newer
 releases accept also the following alias values:
 
  * `TLSv1.0`
@@ -1589,11 +1589,11 @@ on the operating system and what TLS versions the GnuTLS library supports.
 For example, to enable only TLSv1.1 and TLSv1.3, use
 `admin_ssl_version=TLSv1.1,TLSv1.3`.
 
-This parameter was added in MaxScale 2.5.7.
+This parameter was added in Percona Proxy 2.5.7.
 
-Older versions of MaxScale interpreted `admin_ssl_version` as the minimum
+Older versions of Percona Proxy interpreted `admin_ssl_version` as the minimum
 allowed TLS version. In those versions, `admin_ssl_version=TLSv1.2` allowed both
-TLSv1.2 and TLSv1.3. In MaxScale 6.4.16, 22.08.13, 23.02.10, 23.08.6, 24.02.2
+TLSv1.2 and TLSv1.3. In Percona Proxy 6.4.16, 22.08.13, 23.02.10, 23.08.6, 24.02.2
 and all newer versions, the value is a enumeration of accepted TLS protocol
 versions. In these versions, `admin_ssl_version=TLSv1.2` only allows TLSv1.2. To
 retain the old behavior, specify all the accepted values with
@@ -1618,7 +1618,7 @@ be completely disabled to prevent access to it.
 
 Enable or disable the admin graphical user interface.
 
-MaxScale provides a GUI for administrative operations via the REST API. When the
+Percona Proxy provides a GUI for administrative operations via the REST API. When the
 GUI is enabled, the root REST API resource (i.e. `http://localhost:8989/`) will
 serve the GUI. When disabled, the REST API will respond with a 200 OK to the
 request. By disabling the GUI, the root resource can be used as a low overhead
@@ -1638,7 +1638,7 @@ it uses a token authentication scheme. This also controls whether the
 `/auth` endpoint requires an encrypted connection.
 
 To allow use of the GUI without having to configure TLS certificates for
-the MaxScale REST API, set this parameter to false.
+the Percona Proxy REST API, set this parameter to false.
 
 ### `admin_log_auth_failures`
 
@@ -1659,9 +1659,9 @@ Log authentication failures for the admin interface.
 Use Pluggable Authentication Modules (PAM) for REST API authentication. The settings
 accept a PAM service name which is used during authentication if normal authentication
 fails. `admin_pam_readwrite_service` should accept users who can do any
-MaxCtrl/REST-API-operation. `admin_pam_readonly_service` should accept users who can only
+Percona Proxyctl/REST-API-operation. `admin_pam_readonly_service` should accept users who can only
 do read operations. Because REST-API does not support back and forth communication between
-the client and MaxScale, the PAM services must be simple. They should only ask for the
+the client and Percona Proxy, the PAM services must be simple. They should only ask for the
 password and nothing else.
 
 If only `admin_pam_readwrite_service` is configured, both read and write operations can be
@@ -1677,13 +1677,13 @@ the requested operation. Leave or set both empty to disable PAM for REST-API.
 - **Values**: `auto`, `HS256`, `HS384`, `HS512`, `RS256`, `RS384`, `RS512`, `PS256`, `PS384`, `PS512`, `ES256`, `ES384`, `ES512`, `ED25519`, `ED448`
 - **Default**: `auto`
 
-The signature algorithm used by the MaxScale REST API when generating JSON Web
+The signature algorithm used by the Percona Proxy REST API when generating JSON Web
 Tokens.
 
 For more information about the tokens and how they work, refer to [the REST API
 documentation](../REST-API/API.md).
 
-If a symmetric algorithm is used (i.e. `HS256`, `HS384` or `HS512`), MaxScale
+If a symmetric algorithm is used (i.e. `HS256`, `HS384` or `HS512`), Percona Proxy
 will generate a random encryption key on startup and use that to sign the
 messages. The symmetric key can also be retrieved from an [Encryption Key
 Manager](#encryption-key-managers) if the `admin_jwt_key` parameter is defined.
@@ -1691,23 +1691,23 @@ Manager](#encryption-key-managers) if the `admin_jwt_key` parameter is defined.
 If an asymmetric algorithm (i.e. public key authentication) is used, both the
 `admin_ssl_cert` and `admin_ssl_key` parameters must be defined and they must
 contain a private key and a public certificate of the correct type. If the wrong
-key type, key length or elliptic curve is used, MaxScale will refuse to start.
+key type, key length or elliptic curve is used, Percona Proxy will refuse to start.
 
 Asymmetric key algorithms make it possible for the clients of the REST API to
 validate that the token was indeed generated by the correct entity.
 
 Symmetric algorithms make it easy to share the same tokens between
-multiple MaxScale instaces as the shared secret can be stored in a key
+multiple Percona Proxy instaces as the shared secret can be stored in a key
 management system.
 
 The possible values for this parameter are:
 
 * `auto`
 
-  * MaxScale will attempt to detect the best algorithm to use for
+  * Percona Proxy will attempt to detect the best algorithm to use for
     signatures. The algorithm used depends on the private key type: RSA keys use
     `PS256`, EC keys use the `ES256`, `ES384` or `ES512` depending on the curve,
-    Ed25519 keys use `ED25519` and Ed448 keys uses `ED448`. If MaxScale cannot
+    Ed25519 keys use `ED25519` and Ed448 keys uses `ED448`. If Percona Proxy cannot
     auto-detect the key type, it falls back to `HS256` as the default algorithm.
 
 * `HS256`, `HS384` or `HS512`
@@ -1751,7 +1751,7 @@ The possible values for this parameter are:
 
 The ID for the encryption key used to sign the JSON Web Tokens. If configured,
 an [Encryption Key Manager](#encryption-key-managers) must also be configured
-and it must contain the key with the given ID. If no key is defined, MaxScale
+and it must contain the key with the given ID. If no key is defined, Percona Proxy
 will use a random encryption key whenever a symmetric signature algorithm is
 used.
 
@@ -1771,7 +1771,7 @@ The maximum lifetime of a token generated by the `/auth` endpoint.
 
 If a client requests for a token with a lifetime that exceeds the configured
 value, the token lifetime is silently truncated to this value. This can be used
-to control the maximum length of a MaxGUI session.
+to control the maximum length of a Percona Proxy GUI session.
 
 This also acts as the effective maximum age of any database connection created
 from the `/sql` endpoint.
@@ -1786,21 +1786,21 @@ from the `/sql` endpoint.
 The URL to a OpenID Connect server that is used for JWT validation.
 
 If defined, any tokens signed by this server are accepted as valid bearer tokens
-for the MaxScale REST API. The `"sub"` field of the token is assumed to be the
-username of an administrative user in MaxScale and the `"account"` claim is
+for the Percona Proxy REST API. The `"sub"` field of the token is assumed to be the
+username of an administrative user in Percona Proxy and the `"account"` claim is
 assumed to be the type of the user: `"admin"` for administrative users with full
 access to the REST-API and `"basic"` for users with read-only access to the
-REST-API. This means that all users must be first created with `maxctrl create
+REST-API. This means that all users must be first created with `percona-proxyctl create
 user` before the tokens are accepted if the OIDC provider is not able to add the
 `"account"` claim.
 
 Modifying `admin_oidc_url` will cause the certificates to be fetched
-again. They are also fetched when the `maxctrl reload tls` command is
+again. They are also fetched when the `percona-proxyctl reload tls` command is
 executed or when the `admin_ssl_cert` and `admin_ssl_key` settings are
 modified.
 
-MaxScale versions 22.08.16 and earlier only fetched the new certificates when
-the `maxctrl reload tls` command was executed.
+Percona Proxy versions 22.08.16 and earlier only fetched the new certificates when
+the `percona-proxyctl reload tls` command was executed.
 
 ### `admin_verify_url`
 
@@ -1820,24 +1820,24 @@ and the custom `X-Referrer-Method` header is set to the HTTP method being used
 **Note**: When `admin_verify_url` is used and the remote server cannot
 be accessed, all REST API access that uses tokens will be disabled. The
 only way to use the REST API with tokens is to remove `admin_verify_url`
-from the configuration which requires restarting MaxScale. The REST API
+from the configuration which requires restarting Percona Proxy. The REST API
 still accepts HTTP Basic Access authentication even if the remote server
 cannot be reached.
 
 By delegating the authentication and authorization of the REST API to an
 external server, users can implement custom access control systems for the
-MaxScale REST API.
+Percona Proxy REST API.
 
 ### `admin_jwt_issuer`
 
 - **Type**: string
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `maxscale`
+- **Default**: `percona-proxy`
 
-The issuer (`"iss"`) claim of all JWTs generated by MaxScale. This can be set
-to a custom value to uniquely identify which MaxScale issued a JWT. This is
-especially useful for cases where the MaxScale GUI is used from behind
+The issuer (`"iss"`) claim of all JWTs generated by Percona Proxy. This can be set
+to a custom value to uniquely identify which Percona Proxy issued a JWT. This is
+especially useful for cases where the Percona Proxy GUI is used from behind
 a reverse proxy.
 
 ### `admin_audit`
@@ -1854,13 +1854,13 @@ Enable logging of incoming REST API calls.
 - **Type**: string
 - **Mandatory**: No
 - **Dynamic**: Yes
-- **Default**: `/var/log/maxscale/admin_audit.csv`
+- **Default**: `/var/log/percona-proxy/admin_audit.csv`
 
 The file where the REST API auditing information is logged.
 
 If a non-default value is used, the directory where the file resides must
-exist. For example, with `/var/log/maxscale/audit_files/audit.csv`, the
-directory `/var/log/maxscale/audit_files` must exist.
+exist. For example, with `/var/log/percona-proxy/audit_files/audit.csv`, the
+directory `/var/log/percona-proxy/audit_files` must exist.
 
 ### `admin_audit_exclude_methods`
 
@@ -1871,13 +1871,13 @@ directory `/var/log/maxscale/audit_files` must exist.
 - **Default**: No exclusions
 
 List of comma separated HTTP methods to exclude from logging
-Currently MaxScale does not use `CONNECT` or `TRACE`.
+Currently Percona Proxy does not use `CONNECT` or `TRACE`.
 
 Resetting to log all methods can be done in the configuration file by
 writing `admin_audit_exclude_methods=` or at runtime with
-`maxctrl alter maxscale admin_audit_exclude_methods=`.
+`percona-proxyctl alter percona-proxy admin_audit_exclude_methods=`.
 Remember that once a runtime change has been made, the entry for that
-setting is ignored in the main configuration file (usually maxscale.cnf).
+setting is ignored in the main configuration file (usually percona-proxy.cnf).
 
 ### `config_sync_cluster`
 
@@ -1887,7 +1887,7 @@ setting is ignored in the main configuration file (usually maxscale.cnf).
 - **Default**: None
 
 This parameter controls which cluster (i.e. monitor) is used to synchronize
-configuration changes between MaxScale instances. The first server labeled
+configuration changes between Percona Proxy instances. The first server labeled
 `Master` will be used for the synchronization.
 
 By default configuration synchronization is not enabled and it must be
@@ -1907,21 +1907,21 @@ Synchronization](#configuration-synchronization) section.
 - **Default**: None
 
 The username for the account that is used to synchronize configuration changes
-across MaxScale instances. Both this parameter and `config_sync_password` are
+across Percona Proxy instances. Both this parameter and `config_sync_password` are
 required if `config_sync_cluster` is configured.
 
 This account must have the following grants:
 
 ```
-GRANT SELECT, INSERT, UPDATE, CREATE ON `mysql`.`maxscale_config`
+GRANT SELECT, INSERT, UPDATE, CREATE ON `mysql`.`percona_proxy_config`
 ```
 
-The `mysql.maxscale_config` table can be pre-created in which case the `CREATE`
+The `mysql.percona_proxy_config` table can be pre-created in which case the `CREATE`
 grant is not needed by the user configured in `config_sync_user`. The following
 SQL is used to create the table.
 
 ```
-CREATE TABLE IF NOT EXISTS mysql.maxscale_config(
+CREATE TABLE IF NOT EXISTS mysql.percona_proxy_config(
   cluster VARCHAR(256) PRIMARY KEY,
   version BIGINT NOT NULL,
   config JSON NOT NULL,
@@ -1942,7 +1942,7 @@ grants must be adjusted to target that database instead.
 
 The password for `config_sync_user`. Both this parameter and `config_sync_user`
 are required if `config_sync_cluster` is configured. This password can
-optionally be encrypted using `maxpasswd`.
+optionally be encrypted using `percona-proxy-passwd`.
 
 ### `config_sync_db`
 
@@ -1951,14 +1951,14 @@ optionally be encrypted using `maxpasswd`.
 - **Dynamic**: No
 - **Default**: `mysql`
 
-The database where the `maxscale_config` table is created. By default the table
-is created in the `mysql` database. This parameter was added in MaxScale
+The database where the `percona_proxy_config` table is created. By default the table
+is created in the `mysql` database. This parameter was added in Percona Proxy
 versions 6.4.6 and 22.08.5.
 
 As tables in the `mysql` database cannot have triggers on them, the database
 must be changed to a user-created one in order to create triggers on the table.
 An example use-case for triggers on this table is to track all configuration
-changes done to MaxScale by inserting them into a separate table.
+changes done to Percona Proxy by inserting them into a separate table.
 
 ### `config_sync_interval`
 
@@ -2018,7 +2018,7 @@ file.keyfile=/path/to/keyfile
 
 ## Events
 
-MaxScale logs warnings and errors for various reasons and often it is self-
+Percona Proxy logs warnings and errors for various reasons and often it is self-
 evident and generally applicable whether some occurence should warrant a
 warning or an error, or perhaps just an info-level message.
 
@@ -2027,7 +2027,7 @@ instance, in some environments an authentication failure may simply indicate
 that someone has made a typo, while in some other environment that can only
 happen in case there has been a security breech.
 
-To handle events like these, MaxScale defines _events_ whose logging
+To handle events like these, Percona Proxy defines _events_ whose logging
 facility and level can be controlled by the administrator. Given an event
 `X`, its facility and level are controlled in the following manner:
 ```
@@ -2042,8 +2042,8 @@ syslog`, e.g. `LOG_AUTH`, `LOG_LOCAL0` and `LOG_USER`. Likewise, the valid
 values for `level` are the ones also reported by `man syslog`,
 e.g. `LOG_WARNING`, `LOG_ERR` and `LOG_CRIT`.
 
-Note that MaxScale does not act upon the level, that is, even if the level
-of a particular event is defined to be `LOG_EMERG`, MaxScale will not shut
+Note that Percona Proxy does not act upon the level, that is, even if the level
+of a particular event is defined to be `LOG_EMERG`, Percona Proxy will not shut
 down if that event occurs.
 
 The default facility is `LOG_USER` and the default level is `LOG_WARNING`.
@@ -2070,12 +2070,12 @@ event.authentication_failure.level=LOG_CRIT
 
 ## Service
 
-A service represents the database service that MariaDB MaxScale offers to the
+A service represents the database service that Percona Proxy for MariaDB offers to the
 clients. In general a service consists of a set of backend database servers and
-a routing algorithm that determines how MariaDB MaxScale decides to send
+a routing algorithm that determines how Percona Proxy for MariaDB decides to send
 statements or route connections to those backend servers.
 
-A service may be considered as a virtual database server that MariaDB MaxScale
+A service may be considered as a virtual database server that Percona Proxy for MariaDB
 makes available to its clients.
 
 Several different services may be defined using the same set of backend servers.
@@ -2093,9 +2093,9 @@ configuration file section and a type parameter of service.
 type=service
 ```
 
-In order for MariaDB MaxScale to forward any requests it must have at least one
+In order for Percona Proxy for MariaDB to forward any requests it must have at least one
 service defined within the configuration file. The definition of a service alone
-is not enough to allow MariaDB MaxScale to forward requests however, the service
+is not enough to allow Percona Proxy for MariaDB to forward requests however, the service
 is merely present to link together the other configuration elements.
 
 ### `router`
@@ -2106,7 +2106,7 @@ is merely present to link together the other configuration elements.
 
 The router parameter of a service defines the name of the router module that
 will be used to implement the routing algorithm between the client of MariaDB
-MaxScale and the backend databases. Additionally routers may also be passed a
+Percona Proxy and the backend databases. Additionally routers may also be passed a
 comma separated list of options that are used to control the behavior of the
 routing algorithm. The two parameters that control the routing choice are router
 and router_options. The router options are specific to a particular router and
@@ -2160,7 +2160,7 @@ the configuration parameter.
 
 The `targets` parameter is a comma separated list of server and/or service names
 that comprise the routing targets of the service. This parameter was added in
-MaxScale 2.5.0.
+Percona Proxy 2.5.0.
 
 ```
 targets=My-Service,server2
@@ -2220,7 +2220,7 @@ This setting defines the _user_ the service uses to fetch user account
 information from backends. A _password_ is specified using [password](#password).
 
 ```
-user=maxscale
+user=percona-proxy
 password=Mhu87p2D
 ```
 
@@ -2240,7 +2240,7 @@ an [encrypted password](#encrypting-passwords). The _user_ is specified
 using [user](#user).
 
 ```
-user=maxscale
+user=percona-proxy
 password=Mhu87p2D
 ```
 
@@ -2248,13 +2248,13 @@ See [MySQL protocol authentication documentation](../Authenticators/Authenticati
 for more information (such as required grants) and troubleshooting tips
 regarding user account management and client authentication.
 
-From 23.08.0 onwards, MaxScale will remember the previous password when the
+From 23.08.0 onwards, Percona Proxy will remember the previous password when the
 password is changed. If the fetching of the user account information fails
 using the new password, it will be attempted using the previous one. The purpose
 of this change is to make it a smoother operation to change the password of
 the service user. The steps are as follows:
 
-   1. `$ maxctrl alter service MyService password=TheNewPassword`
+   1. `$ percona-proxyctl alter service MyService password=TheNewPassword`
    1. `MariaDB [(none)]> set password for TheServiceUser = password('TheNewPassword');`
 
 Since the old password is remembered and used if the new password does not
@@ -2268,7 +2268,7 @@ work, it is no longer necessary to perform those steps simultaneously.
 - **Default**: `false`
 
 This parameter controls the ability of the root user to connect to MariaDB
-MaxScale and hence onwards to the backend servers via MariaDB MaxScale.
+Percona Proxy and hence onwards to the backend servers via Percona Proxy for MariaDB.
 
 ### `localhost_match_wildcard_host`
 
@@ -2282,7 +2282,7 @@ Deprecated and ignored.
 - **Default**: None
 
 This parameter sets a custom version string that is sent in the MySQL Handshake
-from MariaDB MaxScale to clients.
+from Percona Proxy for MariaDB to clients.
 
 Example:
 
@@ -2290,16 +2290,16 @@ Example:
 version_string=10.11.2-MariaDB-RWsplit
 ```
 
-If not set, MaxScale will attempt to use a version string from the
+If not set, Percona Proxy will attempt to use a version string from the
 backend databases by selecting the version string of the database with
 the lowest version number. If the selected version is from the MariaDB
 10 series, a `5.5.5-` prefix will be added to it similarly to how the
 MariaDB 10 series versions added it.
 
-If MaxScale has not been able to connect to a single database and the
-versions are unknown, the default value of `5.5.5-10.4.32 <MaxScale
-version>-maxscale` is used where `<MaxScale version>` is the version of
-MaxScale.
+If Percona Proxy has not been able to connect to a single database and the
+versions are unknown, the default value of `5.5.5-10.4.32 <Percona Proxy
+version>-percona-proxy` is used where `<Percona Proxy version>` is the version of
+Percona Proxy.
 
 ### `auth_all_servers`
 
@@ -2311,7 +2311,7 @@ MaxScale.
 This parameter controls whether only a single server or all of the servers are
 used when loading the users from the backend servers.
 
-By default MaxScale uses the first server labeled as `Master` as the source of
+By default Percona Proxy uses the first server labeled as `Master` as the source of
 the authentication data. When this option is enabled, the authentication data is
 loaded from all the servers and combined into one big data set.
 
@@ -2322,7 +2322,7 @@ loaded from all the servers and combined into one big data set.
 - **Dynamic**: Yes
 - **Default**: `true`
 
-**Note:** This parameter has been deprecated in MaxScale 23.08. The stripping of
+**Note:** This parameter has been deprecated in Percona Proxy 23.08. The stripping of
   escape characters is in all known cases the correct thing to do.
 
 This setting controls whether escape characters (`\`) are removed from database
@@ -2337,7 +2337,7 @@ affect database names in table and column level grants, although these typically
 do not contain backlashes.
 
 Some visual database management tools automatically escape some characters and
-this might cause conflicts when MaxScale tries to authenticate users.
+this might cause conflicts when Percona Proxy tries to authenticate users.
 
 ### `log_auth_warnings`
 
@@ -2348,7 +2348,7 @@ this might cause conflicts when MaxScale tries to authenticate users.
 
 Enable or disable the logging of authentication failures and warnings. If
 enabled, messages about failed authentication attempts will be logged with
-details about who tried to connect to MariaDB MaxScale and from where.
+details about who tried to connect to Percona Proxy for MariaDB and from where.
 
 ### `log_warning`
 
@@ -2406,14 +2406,14 @@ release build does nothing.
 - **Auto tune**: [Yes](#auto_tune)
 
 The wait_timeout parameter is used to disconnect sessions to MariaDB
-MaxScale that have been idle for too long. The session timeouts are disabled by
+Percona Proxy that have been idle for too long. The session timeouts are disabled by
 default. To enable them, define the timeout in seconds in the service's
 configuration section. A value of zero is interpreted as no timeout, the same
 as if the parameter is not defined.
 
 This parameter used to be called `connection_timeout` and this name is still
 accepted as an alias for `wait_timeout`. The old name has been deprecated in
-MaxScale 23.08.
+Percona Proxy 23.08.
 
 Note that since the granularity of the timeout is seconds, a timeout specified
 in milliseconds will be rejected, even if the duration is longer than a second.
@@ -2423,17 +2423,17 @@ the service where the listener that the client connected to points (i.e. the
 value of `service` in the listener). If a service defines other services in its
 `targets` parameter, the `wait_timeout` for those is not used.
 
-The value of `wait_timeout` in MaxScale should be lower than the lowest
+The value of `wait_timeout` in Percona Proxy should be lower than the lowest
 `wait_timeout` value on the backend servers. This way idle clients are
-disconnected by MaxScale before the backend servers have to close them. Any
+disconnected by Percona Proxy before the backend servers have to close them. Any
 client-side idle timeouts (e.g. maximum lifetime for connection pools) should be
-lower than `wait_timeout` in both MaxScale and MariaDB. This way the client
+lower than `wait_timeout` in both Percona Proxy and MariaDB. This way the client
 application will end up closing the connection itself which most of the time
 results in better and more helpful error messages.
 
 **Warning:** If a connection is idle for longer than the configured connection
 timeout, it will be forcefully disconnected and a warning will be logged in the
-MaxScale log file.
+Percona Proxy log file.
 
 Example:
 
@@ -2449,14 +2449,14 @@ wait_timeout=300s
 - **Dynamic**: Yes
 - **Default**: `0`
 
-The maximum number of simultaneous connections MaxScale should permit to this
+The maximum number of simultaneous connections Percona Proxy should permit to this
 service. If the parameter is zero or is omitted, there is no limit. Any attempt
 to make more connections after the limit is reached will result in a "Too many
 connections" error being returned.
 
-**Warning**: In MaxScale 2.5, it is possible that the number of concurrent
+**Warning**: In Percona Proxy 2.5, it is possible that the number of concurrent
   connections temporarily exceeds the value of `max_connections`. This has been
-  fixed in MaxScale 6.
+  fixed in Percona Proxy 6.
 
 Example:
 
@@ -2472,7 +2472,7 @@ max_connections=100
 - **Dynamic**: Yes
 - **Default**: `false`
 
-**Note:* This parameter has been deprecated in MaxScale 23.08 as the feature is
+**Note:* This parameter has been deprecated in Percona Proxy 23.08 as the feature is
   now used automatically if needed. In addition, the session tracking no longer
   needs to be enabled in MariaDB for the transaction state tracking to work
   correctly.
@@ -2485,13 +2485,13 @@ non-atomically.
 In general, it is better to avoid using this type of SQL as tracking the
 transaction state via the server responses is not compatible with features such
 as `transaction_replay` in readwritesplit. `session_track_trx_state` should only
-be enabled if the default transaction tracking done by MaxScale does not produce
+be enabled if the default transaction tracking done by Percona Proxy does not produce
 the desired outcome.
 
 This is only supported by MariaDB versions 10.3 or newer. The following must be
 configured in the MariaDB server in order for this feature to work. Not
 configuring the MariaDB server with it can result in the transaction state being
-wrong in MaxScale which can result in data inconsistency.
+wrong in Percona Proxy which can result in data inconsistency.
 
 ```
 session_track_state_change = ON
@@ -2505,19 +2505,19 @@ session_track_transaction_info = CHARACTERISTICS
 - **Dynamic**: Yes
 - **Default**: `-1`
 
-How many statements MaxScale should store for each session of this service.
+How many statements Percona Proxy should store for each session of this service.
 This overrides the value of the global setting with the same name. If
 `retain_last_statements` has been specified in the global section of the
-MaxScale configuration file, then if it has _not_ been explicitly specified
+Percona Proxy configuration file, then if it has _not_ been explicitly specified
 for the service, the global value holds, otherwise the service specific
 value rules. That is, it is possible to enable the setting globally and
 turn it off for a specific service, or just enable it for specific services.
 
-The value of this parameter can be changed at runtime using `maxctrl` and the
+The value of this parameter can be changed at runtime using `percona-proxyctl` and the
 new value will take effect for sessions created thereafter.
 
 ```
-maxctrl alter service MyService retain_last_statements 5
+percona-proxyctl alter service MyService retain_last_statements 5
 ```
 
 ### `connection_keepalive`
@@ -2529,12 +2529,12 @@ maxctrl alter service MyService retain_last_statements 5
 - **Auto tune**: [Yes](#auto_tune)
 
 Keep idle connections alive by sending pings to backend servers. This feature
-was introduced in MaxScale 2.5.0 where it was changed from a
+was introduced in Percona Proxy 2.5.0 where it was changed from a
 readwritesplit-specific feature to a generic service feature. The default value
 for this parameter is 300 seconds. To disable this feature, set the value to 0.
 
 The keepalive interval is specified as documented [here](#durations). If no
-explicit unit is provided, the value is interpreted as seconds in MaxScale
+explicit unit is provided, the value is interpreted as seconds in Percona Proxy
 2.5. In subsequent versions a value without a unit may be rejected. Note that
 since the granularity of the keepalive is seconds, a keepalive specified in
 milliseconds will be rejected, even if the duration is longer than a second.
@@ -2543,9 +2543,9 @@ The parameter value is the interval in seconds between each keepalive ping. A
 keepalive ping will be sent to a backend server if the connection has been idle
 for longer than the configured keepalive interval.
 
-Starting with MaxScale 2.5.21 and 6.4.0, the keepalive pings are not sent if the client
+Starting with Percona Proxy 2.5.21 and 6.4.0, the keepalive pings are not sent if the client
 has been idle for longer than the configured value of
-`connection_keepalive`. Older versions of MaxScale sent the keepalive pings
+`connection_keepalive`. Older versions of Percona Proxy sent the keepalive pings
 regardless of the client state.
 
 This parameter only takes effect in top-level services. A top-level service is
@@ -2557,7 +2557,7 @@ If the value of `connection_keepalive` is changed at runtime, the change in the
 value takes effect immediately.
 
 As the connection keepalive pings must be done only when there's no ongoing
-query, all requests and responses must be tracked by MaxScale. In the case of
+query, all requests and responses must be tracked by Percona Proxy. In the case of
 `readconnroute`, this will incur a small drop in performance. For routers that
 rely on result tracking (e.g. `readwritesplit` and `schemarouter`), the
 performance will be the same with or without `connection_keepalive`.
@@ -2576,14 +2576,14 @@ By default, connection keepalive pings are only sent if the client is either
 executing a query or has been idle for less than the duration configured in
 `connection_keepalive`. When this parameter is enabled, keepalive pings are
 unconditionally sent to any backends that have been idle for longer than
-`connection_keepalive` seconds. This option was added in MaxScale 6.4.9 and can
+`connection_keepalive` seconds. This option was added in Percona Proxy 6.4.9 and can
 be used to emulate the pre-2.5.21 behavior if long-lived application connections
 rely on the old unconditional keepalive pings.
 
 *Note:* if `force_connection_keepalive` is enabled and `connection_keepalive` in
-MaxScale is set to a lower value than the `wait_timeout` on the database, the
+Percona Proxy is set to a lower value than the `wait_timeout` on the database, the
 client idle timeouts that `wait_timeout` control are no longer effective. This
-happens because MaxScale unconditionally sends the pings which make the client
+happens because Percona Proxy unconditionally sends the pings which make the client
 behave like it is not idle and thus the connections will never be killed due to
 `wait_timeout`.
 
@@ -2602,7 +2602,7 @@ network connection, if the time since the last successful network write exceeds
 the configured limit, the client connection will be disconnected.
 
 The value is specified as documented [here](#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second.
@@ -2628,10 +2628,10 @@ rule of thumb is to count the expected number of statements and double that
 number. The default value of 50 is a value that'll work for most applications
 that do not rely heavily on user variables.
 
-Starting with MaxScale versions 21.06.18, 22.08.15, 23.02.12, 23.08.8, 24.02.4
+Starting with Percona Proxy versions 21.06.18, 22.08.15, 23.02.12, 23.08.8, 24.02.4
 and 24.08.1, binary protocol prepared statements do not count towards the
 `max_sescmd_history` limit. In practice this means that all binary protocol
-prepared statements opened by the client are also kept open by MaxScale and are
+prepared statements opened by the client are also kept open by Percona Proxy and are
 restored whenever a reconnection to a server happens. The limits imposed by
 `max_sescmd_history` apply to other text protocol commands e.g. `SET NAMES`.
 Note that text protocol prepared statements count as text protocol commands and
@@ -2639,7 +2639,7 @@ are thus potentially pruned when history pruning happens. If an application uses
 a lot of `PREPARE stmt FROM <sql>` commands, it is recommended that the value of
 `max_sescmd_history` is increased accordingly.
 
-In older versions of MaxScale, binary protocol prepared statements were limited
+In older versions of Percona Proxy, binary protocol prepared statements were limited
 by `max_sescmd_history` and were also pruned by `prune_sescmd_history` but this
 caused problems when the binary protocol prepared statment were pruned while
 they were still open from the client's point of view. In older versions, the
@@ -2647,7 +2647,7 @@ recommended value of `max_sescmd_history` is the number of state modifying
 commands plus the maximum number of open prepared statments that any application
 may use.
 
-This parameter was moved into the MaxScale core in MaxScale 6.0. The parameter
+This parameter was moved into the Percona Proxy core in Percona Proxy 6.0. The parameter
 can be configured for all routers that support the session command
 history. Currently only `readwritesplit` and `schemarouter` support it.
 
@@ -2677,7 +2677,7 @@ session state and instead re-initialize it with new values. This causes the
 session command history to grow at roughly a constant rate for the lifetime of
 the pooled connection.
 
-Starting with MaxScale 23.08, the session command history is also simplified
+Starting with Percona Proxy 23.08, the session command history is also simplified
 before being stored. The simplification is done by removing repeated occurrences
 of the same command and only executing the latest one of them. The order in
 which the commands are executed still remains the same but inter-dependencies
@@ -2696,7 +2696,7 @@ In the example, the value of `@my_home` has a dependency on the value of
 `@my_planet` which is lost when the same statement is executed again and
 the history simplification removes the earlier one.
 
-This same problem can occur even in older versions of MaxScale that used
+This same problem can occur even in older versions of Percona Proxy that used
 a sliding window of the history when the window moves past the statement
 that later statement dependend on. If inter-dependent session commands
 are being used, the history pruning should be disabled.
@@ -2719,7 +2719,7 @@ state plus a safety margin of 10. The safety margin reserves some extra space
 for new commands that might be executed due to changes in the client side
 application.
 
-This parameter was moved into the MaxScale core in MaxScale 6.0. The parameter
+This parameter was moved into the Percona Proxy core in Percona Proxy 6.0. The parameter
 can be configured for all routers that support the session command
 history. Currently only `readwritesplit` and `schemarouter` support it.
 
@@ -2739,7 +2739,7 @@ This parameter should only be used when either the memory footprint must be as
 small as possible or when the pruning of the session command history is not
 acceptable.
 
-This parameter was moved into the MaxScale core in MaxScale 6.0. The parameter
+This parameter was moved into the Percona Proxy core in Percona Proxy 6.0. The parameter
 can be configured for all routers that support the session command
 history. Currently only `readwritesplit` and `schemarouter` support it.
 
@@ -2756,11 +2756,11 @@ Default value is empty, which disables the feature.
 user_accounts_file=/home/root/users.json
 ```
 
-In addition to querying the backends, MaxScale can read users from a file. This
+In addition to querying the backends, Percona Proxy can read users from a file. This
 feature is useful when backends have limitations on the type of users that can
-be created, or if MaxScale needs to allow users to log in even
+be created, or if Percona Proxy needs to allow users to log in even
 when backends are down (e.g. binlog router). The users read from the file are
-only present on MaxScale, so logging into backends can still fail. The format of
+only present on Percona Proxy, so logging into backends can still fail. The format of
 the file is protocol-specific. The following only applies to MariaDB-protocol,
 which is also the only protocol supporting this feature.
 
@@ -2858,7 +2858,7 @@ If reading from server fails (e.g. servers are down), the file is ignored.
 "file_only_always" means that users are not read from the servers at all and the
 file contents is all that matters. The state of the servers is ignored. This
 mode can be useful with the binlog router, as it allows clients to log in and
-fetch binary logs from MaxScale even when backend servers are down.
+fetch binary logs from Percona Proxy even when backend servers are down.
 
 ```
 user_accounts_file_usage=file_only_always
@@ -2871,11 +2871,11 @@ user_accounts_file_usage=file_only_always
 - **Dynamic**: Yes
 - **Default**: `-1s`
 
-Normally, MaxScale only pools backend connections when
+Normally, Percona Proxy only pools backend connections when
 a session is closed (controlled by server settings *persistpoolmax* and
 *persistmaxtime*). Other sessions can use the pooled connections
 instead of creating new connections to backends. If connection sharing is enabled,
-MaxScale can pool backend connections also from running sessions, and
+Percona Proxy can pool backend connections also from running sessions, and
 re-attach a pooled connection when a session is doing a query. This effectively
 allows multiple sessions to share backend connections.
 
@@ -2893,16 +2893,16 @@ the session.
 
 This feature should only be used when limiting the backend connection count is
 a priority, even at the cost of query delay and throughput. This feature only
-works when the following server settings are also set in MaxScale configuration:
+works when the following server settings are also set in Percona Proxy configuration:
 
 1. [max_routing_connections](#max_routing_connections)
 2. [persistpoolmax](#persistpoolmax)
 3. [persistmaxtime](#persistmaxtime)
 
-Since reusing a backend connection is an expensive operation, MaxScale only
+Since reusing a backend connection is an expensive operation, Percona Proxy only
 pools connections when another session requires them. *idle_session_pool_time*
 thus effectively limits the frequency at which a connection can be moved from
-one session to another. Setting `idle_session_pool_time=0ms` causes MaxScale to
+one session to another. Setting `idle_session_pool_time=0ms` causes Percona Proxy to
 move connections as soon as possible.
 
 ```
@@ -2934,7 +2934,7 @@ using connection sharing. This means that the following should not be used:
 Several settings affect connection sharing and its effectiveness. Reusing a
 connection is an expensive operation so its frequency should be minimized. The
 important configuration settings in addition to *idle_session_pool_time* are
-MaxScale server settings
+Percona Proxy server settings
 [persistpoolmax](#persistpoolmax),
 [persistmaxtime](#persistmaxtime) and
 [max_routing_connections](#max_routing_connections).
@@ -2953,7 +2953,7 @@ reasonable starting point.
 *persistmaxtime* limits the time a connection may stay in the pool. This should
 be high enough so that pooled connections are not unnecessarily closed. Cleaning
 up clearly unneeded connections from the pool may be useful when
-*max_routing_connections* is restrictively tuned. Because each MaxScale routing
+*max_routing_connections* is restrictively tuned. Because each Percona Proxy routing
 thread has its own connection pool, one thread can monopolize access to a
 server. For example, if the pool of thread 1 has 100 connections to *ServerA*
 with `max_routing_connections=100`, other threads can no longer connect to the
@@ -2983,7 +2983,7 @@ max_slave_connections=1
 lazy_connect=1
 transaction_replay=true
 ```
-The above settings mean that MaxScale can process roughly
+The above settings mean that Percona Proxy can process roughly
 (*number of replica servers* X *max_routing_connections*) read queries
 simultaneously. Write queries will still need to take turns as there is only one
 primary server.
@@ -3016,7 +3016,7 @@ lazy_connect=1
 
 When connection sharing (as described above) is on, clients
 may have to wait for their turn to use a backend connection. If too much time
-passes without a connection becoming available, MaxScale returns an error to
+passes without a connection becoming available, Percona Proxy returns an error to
 the client, usually also ending the session. *multiplex_timeout* sets this
 timeout. Increase it if queries are failing with "Timed out when waiting for a
 connection". Decrease it if failing early is preferable to stalling.
@@ -3026,7 +3026,7 @@ multiplex_timeout=33s
 
 ## Server
 
-Server sections define the backend database servers MaxScale uses. A server is
+Server sections define the backend database servers Percona Proxy uses. A server is
 identified by its section name in the configuration file. The only mandatory
 parameter of a server is *type*, but *address* and *port* are also usually
 defined. A server may be a member of one or more services. A server may only be
@@ -3046,7 +3046,7 @@ port=3000
 - **Dynamic**: Yes
 - **Default**: `""`
 
-The IP-address or hostname of the machine running the database server. MaxScale
+The IP-address or hostname of the machine running the database server. Percona Proxy
 uses this address to connect to the server.
 
 Either *address* or *socket* must be defined, but not both.
@@ -3058,7 +3058,7 @@ Either *address* or *socket* must be defined, but not both.
 - **Dynamic**: Yes
 - **Default**: `3306`
 
-The port the backend server listens on for incoming connections. MaxScale uses
+The port the backend server listens on for incoming connections. Percona Proxy uses
 this port to connect to the server.
 
 ### `socket`
@@ -3116,10 +3116,10 @@ the section [encrypting passwords](#encrypting-passwords) for more information.
 - **Default**: `0`
 
 An alternative port used for administrative connections to the server.  If this
-setting is defined, MaxScale uses it for monitoring the server and to fetch user
+setting is defined, Percona Proxy uses it for monitoring the server and to fetch user
 accounts. Client sessions will still use the normal port.
 
-Defining *extra_port* allows MaxScale to connect even when *max_connections* on
+Defining *extra_port* allows Percona Proxy to connect even when *max_connections* on
 the backend server has been reached. Extra-port connections have their own
 connection limit, which is one by default. This needs to be increased to allow
 both monitor and user account manager to connect.
@@ -3139,11 +3139,11 @@ and [extra_max_connections](https://mariadb.com/kb/en/thread-pool-system-status-
 - **Default**: `0`
 
 Sets the size of the server connection pool. Disabled by default. When enabled,
-MaxScale places unused connections to the server to a pool and reuses them
+Percona Proxy places unused connections to the server to a pool and reuses them
 later. Connections typically become unused when a session closes. If the size of
 the pool reaches *persistpoolmax*, unused connections are closed instead.
 
-Every routing thread has its own pool. As of version 6.3.0, MaxScale will round
+Every routing thread has its own pool. As of version 6.3.0, Percona Proxy will round
 up *persistpoolmax* so that every thread has an equal size pool.
 
 When a MariaDB-protocol connection is taken from the pool to be used in a new
@@ -3159,7 +3159,7 @@ restores the connection to match the session state. Other routers do not.
 
 The `persistmaxtime` parameter defaults to zero but can be set to a duration as
 documented [here](#durations). If no explicit unit is provided, the value is
-interpreted as seconds in MaxScale 2.4. In subsequent versions a value without a
+interpreted as seconds in Percona Proxy 2.4. In subsequent versions a value without a
 unit may be rejected. Note that since the granularity of the parameter is
 seconds, a value specified in milliseconds will be rejected, even if the
 duration is longer than a second.
@@ -3181,13 +3181,13 @@ account fetching. A value of 0 (default) means no limit.
 
 Since every client session can generate a connection to a server, the server may
 run out of memory when the number of clients is high enough. This setting limits
-server memory use caused by MaxScale. The effect depends on if the service
+server memory use caused by Percona Proxy. The effect depends on if the service
 setting [idle_session_pool_time](#idle_session_pool_time), i.e. connection
 sharing, is enabled or not.
 
 If connection sharing is not on, *max_routing_connections* simply sets a limit.
 Any sessions attempting to exceed this limit will fail to connect to the
-backend. The client can still connect to MaxScale, but queries will fail.
+backend. The client can still connect to Percona Proxy, but queries will fail.
 
 If connection sharing is on, sessions exceeding the limit will be put on hold
 until a connection is available. Such sessions will appear unresponsive, as
@@ -3205,25 +3205,25 @@ max_routing_connections=1234
 - **Dynamic**: Yes
 - **Default**: `false`
 
-If `proxy_protocol` is enabled, MaxScale will send a
+If `proxy_protocol` is enabled, Percona Proxy will send a
 [PROXY protocol](http://www.haproxy.org/download/1.8/doc/proxy-protocol.txt)
 header when connecting client sessions to the server. The header contains the
-original client IP address and port, as seen by MaxScale. The server will then
+original client IP address and port, as seen by Percona Proxy. The server will then
 read the header and perform authentication as if the connection originated from
-this address instead of MaxScale's IP address. With this feature, the user
+this address instead of Percona Proxy's IP address. With this feature, the user
 accounts on the backend server can be simplified to only contain the actual
-client hosts and not the MaxScale host.
+client hosts and not the Percona Proxy host.
 
 **NOTE**: If you use a cloud load balancer like AWS ELB that supports the proxy
-protocol in front of a MaxScale, you need to configure
-[proxy_protocol_networks](#proxy_protocol_networks) in MaxScale. This also needs
-to be done whenever one MaxScale may connect to another Maxscale and the
-connecting MaxScale has `proxy_protocol` enabled.
+protocol in front of a Percona Proxy, you need to configure
+[proxy_protocol_networks](#proxy_protocol_networks) in Percona Proxy. This also needs
+to be done whenever one Percona Proxy may connect to another Maxscale and the
+connecting Percona Proxy has `proxy_protocol` enabled.
 
 PROXY protocol will be supported by MariaDB 10.3, which this feature has been
-tested with. To use it, enable the PROXY protocol in MaxScale for every
+tested with. To use it, enable the PROXY protocol in Percona Proxy for every
 compatible server and configure the MariaDB servers themselves to accept the
-protocol headers from MaxScale's IP address. On the server side, the protocol
+protocol headers from Percona Proxy's IP address. On the server side, the protocol
 should be enabled  only for trusted IPs, as it allows the sender to spoof the
 connection origin. If a proxy header is sent to a server not expecting it, the
 connection will fail. Usually PROXY protocol should be enabled for every
@@ -3232,11 +3232,11 @@ server in a cluster, as they typically have similar grants.
 Other SQL-servers may support PROXY protocol as well, but the implementation may
 be highly restricting. Strict adherence to the protocol requires that the
 backend server does not allow mixing of un-proxied and proxied connections from
-a given IP. MaxScale requires normal connections to backends for monitoring and
+a given IP. Percona Proxy requires normal connections to backends for monitoring and
 authentication data queries, which would be blocked. To bypass this restriction,
 the server monitor needs to be disabled and the service listener needs to be
 configured to disregard authentication errors (`skip_authentication=true`).
-Server states also need to be set manually in MaxCtrl. These steps are *not*
+Server states also need to be set manually in Percona Proxyctl. These steps are *not*
 required for MariaDB 10.3, since its implementation is more flexible and allows
 both PROXY-headered and headerless connections from a proxy-enabled IP.
 
@@ -3247,7 +3247,7 @@ both PROXY-headered and headerless connections from a proxy-enabled IP.
 - **Dynamic**: Yes
 - **Default**: None
 
-This parameter specifies how full a disk may be, before MaxScale should start
+This parameter specifies how full a disk may be, before Percona Proxy should start
 logging warnings or take other actions (e.g. perform a switchover). This
 functionality will only work with MariaDB server versions 10.1.32, 10.2.14 and
 10.3.6 onwards, if the `DISKS` _information schema plugin_ has been installed.
@@ -3280,7 +3280,7 @@ disk_space_threshold=/data1:80,/data2:60,*:90
 The last line means that the disk mounted at `/data1` may be used up to
 80%, the disk mounted at `/data2` may be used up to 60% and all other disks
 mounted at any paths may be used up until 90% of maximum capacity, before
-MaxScale starts to warn to take action.
+Percona Proxy starts to warn to take action.
 
 Note that the path to be used, is one of the paths returned by:
 ```
@@ -3361,7 +3361,7 @@ nodes are selected as the current primary server. Refer to the
 [Server Priorities](../Monitors/Galera-Monitor.md#interaction-with-server-priorities)
 section of the galeramon documentation for more information on how to use it.
 
-Starting with MaxScale 2.5.21, this parameter also accepts negative values. In
+Starting with Percona Proxy 2.5.21, this parameter also accepts negative values. In
 older versions, the parameter only accepted non-negative values.
 
 ### `replication_custom_options`
@@ -3375,7 +3375,7 @@ MariaDB Monitor. Overrides `replication_custom_options` setting set in
 the monitor. This setting affects the server where the command is ran at, not
 the source of the replication. That is, if monitor sends a "CHANGE MASTER TO"-
 command to server A telling it to replicate from server B, the setting value
-from MaxScale configuration for server A would be used.
+from Percona Proxy configuration for server A would be used.
 
 See [MariaDB Monitor documentation](../Monitors/MariaDB-Monitor.md#replication_custom_options)
 for more information.
@@ -3389,8 +3389,8 @@ Common monitor parameters [can be found here](../Monitors/Monitor-Common.md).
 
 ## Listener
 
-A listener defines a port MaxScale listens on for incoming connections. Accepted
-connections are linked with a MaxScale service. Multiple listeners can feed the
+A listener defines a port Percona Proxy listens on for incoming connections. Accepted
+connections are linked with a Percona Proxy service. Multiple listeners can feed the
 same service. Mandatory parameters are *type*, *service* and *protocol*.
 *address* is optional, it limits connections to a certain network interface
 only. *socket* is also optional and is used for Unix socket connections.
@@ -3427,7 +3427,7 @@ that is defined elsewhere in the configuration file.
 - **Default**: `mariadb`
 
 The name of the protocol module used for communication between the client and
-MaxScale. The same protocol is also used for backend communication.
+Percona Proxy. The same protocol is also used for backend communication.
 
 Usually this does not need to be defined as the default protocol is the MariaDB
 network protocol that is used by SQL connections.
@@ -3491,7 +3491,7 @@ be used simultaneously by giving a comma-separated list e.g.
 - **Dynamic**: No
 - **Default**: `""`
 
-This defines additional options for authentication. As of MaxScale 2.5.0, only
+This defines additional options for authentication. As of Percona Proxy 2.5.0, only
 *MariaDBClient* and its authenticators support additional options. The value of
 this parameter should be a comma-separated list of key-value pairs. See
 authenticator specific documentation for more details.
@@ -3512,14 +3512,14 @@ If both are used this setting will override the global setting for this listener
 Define an IP-address or a subnetwork which may send a
 [proxy protocol header](http://www.haproxy.org/download/1.8/doc/proxy-protocol.txt)
 when connecting. The proxy header contains the original client IP-address and
-port, and MaxScale will use that information in its internal bookkeeping.
+port, and Percona Proxy will use that information in its internal bookkeeping.
 This means the client is authenticated as if it was connecting from the host
-in the proxy header. If proxy protocol is also enabled in MaxScale server
-settings, MaxScale will relay the original original client address and port to
+in the proxy header. If proxy protocol is also enabled in Percona Proxy server
+settings, Percona Proxy will relay the original original client address and port to
 the server. See [server settings](#proxy_protocol) for more information.
 
 This setting may be useful if a compatible load balancer is relaying client
-connections to MaxScale. If proxy headers are used, both MaxScale and the
+connections to Percona Proxy. If proxy headers are used, both Percona Proxy and the
 backends will know where the client originally came from.
 
 The `proxy_protocol_networks`-setting works similarly to the equivalent setting
@@ -3534,7 +3534,7 @@ authentication results.
 ```
 proxy_protocol_networks=192.168.0.1,198.168.0.0/16
 ```
-Similar to MariaDB Server, MaxScale will also accept normal connections even
+Similar to MariaDB Server, Percona Proxy will also accept normal connections even
 if `proxy_protocol_networks` is configured for the listener.
 
 ### `connection_init_sql_file`
@@ -3576,19 +3576,19 @@ Should not be used together with
 [PAM Authenticator](../Authenticators/PAM-Authenticator.md)
 settings `pam_backend_mapping` or `pam_mapped_pw_file`, as these may overwrite
 the mapped credentials. Is most powerful when combined with service setting
-`user_accounts_file`, as then MaxScale can accept users that do not exist on
+`user_accounts_file`, as then Percona Proxy can accept users that do not exist on
 backends and map them to backend users.
 
 This file functions very similar to
 [PAM-based mapping](https://mariadb.com/kb/en/user-and-group-mapping-with-pam/).
 Both user-to-user and group-to-user mappings can be defined. Also, the password
 and authentication plugin for the mapped users can be added. The file is only
-read during listener creation (typically MaxScale start) or when a listener is
-modified during runtime. When a client logs into MaxScale, their username is
+read during listener creation (typically Percona Proxy start) or when a listener is
+modified during runtime. When a client logs into Percona Proxy, their username is
 searched from the mapping data. If the name matches either a name mapping or a
 Linux group mapping, the username is replaced by the mapped name. The mapped
 name is then used when logging into backends. If the file also contains
-credentials for the mapped user, then those are used. Otherwise, MaxScale tries
+credentials for the mapped user, then those are used. Otherwise, Percona Proxy tries
 to log in with an empty password and default MariaDB authentication.
 
 Three arrays are read from the file: *user_map*, *group_map* and
@@ -3609,19 +3609,19 @@ fields:
 
 - *mapped_user*: String. The mapped username this password is for.
 - *password*: String. Backend server password. Can be encrypted with
-*maxpasswd*.
+*percona-proxy-passwd*.
 - *plugin*: String, optional. Authentication plugin to use. Must be enabled on
 the listener. Defaults to empty, which results in standard MariaDB
 authentication.
 
-When a client successfully logs into MaxScale, MaxScale first searches for
+When a client successfully logs into Percona Proxy, Percona Proxy first searches for
 name-based mapping. The incoming client does not need to be a Linux user for
-name-based mapping to take place. If the name is not found, MaxScale checks if
+name-based mapping to take place. If the name is not found, Percona Proxy checks if
 the client is a Linux user with a group membership matching an element in the
 group mapping array. If the client is a member of more than 100 groups, this
 check may fail.
 
-If a mapping is found, MaxScale searches the credentials array for a matching
+If a mapping is found, Percona Proxy searches the credentials array for a matching
 username, and uses the password and plugin listed. The plugin need not be the
 same as the one the original user used. Currently, "mysql_native_password" and
 "pam" are supported as mapped plugins.
@@ -3663,7 +3663,7 @@ An example mapping file is below.
 ### `connection_metadata`
 
 - **Type**: stringlist
-- **Default**: `character_set_client=auto,character_set_connection=auto,character_set_results=auto,max_allowed_packet=auto,system_time_zone=auto,time_zone=auto,tx_isolation=auto,maxscale=auto`
+- **Default**: `character_set_client=auto,character_set_connection=auto,character_set_results=auto,max_allowed_packet=auto,system_time_zone=auto,time_zone=auto,tx_isolation=auto,percona-proxy=auto`
 - **Dynamic**: Yes
 - **Mandatory**: No
 
@@ -3680,13 +3680,13 @@ from the first `Slave` server and if no `Slave` servers are available, from the
 first `Running` server. If no running servers are available, the system
 variables are not sent.
 
-The exception to this is the `maxscale=auto` value where the `auto` will be
-replaced with the MaxScale version string. This is useful for detecting whether
-a client is connected to MaxScale. To make MaxScale completely transparent to
-the client application, the `maxscale=auto` value can be removed from
+The exception to this is the `percona-proxy=auto` value where the `auto` will be
+replaced with the Percona Proxy version string. This is useful for detecting whether
+a client is connected to Percona Proxy. To make Percona Proxy completely transparent to
+the client application, the `percona-proxy=auto` value can be removed from
 `connection_metadata`.
 
-MaxScale will always send a metadata value for `threads_connected` that contains
+Percona Proxy will always send a metadata value for `threads_connected` that contains
 the current number of connections to the service that the listener points to and
 for `connection_id` that contains the 64-bit connection ID value. The values can
 be overridden by defining them with some value, for example,
@@ -3694,7 +3694,7 @@ be overridden by defining them with some value, for example,
 
 The metadata is implemented using
 [the session state information](https://mariadb.com/kb/en/ok_packet/#session-state-info)
-that is embedded in the OK packets that are generated by MaxScale. The values
+that is embedded in the OK packets that are generated by Percona Proxy. The values
 are encoded as system variables changes. This information can be accessed by all
 connectors that support reading the session state information. One example of
 this is the MariaDB Connector/C that implements it with the
@@ -3815,14 +3815,14 @@ type=monitor
 ...
 ```
 
-Note also that if an included parameter is changed using `maxctrl`,
+Note also that if an included parameter is changed using `percona-proxyctl`,
 it will be changed _only_ on the actual object the change is applied
 on, not on the `include` section where the parameter is originally
 specified.
 
 # Available Protocols
 
-Protocol modules in MaxScale define what kind of clients can connect to a
+Protocol modules in Percona Proxy define what kind of clients can connect to a
 listener and what type of backend servers are supported. Protocol is defined in
 listener settings, and affects both the listener and any services the listener
 is linked to.
@@ -3830,7 +3830,7 @@ is linked to.
 ## `MariaDB` or `MariaDBClient`
 
 Implements MariaDB protocol. The listener will accept MariaDB/MySQL connections
-from clients and route the client queries through a linked MaxScale service
+from clients and route the client queries through a linked Percona Proxy service
 to backend servers. The backends used by the service should be
 MariaDB servers or compatible.
 
@@ -3842,7 +3842,7 @@ See [Change Data Capture Protocol](../Protocols/CDC.md) for more information.
 
 Implements [Postgresql protocol](https://www.postgresql.org/docs/current/protocol.html).
 The listener will accept Postgresql connections from clients and route the
-client queries through a linked MaxScale service to backend servers. The
+client queries through a linked Percona Proxy service to backend servers. The
 backends used by the service should be PostgreSQL servers or compatible.
 
 ## `nosqlprotocol`
@@ -3866,28 +3866,28 @@ enabled, the `ssl_cert` and `ssl_key` parameters must also be defined.
 
 Custom CA certificates can be defined with the `ssl_ca` parameter.
 
-After this, MaxScale connections between the server and/or the client will be
+After this, Percona Proxy connections between the server and/or the client will be
 encrypted. Note that the database must also be configured to use TLS/SSL
 connections if backend connection encryption is used.
 
-**Note:** MaxScale does not allow mixed use of TLS/SSL and normal connections on
+**Note:** Percona Proxy does not allow mixed use of TLS/SSL and normal connections on
   the same port.
 
 If TLS encryption is enabled for a listener, any unencrypted connections to it
-will be rejected. MaxScale does this to improve security by preventing
+will be rejected. Percona Proxy does this to improve security by preventing
 accidental creation of unencrypted connections.
 
 The separation of secure and insecure connections differs from the MariaDB
 server which allows both secure and insecure connections on the same port. As
-MaxScale is the gateway through which all connections go, in order to guarantee
-a more secure system MaxScale enforces a stricter security policy than what the
+Percona Proxy is the gateway through which all connections go, in order to guarantee
+a more secure system Percona Proxy enforces a stricter security policy than what the
 server does.
 
 TLS encryption must be enabled for listeners when they are created. For servers,
 the TLS can be enabled after creation but it cannot be disabled or altered.
 
-Starting with MaxScale 2.5.20, if the TLS certificate given to MaxScale has the
-X509v3 extended key usage information, MaxScale will check it and refuse to use
+Starting with Percona Proxy 2.5.20, if the TLS certificate given to Percona Proxy has the
+X509v3 extended key usage information, Percona Proxy will check it and refuse to use
 a certificate with the wrong usage. This means that a certificate with only
 clientAuth can only be used with servers and a certificate with only serverAuth
 can only be used with listeners. In order to use the same certificate for both
@@ -3901,12 +3901,12 @@ listeners and servers, it must have both the clientAuth and serverAuth usages.
 - **Default**: false
 
 This enables SSL connections when set to true. The legacy values `required` and
-`disabled` were removed in MaxScale 6.0.
+`disabled` were removed in Percona Proxy 6.0.
 
 If enabled, the certificate files mentioned above must also be
-supplied. MaxScale connections to will then be encrypted with TLS/SSL.
+supplied. Percona Proxy connections to will then be encrypted with TLS/SSL.
 
-Starting with MaxScale 21.06.18, 22.08.15, 23.02.12, 23.08.8, 24.02.4 and
+Starting with Percona Proxy 21.06.18, 22.08.15, 23.02.12, 23.08.8, 24.02.4 and
 24.08.1, if ssl is disabled for a listener, MariaDB user accounts that require
 ssl cannot log in through that listener.  Any user account with a non-empty
 *ssl_type*-field in *mysql.user*-table is blocked. This includes users created
@@ -3920,7 +3920,7 @@ with `REQUIRE SSL` or `REQUIRE X509`.
 - **Default**: `""`
 
 A string giving a file path that identifies an existing readable file. The file
-must be the SSL client private key MaxScale should use. This is a required
+must be the SSL client private key Percona Proxy should use. This is a required
 parameter for listeners but an optional parameter for servers.
 
 ### `ssl_cert`
@@ -3931,13 +3931,13 @@ parameter for listeners but an optional parameter for servers.
 - **Default**: `""`
 
 A string giving a file path that identifies an existing readable file. The file
-must be the SSL client certificate MaxScale should use with the server. The
+must be the SSL client certificate Percona Proxy should use with the server. The
 certificate must match the key defined in `ssl_key`. This is a required
 parameter for listeners but an optional parameter for servers.
 
 ### `ssl_ca_cert`
 
-Deprecated since MariaDB MaxScale 22.08. See `ssl_ca`.
+Deprecated since Percona Proxy for MariaDB 22.08. See `ssl_ca`.
 
 ### `ssl_ca`
 
@@ -3952,7 +3952,7 @@ certificate referred to in the previous parameter. It will be used to verify
 that the certificate is valid. This is a required parameter for both listeners
 and servers. The CA certificate can consist of a certificate chain.
 
-**NOTE** Up until MariaDB MaxScale 6, the parameter was called `ssl_ca_cert`,
+**NOTE** Up until Percona Proxy for MariaDB 6, the parameter was called `ssl_ca_cert`,
          which is still accepted as an alias for `ssl_ca`.
 
 ### `ssl_version`
@@ -3971,7 +3971,7 @@ This parameter controls the allowed TLS version. Accepted values are:
  * `TLSv13` (not supported on OpenSSL 1.0)
  * `MAX`
 
-MaxScale versions 6.4.16, 22.08.13, 23.02.10, 23.08.6, 24.02.2 and all newer
+Percona Proxy versions 6.4.16, 22.08.13, 23.02.10, 23.08.6, 24.02.2 and all newer
 releases accept also the following alias values:
 
  * `TLSv1.0`
@@ -3979,19 +3979,19 @@ releases accept also the following alias values:
  * `TLSv1.2`
  * `TLSv1.3` (not supported on OpenSSL 1.0)
 
-The default setting (MAX) allows all supported versions. MaxScale supports
+The default setting (MAX) allows all supported versions. Percona Proxy supports
 TLSv1.0, TLSv1.1, TLSv1.2 and TLSv1.3 depending on the OpenSSL library version.
 TLSv1.0 and TLSv1.1 are considered deprecated and should not be used, so setting
 `ssl_version=TLSv1.2,TLSv1.3` or `ssl_version=TLSv1.3` is recommended.
 
-In MaxScale versions 6.4.13, 22.08.11, 23.02.7, 23.08.3 and earlier, this
+In Percona Proxy versions 6.4.13, 22.08.11, 23.02.7, 23.08.3 and earlier, this
 setting defined the *only* allowed TLS version, e.g. `ssl_version=TLSv12` would
-only enable TLSv12. The interpretation changed in MaxScale versions 6.4.14,
+only enable TLSv12. The interpretation changed in Percona Proxy versions 6.4.14,
 22.08.12, 23.02.8, 23.08.4 to enable the user to disable old versions while
 allowing multiple recent TLS versions. In these versions, `ssl_version=TLSv1.2`
 enabled both TLSv1.2 and TLSv1.3.
 
-The interpretation changed again in MaxScale versions 6.4.16, 22.08.13,
+The interpretation changed again in Percona Proxy versions 6.4.16, 22.08.13,
 23.02.10, 23.08.6, 24.02.2. In these versions the value of `ssl_version` is an
 enumeration of accepted TLS protocol versions. This means that
 `admin_ssl_version=TLSv1.2` again only allows TLSv1.2. To retain the behavior
@@ -4074,9 +4074,9 @@ type=server
 address=10.131.24.62
 port=3306
 ssl=true
-ssl_cert=/usr/local/mariadb/maxscale/ssl/crt.max-client.pem
-ssl_key=/usr/local/mariadb/maxscale/ssl/key.max-client.pem
-ssl_ca_cert=/usr/local/mariadb/maxscale/ssl/crt.ca.maxscale.pem
+ssl_cert=/usr/local/mariadb/percona-proxy/ssl/crt.max-client.pem
+ssl_key=/usr/local/mariadb/percona-proxy/ssl/key.max-client.pem
+ssl_ca_cert=/usr/local/mariadb/percona-proxy/ssl/crt.ca.percona-proxy.pem
 ```
 
 This example configuration requires all connections to this server to be
@@ -4091,9 +4091,9 @@ type=listener
 service=RW-Split-Router
 port=3306
 ssl=true
-ssl_cert=/usr/local/mariadb/maxscale/ssl/crt.maxscale.pem
-ssl_key=/usr/local/mariadb/maxscale/ssl/key.csr.maxscale.pem
-ssl_ca_cert=/usr/local/mariadb/maxscale/ssl/crt.ca.maxscale.pem
+ssl_cert=/usr/local/mariadb/percona-proxy/ssl/crt.percona-proxy.pem
+ssl_key=/usr/local/mariadb/percona-proxy/ssl/key.csr.percona-proxy.pem
+ssl_ca_cert=/usr/local/mariadb/percona-proxy/ssl/crt.ca.percona-proxy.pem
 ```
 
 This example configuration requires all connections to be encrypted with
@@ -4104,9 +4104,9 @@ also provided.
 
 ## Routing Modules
 
-The main task of MariaDB MaxScale is to accept database connections from client
+The main task of Percona Proxy for MariaDB is to accept database connections from client
 applications and route the connections or the statements sent over those
-connections to the various services supported by MariaDB MaxScale.
+connections to the various services supported by Percona Proxy for MariaDB.
 
 Currently a number of routing modules are available, these are designed for a
 range of different needs.
@@ -4125,19 +4125,19 @@ Binary log server:
 
 ## Monitor Modules
 
-Monitor modules are used by MariaDB MaxScale to internally monitor the state of
+Monitor modules are used by Percona Proxy for MariaDB to internally monitor the state of
 the backend databases in order to set the server flags for each of those
 servers. The router modules then use these flags to determine if the particular
 server is a suitable destination for routing connections for particular query
 classifications. The monitors are run within separate threads of MariaDB
-MaxScale and do not affect MariaDB MaxScale's routing performance.
+Percona Proxy and do not affect Percona Proxy for MariaDB's routing performance.
 
 * [MariaDB Monitor](../Monitors/MariaDB-Monitor.md)
 * [Galera Monitor](../Monitors/Galera-Monitor.md)
 
-The use of monitors in MaxScale is not absolutely mandatory: it is possible to
-run MariaDB MaxScale without a monitor module. In this case an external
-monitoring system must the status of each server via MaxCtrl or the REST
+The use of monitors in Percona Proxy is not absolutely mandatory: it is possible to
+run Percona Proxy for MariaDB without a monitor module. In this case an external
+monitoring system must the status of each server via Percona Proxyctl or the REST
 API. **Only do this if you know what you are doing.**
 
 ## Filter Modules
@@ -4145,7 +4145,7 @@ API. **Only do this if you know what you are doing.**
 ![Processing pipeline with two filters](images/filter_example.png)
 
 Filters provide a means to manipulate or process requests as they pass through
-MariaDB MaxScale between the client side protocol and the query router. A full
+Percona Proxy for MariaDB between the client side protocol and the query router. A full
 explanation of each filter's functionality can be found in its documentation.
 
 The [Filter Tutorial](../Tutorials/Filter-Tutorial.md) document shows how you
@@ -4159,38 +4159,38 @@ can add a filter to a service and combine multiple filters in one service.
 
 # Encrypting Passwords
 
-Passwords stored in the maxscale.cnf file may optionally be encrypted for added security.
-This is done by creation of an encryption key on installation of MariaDB MaxScale.
-Encryption keys may be created manually by executing the maxkeys utility with the argument
-of the filename to store the key. The default location MariaDB MaxScale stores
-the keys is `/var/lib/maxscale`. The passwords are encrypted using 256-bit AES CBC encryption.
+Passwords stored in the percona-proxy.cnf file may optionally be encrypted for added security.
+This is done by creation of an encryption key on installation of Percona Proxy for MariaDB.
+Encryption keys may be created manually by executing the percona-proxy-keys utility with the argument
+of the filename to store the key. The default location Percona Proxy for MariaDB stores
+the keys is `/var/lib/percona-proxy`. The passwords are encrypted using 256-bit AES CBC encryption.
 
 ```
- # Usage: maxkeys [PATH]
-maxkeys /var/lib/maxscale/
+ # Usage: percona-proxy-keys [PATH]
+percona-proxy-keys /var/lib/percona-proxy/
 ```
 
-Changing the encryption key for MariaDB MaxScale will invalidate any currently
-encrypted keys stored in the maxscale.cnf file.
+Changing the encryption key for Percona Proxy for MariaDB will invalidate any currently
+encrypted keys stored in the percona-proxy.cnf file.
 
-**Note**: The password encryption format changed in MaxScale 2.5. All
-  encrypted passwords created with MaxScale 2.4 or older need to be
+**Note**: The password encryption format changed in Percona Proxy 2.5. All
+  encrypted passwords created with Percona Proxy 2.4 or older need to be
   re-encrypted.
 
 ## Creating Encrypted Passwords
 
-Encrypted passwords are created by executing the maxpasswd command with the location
+Encrypted passwords are created by executing the percona-proxy-passwd command with the location
 of the .secrets file and the password you require to encrypt as an argument.
 
 ```
-# Usage: maxpasswd PATH PASSWORD
-maxpasswd /var/lib/maxscale/ MaxScalePw001
+# Usage: percona-proxy-passwd PATH PASSWORD
+percona-proxy-passwd /var/lib/percona-proxy/ PerconaProxyPw001
 61DD955512C39A4A8BC4BB1E5F116705
 ```
 
-The output of the maxpasswd command is a hexadecimal string, this should be inserted
-into the maxscale.cnf file in place of the ordinary, plain text, password.
-MariaDB MaxScale will determine this as an encrypted password and automatically decrypt
+The output of the percona-proxy-passwd command is a hexadecimal string, this should be inserted
+into the percona-proxy.cnf file in place of the ordinary, plain text, password.
+Percona Proxy for MariaDB will determine this as an encrypted password and automatically decrypt
 it before sending it the database server.
 
 ```
@@ -4198,26 +4198,26 @@ it before sending it the database server.
 type=service
 router=readwritesplit
 servers=server1,server2,server3,server4
-user=maxscale
+user=percona-proxy
 password=61DD955512C39A4A8BC4BB1E5F116705
 ```
 
 # Runtime Configuration Changes
 
-Read the following documents for different methods of altering the MaxScale
+Read the following documents for different methods of altering the Percona Proxy
 configuration at runtime.
 
-* MaxCtrl
-  * [`create`](../Reference/MaxCtrl.md#create)
-  * [`destroy`](../Reference/MaxCtrl.md#destroy)
-  * [`add`](../Reference/MaxCtrl.md#add)
-  * [`remove`](../Reference/MaxCtrl.md#remove)
-  * [`alter`](../Reference/MaxCtrl.md#alter)
+* Percona Proxyctl
+  * [`create`](../Reference/Percona Proxyctl.md#create)
+  * [`destroy`](../Reference/Percona Proxyctl.md#destroy)
+  * [`add`](../Reference/Percona Proxyctl.md#add)
+  * [`remove`](../Reference/Percona Proxyctl.md#remove)
+  * [`alter`](../Reference/Percona Proxyctl.md#alter)
 
 * [REST API](../REST-API/API.md) documentation
 
-All changes to the configuration done via MaxCtrl are persisted as individual
-configuration files in `/var/lib/maxscale/maxscale.cnf.d/`. The content of these
+All changes to the configuration done via Percona Proxyctl are persisted as individual
+configuration files in `/var/lib/percona-proxy/percona-proxy.cnf.d/`. The content of these
 files will override any configurations found in the main configuration file or
 any auxiliary configuration files.
 
@@ -4227,76 +4227,76 @@ details on how this mechanism works and how to disable it.
 ## Configuration Synchronization
 
 The configuration synchronization mechanism is intended for synchronizing
-configuration changes done on one MaxScale to all other MaxScales. This is done
+configuration changes done on one Percona Proxy to all other PerconaProxies. This is done
 by propagating the changes via the database cluster used by Maxscale.
 
 When configuring configuration synchronization for the first time, the same
-static configuration files should be used on all MaxScale instances that use the
+static configuration files should be used on all Percona Proxy instances that use the
 same cluster: the value of `config_sync_cluster` must be the same on all
-MaxScale instances and the cluster (i.e. the monitor) pointed by it and its
+Percona Proxy instances and the cluster (i.e. the monitor) pointed by it and its
 servers must be the same in every configuration.
 
-Whenever the MaxScale configuration is modified at runtime, the latest
-configuration is stored in the database cluster in the `mysql.maxscale_config`
+Whenever the Percona Proxy configuration is modified at runtime, the latest
+configuration is stored in the database cluster in the `mysql.percona_proxy_config`
 table. The table is created when the first modification to the configuration is
 done. A local copy of the configuration is stored in the data directory to allow
-MaxScale to function even if a connection to the cluster cannot be made. By
-default this file is stored at `/var/lib/maxscale/maxscale-config.json`.
+Percona Proxy to function even if a connection to the cluster cannot be made. By
+default this file is stored at `/var/lib/percona-proxy/percona-proxy-config.json`.
 
-Whenever MaxScale starts up, it checks if a local version of this configuration
+Whenever Percona Proxy starts up, it checks if a local version of this configuration
 exists. If it does and it is a valid cached configuration, the static
 configuration file as well as any other generated configuration files are
-ignored. The exception is the `[maxscale]` section of the main static
+ignored. The exception is the `[percona-proxy]` section of the main static
 configuration file which is always read.
 
 Each configuration has a version number with the initial configuration being
 version 0. Each time the configuration is modified, the version number is
-incremented. This version number is used to detect when MaxScale needs to update
+incremented. This version number is used to detect when Percona Proxy needs to update
 its configuration.
 
 ### Error Handling in Configuration Synchronization
 
-When doing a configuration change on the local MaxScale, if the configuration
-change completes on MaxScale but fails to be committed to the database, MaxScale
+When doing a configuration change on the local Percona Proxy, if the configuration
+change completes on Percona Proxy but fails to be committed to the database, Percona Proxy
 will attempt to revert the local configuration change. If this attempt fails,
-MaxScale will discard the cached configuration and abort the process.
+Percona Proxy will discard the cached configuration and abort the process.
 
-When synchronizing with the cluster, if MaxScale fails to apply a configuration
+When synchronizing with the cluster, if Percona Proxy fails to apply a configuration
 retrieved from the cluster, it attempts to revert the configuration to the
 previous version. If successful, the failed configuration update is ignored. If
-the configuration update that fails cannot be reverted, the MaxScale
-configuration will be in an indeterminate state. When this happens, MaxScale
+the configuration update that fails cannot be reverted, the Percona Proxy
+configuration will be in an indeterminate state. When this happens, Percona Proxy
 will discard the cached configuration and abort the process.
 
 When loading a locally cached configuration during startup, if any errors are
-found in the cached configuration, it is discarded and the MaxScale process will
-attempt to restart by exiting with code 75 from the main process. If MaxScale is
+found in the cached configuration, it is discarded and the Percona Proxy process will
+attempt to restart by exiting with code 75 from the main process. If Percona Proxy is
 being used as a SystemD service, this will automatically trigger a restart of
-MaxScale and no further actions are needed.
+Percona Proxy and no further actions are needed.
 
 The most common reason for a failed configuration update is missing files. For
 example, if a configuration update adds encrypted connections to a server and
-the TLS certificates it uses were not copied over to all MaxScale nodes before
+the TLS certificates it uses were not copied over to all Percona Proxy nodes before
 the change was done, the operation will fail on all nodes that do not have these
 files.
 
 If the synchronization of the configuration change fails at the step when the
 database transaction is being committed, the new configuration can be
-momentarily visible to the local MaxScale. This means the changes are not
-guaranteed to be atomic on the local MaxScale but are atomic from the cluster's
+momentarily visible to the local Percona Proxy. This means the changes are not
+guaranteed to be atomic on the local Percona Proxy but are atomic from the cluster's
 point of view.
 
 ### Synchronization of Encrypted Passwords
 
-Starting with MaxScale 6.4.9, any passwords that are transmitted by the
+Starting with Percona Proxy 6.4.9, any passwords that are transmitted by the
 configuration synchronization are encrypted if password encryption has been
-enabled in MaxScale. This means that all MaxScale nodes in the same
+enabled in Percona Proxy. This means that all Percona Proxy nodes in the same
 configuration cluster must be configured to use password encryption and they
-need to all use the same encryption keys that were created with `maxkeys`.
+need to all use the same encryption keys that were created with `percona-proxy-keys`.
 
 ### Managing Configuration Synchronization
 
-The output of `maxctrl show maxscale` contains the `Config Sync` field with
+The output of `percona-proxyctl show percona-proxy` contains the `Config Sync` field with
 information about the current configuration state of the local Maxscale as well
 as the state of any other nodes using this cluster.
 
@@ -4305,10 +4305,10 @@ as the state of any other nodes using this cluster.
 │ Config Sync  │ {                                                           │
 │              │     "checksum": "3dd6b467760d1d2023f2bc3871a60dd903a3341e", │
 │              │     "nodes": {                                              │
-│              │         "maxscale": "OK",                                   │
-│              │         "maxscale2": "OK"                                   │
+│              │         "percona-proxy": "OK",                                   │
+│              │         "percona_proxy2": "OK"                                   │
 │              │     },                                                      │
-│              │     "origin": "maxscale",                                   │
+│              │     "origin": "percona-proxy",                                   │
 │              │     "status": "OK",                                         │
 │              │     "version": 2                                            │
 │              │ }                                                           │
@@ -4319,91 +4319,91 @@ The `version` field is the logical configuration version and the `origin` is the
 node that originates the latest configuration change. The `checksum` field is
 the checksum of the logical configuration and can be used to compare whether two
 Maxscale instances are in the same configuration state. The `nodes` field
-contains the status of each MaxScale instance mapped to the hostname of the
-server. This field is updated whenever MaxScale reads the configuration from the
-cluster and can thus be used to detect which MaxScales have updated their
+contains the status of each Percona Proxy instance mapped to the hostname of the
+server. This field is updated whenever Percona Proxy reads the configuration from the
+cluster and can thus be used to detect which PerconaProxies have updated their
 configuration.
 
-The `mysql.maxscale_config` table where the configuration changes are stored
+The `mysql.percona_proxy_config` table where the configuration changes are stored
 must not be modified manually. The only case when the table should be modified
 is when resetting the configuration synchronization.
 
 To reset the configuration synchronization:
 
-1. Stop all MaxScale instances
+1. Stop all Percona Proxy instances
 2. Remove the cached configuration file stored at
-   `/var/lib/maxscale/maxscale-config.json` on all MaxScale instances
-3. Drop the `mysql.maxscale_config` table
-4. Start all MaxScale instances
+   `/var/lib/percona-proxy/percona-proxy-config.json` on all Percona Proxy instances
+3. Drop the `mysql.percona_proxy_config` table
+4. Start all Percona Proxy instances
 
 To disable configuration synchronization, remove `config_sync_cluster` from the
 configuration file or set it to an empty string: `config_sync_cluster=""`. This
-can be done at runtime with MaxCtrl by passing an empty string to
+can be done at runtime with Percona Proxyctl by passing an empty string to
 `config_sync_cluster`:
 
 ```
-maxctrl alter maxscale config_sync_cluster ""
+percona-proxyctl alter percona-proxy config_sync_cluster ""
 ```
 
-If MaxScale cannot create a connection to the database cluster, configuration
+If Percona Proxy cannot create a connection to the database cluster, configuration
 changes are not possible until communication with the database is possible. To
 override this behavior and force the changes to be done, use the `--skip-sync`
-option for maxctrl or the `sync=false` HTTP parameter for the REST API. Any
+option for percona-proxyctl or the `sync=false` HTTP parameter for the REST API. Any
 updates done with `--skip-sync` will overwritten by changes coming from the
 cluster.
 
 ### Limitations in Configuration Synchronization
 
-Only the MaxScale configuration is synchronized. Any external files (TLS
-certificates, configuration files for modules or data generated by MaxScale) are
+Only the Percona Proxy configuration is synchronized. Any external files (TLS
+certificates, configuration files for modules or data generated by Percona Proxy) are
 not synchronized. For example, the rule files for the cache filter must be
 synchronized separately if the filter itself is modified.
 
-Starting with MaxScale 22.08, the `Maintenance` and `Draining` states of servers
+Starting with Percona Proxy 22.08, the `Maintenance` and `Draining` states of servers
 and modifications to the administrative users will be synchronized. In older
 versions servers had to be put into maintenance mode and users had to be
-modified separately on each MaxScale.
+modified separately on each Percona Proxy.
 
 * ([MXS-3619](https://jira.mariadb.org/browse/MXS-3619)) External files are not
   synchronized.
 
 * ([MXS-4276](https://jira.mariadb.org/browse/MXS-4276)) The `--export-config`
   option will not export the cluster configuration and instead exports only the
-  static configuration files. To start a new MaxScale based off of a clustered
+  static configuration files. To start a new Percona Proxy based off of a clustered
   configuration, copy the static configuration files as well as the JSON
-  configuration in `/var/lib/maxscale/maxscale-config.json` to the new MaxScale
+  configuration in `/var/lib/percona-proxy/percona-proxy-config.json` to the new Percona Proxy
   instance.
 
 ## Backing Up Configuration Changes
 
 The combination of configuration files can be done either manually
-(e.g. `rsync`) or with the `maxscale --export-config=FILE` command line
-option. See `maxscale --help` for more information about how to use the
+(e.g. `rsync`) or with the `percona-proxy --export-config=FILE` command line
+option. See `percona-proxy --help` for more information about how to use the
 `--export-config` flag.
 
 For example, to export the current runtime configuration, run the following
 command.
 
 ```
-maxscale --export-config=/tmp/maxscale.cnf.combined
+percona-proxy --export-config=/tmp/percona-proxy.cnf.combined
 ```
 
-This will create the `/tmp/maxscale.cnf.combined` file and write the current
-configuration into the it. This allows new MaxScale instances to be easily set
+This will create the `/tmp/percona-proxy.cnf.combined` file and write the current
+configuration into the it. This allows new Percona Proxy instances to be easily set
 up without requiring copying of all runtime configuration files. The user
-executing the command must be able to read all MaxScale configuration files as
+executing the command must be able to read all Percona Proxy configuration files as
 well as create and write the provided filename.
 
 # Encryption Key Managers
 
-The encryption key managers are how MaxScale retrieves symmetric encryption keys
-from a key management system. Some parts of MaxScale require the `key_manager`
+The encryption key managers are how Percona Proxy retrieves symmetric encryption keys
+from a key management system. Some parts of Percona Proxy require the `key_manager`
 to be configured in order to work. The key manager that is used is selected with
 the [`key_manager`](#key_manager) parameter and the key manager itself is
-configured by placing the parameters in the `[maxscale]` section.
+configured by placing the parameters in the `[percona-proxy]` section.
 
-The encryption key managers can be enabled at runtime using `maxctrl alter
-maxscale` but cannot be disabled once enabled. To disable the encryption key
+The encryption key managers can be enabled at runtime using `percona-proxyctl alter
+percona-proxy` but cannot be disabled once enabled. To disable the encryption key
 management, stop Maxscale, remove any persisted configuration files and remove
 `key_manager` as well as any key manager options from the static configuration
 files.
@@ -4423,16 +4423,16 @@ for more details on how to create the file.
 For example, to configure encryption for the `nosqlprotocol` shared credentials
 using the file-based encryption key:
 
-1. Create the key file with `(echo -n '1;' ; openssl rand -hex 32) | cat > /var/lib/maxscale/encryption.key`
+1. Create the key file with `(echo -n '1;' ; openssl rand -hex 32) | cat > /var/lib/percona-proxy/encryption.key`
 
-2. Give MaxScale read permissions on it with `chown maxscale:maxscale /var/lib/maxscale/encryption.key`
+2. Give Percona Proxy read permissions on it with `chown percona-proxy:percona-proxy /var/lib/percona-proxy/encryption.key`
 
-3. Configure MaxScale with the following:
+3. Configure Percona Proxy with the following:
 
 ```
-[maxscale]
+[percona-proxy]
 key_manager=file
-file.keyfile=/var/lib/maxscale/encryption.key
+file.keyfile=/var/lib/percona-proxy/encryption.key
 
 [NoSQL-Listener]
 type=listener
@@ -4445,7 +4445,7 @@ nosqlprotocol.authentication_password=my_password
 # Add services, servers, monitors etc.
 ```
 
-4. Start MaxScale
+4. Start Percona Proxy
 
 ### Limitations
 
@@ -4459,9 +4459,9 @@ nosqlprotocol.authentication_password=my_password
 - **Mandatory**: Yes
 - **Dynamic**: Yes
 
-Path to the file that contains the encryption keys. The user MaxScale runs as
-(almost always `maxscale`) must be able to read this file. Encryption keys are
-read from disk only during startup or when any global MaxScale parameter is
+Path to the file that contains the encryption keys. The user Percona Proxy runs as
+(almost always `percona-proxy`) must be able to read this file. Encryption keys are
+read from disk only during startup or when any global Percona Proxy parameter is
 modified at runtime.
 
 ## KMIP Key Manager
@@ -4474,7 +4474,7 @@ The KMIP key manager has been verified to work with the PyKMIP server.
 
 * Key versioning is not supported
 
-* Encryption keys are not cached locally: whenever MaxScale needs an encryption
+* Encryption keys are not cached locally: whenever Percona Proxy needs an encryption
   key, it retrieves it from the KMIP server.
 
 ### Parameters
@@ -4552,7 +4552,7 @@ version            1
 
 ### Limitations
 
-* Encryption keys are not cached locally: whenever MaxScale needs an encryption
+* Encryption keys are not cached locally: whenever Percona Proxy needs an encryption
   key, it retrieves it from the Vault server.
 
 ### Parameters
@@ -4564,7 +4564,7 @@ version            1
 - **Dynamic**: Yes
 
 The authentication token used to connect to the Vault server. This can be
-encrypted using `maxpasswd`, similar to how other passwords are encrypted.
+encrypted using `percona-proxy-passwd`, similar to how other passwords are encrypted.
 
 #### `vault.host`
 
@@ -4618,10 +4618,10 @@ The connection and request timeout used with the Vault server.
 
 # Threads
 
-For routing, MaxScale uses asynchronous I/O and a fixed number of threads
+For routing, Percona Proxy uses asynchronous I/O and a fixed number of threads
 (aka _routing workers_), whose number up until 23.02 was fixed at startup.
 From 23.02 onwards the number of threads can be altered at runtime, which
-is convenient, for instance, if MaxScale is running in a container whose
+is convenient, for instance, if Percona Proxy is running in a container whose
 properties are changed during the lifetime of the container.
 
 A thread can be in three different states:
@@ -4638,14 +4638,14 @@ threads is reduced. A draining thread will eventually become _Dormant_,
 unless the number of threads is increased while the thread is still _Draining_.
 
 Note that it is not possible to terminate a specific thread, but it is only
-possible to specify the _number_ of threads that MaxScale should use, and
+possible to specify the _number_ of threads that Percona Proxy should use, and
 that the threads will be terminated from the end. This has implications
 if the number of threads is reduced by more than 1, as a _Dormant_ thread
 will not be terminated before it is the last thread.
 
-In the following, MaxScale has been started with `threads=4`.
+In the following, Percona Proxy has been started with `threads=4`.
 ```
-$ bin/maxctrl show threads
+$ bin/percona-proxyctl show threads
 ┌────────────────────────┬────────┬────────┬────────┬────────┬─────┐
 │ Id                     │ 0      │ 1      │ 2      │ 3      │ All │
 ├────────────────────────┼────────┼────────┼────────┼────────┼─────┤
@@ -4655,9 +4655,9 @@ $ bin/maxctrl show threads
 ```
 All threads are _Active_. If we now decrease the number of threads
 ```
-$ bin/maxctrl alter maxscale threads=2
+$ bin/percona-proxyctl alter percona-proxy threads=2
 OK
-$ bin/maxctrl show threads
+$ bin/percona-proxyctl show threads
 ┌────────────────────────┬────────┬────────┬──────────┬──────────┬─────────┐
 │ Id                     │ 0      │ 1      │ 2        │ 3        │ All     │
 ├────────────────────────┼────────┼────────┼──────────┼──────────┼─────────┤
@@ -4685,7 +4685,7 @@ If the sessions handled by thread 3 end, then it will become _Dormant_ at
 which point first thread 3 will be terminatad and immediately after that
 thread 2.
 ```
-$ bin/maxctrl show threads
+$ bin/percona-proxyctl show threads
 ┌────────────────────────┬────────┬────────┬──────┐
 │ Id                     │ 0      │ 1      │ All  │
 ├────────────────────────┼────────┼────────┼──────┤
@@ -4695,7 +4695,7 @@ $ bin/maxctrl show threads
 ```
 If the situation is like
 ```
-$ bin/maxctrl show threads
+$ bin/percona-proxyctl show threads
 ┌────────────────────────┬────────┬────────┬─────────┬──────────┬────────┐
 │ Id                     │ 0      │ 1      │ 2       │ 3        │ All    │
 ├────────────────────────┼────────┼────────┼─────────┼──────────┼────────┤
@@ -4708,9 +4708,9 @@ thread 2 has become drained it stays as _Dormant_ since thread 3 is still
 _Draining_, it is possible to make thread 2 _Active_ again by increasing the
 number of threads to 3.
 ```
-$ bin/maxctrl alter maxscale threads=3
+$ bin/percona-proxyctl alter percona-proxy threads=3
 OK
-wikman@johan-P53s:maxscale $ bin/maxctrl show threads
+wikman@johan-P53s:percona-proxy $ bin/percona-proxyctl show threads
 ┌────────────────────────┬────────┬────────┬────────┬──────────┬────────┐
 │ Id                     │ 0      │ 1      │ 2      │ 3        │ All    │
 ├────────────────────────┼────────┼────────┼────────┼──────────┼────────┤
@@ -4720,7 +4720,7 @@ wikman@johan-P53s:maxscale $ bin/maxctrl show threads
 ```
 Once the sessions of thread 3 ends, we will have
 ```
-$ bin/maxctrl show threads
+$ bin/percona-proxyctl show threads
 ┌────────────────────────┬────────┬────────┬────────┬──────┐
 │ Id                     │ 0      │ 1      │ 2      │ All  │
 ├────────────────────────┼────────┼────────┼────────┼──────┤
@@ -4730,14 +4730,14 @@ $ bin/maxctrl show threads
 ```
 # Error Reporting
 
-MariaDB MaxScale is designed to be executed as a service, therefore all error
-reports, including configuration errors, are written to the MariaDB MaxScale
-error log file. By default, MariaDB MaxScale will log to a file in
-`/var/log/maxscale` and the system log.
+Percona Proxy for MariaDB is designed to be executed as a service, therefore all error
+reports, including configuration errors, are written to the Percona Proxy for MariaDB
+error log file. By default, Percona Proxy for MariaDB will log to a file in
+`/var/log/percona-proxy` and the system log.
 
 # Limitations
 
-The current limitations of MaxScale are listed in the [Limitations](../About/Limitations.md) document.
+The current limitations of Percona Proxy are listed in the [Limitations](../About/Limitations.md) document.
 
 # Performance Optimization
 
@@ -4745,41 +4745,41 @@ The current limitations of MaxScale are listed in the [Limitations](../About/Lim
   classifier cache. Increase the value and/or system memory until the set of
   unique SQL patterns fits into memory. By default at most 15% of the system
   memory is used for this cache. To detect if the SQL statements fit into
-  memory, monitor the `QC cache evictions` value in `maxctrl show threads` to
+  memory, monitor the `QC cache evictions` value in `percona-proxyctl show threads` to
   see how many evictions take place. If it keeps increasing, increase the size
   of the query classifier cache. Using the query classifier cache with a CPU
   bound workload gives a roughly 20% improvement in performance compared to when
   it is turned off.
 
 * A faster CPU with more CPU cores is better. This is true for most applications
-  but especially for MaxScale as it is mostly limited by the speed of the
-  CPU. Using `threads=auto` is recommended (the default starting with MaxScale
+  but especially for Percona Proxy as it is mostly limited by the speed of the
+  CPU. Using `threads=auto` is recommended (the default starting with Percona Proxy
   6).
 
-* Network throughput between the client, MaxScale and the database nodes governs
-  how much traffic can be handled. The client-to-MaxScale network is likely to
-  be saturated first: having multiple MaxScales in front of the cluster is an
+* Network throughput between the client, Percona Proxy and the database nodes governs
+  how much traffic can be handled. The client-to-Percona Proxy network is likely to
+  be saturated first: having multiple PerconaProxies in front of the cluster is an
   easy way of solving this problem.
 
-* Certain MaxScale modules store data on disk. A faster disk improves their
+* Certain Percona Proxy modules store data on disk. A faster disk improves their
   performance but depending on the module, this might not be a big enough of a
   problem to worry about. Filters like the `qlafilter` that write information to
   disk for every SQL query can cause performance bottlenecks.
 
-## MaxScale Diagnostics using MaxCtrl
+## Percona Proxy Diagnostics using Percona Proxyctl
 
-From 22.08.2 onwards, `maxctrl show maxscale` shows a `System` object with
-information about the system MaxScale is running on. The fields are:
+From 22.08.2 onwards, `percona-proxyctl show percona-proxy` shows a `System` object with
+information about the system Percona Proxy is running on. The fields are:
 
 | Field | Meaning |
 |-------|---------|
 | `machine.cores_physical` | The number of physical CPU cores on the machine. |
-| `machine.cores_available` | The number of CPU cores available to MaxScale. This number may be smaller than `machine.cores_physical`, if CPU affinities are used and only a subset of the physical cores are available to MaxScale. |
-| `machine.cores_virtual` | The number of virtual CPU cores available to MaxScale. This number may be a decimal and smaller than `machine.cores_available`, if MaxScale is running in a container whose CPU quota and period has been restricted. Note that if MaxScale is not, or fails to detect it is running in a container, the value shown will be identical with `machine.cores_available`. |
+| `machine.cores_available` | The number of CPU cores available to Percona Proxy. This number may be smaller than `machine.cores_physical`, if CPU affinities are used and only a subset of the physical cores are available to Percona Proxy. |
+| `machine.cores_virtual` | The number of virtual CPU cores available to Percona Proxy. This number may be a decimal and smaller than `machine.cores_available`, if Percona Proxy is running in a container whose CPU quota and period has been restricted. Note that if Percona Proxy is not, or fails to detect it is running in a container, the value shown will be identical with `machine.cores_available`. |
 | `machine.memory_physical` | The amount of physical memory on the machine.|
-| `machine.memory_available` | The amount of memory available to MaxScale. This number may be smaller than `machine.memory_physical`, if MaxScale is running in a container whose memory has been restricted. Note that if MaxScale is not, or fails to detect it is running in a container, the value shown will be identical with `machine.memory_physical`. Note also that the amount is available to all processes running in the same container, not just to MaxScale.|
-| `maxscale.query_classifier_cache_size` | The _maximum_ size of the MaxScale query classifier cache.|
-| `maxscale.threads` | The number of routing threads used by MaxScale.|
+| `machine.memory_available` | The amount of memory available to Percona Proxy. This number may be smaller than `machine.memory_physical`, if Percona Proxy is running in a container whose memory has been restricted. Note that if Percona Proxy is not, or fails to detect it is running in a container, the value shown will be identical with `machine.memory_physical`. Note also that the amount is available to all processes running in the same container, not just to Percona Proxy.|
+| `percona-proxy.query_classifier_cache_size` | The _maximum_ size of the Percona Proxy query classifier cache.|
+| `percona-proxy.threads` | The number of routing threads used by Percona Proxy.|
 
 In addition there is an `os` object that contains what the Linux command `uname` displays.
 
@@ -4787,45 +4787,45 @@ In addition there is an `os` object that contains what the Linux command `uname`
 
 #### `threads`
 
-If `threads` has not been specified at all in the MaxScale configuration file,
-or if its value is `auto`, then MaxScale will use as many routing threads as
-there are physical cores on the machine. This is the right choice, if MaxScale
+If `threads` has not been specified at all in the Percona Proxy configuration file,
+or if its value is `auto`, then Percona Proxy will use as many routing threads as
+there are physical cores on the machine. This is the right choice, if Percona Proxy
 is running on a dedicated machine or in a container that has not been restriced
 in any way.
 
-However, if the number of cores available to MaxScale have been restricted or
-if MaxScale is running in a container whose CPU quota and period have been
-limited, then it will lead to MaxScale using more routing threads than what
+However, if the number of cores available to Percona Proxy have been restricted or
+if Percona Proxy is running in a container whose CPU quota and period have been
+limited, then it will lead to Percona Proxy using more routing threads than what
 is appropriate in the environment where it is running.
 
 If `machine.cores_virtual` is less than `machine.cores_physical`, then `threads`
-should be specified explicitly in the MaxScale configuration file and its value
+should be specified explicitly in the Percona Proxy configuration file and its value
 should be that of `machine.cores_virtual` rounded up to the nearest integer. If
 that value is `1` it may be beneficial to check whether `2` gives better performance.
 
 #### `query_classifier_cache_size`
 
-If `query_classifier_cache_size` has not been specified in the MaxScale
-configuration file, then MaxScale will use at most 15% of the amount of physical
-memory in the machine for the cache. This is a good starting point, if MaxScale
+If `query_classifier_cache_size` has not been specified in the Percona Proxy
+configuration file, then Percona Proxy will use at most 15% of the amount of physical
+memory in the machine for the cache. This is a good starting point, if Percona Proxy
 is running on a dedicated machine or in a container that has not been restriced
 in any way. Note that the amount specifies how much memory the cache at maximum
 is allowed to use, not what would immediately be allocated for the cache.
 
-However, if the amount of memory available to MaxScale has been restricted,
-which may be the case if MaxScale is running in a container, this may cause the
-cache to grow beyond what is available, which will lead to a crash or MaxScale
+However, if the amount of memory available to Percona Proxy has been restricted,
+which may be the case if Percona Proxy is running in a container, this may cause the
+cache to grow beyond what is available, which will lead to a crash or Percona Proxy
 being killed.
 
 If the value of `machine.memory_available` is less than that of
 `machine.memory_physical`, then `query_classifier_cache_size` should be explicitly
-set to 15% of `maxscale.memory_available`. The value can be larger, but must not
+set to 15% of `percona-proxy.memory_available`. The value can be larger, but must not
 be a bigger share of `machine.memory_available` than what is reasonable.
 
 ### Example
 
 ```
-$ maxctrl show maxscale
+$ percona-proxyctl show percona-proxy
 ...
 ├──────────────┼────────────────────────────────────────────────────────────────────────────┤
 │ System       │ {                                                                          │
@@ -4836,7 +4836,7 @@ $ maxctrl show maxscale
 │              │         "memory_available": 20858544128,                                   │
 │              │         "memory_physical": 41717088256                                     │
 │              │     },                                                                     │
-│              │     "maxscale": {                                                          │
+│              │     "percona-proxy": {                                                          │
 │              │         "query_classifier_cache_size": 6257563238,                         │
 │              │         "threads": 8                                                       │
 │              │     },                                                                     │
@@ -4850,16 +4850,16 @@ $ maxctrl show maxscale
 │              │ }                                                                          │
 └──────────────┴────────────────────────────────────────────────────────────────────────────┘
 ```
-As can be seen, `maxscale.threads` is larger than `machine.cores_virtual` and thus,
-`threads=4` should explicitly be specified in the MaxScale configuration file.
+As can be seen, `percona-proxy.threads` is larger than `machine.cores_virtual` and thus,
+`threads=4` should explicitly be specified in the Percona Proxy configuration file.
 
-`maxscale.query_classifier_cache_size` is the default 15% of `machine.memory_physical`
+`percona-proxy.query_classifier_cache_size` is the default 15% of `machine.memory_physical`
 but as `machine.memory_available` is just half of that, something like
 `query_classifier_cache_size=3100000000` (~15% of `machine.memory_available`) should be
 added to the configuration file.
 
 ```
-[maxscale]
+[percona-proxy]
 threads=4
 query_classifier_cache_size=3100000000
 ...
@@ -4868,22 +4868,22 @@ query_classifier_cache_size=3100000000
 # Troubleshooting
 
 For a list of common problems and their solutions, read the
-[MaxScale Troubleshooting](https://mariadb.com/kb/en/maxscale-troubleshooting/)
+[Percona Proxy Troubleshooting](https://mariadb.com/kb/en/percona-proxy-troubleshooting/)
 article on the MariaDB Knowledge Base.
 
 ## Systemd Watchdog
 
-If MaxScale is running as a systemd service, the systemd Watchdog will be
+If Percona Proxy is running as a systemd service, the systemd Watchdog will be
 enabled by default. To configure it, change the `WatchdogSec` option in the
-Service section of the maxscale systemd configuration file located in
-`/lib/systemd/system/maxscale.service`:
+Service section of the percona-proxy systemd configuration file located in
+`/lib/systemd/system/percona-proxy.service`:
 
 ```
 WatchdogSec=30s
 ```
 
 It is not recommended to use a watchdog timeout less than 30 seconds. When
-enabled MaxScale will check that all threads are running and notify systemd
+enabled Percona Proxy will check that all threads are running and notify systemd
 with a "keep-alive ping".
 
 Systemd reference: https://www.freedesktop.org/software/systemd/man/systemd.service.html

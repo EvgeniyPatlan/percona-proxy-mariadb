@@ -35,21 +35,21 @@ const int TIMEOUT = 10; // This should be bigger that the cache timeout in the c
 
 bool restart_service(TestConnections& test, const char* zService)
 {
-    bool rv = test.maxscale->ssh_node_f(true, "service %s restart", zService) == 0;
+    bool rv = test.percona_proxy->ssh_node_f(true, "service %s restart", zService) == 0;
     sleep(1); // A short sleep to ensure connecting is possible.
     return rv;
 }
 
 bool start_service(TestConnections& test, const char* zService)
 {
-    bool rv = test.maxscale->ssh_node_f(true, "service %s start", zService) == 0;
+    bool rv = test.percona_proxy->ssh_node_f(true, "service %s start", zService) == 0;
     sleep(1); // A short sleep to ensure connecting is possible.
     return rv;
 }
 
 bool stop_service(TestConnections& test, const char* zService)
 {
-    return test.maxscale->ssh_node_f(true, "service %s stop", zService) == 0;
+    return test.percona_proxy->ssh_node_f(true, "service %s stop", zService) == 0;
 }
 
 bool start_redis(TestConnections& test)
@@ -74,11 +74,11 @@ bool stop_memcached(TestConnections& test)
 
 void drop(TestConnections& test)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pMysql, "DROP TABLE IF EXISTS cache_distributed");
 
-    test.maxscale->ssh_node_f(true, "redis-cli flushall");
+    test.percona_proxy->ssh_node_f(true, "redis-cli flushall");
     restart_service(test, "memcached");
 }
 
@@ -86,14 +86,14 @@ void create(TestConnections& test)
 {
     drop(test);
 
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pMysql, "CREATE TABLE cache_distributed (f INT)");
 }
 
 Connection connect(TestConnections& test, int port)
 {
-    Connection c = test.maxscale->get_connection(port);
+    Connection c = test.percona_proxy->get_connection(port);
     bool connected = c.connect();
 
     test.expect(connected, "Could not connect to %d.", port);
@@ -115,11 +115,11 @@ void select(TestConnections& test, const char* zName, Connection& c, size_t n)
     test.expect(rows.size() == n, "%s: Expected %lu rows, but got %lu.", zName, n, rows.size());
 }
 
-void install_and_start_redis_and_memcached(mxt::MaxScale& maxscales)
+void install_and_start_redis_and_memcached(mxt::PerconaProxy& percona_proxies)
 {
-    setenv("maxscale_000_keyfile", maxscales.sshkey(), 0);
-    setenv("maxscale_000_whoami", maxscales.access_user(), 0);
-    setenv("maxscale_000_network", maxscales.ip4(), 0);
+    setenv("percona_proxy_000_keyfile", percona_proxies.sshkey(), 0);
+    setenv("percona_proxy_000_whoami", percona_proxies.access_user(), 0);
+    setenv("percona_proxy_000_network", percona_proxies.ip4(), 0);
 
     string path(mxt::SOURCE_DIR);
     path += "/cache_install_and_start_storages.sh";
@@ -131,16 +131,16 @@ void install_and_start_redis_and_memcached(mxt::MaxScale& maxscales)
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
-    auto maxscales = test.maxscale;
+    auto percona_proxies = test.percona_proxy;
 
-    install_and_start_redis_and_memcached(*maxscales);
+    install_and_start_redis_and_memcached(*percona_proxies);
 
-    maxscales->start();
+    percona_proxies->start();
 
-    if (maxscales->connect_rwsplit() == 0)
+    if (percona_proxies->connect_rwsplit() == 0)
     {
         create(test);
         sleep(1);

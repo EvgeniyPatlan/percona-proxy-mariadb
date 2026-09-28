@@ -14,7 +14,7 @@ add_test_executable_ex(NAME pinloki_purge SOURCE pinloki_purge.cc
 add_test_executable_ex(NAME pinloki_gtid SOURCE pinloki_gtid.cc
   CONFIG pinloki.cnf VMS repl_backend LABELS pinloki)
 
-# Restart MaxScale during replication
+# Restart Percona Proxy during replication
 add_test_executable_ex(NAME pinloki_restart SOURCE pinloki_restart.cc
   CONFIG pinloki.cnf VMS repl_backend LABELS pinloki)
 
@@ -46,7 +46,7 @@ add_test_executable_ex(NAME pinloki_switchover SOURCE pinloki_switchover.cc
 add_test_executable_ex(NAME pinloki_upgrade SOURCE pinloki_upgrade.cc
   CONFIG pinloki.cnf VMS repl_backend LABELS pinloki)
 
-# MXS-3674: Pinloki hangs if "maxctrl show threads" and STOP SLAVE are executed at the same time
+# MXS-3674: Pinloki hangs if "percona-proxyctl show threads" and STOP SLAVE are executed at the same time
 add_test_executable_ex(NAME pinloki_hang SOURCE pinloki_hang.cc
   CONFIG pinloki.cnf VMS repl_backend LABELS pinloki)
 

@@ -25,11 +25,11 @@
 #include <mysql.h>
 #include <mysqld_error.h>
 #include <maxbase/alloc.hh>
-#include <maxscale/config.hh>
-#include <maxscale/dcb.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/protocol/mariadb/maxscale.hh>
-#include <maxscale/secrets.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/protocol/mariadb/percona-proxy.hh>
+#include <percona-proxy/secrets.hh>
 #include <maxsql/mariadb.hh>
 #include <maxsql/mariadb_connector.hh>
 
@@ -69,7 +69,7 @@ cfg::ParamBool s_set_donor_nodes(
     false, cfg::Param::AT_RUNTIME);
 }
 
-using maxscale::MonitorServer;
+using percona_proxy::MonitorServer;
 
 /** Log a warning when a bad 'wsrep_local_index' is found */
 static bool warn_erange_on_local_index = true;
@@ -269,7 +269,7 @@ void get_gtid(GaleraServer* srv, GaleraNode* info)
                 info->read_only = res.get_bool(2);
                 info->server_id = res.get_int(3);
 
-                // The gtid_current_pos is not reliably updated in all cases (MDEV-26176). To make the MaxCtrl
+                // The gtid_current_pos is not reliably updated in all cases (MDEV-26176). To make the Percona Proxyctl
                 // output consistent, substitute it with gtid_binlog_pos if it's found.
                 if (!info->gtid_binlog_pos.empty() && info->gtid_current_pos.empty())
                 {
@@ -1084,7 +1084,7 @@ extern "C" MXS_MODULE* MXS_CREATE_MODULE()
         "A Galera cluster monitor",
         "V2.0.0",
         MXS_NO_MODULE_CAPABILITIES,
-        &maxscale::MonitorApi<GaleraMonitor>::s_api,
+        &percona_proxy::MonitorApi<GaleraMonitor>::s_api,
         NULL,
         NULL,
         NULL,

@@ -16,8 +16,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <iostream>
-#include <maxscale/buffer.hh>
-#include <maxscale/paths.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/paths.hh>
 
 using namespace std;
 
@@ -295,70 +295,70 @@ struct TEST_CASE
         }
     },
     {
-        "SET MAXSCALE=",
+        "SET PERCONA_PROXY=",
         P::NOT_RELEVANT,
         {
             {NULL, NULL}
         }
     },
     {
-        "SET MAXSCALE.CACHE.ENABLED=TRUE",
+        "SET PERCONA_PROXY.CACHE.ENABLED=TRUE",
         P::NOT_RELEVANT,
         {
             {NULL, NULL}
         }
     },
     {
-        "SET @MAXSCALE.CACHE.ENABLED=TRUE",
+        "SET @PERCONA_PROXY.CACHE.ENABLED=TRUE",
         P::IS_SET_MAXSCALE,
         {
             {
-                "@MAXSCALE.CACHE.ENABLED",
+                "@PERCONA_PROXY.CACHE.ENABLED",
                 "TRUE"
             },
             {NULL, NULL}
         }
     },
     {
-        "SET @MAXSCALE.CACHE.ENABLED = TRUE /*blah*/",
+        "SET @PERCONA_PROXY.CACHE.ENABLED = TRUE /*blah*/",
         P::IS_SET_MAXSCALE,
         {
             {
-                "@MAXSCALE.CACHE.ENABLED",
+                "@PERCONA_PROXY.CACHE.ENABLED",
                 "TRUE"
             },
             {NULL, NULL}
         }
     },
     {
-        "SET @MAXSCALE.CACHE.ENABLED = TRUE, @maxscale.cache.enabled = FALSE",
+        "SET @PERCONA_PROXY.CACHE.ENABLED = TRUE, @percona_proxy.cache.enabled = FALSE",
         P::IS_SET_MAXSCALE,
         {
             {
-                "@MAXSCALE.CACHE.ENABLED",
+                "@PERCONA_PROXY.CACHE.ENABLED",
                 "TRUE"
             },
             {
-                "@maxscale.cache.enabled",
+                "@percona_proxy.cache.enabled",
                 "FALSE"
             },
             {NULL, NULL}
         }
     },
     {
-        "SET @maxscale.doubled_quote = 'doubled''quote', @maxscale.backslash_escape = 'backslash\\'escape', @maxscale.both='''''\\'''\\\\'",
+        "SET @percona_proxy.doubled_quote = 'doubled''quote', @percona_proxy.backslash_escape = 'backslash\\'escape', @percona_proxy.both='''''\\'''\\\\'",
         P::IS_SET_MAXSCALE,
         {
             {
-                "@maxscale.doubled_quote",
+                "@percona_proxy.doubled_quote",
                 "'doubled''quote'"
             },
             {
-                "@maxscale.backslash_escape",
+                "@percona_proxy.backslash_escape",
                 "'backslash\\'escape'"
             },
             {
-                "@maxscale.both",
+                "@percona_proxy.both",
                 "'''''\\'''\\\\'"
             },
             {NULL, NULL}

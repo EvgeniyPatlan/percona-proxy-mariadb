@@ -30,12 +30,12 @@ TestConnections* self;
 static void change_master(int next, int current)
 {
     TestConnections& test = *self;
-    test.maxctrl("stop monitor MySQL-Monitor");
+    test.percona_proxyctl("stop monitor MySQL-Monitor");
     test.repl->connect();
     test.repl->change_master(next, current);
     test.repl->close_connections();
-    test.maxctrl("start monitor MySQL-Monitor");
-    test.maxscale->wait_for_monitor();
+    test.percona_proxyctl("start monitor MySQL-Monitor");
+    test.percona_proxy->wait_for_monitor();
 }
 
 struct Query
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 
     Func block_master = [&test]() {
             test.repl->block_node(0);
-            test.maxscale->wait_for_monitor();
+            test.percona_proxy->wait_for_monitor();
         };
 
     Func delayed_block_master = [&test]() {
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 
     Func unblock_master = [&test]() {
             test.repl->unblock_node(0);
-            test.maxscale->wait_for_monitor();
+            test.percona_proxy->wait_for_monitor();
         };
 
     Func master_change = [] {
@@ -134,15 +134,15 @@ int main(int argc, char** argv)
     });
 
     // Create a table for testing
-    test.maxscale->connect_rwsplit();
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id INT)");
+    test.percona_proxy->connect_rwsplit();
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id INT)");
     test.repl->sync_slaves();
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     for (auto& i : tests)
     {
         test.log_printf("Running test: %s", i.description);
-        test.maxscale->connect_rwsplit();
+        test.percona_proxy->connect_rwsplit();
 
         for (auto t : i.steps)
         {
@@ -150,13 +150,13 @@ int main(int argc, char** argv)
             t.func();
             for (auto q : t.queries)
             {
-                int rc = execute_query_silent(test.maxscale->conn_rwsplit, q.query);
+                int rc = execute_query_silent(test.percona_proxy->conn_rwsplit, q.query);
                 test.expect(q.should_work == (rc == 0),
                             "Step '%s': Query '%s' should %s: %s",
                             i.description,
                             q.query,
                             q.should_work ? "work" : "fail",
-                            mysql_error(test.maxscale->conn_rwsplit));
+                            mysql_error(test.percona_proxy->conn_rwsplit));
             }
         }
 
@@ -168,11 +168,11 @@ int main(int argc, char** argv)
     }
 
     // Wait for the monitoring to stabilize before dropping the table
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
-    test.maxscale->connect_rwsplit();
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE test.t1");
-    test.maxscale->disconnect();
+    test.percona_proxy->connect_rwsplit();
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE test.t1");
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

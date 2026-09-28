@@ -19,7 +19,7 @@ static_assert(MXB_MODULE_NAME != nullptr, "MXB_MODULE_NAME is null");
 namespace
 {
 
-namespace cfg = maxscale::config;
+namespace cfg = percona_proxy::config;
 using namespace kafkaimporter;
 
 class KafkaSpecification : public cfg::Specification

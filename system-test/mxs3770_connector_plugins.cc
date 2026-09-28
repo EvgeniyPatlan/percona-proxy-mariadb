@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 {
     // The USING PASSWORD syntax for ed25519 was added in 10.4
     TestConnections::require_repl_version("10.4");
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
     test.repl->execute_query_all_nodes("INSTALL SONAME 'auth_ed25519'");
 
@@ -30,14 +30,14 @@ int main(int argc, char** argv)
     {
         test.repl->sync_slaves();
 
-        test.maxscale->start();
+        test.percona_proxy->start();
 
         // There's a race condition in the connector (CONC-568) that can cause the first connection attempt
         // with a non-default auth plugin to fail. To work around this, we can wait for the monitor which
         // causes a reconnection to occur.
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
 
-        auto rws = test.maxscale->rwsplit();
+        auto rws = test.percona_proxy->rwsplit();
         test.expect(rws.connect(), "Failed to connect to readwritesplit: %s", rws.error());
         test.expect(rws.query("SELECT 1"), "Query failed: %s", rws.error());
 

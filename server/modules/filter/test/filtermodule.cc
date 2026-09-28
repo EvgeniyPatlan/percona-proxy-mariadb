@@ -12,13 +12,13 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
-#include "maxscale/filtermodule.hh"
+#include <percona-proxy/ccdefs.hh>
+#include "percona-proxy/filtermodule.hh"
 #include "../../../core/internal/modules.hh"
 
 using std::unique_ptr;
 
-namespace maxscale
+namespace percona_proxy
 {
 
 //

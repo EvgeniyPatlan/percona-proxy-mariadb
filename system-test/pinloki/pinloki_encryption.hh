@@ -27,7 +27,7 @@ public:
 
     void check_encryption(std::initializer_list<std::string> strs)
     {
-        auto rv = test.maxscale->ssh_output("find /var/lib/maxscale/binlogs/ -type f -exec strings {} \\;");
+        auto rv = test.percona_proxy->ssh_output("find /var/lib/percona-proxy/binlogs/ -type f -exec strings {} \\;");
 
         for (const auto& str : strs)
         {
@@ -59,15 +59,15 @@ public:
         check_contents("test.t2", case1);
         check_gtid();
 
-        // Restart MaxScale and insert new values. Old values should not be visible.
-        test.maxscale->restart();
+        // Restart Percona Proxy and insert new values. Old values should not be visible.
+        test.percona_proxy->restart();
 
         query("INSERT INTO test.t1 VALUES ('" + case2 + "')");
         query("INSERT INTO test.t2 VALUES ('" + case3 + "')");
 
         test.tprintf("Encryption after restart");
-        // Reconnect to MaxScale since it was restarted and force the slave to reconnect as well.
-        maxscale.connect();
+        // Reconnect to Percona Proxy since it was restarted and force the slave to reconnect as well.
+        percona_proxy.connect();
         slave.query("STOP SLAVE; START SLAVE;");
         sync_all();
 
@@ -77,18 +77,18 @@ public:
         check_encryption({case1, case2, case3, case4, case5});
 
         test.tprintf("Encrypted binlogs with bad configuration should not work");
-        test.maxscale->ssh_node_f(true, "sed -i 's/encryption_key_id/#encryption_key_id/' /etc/maxscale.cnf");
-        test.maxscale->restart();
-        test.expect(maxscale.connect(), "Connection should work: %s", maxscale.error());
+        test.percona_proxy->ssh_node_f(true, "sed -i 's/encryption_key_id/#encryption_key_id/' /etc/percona-proxy.cnf");
+        test.percona_proxy->restart();
+        test.expect(percona_proxy.connect(), "Connection should work: %s", percona_proxy.error());
         slave.query("STOP SLAVE; START SLAVE;");
 
         query("FLUSH LOGS");
         query("INSERT INTO test.t1 VALUES ('unencrypted1')");
         query("INSERT INTO test.t2 VALUES ('unencrypted2')");
 
-        test.maxscale->ssh_node_f(true, "sed -i 's/#encryption_key_id/encryption_key_id/' /etc/maxscale.cnf");
-        test.maxscale->restart();
-        test.expect(maxscale.connect(), "Connection should work: %s", maxscale.error());
+        test.percona_proxy->ssh_node_f(true, "sed -i 's/#encryption_key_id/encryption_key_id/' /etc/percona-proxy.cnf");
+        test.percona_proxy->restart();
+        test.expect(percona_proxy.connect(), "Connection should work: %s", percona_proxy.error());
         slave.query("STOP SLAVE; START SLAVE;");
 
         query("FLUSH LOGS");

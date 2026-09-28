@@ -24,7 +24,7 @@ namespace
 
 void drop(TestConnections& test)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     string stmt("DROP TABLE IF EXISTS cache_test");
 
@@ -36,7 +36,7 @@ void create(TestConnections& test)
 {
     drop(test);
 
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     string stmt("CREATE TABLE cache_test (a INT)");
 
@@ -46,7 +46,7 @@ void create(TestConnections& test)
 
 void insert(TestConnections& test)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     string stmt("INSERT INTO cache_test VALUES (1)");
 
@@ -56,7 +56,7 @@ void insert(TestConnections& test)
 
 void update(TestConnections& test, int value)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     string stmt("UPDATE cache_test SET a=");
     stmt += std::to_string(value);
@@ -67,7 +67,7 @@ void update(TestConnections& test, int value)
 
 void select(TestConnections& test, int* pValue)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     string stmt("SELECT * FROM cache_test");
 
@@ -110,9 +110,9 @@ enum What
 
 void set(TestConnections& test, Cache::What what, bool value)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
-    string stmt("SET @maxscale.cache.");
+    string stmt("SET @percona_proxy.cache.");
     stmt += ((what == Cache::POPULATE) ? "populate" : "use");
     stmt += "=";
     stmt += (value ? "true" : "false");
@@ -146,14 +146,14 @@ void run(TestConnections& test)
     // And update the real value.
     update(test, 2);    // Now the cache contains 1 and the db 2.
 
-    // With @maxscale.cache.use==false we should get the updated value.
+    // With @percona_proxy.cache.use==false we should get the updated value.
     set(test, Cache::POPULATE, false);
     set(test, Cache::USE, false);
     select(test, &value);
     test.expect(value == 2, "The value received was not the latest one.");
 
-    // With @maxscale.cache.use==true we should get the old one, since
-    // it was not updated above as @maxscale.cache.populate==false.
+    // With @percona_proxy.cache.use==true we should get the old one, since
+    // it was not updated above as @percona_proxy.cache.populate==false.
     set(test, Cache::POPULATE, false);
     set(test, Cache::USE, true);
     select(test, &value);
@@ -163,9 +163,9 @@ void run(TestConnections& test)
     cout << "Sleeping 10 seconds." << endl;
     sleep(10);
 
-    // With @maxscale.cache.use==true we should now get the latest value.
+    // With @percona_proxy.cache.use==true we should now get the latest value.
     // The value in the cache is stale, so it will be updated even if
-    // @maxscale.cache.populate==false.
+    // @percona_proxy.cache.populate==false.
     set(test, Cache::POPULATE, false);
     set(test, Cache::USE, true);
     select(test, &value);
@@ -200,14 +200,14 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    if (test.maxscale->connect_rwsplit() == 0)
+    if (test.percona_proxy->connect_rwsplit() == 0)
     {
         run(test);
     }
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
     drop(test);
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

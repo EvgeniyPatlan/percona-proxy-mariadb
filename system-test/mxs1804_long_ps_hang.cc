@@ -37,7 +37,7 @@ void mxs1804_long_ps_hang(TestConnections& test)
         std::string sql = gen_sql("select '", sqlsize, "'");
 
         test.reset_timeout();
-        auto c = test.maxscale->rwsplit();
+        auto c = test.percona_proxy->rwsplit();
         c.connect();
 
         MYSQL_STMT* stmt = c.stmt();
@@ -66,7 +66,7 @@ void mxs5556_hang_on_large_first_packet(TestConnections& test)
 
     for (int i = 0; i < 25; i++)
     {
-        auto c = test.maxscale->rwsplit();
+        auto c = test.percona_proxy->rwsplit();
         c.connect();
 
         MYSQL_STMT* stmt = c.stmt();
@@ -87,15 +87,15 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
     test.repl->execute_query_all_nodes("SET GLOBAL max_allowed_packet=67108860");
 
-    test.maxscale->connect_rwsplit();
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(data LONGTEXT)");
+    test.percona_proxy->connect_rwsplit();
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(data LONGTEXT)");
     test.repl->sync_slaves();
 
     mxs1804_long_ps_hang(test);
     mxs5556_hang_on_large_first_packet(test);
 
-    test.maxscale->connect_rwsplit();
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE test.t1");
+    test.percona_proxy->connect_rwsplit();
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE test.t1");
     test.repl->sync_slaves();
 
     return test.global_result;

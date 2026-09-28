@@ -242,42 +242,42 @@ int main(int argc, char** argv)
 {
     TestConnections::require_repl_version("10.2");
     TestConnections test(argc, argv);
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
     test.repl->connect();
 
     test.tprintf("Testing column-wise binding with a direct connection");
     test.add_result(bind_by_column(test.repl->nodes[0]), "Bulk inserts with a direct connection should work");
     test.tprintf("Testing column-wise binding with readwritesplit");
-    test.add_result(bind_by_column(test.maxscale->conn_rwsplit),
+    test.add_result(bind_by_column(test.percona_proxy->conn_rwsplit),
                     "Bulk inserts with readwritesplit should work");
     test.tprintf("Testing column-wise binding with readconnroute");
-    test.add_result(bind_by_column(test.maxscale->conn_master),
+    test.add_result(bind_by_column(test.percona_proxy->conn_master),
                     "Bulk inserts with readconnroute should work");
 
     test.tprintf("Testing row-wise binding with a direct connection");
     test.add_result(bind_by_row(test.repl->nodes[0]), "Bulk inserts with a direct connection should work");
     test.tprintf("Testing row-wise binding with readwritesplit");
-    test.add_result(bind_by_row(test.maxscale->conn_rwsplit),
+    test.add_result(bind_by_row(test.percona_proxy->conn_rwsplit),
                     "Bulk inserts with readwritesplit should work");
     test.tprintf("Testing row-wise binding with readconnroute");
-    test.add_result(bind_by_row(test.maxscale->conn_master),
+    test.add_result(bind_by_row(test.percona_proxy->conn_master),
                     "Bulk inserts with readconnroute should work");
 
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 
     test.log_printf(
         "MXS-5106: One stopped node cause the protocol to downgrade to the lowest supported version.");
     test.repl->block_node(3);
-    test.maxscale->restart();
-    test.maxscale->wait_for_monitor();
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->restart();
+    test.percona_proxy->wait_for_monitor();
+    test.percona_proxy->connect_percona_proxy();
 
-    test.expect(bind_by_column(test.maxscale->conn_rwsplit) == 0,
+    test.expect(bind_by_column(test.percona_proxy->conn_rwsplit) == 0,
                 "Bulk inserts with readwritesplit should still work");
-    test.expect(bind_by_column(test.maxscale->conn_master) == 0,
+    test.expect(bind_by_column(test.percona_proxy->conn_master) == 0,
                 "Bulk inserts with readconnroute should still work");
     test.repl->unblock_node(3);
 
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
     return test.global_result;
 }

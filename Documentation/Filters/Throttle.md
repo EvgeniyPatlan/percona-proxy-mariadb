@@ -1,6 +1,6 @@
 # Throttle
 
-This filter was added in MariaDB MaxScale 2.3
+This filter was added in Percona Proxy for MariaDB 2.3
 
 [TOC]
 
@@ -39,7 +39,7 @@ immediate, i.e. a session will only be allowed very short bursts of high
 frequency querying.
 
 When a session has been continuously throttled for `throttling_duration`
-milliseconds, or 60 seconds in this example, MaxScale will disconnect the
+milliseconds, or 60 seconds in this example, Percona Proxy will disconnect the
 session.
 
 ### Allowing high frequency bursts
@@ -78,7 +78,7 @@ sampling duration (see `sampling_duration`).
 - **Mandatory**: Yes
 - **Dynamic**: Yes
 
-This defines how long a session is allowed to be throttled before MaxScale
+This defines how long a session is allowed to be throttled before Percona Proxy
 disconnects the session.
 
 ### `sampling_duration`

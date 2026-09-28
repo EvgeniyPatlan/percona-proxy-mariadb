@@ -25,7 +25,7 @@ void read_messages(TestConnections& test, Consumer& consumer, int n_expected)
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
     Kafka kafka(test);
     kafka.create_topic("test.t1");
@@ -34,12 +34,12 @@ int main(int argc, char** argv)
     auto conn = test.repl->get_connection(0);
     conn.connect();
     conn.query("RESET MASTER");
-    test.maxscale->start();
+    test.percona_proxy->start();
 
     // Stop B-Monitor, A-Monitor will take ownership of the cluster
-    test.maxctrl("stop monitor B-Monitor");
+    test.percona_proxyctl("stop monitor B-Monitor");
     sleep(5);
-    test.maxctrl("start monitor B-Monitor");
+    test.percona_proxyctl("start monitor B-Monitor");
 
     // Connect to Kafka
     Consumer consumer(test, "kafkacdc");
@@ -54,15 +54,15 @@ int main(int argc, char** argv)
     auto gtid = conn.field("SELECT @@gtid_binlog_pos");
     test.tprintf("GTID: %s", gtid.c_str());
 
-    test.tprintf("Give MaxScale some time to process the events");
+    test.tprintf("Give Percona Proxy some time to process the events");
     sleep(5);
 
     read_messages(test, consumer, 7);
 
     // Pass ownership to B-Monitor
-    test.maxctrl("stop monitor A-Monitor");
+    test.percona_proxyctl("stop monitor A-Monitor");
     sleep(5);
-    test.maxctrl("start monitor A-Monitor");
+    test.percona_proxyctl("start monitor A-Monitor");
 
     conn.query("INSERT INTO t1 VALUES (4), (5), (6)");
     gtid = conn.field("SELECT @@gtid_binlog_pos");
@@ -72,8 +72,8 @@ int main(int argc, char** argv)
     read_messages(test, consumer, 3);
 
     // Stop both monitors, no events should be sent
-    test.maxctrl("stop monitor A-Monitor");
-    test.maxctrl("stop monitor B-Monitor");
+    test.percona_proxyctl("stop monitor A-Monitor");
+    test.percona_proxyctl("stop monitor B-Monitor");
     sleep(5);
 
     conn.query("INSERT INTO t1 VALUES (7), (8), (9)");

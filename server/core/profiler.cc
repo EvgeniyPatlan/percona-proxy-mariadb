@@ -16,8 +16,8 @@
 #include <maxbase/string.hh>
 #include <maxbase/random.hh>
 #include <maxbase/stacktrace.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/json_api.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/json_api.hh>
 
 #include <dirent.h>
 #include <execinfo.h>
@@ -55,7 +55,7 @@ int tgkill(pid_t pid, pid_t tid, int sig)
 #endif
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 // static
 int Profiler::profiling_signal()
@@ -181,7 +181,7 @@ json_t* Profiler::snapshot(const char* host)
                                          this_unit.rand.rand() % this_unit.cached.size()));
     }
 
-    return mxs_json_resource(host, "/maxscale/debug/profile", obj);
+    return mxs_json_resource(host, "/percona-proxy/debug/profile", obj);
 }
 
 std::string Profiler::stacktrace()

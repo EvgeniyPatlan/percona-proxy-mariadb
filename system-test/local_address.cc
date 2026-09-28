@@ -76,10 +76,10 @@ string extract_ip(string s)
     return s;
 }
 
-void get_maxscale_ips(TestConnections& test, vector<string>* pIps)
+void get_percona_proxy_ips(TestConnections& test, vector<string>* pIps)
 {
     static const char COMMAND[] = "export PATH=$PATH:/sbin:/usr/sbin; ip addr|fgrep inet|fgrep -v ::";
-    auto res = test.maxscale->ssh_output(COMMAND, false);
+    auto res = test.percona_proxy->ssh_output(COMMAND, false);
     to_collection(res.output, "\n", pIps);
     transform(pIps->begin(), pIps->end(), pIps->begin(), extract_ip);
 
@@ -105,7 +105,7 @@ void drop_user(TestConnections& test, const string& user, const string& host)
     stmt += "'@'";
     stmt += host;
     stmt += "'";
-    test.try_query(test.maxscale->conn_rwsplit, "%s", stmt.c_str());
+    test.try_query(test.percona_proxy->conn_rwsplit, "%s", stmt.c_str());
 }
 
 void create_user(TestConnections& test, const string& user, const string& password, const string& host)
@@ -121,7 +121,7 @@ void create_user(TestConnections& test, const string& user, const string& passwo
     stmt += "'";
     stmt += password;
     stmt += "'";
-    test.try_query(test.maxscale->conn_rwsplit, "%s", stmt.c_str());
+    test.try_query(test.percona_proxy->conn_rwsplit, "%s", stmt.c_str());
 }
 
 void grant_access(TestConnections& test, const string& user, const string& host)
@@ -133,9 +133,9 @@ void grant_access(TestConnections& test, const string& user, const string& host)
     stmt += "'@'";
     stmt += host;
     stmt += "'";
-    test.try_query(test.maxscale->conn_rwsplit, "%s", stmt.c_str());
+    test.try_query(test.percona_proxy->conn_rwsplit, "%s", stmt.c_str());
 
-    test.try_query(test.maxscale->conn_rwsplit, "FLUSH PRIVILEGES");
+    test.try_query(test.percona_proxy->conn_rwsplit, "FLUSH PRIVILEGES");
 }
 
 void create_user_and_grants(TestConnections& test,
@@ -176,7 +176,7 @@ bool select_user(MYSQL* pMysql, string* pUser)
     return rv;
 }
 
-bool can_connect_to_maxscale(const char* zHost, int port, const char* zUser, const char* zPassword)
+bool can_connect_to_percona_proxy(const char* zHost, int port, const char* zUser, const char* zPassword)
 {
     bool could_connect = false;
 
@@ -214,18 +214,18 @@ bool can_connect_to_maxscale(const char* zHost, int port, const char* zUser, con
 
 string get_local_ip(TestConnections& test)
 {
-    auto res = test.maxscale->ssh_output("nslookup maxscale|fgrep Server:|sed s/Server://", false);
+    auto res = test.percona_proxy->ssh_output("nslookup percona-proxy|fgrep Server:|sed s/Server://", false);
 
     return trim(res.output);
 }
 
 string get_gateway_ip(TestConnections& test)
 {
-    auto res = test.maxscale->ssh_output("echo $SSH_CLIENT", false);
+    auto res = test.percona_proxy->ssh_output("echo $SSH_CLIENT", false);
     return mxt::cutoff_string(res.output, ' ');
 }
 
-void start_maxscale_with_local_address(TestConnections& test,
+void start_percona_proxy_with_local_address(TestConnections& test,
                                        const string& replace,
                                        const string& with)
 {
@@ -234,10 +234,10 @@ void start_maxscale_with_local_address(TestConnections& test,
     command += "/";
     command += with;
     command += "/ ";
-    command += "/etc/maxscale.cnf";
+    command += "/etc/percona-proxy.cnf";
 
-    test.maxscale->ssh_node(command.c_str(), true);
-    test.maxscale->start_and_check_started();
+    test.percona_proxy->ssh_node(command.c_str(), true);
+    test.percona_proxy->start_and_check_started();
 }
 
 void test_connecting(TestConnections& test,
@@ -246,8 +246,8 @@ void test_connecting(TestConnections& test,
                      const char* zHost,
                      bool should_be_able_to)
 {
-    bool could_connect = can_connect_to_maxscale(test.maxscale->ip4(),
-                                                 test.maxscale->rwsplit_port,
+    bool could_connect = can_connect_to_percona_proxy(test.percona_proxy->ip4(),
+                                                 test.percona_proxy->rwsplit_port,
                                                  zUser,
                                                  zPassword);
 
@@ -274,8 +274,8 @@ void test_connecting(TestConnections& test,
 
 void run_test(TestConnections& test, const vector<string>& ips)
 {
-    auto* mxs = test.maxscale;
-    test.maxscale->connect();
+    auto* mxs = test.percona_proxy;
+    test.percona_proxy->connect();
 
     string ip1 = ips[0];
     // If we do not have a proper second IP-address, we'll use an arbitrary one.
@@ -303,7 +303,7 @@ void run_test(TestConnections& test, const vector<string>& ips)
     test_connecting(test, zUser1, zPassword1, ip1.c_str(), true);
     test_connecting(test, zUser2, zPassword2, ip2.c_str(), false);
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
     mxs->stop_and_check_stopped();
 
     test.tprintf("\n");
@@ -311,13 +311,13 @@ void run_test(TestConnections& test, const vector<string>& ips)
                  ip1.c_str());
 
     string local_address_ip1 = "local_address=" + ip1;
-    start_maxscale_with_local_address(test, "###local_address###", local_address_ip1);
-    test.maxscale->connect();
+    start_percona_proxy_with_local_address(test, "###local_address###", local_address_ip1);
+    test.percona_proxy->connect();
 
     test_connecting(test, zUser1, zPassword1, ip1.c_str(), true);
     test_connecting(test, zUser2, zPassword2, ip2.c_str(), false);
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
     mxs->stop_and_check_stopped();
 
     if (ips.size() > 1)
@@ -328,14 +328,14 @@ void run_test(TestConnections& test, const vector<string>& ips)
                      ip2.c_str());
 
         string local_address_ip2 = "local_address=" + ip2;
-        start_maxscale_with_local_address(test, local_address_ip1, local_address_ip2);
-        test.connect_maxscale();
+        start_percona_proxy_with_local_address(test, local_address_ip1, local_address_ip2);
+        test.connect_percona_proxy();
 
         test_connecting(test, zUser1, zPassword1, ip1.c_str(), false);
         test_connecting(test, zUser2, zPassword2, ip2.c_str(), true);
 
-        test.maxscales->disconnect();
-        test.stop_maxscale();
+        test.percona_proxies->disconnect();
+        test.stop_percona_proxy();
 #else
         test.tprintf("\n");
         test.tprintf("WARNING: Other IP-address (%s) not tested, as IP-address currently "
@@ -346,12 +346,12 @@ void run_test(TestConnections& test, const vector<string>& ips)
     else
     {
         test.tprintf("\n");
-        test.tprintf("WARNING: Only one IP-address found on MaxScale node, 'local_address' "
+        test.tprintf("WARNING: Only one IP-address found on Percona Proxy node, 'local_address' "
                      "not properly tested.");
     }
 
-    start_maxscale_with_local_address(test, "local_address.*", "");
-    test.maxscale->connect();
+    start_percona_proxy_with_local_address(test, "local_address.*", "");
+    test.percona_proxy->connect();
 
     drop_user(test, zUser1, ip1);
     drop_user(test, zUser1, local_ip);
@@ -367,7 +367,7 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     vector<string> ips;
-    get_maxscale_ips(test, &ips);
+    get_percona_proxy_ips(test, &ips);
 
     if (ips.size() >= 1)
     {
@@ -375,7 +375,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        test.expect(false, "MaxScale node does not have at least one IP-address.");
+        test.expect(false, "Percona Proxy node does not have at least one IP-address.");
     }
 
     return test.global_result;

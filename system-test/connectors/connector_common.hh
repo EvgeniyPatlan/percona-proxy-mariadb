@@ -4,15 +4,15 @@
 #include <fstream>
 #include <iostream>
 #include <maxbase/string.hh>
-#include <maxscale/version.hh>
+#include <percona-proxy/version.hh>
 
 constexpr int VERSION_NUMBER =
-    MAXSCALE_VERSION_MAJOR * 10000
-    + MAXSCALE_VERSION_MINOR * 100
-    + MAXSCALE_VERSION_PATCH;
+    PERCONA_PROXY_VERSION_MAJOR * 10000
+    + PERCONA_PROXY_VERSION_MINOR * 100
+    + PERCONA_PROXY_VERSION_PATCH;
 
 std::string CREATE_VERSION_FUNC =
-    "CREATE OR REPLACE FUNCTION test.maxscale_version() "
+    "CREATE OR REPLACE FUNCTION test.percona_proxy_version() "
     "RETURNS INT DETERMINISTIC RETURN " + std::to_string(VERSION_NUMBER);
 
 static inline mxt::ScopedUser create_user(TestConnections& test)
@@ -49,7 +49,7 @@ static inline int run_maven_test(TestConnections& test_arg, int argc, char** arg
         {
             auto user = create_user(test);
             std::ofstream of("./" + repo_dir + "/src/test/resources/conf.properties");
-            of << "DB_HOST=" << test.maxscale->ip() << "\n"
+            of << "DB_HOST=" << test.percona_proxy->ip() << "\n"
                << "DB_PORT=4006\n"
                << "DB_DATABASE=test\n"
                << "DB_USER=connector\n"
@@ -63,7 +63,7 @@ static inline int run_maven_test(TestConnections& test_arg, int argc, char** arg
             if (test.ok())
             {
                 test.run_shell_command(
-                    "cd "s + repo_dir + " && TEST_MAXSCALE_TLS_PORT=4007 srv=maxscale mvn -Duser.timezone=UTC -B -q test",
+                    "cd "s + repo_dir + " && TEST_MAXSCALE_TLS_PORT=4007 srv=percona-proxy mvn -Duser.timezone=UTC -B -q test",
                     "Running test suite");
             }
         }
@@ -90,13 +90,13 @@ static inline int run_npm_test(TestConnections& test_arg, int argc, char** argv,
             auto user = create_user(test);
             std::ostringstream ss;
             ss << "cd " << repo_dir << " && npm i &&"
-               << " TEST_DB_HOST=" << test.maxscale->ip()
+               << " TEST_DB_HOST=" << test.percona_proxy->ip()
                << " TEST_DB_PORT=4006"
                << " TEST_MAXSCALE_TLS_PORT=4007"
                << " TEST_DB_DATABASE=test"
                << " TEST_DB_USER=connector"
                << " TEST_DB_PASSWORD=connector"
-               << " srv=maxscale"
+               << " srv=percona-proxy"
                << " npm run test:base";
 
             test.run_shell_command(ss.str(), "Running test suite");

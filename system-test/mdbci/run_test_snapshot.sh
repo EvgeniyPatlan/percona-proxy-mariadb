@@ -66,7 +66,7 @@ if [ $? != 0 ]; then
 
 fi
 
-for maxscale_vm_name in ${maxscales_vm}
+for percona_proxy_vm_name in ${percona_proxies_vm}
 do
 
     checkExitStatus $? "Error installing Maxscale" $snapshot_lock_file
@@ -82,7 +82,7 @@ cmake .. -DBUILDNAME=$JOB_NAME-$BUILD_NUMBER-$target -DBUILD_SYSTEM_TESTS=Y -DCM
 cd system-test
 make
 
-./check_backend --restart-galera --reinstall-maxscale
+./check_backend --restart-galera --reinstall-percona-proxy
 checkExitStatus $? "Failed to check backends" $snapshot_lock_file
 
 if [${new_config}] == "true" ; then
@@ -92,8 +92,8 @@ fi
 
 
 ulimit -c unlimited
-ctest $test_set -VV --test-output-size-passed 16777216 --test-output-size-failed 16777216 --output-junit LOGS/maxscale.xml --verbose --overwrite BuildName=maxscale
-ctest --rerun-failed -VV --test-output-size-passed 16777216 --test-output-size-failed 16777216 --output-junit LOGS/maxscale_rerun.xml --verbose --overwrite BuildName=maxscale
+ctest $test_set -VV --test-output-size-passed 16777216 --test-output-size-failed 16777216 --output-junit LOGS/percona-proxy.xml --verbose --overwrite BuildName=percona-proxy
+ctest --rerun-failed -VV --test-output-size-passed 16777216 --test-output-size-failed 16777216 --output-junit LOGS/percona_proxy_rerun.xml --verbose --overwrite BuildName=percona-proxy
 cp core.* ${logs_publish_dir}
 ${script_dir}/copy_logs.sh
 

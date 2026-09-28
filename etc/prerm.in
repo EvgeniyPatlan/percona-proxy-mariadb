@@ -5,33 +5,33 @@
 # removed from the system.
 if [ "$1" = "0" ] || [ "$1" = "remove" ]
 then
-    if [ -f /etc/init.d/maxscale ]
+    if [ -f /etc/init.d/percona-proxy ]
     then
-        /etc/init.d/maxscale stop > /dev/null
-        rm /etc/init.d/maxscale
+        /etc/init.d/percona-proxy stop > /dev/null
+        rm /etc/init.d/percona-proxy
     fi
 
-    if [ -f /etc/ld.so.conf.d/maxscale.conf ]
+    if [ -f /etc/ld.so.conf.d/percona-proxy.conf ]
     then
-        rm /etc/ld.so.conf.d/maxscale.conf
+        rm /etc/ld.so.conf.d/percona-proxy.conf
     fi
 
-    if [ -f /usr/lib/systemd/system/maxscale.service ]
+    if [ -f /usr/lib/systemd/system/percona-proxy.service ]
     then
-        systemctl stop maxscale.service > /dev/null
-        systemctl disable maxscale.service > /dev/null 2>&1
-        rm /usr/lib/systemd/system/maxscale.service
+        systemctl stop percona-proxy.service > /dev/null
+        systemctl disable percona-proxy.service > /dev/null 2>&1
+        rm /usr/lib/systemd/system/percona-proxy.service
         systemctl daemon-reload > /dev/null
-    elif [ -f /lib/systemd/system/maxscale.service ]
+    elif [ -f /lib/systemd/system/percona-proxy.service ]
     then
-        systemctl stop maxscale.service > /dev/null
-        systemctl disable maxscale.service > /dev/null  2>&1
-        rm /lib/systemd/system/maxscale.service
+        systemctl stop percona-proxy.service > /dev/null
+        systemctl disable percona-proxy.service > /dev/null  2>&1
+        rm /lib/systemd/system/percona-proxy.service
         systemctl daemon-reload > /dev/null
     fi
 
-    if [ -f /etc/logrotate.d/maxscale_logrotate ]
+    if [ -f /etc/logrotate.d/percona-proxy-logrotate ]
     then
-        rm /etc/logrotate.d/maxscale_logrotate
+        rm /etc/logrotate.d/percona-proxy-logrotate
     fi
 fi

@@ -82,8 +82,8 @@ From 2.3.0 onwards, SchemaRouter is capable of limited table family sharding.
   the first available server in certain cases. To avoid problems, use routing
   hints to direct where these statements should go.
 
-* Starting with MaxScale 6.4.5, transaction control commands (`BEGIN`, `COMMIT`
-  and `ROLLBACK`) are routed to all nodes. Older versions of MaxScale routed the
+* Starting with Percona Proxy 6.4.5, transaction control commands (`BEGIN`, `COMMIT`
+  and `ROLLBACK`) are routed to all nodes. Older versions of Percona Proxy routed the
   queries to the first available backend. This means that cross-shard
   transactions are technically possible but, without external synchronization,
   the transactions are not guaranteed to be globally consistent.
@@ -122,7 +122,7 @@ result is controlled by the `refresh_interval` parameter.
 When a server needs to be mapped, the schemarouter will route a query to each of
 the servers using the client's credentials. While this query is being executed,
 all other sessions that would otherwise share the cached result will wait for
-the update to complete. This waiting functionality was added in MaxScale 2.4.19,
+the update to complete. This waiting functionality was added in Percona Proxy 2.4.19,
 older versions did not wait for existing updates to finish and would perform
 parallel database mapping queries.
 
@@ -152,7 +152,7 @@ the databases that need be sharded.
 If you are connecting directly to a database or have different users on some
 of the servers, you need to get the authentication data from all the
 servers. You can control this with the `auth_all_servers` parameter. With
-this parameter, MariaDB MaxScale forms a union of all the users and their
+this parameter, Percona Proxy for MariaDB forms a union of all the users and their
 grants from all the servers. By default, the schemarouter will fetch the
 authentication data from all servers.
 
@@ -170,9 +170,9 @@ GRANT SELECT,USAGE ON shard.* TO 'john'@'%';
 
 This would in effect allow the user 'john' to only see the database 'shard'
 on this server. Take notice that these grants are matched against MariaDB
-MaxScale's hostname instead of the client's hostname. Only user
+Percona Proxy's hostname instead of the client's hostname. Only user
 authentication uses the client's hostname and all other grants use MariaDB
-MaxScale's hostname.
+Percona Proxy's hostname.
 
 ## Router Parameters
 
@@ -217,14 +217,14 @@ This parameter was once called `ignore_databases_regex`.
 ### `max_sescmd_history`
 
 This parameter has been moved to
-[the MaxScale core](../Getting-Started/Configuration-Guide.md#max_sescmd_history)
-in MaxScale 6.0.
+[the Percona Proxy core](../Getting-Started/Configuration-Guide.md#max_sescmd_history)
+in Percona Proxy 6.0.
 
 ### `disable_sescmd_history`
 
 This parameter has been moved to
-[the MaxScale core](../Getting-Started/Configuration-Guide.md#disable_sescmd_history)
-in MaxScale 6.0.
+[the Percona Proxy core](../Getting-Started/Configuration-Guide.md#disable_sescmd_history)
+in Percona Proxy 6.0.
 
 ### `refresh_databases`
 
@@ -236,8 +236,8 @@ in MaxScale 6.0.
 Enable database map refreshing mid-session. These are triggered by a failure to
 change the database i.e. `USE ...` queries. This feature is disabled by default.
 
-Before MaxScale 6.2.0, this parameter did nothing. Starting with the 6.2.0
-release of MaxScale this parameter now works again but it is disabled by default
+Before Percona Proxy 6.2.0, this parameter did nothing. Starting with the 6.2.0
+release of Percona Proxy this parameter now works again but it is disabled by default
 to retain the same behavior as in older releases.
 
 ### `refresh_interval`
@@ -252,7 +252,7 @@ value is 300 seconds.
 
 The interval is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the intervaltimeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second.
@@ -271,7 +271,7 @@ other connections can use the stale entry for up to `max_staleness` seconds. If
 this limit is exceeded and the update still hasn't completed, new connections
 will instead block and wait for the update to finish.
 
-This feature was added in MaxScale 23.08.0. Older versions of MaxScale
+This feature was added in Percona Proxy 23.08.0. Older versions of Percona Proxy
 always waited for the update to complete when the database map entry
 went stale.
 
@@ -375,13 +375,13 @@ wrong results. Similarly, preparing a statement from a variable (e.g. `PREPARE s
 
 * `SHOW DATABASES` is handled by the router instead of routed to a server. The router only
 answers correctly to the basic version of the query. Any modifiers such as `LIKE` are
-ignored. Starting with MaxScale 22.08, the database names will always be in lowercase.
+ignored. Starting with Percona Proxy 22.08, the database names will always be in lowercase.
 
 * `SHOW TABLES` is routed to the server with the current database. If using
 table-level sharding, the results will be incomplete. Similarly, `SHOW TABLES
 FROM db1` is routed to the server with database `db1`, ignoring table
 sharding. Use `SHOW SHARDS` to get results from the router itself. Starting with
-MaxScale 22.08, the database names will always be in lowercase.
+Percona Proxy 22.08, the database names will always be in lowercase.
 
 * `USE db1` is routed to the server with `db1`. If the database is divided to multiple
 servers, only one server will get the command.

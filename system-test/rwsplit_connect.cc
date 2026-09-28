@@ -26,8 +26,8 @@ int main(int argc, char* argv[])
     Test->reset_timeout();
     Test->repl->connect();
 
-    Test->tprintf("Connecting to RWSplit %s\n", Test->maxscale->ip());
-    Test->maxscale->connect_rwsplit();
+    Test->tprintf("Connecting to RWSplit %s\n", Test->percona_proxy->ip());
+    Test->percona_proxy->connect_rwsplit();
 
     unsigned int conn_num;
     unsigned int all_conn = 0;
@@ -38,8 +38,8 @@ int main(int argc, char* argv[])
     {
         conn_num =
             get_conn_num(Test->repl->nodes[i],
-                         Test->maxscale->ip(),
-                         Test->maxscale->hostname(),
+                         Test->percona_proxy->ip(),
+                         Test->percona_proxy->hostname(),
                          (char*) "test");
         Test->tprintf("connections: %u\n", conn_num);
         if ((i == 0) && (conn_num != 1))
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
                          all_conn);
     }
 
-    Test->maxscale->close_rwsplit();
+    Test->percona_proxy->close_rwsplit();
     Test->repl->close_connections();
 
     int rval = Test->global_result;

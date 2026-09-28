@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 
 
     tcp::Connection conn;
-    conn.connect(test.maxscale->ip(), test.maxscale->rwsplit_port);
+    conn.connect(test.percona_proxy->ip(), test.percona_proxy->rwsplit_port);
 
     // Read the handshake
     uint8_t buf[512] = {};
@@ -76,12 +76,12 @@ int main(int argc, char* argv[])
     // Send the handshake response
     conn.write(&wbuf[0], wbuf.size());
 
-    // Read MaxScale's response
+    // Read Percona Proxy's response
     conn.read(buf, sizeof(buf));
 
     const char response[] = "Bad handshake";
     test.add_result(memmem(buf, sizeof(buf), response, sizeof(response) - 1) == NULL,
-                    "MaxScale should respond with 'Bad handshake'");
+                    "Percona Proxy should respond with 'Bad handshake'");
 
     return test.global_result;
 }

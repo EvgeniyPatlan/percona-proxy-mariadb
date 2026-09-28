@@ -46,7 +46,7 @@ add_library(nosqlprotocol SHARED
 add_dependencies(nosqlprotocol cache mariadbprotocol mongo-c-driver mongo-cxx-driver)
 target_link_libraries(nosqlprotocol
   cache
-  maxscale-common
+  percona-proxy-common
   ${MONGO_C_LIBRARIES}
   ${BSON_CXX_LIBRARIES}
   ${BSON_C_LIBRARIES}

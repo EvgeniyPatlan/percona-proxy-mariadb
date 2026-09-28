@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 void test_main(TestConnections& test)
 {
     auto& repl = *test.repl;
-    auto& mxs = test.maxscale;
+    auto& mxs = test.percona_proxy;
 
     uint32_t uid = getuid();
     test.expect(uid > 0, "Failed to read user uid.");
@@ -60,7 +60,7 @@ void test_main(TestConnections& test)
     {
         string ticket_cache_src = string(mxt::SOURCE_DIR) + "/authentication/gss_client_ticket_cache";
         // Copy the pregenerated Kerberos ticket cache used by the client to the default file. This way,
-        // the local krb-library finds it when connecting to MaxScale. Gss-client libraries look for ticket
+        // the local krb-library finds it when connecting to Percona Proxy. Gss-client libraries look for ticket
         // cache from the following filename.
         string ticket_cache_dst = mxb::string_printf("/tmp/krb5cc_%u", uid);
         string copy_cmd = mxb::string_printf("cp %s %s",
@@ -84,7 +84,7 @@ void test_main(TestConnections& test)
             auto conn = repl.backend(0)->open_connection();
 
             auto test_query = [&](bool expected) {
-                    // To ensure MaxScale has updated user accounts, try to log in with a non-existent user.
+                    // To ensure Percona Proxy has updated user accounts, try to log in with a non-existent user.
                     mxs->try_open_rwsplit_connection("batman", "iambatman");
 
                     // Use local command line client to log in and perform a query, as connector-c may not
@@ -132,7 +132,7 @@ void test_main(TestConnections& test)
                 conn->cmd_f("%s using 'different_user@%s';", create_p1.c_str(), gss_realm);
                 test_query(false);
                 conn->cmd(drop_cmd);
-                // Check from log that MaxScale blocked the login.
+                // Check from log that Percona Proxy blocked the login.
                 test.log_includes("\\[GSSAPIAuth\\] Name mismatch: found 'gssuser@TEST.COM'");
             }
         }

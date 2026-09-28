@@ -14,15 +14,15 @@
 
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <array>
 #include <mutex>
 #include <string>
 
 #include <maxbase/exception.hh>
-#include <maxscale/router.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 
 #include <zlib.h>
 

@@ -16,9 +16,9 @@
 #include "defs.hh"
 #include <openssl/opensslv.h>
 #include <map>
-#include <maxscale/config.hh>
-#include <maxscale/maxscale.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/percona-proxy.hh>
+#include <percona-proxy/utils.hh>
 #include "query_and_write_operation.hh"
 #include "../clientconnection.hh"
 
@@ -59,7 +59,7 @@ public:
         bool debug = false;
 #endif
         // Order the same as that in the documentation.
-        doc.append(kvp(key::GIT_VERSION, maxscale_commit()));
+        doc.append(kvp(key::GIT_VERSION, percona_proxy_commit()));
         doc.append(kvp(key::VERSION_ARRAY, versionArray.extract()));
         doc.append(kvp(key::VERSION, NOSQL_ZVERSION));
         doc.append(kvp(key::STORAGE_ENGINES, storageEngines.extract()));
@@ -71,7 +71,7 @@ public:
         doc.append(kvp(key::MODULES, modules.extract()));
         doc.append(kvp(key::OK, 1));
 
-        doc.append(kvp(key::MAXSCALE, MAXSCALE_VERSION));
+        doc.append(kvp(key::PERCONA_PROXY, PERCONA_PROXY_VERSION));
 
         return Response::Status::NOT_CACHEABLE;
     }
@@ -215,7 +215,7 @@ private:
             server_info.append(kvp(key::HOST, config.nodename));
             server_info.append(kvp(key::PORT, 17017)); // TODO: Make the port available.
             server_info.append(kvp(key::VERSION, NOSQL_ZVERSION));
-            server_info.append(kvp(key::GIT_VERSION, maxscale_commit()));
+            server_info.append(kvp(key::GIT_VERSION, percona_proxy_commit()));
 
             doc.append(kvp(key::SERVER_INFO, server_info.extract()));
 
@@ -458,7 +458,7 @@ public:
         else if (value == "global" || value == "startupWarnings")
         {
             ArrayBuilder log;
-            //TODO: log.append(...); Possibly something from the MaxScale log.
+            //TODO: log.append(...); Possibly something from the Percona Proxy log.
 
             doc.append(kvp(key::TOTAL_LINES_WRITTEN, 1));
             doc.append(kvp(key::LOG, log.extract()));
@@ -602,7 +602,7 @@ public:
         free_monitoring.append(kvp(key::STATE, value::DISABLED));
         DocumentBuilder storage_engine;
         storage_engine.append(kvp(key::NAME, key::MARIADB));
-        int uptime_seconds = maxscale_uptime();
+        int uptime_seconds = percona_proxy_uptime();
 
         doc.append(kvp(key::ASSERTS, asserts.extract()));
         doc.append(kvp(key::CONNECTIONS, connections.extract()));

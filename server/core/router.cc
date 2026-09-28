@@ -12,10 +12,10 @@
  * Public License.
  */
 
-#include <maxscale/router.hh>
-#include <maxscale/session.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/session.hh>
 
-namespace maxscale
+namespace percona_proxy
 {
 
 //

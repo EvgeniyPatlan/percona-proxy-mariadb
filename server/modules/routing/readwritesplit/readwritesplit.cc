@@ -14,10 +14,10 @@
 
 #include "readwritesplit.hh"
 #include "rwsplitsession.hh"
-#include <maxscale/service.hh>
+#include <percona-proxy/service.hh>
 #include <charconv>
 
-using namespace maxscale;
+using namespace percona_proxy;
 
 namespace
 {
@@ -117,7 +117,7 @@ maxbase::CumulativeAverage& RWSplit::local_avg_sescmd_sz()
     return *m_avg_sescmd_sz;
 }
 
-maxscale::TargetSessionStats RWSplit::all_server_stats() const
+percona_proxy::TargetSessionStats RWSplit::all_server_stats() const
 {
     TargetSessionStats stats;
     auto children = m_service->get_children();

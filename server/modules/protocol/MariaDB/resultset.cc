@@ -17,10 +17,10 @@
 
 #include <numeric>
 
-#include <maxscale/protocol/mariadb/resultset.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/dcb.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/resultset.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 namespace
 {

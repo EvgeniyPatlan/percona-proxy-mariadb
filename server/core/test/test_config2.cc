@@ -19,12 +19,12 @@
 
 #include <iostream>
 #include <maxbase/log.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/config2.hh>
 #include "../internal/servermanager.hh"
 #include "test_utils.hh"
 
 using namespace std;
-namespace config = maxscale::config;
+namespace config = percona_proxy::config;
 
 inline ostream& operator<<(ostream& out, const std::chrono::seconds& x)
 {

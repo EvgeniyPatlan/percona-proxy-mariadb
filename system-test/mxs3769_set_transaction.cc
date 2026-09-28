@@ -22,8 +22,8 @@
 
 void mxs4734(TestConnections& test)
 {
-    test.check_maxctrl("alter service RWS transaction_replay=true transaction_replay_timeout=120s");
-    auto rws = test.maxscale->rwsplit();
+    test.check_percona_proxyctl("alter service RWS transaction_replay=true transaction_replay_timeout=120s");
+    auto rws = test.percona_proxy->rwsplit();
     test.expect(rws.connect(), "Failed to connect: %s", rws.error());
 
     test.expect(rws.query("CREATE OR REPLACE TABLE test.t1(id INT)"),
@@ -33,15 +33,15 @@ void mxs4734(TestConnections& test)
     test.expect(!rws.query("INSERT INTO test.t1 VALUES (1)"), "INSERT should fail");
 
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.repl->unblock_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
 
     test.expect(rws.query("SELECT 1"), "SELECT should work: %s", rws.error());
     test.expect(!rws.query("INSERT INTO test.t1 VALUES (1)"), "Second INSERT should fail");
     test.expect(rws.query("COMMIT"), "COMMIT should work: %s", rws.error());
 
-    test.check_maxctrl("alter service RWS transaction_replay=false transaction_replay_timeout=0s");
+    test.check_percona_proxyctl("alter service RWS transaction_replay=false transaction_replay_timeout=0s");
 }
 
 #define TRX(a, b) do_trx(a, b, __LINE__)
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     test.repl->connect();
     std::string master = test.repl->get_server_id_str(0);
 
-    auto rws = test.maxscale->rwsplit();
+    auto rws = test.percona_proxy->rwsplit();
     test.expect(rws.connect(), "Failed to connect: %s", rws.error());
     test.expect(rws.query("CREATE OR REPLACE TABLE t1(id INT)"), "CREATE failed: %s", rws.error());
 

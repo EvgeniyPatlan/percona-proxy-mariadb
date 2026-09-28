@@ -22,8 +22,8 @@
 
 void basic_test(TestConnections& test)
 {
-    test.maxscale->connect();
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id INT)");
+    test.percona_proxy->connect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id INT)");
 
     for (int i = 0; i < 100; i++)
     {
@@ -31,20 +31,20 @@ void basic_test(TestConnections& test)
         std::string insert = "INSERT INTO test.t1 VALUES (" + value + ")";
         std::string select = "SELECT @@server_id, COUNT(*) FROM test.t1 WHERE id = " + value;
 
-        test.try_query(test.maxscale->conn_rwsplit, "%s", insert.c_str());
-        Row row = get_row(test.maxscale->conn_rwsplit, select);
+        test.try_query(test.percona_proxy->conn_rwsplit, "%s", insert.c_str());
+        Row row = get_row(test.percona_proxy->conn_rwsplit, select);
         test.expect(!row.empty() && row[1] == "1", "At %d: Row is %s", i,
                     row.empty() ? "empty" : (row[0] + " " + row[1]).c_str());
     }
 
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE test.t1");
-    test.maxscale->disconnect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE test.t1");
+    test.percona_proxy->disconnect();
 }
 
 void global_test(TestConnections& test)
 {
-    auto writer = test.maxscale->rwsplit();
-    auto reader = test.maxscale->rwsplit();
+    auto writer = test.percona_proxy->rwsplit();
+    auto reader = test.percona_proxy->rwsplit();
     test.expect(writer.connect(), "Failed to connect writer: %s", writer.error());
     test.expect(reader.connect(), "Failed to connect reader: %s", reader.error());
 
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     basic_test(test);
 
     // MXS-4122: Fast global causal reads
-    test.check_maxctrl("alter service RW-Split-Router causal_reads=fast_global");
+    test.check_percona_proxyctl("alter service RW-Split-Router causal_reads=fast_global");
     global_test(test);
 
     return test.global_result;

@@ -22,8 +22,8 @@
 int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
-    test.maxscale->connect();
-    test.try_query(test.maxscale->conn_rwsplit, "SELECT 123");
-    test.maxscale->disconnect();
+    test.percona_proxy->connect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "SELECT 123");
+    test.percona_proxy->disconnect();
     return test.global_result;
 }

@@ -25,16 +25,16 @@
 
 void alter_readwritesplit(TestConnections& test)
 {
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     // Open a connection before and after setting master_failure_mode to fail_on_write
-    Connection first = test.maxscale->rwsplit();
-    Connection second = test.maxscale->rwsplit();
-    Connection third = test.maxscale->rwsplit();
-    test.maxscale->wait_for_monitor();
+    Connection first = test.percona_proxy->rwsplit();
+    Connection second = test.percona_proxy->rwsplit();
+    Connection third = test.percona_proxy->rwsplit();
+    test.percona_proxy->wait_for_monitor();
 
     first.connect();
-    test.check_maxctrl("alter service RW-Split-Router master_failure_mode fail_on_write");
+    test.check_percona_proxyctl("alter service RW-Split-Router master_failure_mode fail_on_write");
     second.connect();
 
     // Check that writes work for both connections
@@ -47,7 +47,7 @@ void alter_readwritesplit(TestConnections& test)
 
     // Block the master
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     // Check that reads work for the newer connection and fail for the older one
     test.expect(!first.query("SELECT 1"),
@@ -58,8 +58,8 @@ void alter_readwritesplit(TestConnections& test)
 
     // Unblock the master, restart Maxscale and check that changes are persisted
     test.repl->unblock_node(0);
-    test.maxscale->wait_for_monitor();
-    test.maxscale->restart();
+    test.percona_proxy->wait_for_monitor();
+    test.percona_proxy->restart();
 
     third.connect();
     test.expect(third.query("SELECT @@last_insert_id"),
@@ -67,14 +67,14 @@ void alter_readwritesplit(TestConnections& test)
                 third.error());
 
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     test.expect(third.query("SELECT 1"),
                 "Read to third connection should work: %s",
                 third.error());
 
     test.repl->unblock_node(0);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 }
 
 void alter_readconnroute(TestConnections& test)
@@ -83,7 +83,7 @@ void alter_readconnroute(TestConnections& test)
     std::string master_id = test.repl->get_server_id_str(0);
     test.repl->disconnect();
 
-    Connection conn = test.maxscale->readconn_master();
+    Connection conn = test.percona_proxy->readconn_master();
 
     for (int i = 0; i < 5; i++)
     {
@@ -97,7 +97,7 @@ void alter_readconnroute(TestConnections& test)
                     master_id.c_str());
     }
 
-    test.check_maxctrl("alter service Read-Connection-Router-Master router_options slave");
+    test.check_percona_proxyctl("alter service Read-Connection-Router-Master router_options slave");
 
     for (int i = 0; i < 5; i++)
     {
@@ -114,12 +114,12 @@ void alter_readconnroute(TestConnections& test)
 
 void alter_schemarouter(TestConnections& test)
 {
-    Connection conn = test.maxscale->readconn_slave();
+    Connection conn = test.percona_proxy->readconn_slave();
     conn.connect();
     test.expect(!conn.query("SELECT 1"), "Query before reconfiguration should fail");
     conn.disconnect();
 
-    test.check_maxctrl("alter service SchemaRouter ignore_tables_regex \".*\"");
+    test.check_percona_proxyctl("alter service SchemaRouter ignore_tables_regex \".*\"");
 
     conn.connect();
     test.expect(conn.query("SELECT 1"), "Query after reconfiguration should work: %s", conn.error());
@@ -128,9 +128,9 @@ void alter_schemarouter(TestConnections& test)
 
 void alter_unsupported(TestConnections& test)
 {
-    int rc = test.maxscale->ssh_node_f(true, "maxctrl alter service RW-Split-Router unknown parameter");
+    int rc = test.percona_proxy->ssh_node_f(true, "percona-proxyctl alter service RW-Split-Router unknown parameter");
     test.expect(rc != 0, "Unknown router parameter should be detected");
-    rc = test.maxscale->ssh_node_f(true, "maxctrl alter service RW-Split-Router filters Regex");
+    rc = test.percona_proxy->ssh_node_f(true, "percona-proxyctl alter service RW-Split-Router filters Regex");
     test.expect(rc != 0, "Unsupported router parameter should be detected");
 }
 

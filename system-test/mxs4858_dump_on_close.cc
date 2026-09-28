@@ -17,11 +17,11 @@ namespace
 {
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     auto sMdb = mxs.try_open_rwsplit_connection();
 
-    test.expect(sMdb->is_open(), "Could not open connection to MaxScale RWS.");
+    test.expect(sMdb->is_open(), "Could not open connection to Percona Proxy RWS.");
 
     if (sMdb->is_open())
     {

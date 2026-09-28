@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     auto maxconn = mxs.open_rwsplit_connection2();
     generate_traffic_and_check(test, maxconn.get(), 5);
@@ -75,7 +75,7 @@ void test_main(TestConnections& test)
                         "Old master did not successfully rejoin the cluster.");
 
             test.tprintf("Switchover back to server1");
-            mxs.maxctrl("call command mysqlmon switchover MariaDB-Monitor server1 server2");
+            mxs.percona_proxyctl("call command mysqlmon switchover MariaDB-Monitor server1 server2");
             mxs.wait_for_monitor(2);
             mxs.check_servers_status(mxt::ServersInfo::default_repl_states());
         }

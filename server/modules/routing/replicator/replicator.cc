@@ -31,11 +31,11 @@
 #include <unistd.h>
 
 #include <maxbase/threadpool.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/cachingparser.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/secrets.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/cachingparser.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/secrets.hh>
 
 // Private headers
 #include "sql.hh"
@@ -302,7 +302,7 @@ void Replicator::Imp::process_events()
     bool was_active = true;
     mxb::set_thread_name(m_thr, "cdc::Replicator");
 
-    // Load the stored GTID to continue where MaxScale previously left off.
+    // Load the stored GTID to continue where Percona Proxy previously left off.
     if (!load_gtid_state())
     {
         m_running = false;

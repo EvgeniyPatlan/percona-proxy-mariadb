@@ -67,20 +67,20 @@ int get_my_ip(const char* remote_ip, char* my_ip)
 void test_main(TestConnections& test)
 {
     char my_ip[1024];
-    test.expect(get_my_ip(test.maxscale->ip4(), my_ip) == 0, "Failed to get IP");
+    test.expect(get_my_ip(test.percona_proxy->ip4(), my_ip) == 0, "Failed to get IP");
     std::string client_user = "'bob'@'"s + my_ip + "'";
-    std::string maxscale_user = "'bob'@'"s + test.maxscale->ip4() + "'";
+    std::string percona_proxy_user = "'bob'@'"s + test.percona_proxy->ip4() + "'";
     auto r = test.repl->get_connection(0);
     r.connect();
     test.expect(r.query("CREATE DATABASE IF NOT EXISTS db1"), "Failed to create database: %s", r.error());
     test.expect(r.query("CREATE USER " + client_user + " IDENTIFIED BY 'bob';"
                         + "GRANT ALL ON db1.* TO " + client_user + ";"
-                        + "CREATE USER" + maxscale_user + " IDENTIFIED BY 'bob';"),
+                        + "CREATE USER" + percona_proxy_user + " IDENTIFIED BY 'bob';"),
                 "Failed to create user: %s", r.error());
 
-    test.maxscale->start();
+    test.percona_proxy->start();
 
-    auto c = test.maxscale->rwsplit("db1");
+    auto c = test.percona_proxy->rwsplit("db1");
     c.set_credentials("bob", "bob");
     c.connect();
     auto id = std::to_string(c.thread_id());
@@ -92,7 +92,7 @@ void test_main(TestConnections& test)
     {
         found = false;
 
-        for (auto line : mxb::strtok(test.maxscale->maxctrl("list sessions --tsv").output, "\n"))
+        for (auto line : mxb::strtok(test.percona_proxy->percona_proxyctl("list sessions --tsv").output, "\n"))
         {
             if (mxb::strtok(line, "\t")[0] == id)
             {
@@ -109,12 +109,12 @@ void test_main(TestConnections& test)
 
     test.expect(!found, "The session should close in under 10 seconds");
 
-    r.query("DROP USER " + client_user + "; DROP USER " + maxscale_user);
+    r.query("DROP USER " + client_user + "; DROP USER " + percona_proxy_user);
     r.query("DROP DATABASE db1");
 }
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return TestConnections().run_test(argc, argv, test_main);
 }

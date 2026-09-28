@@ -223,7 +223,7 @@ void trim(std::string& s)
 }
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 TestReader::TestReader(istream& in,

@@ -64,9 +64,9 @@ void test_main(TestConnections& test)
     }
 
     // Test some good configurations to ensure test validity.
-    string config_file_path = mxb::string_printf("%s/cnf/maxscale.cnf.template.minimal", mxt::SOURCE_DIR);
+    string config_file_path = mxb::string_printf("%s/cnf/percona-proxy.cnf.template.minimal", mxt::SOURCE_DIR);
     test.test_config(config_file_path, 0);
-    config_file_path = mxb::string_printf("%s/cnf/maxscale.cnf.template.replication", mxt::SOURCE_DIR);
+    config_file_path = mxb::string_printf("%s/cnf/percona-proxy.cnf.template.replication", mxt::SOURCE_DIR);
     test.test_config(config_file_path, 0);
     // As of 23.02, empty configuration values are accepted.
     config_file_path = mxb::string_printf("%s/mxs1731_empty_param.cnf_ret0", bad_configs_path.c_str());
@@ -77,7 +77,7 @@ void test_main(TestConnections& test)
     const int ssh_port = 22;
     test.tprintf("Checking that port %i is taken.", ssh_port);
     std::string cmd = mxb::string_printf("netstat -ln -A inet | grep -E ^tcp.*:%i", ssh_port);
-    auto res = test.maxscale->vm_node().run_cmd_output_sudo(cmd);
+    auto res = test.percona_proxy->vm_node().run_cmd_output_sudo(cmd);
     if (res.rc == 0)
     {
         test.tprintf("Command '%s' returned:\n%s", cmd.c_str(), res.output.c_str());
@@ -102,6 +102,6 @@ void test_main(TestConnections& test)
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return TestConnections().run_test(argc, argv, test_main);
 }

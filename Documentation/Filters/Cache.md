@@ -1,12 +1,12 @@
 # Cache
 
-This filter was introduced in MariaDB MaxScale 2.1.
+This filter was introduced in Percona Proxy for MariaDB 2.1.
 
 [TOC]
 
 ## Overview
 
-From MaxScale version 2.2.11 onwards, the cache filter is no longer
+From Percona Proxy version 2.2.11 onwards, the cache filter is no longer
 considered experimental. The following changes to the default behaviour
 have also been made:
 
@@ -16,7 +16,7 @@ have also been made:
   `verify_cacheable`).
 
 The cache filter is a simple cache that is capable of caching the result of
-SELECTs, so that subsequent identical SELECTs are served directly by MaxScale,
+SELECTs, so that subsequent identical SELECTs are served directly by Percona Proxy,
 without the queries being routed to any server.
 
 By _default_ the cache will be used and populated in the following circumstances:
@@ -77,7 +77,7 @@ not know when to invalidate the cache-entries.
 
 ## Invalidation
 
-Since MaxScale 2.5, the cache is capable of invalidating entries in the
+Since Percona Proxy 2.5, the cache is capable of invalidating entries in the
 cache when a modification (UPDATE, INSERT or DELETE) that may affect those
 entries is made.
 
@@ -97,17 +97,17 @@ will cause the cache entry containing the result of that SELECT to be
 invalidated even if the INSERT actually does not affect it. Please see
 [invalidate](#invalidate) for how to enable the invalidation.
 
-When invalidation has been enabled MaxScale must be able to completely
+When invalidation has been enabled Percona Proxy must be able to completely
 parse a SELECT statement for its results to be stored in the cache. The
-reason is that in order to be able to invalidate cache entries, MaxScale
+reason is that in order to be able to invalidate cache entries, Percona Proxy
 must know what tables a SELECT statement depends upon. Consequently, if
-(and only if) invalidation has been enabled and MaxScale fails to parse a
+(and only if) invalidation has been enabled and Percona Proxy fails to parse a
 statement, the result of that particular statement will not be cached.
 
-When invalidation has been enabled, MaxScale will also parse all UPDATE,
+When invalidation has been enabled, Percona Proxy will also parse all UPDATE,
 INSERT and DELETE statements, in order to find out what tables are
-modified. If that parsing fails, MaxScale will _by default_ clear the
-entire cache. The reason is that unless MaxScale can completely parse
+modified. If that parsing fails, Percona Proxy will _by default_ clear the
+entire cache. The reason is that unless Percona Proxy can completely parse
 the statement it cannot know what tables are modified and hence not what
 cache entries should be invalidated. Consequently, to prevent stale data
 from being returned, the entire cache is cleared. The default behaviour
@@ -126,7 +126,7 @@ is still important to configure a reasonable [soft](#soft_ttl) and
 
 ### Best Efforts
 
-The invalidation offered by the MaxScale cache can be said to be of
+The invalidation offered by the Percona Proxy cache can be said to be of
 _best efforts_ quality. The reason is that in order to ensure that the
 cache in all circumstances reflects the state in the actual database,
 would require that the operations involving the cache and the MariaDB
@@ -152,15 +152,15 @@ chain of events is as follows:
                       Timeline 1                 Timeline 2
 
 Clients execute       INSERT ...                 SELECT COUNT(*) FROM tbl
-MaxScale -> DB                                   SELECT COUNT(*) FROM tbl
-MaxScale -> DB        INSERT ...
+Percona Proxy -> DB                                   SELECT COUNT(*) FROM tbl
+Percona Proxy -> DB        INSERT ...
 ```
 That is, the `SELECT` is performed in the database server _before_ the
 `INSERT`. However, since the timelines are proceeding independently of
 each other, the events may be re-ordered as far as the cache is concerned.
 ```
-MaxScale -> Cache     Delete invalidated values
-MaxScale -> Cache                                Store result and invalidation key
+Percona Proxy -> Cache     Delete invalidated values
+Percona Proxy -> Cache                                Store result and invalidation key
 ```
 That is, the cached value for `SELECT COUNT(*) FROM tbl` will reflect the
 situation _before_ the insert and will thus not be correct.
@@ -349,7 +349,7 @@ max_size=100Mi
 - **Default**: `""` (no rules)
 
 Specifies the path of the file where the caching rules are stored. A relative
-path is interpreted relative to the _data directory_ of MariaDB MaxScale.
+path is interpreted relative to the _data directory_ of Percona Proxy for MariaDB.
 
 ```
 rules=/path/to/rules-file
@@ -359,7 +359,7 @@ Note that the rules will be reloaded, and applied if different, every time
 a dynamic configuration change is made. Thus, to cause a reloading of the
 rules, alter the rules parameter to the same value it has.
 ```
-maxctrl alter filter MyCache rules='/path/to/rules-file'
+percona-proxyctl alter filter MyCache rules='/path/to/rules-file'
 ```
 
 #### `cached_data`
@@ -500,7 +500,7 @@ Specifies whether the cache is initially enabled or disabled.
 ```
 enabled=false
 ```
-The value affects the initial state of the MaxScale user
+The value affects the initial state of the Percona Proxy user
 variables using which the behaviour of the cache can be modified
 at runtime. Please see
 [Runtime Configuration](#runtime-configuration)
@@ -603,9 +603,9 @@ there is more than one cache filter in a service, only the first cache filter
 will be able to process the variables. The remaining filters will not see them
 and thus configuring them at runtime is not possible.
 
-#### `@maxscale.cache.populate`
+#### `@percona_proxy.cache.populate`
 
-Using the variable `@maxscale.cache.populate` it is possible to specify at
+Using the variable `@percona_proxy.cache.populate` it is possible to specify at
 runtime whether the cache should be populated or not. Its initial value is
 the value of the configuration parameter `enabled`. That is, by default the
 value is `true`.
@@ -613,26 +613,26 @@ value is `true`.
 The purpose of this variable is make it possible for an application to decide
 statement by statement whether the cache should be populated.
 ```
-SET @maxscale.cache.populate=true;
+SET @percona_proxy.cache.populate=true;
 SELECT a, b FROM tbl;
-SET @maxscale.cache.populate=false;
+SET @percona_proxy.cache.populate=false;
 SELECT a, b FROM tbl;
 ```
 In the example above, the first `SELECT` will always be sent to the
 server and the result will be cached, provided the actual cache rules
 specifies that it should be. The second `SELECT` may be served from the
-cache, depending on the value of `@maxscale.cache.use` (and the cache
+cache, depending on the value of `@percona_proxy.cache.use` (and the cache
 rules).
 
-The value of `@maxscale.cache.populate` can be queried
+The value of `@percona_proxy.cache.populate` can be queried
 ```
-SELECT @maxscale.cache.populate;
+SELECT @percona_proxy.cache.populate;
 ```
 but only _after_ it has been explicitly set once.
 
-#### `@maxscale.cache.use`
+#### `@percona_proxy.cache.use`
 
-Using the variable `@maxscale.cache.use` it is possible to specify at
+Using the variable `@percona_proxy.cache.use` it is possible to specify at
 runtime whether the cache should be used or not. Its initial value is
 the value of the configuration parameter `enabled`. That is, by default the
 value is `true`.
@@ -640,9 +640,9 @@ value is `true`.
 The purpose of this variable is make it possible for an application to decide
 statement by statement whether the cache should be used.
 ```
-SET @maxscale.cache.use=true;
+SET @percona_proxy.cache.use=true;
 SELECT a, b FROM tbl;
-SET @maxscale.cache.use=false;
+SET @percona_proxy.cache.use=false;
 SELECT a, b FROM tbl;
 ```
 The first `SELECT` will be served from the cache, providing the rules
@@ -651,22 +651,22 @@ the result and the date is not stale (as specified by the _TTL_).
 
 If the data is stale, the `SELECT` will be sent to the server **and**
 the cache entry will be updated, irrespective of the value of
-`@maxscale.cache.populate`.
+`@percona_proxy.cache.populate`.
 
-If `@maxscale.cache.use` is `true` but the result is not found in the
+If `@percona_proxy.cache.use` is `true` but the result is not found in the
 cache, and the result is subsequently fetched from the server, the
 result will **not** be added to the cache, unless
-`@maxscale.cache.populate` is also `true`.
+`@percona_proxy.cache.populate` is also `true`.
 
-The value of `@maxscale.cache.use` can be queried
+The value of `@percona_proxy.cache.use` can be queried
 ```
-SELECT @maxscale.cache.use;
+SELECT @percona_proxy.cache.use;
 ```
 but only after it has explicitly been set once.
 
-#### `@maxscale.cache.soft_ttl`
+#### `@percona_proxy.cache.soft_ttl`
 
-Using the variable `@maxscale.cache.soft_ttl` it is possible at runtime
+Using the variable `@percona_proxy.cache.soft_ttl` it is possible at runtime
 to specify _in seconds_ what _soft ttl_ should be applied. Its initial
 value is the value of the configuration parameter `soft_ttl`. That is,
 by default the value is 0.
@@ -674,9 +674,9 @@ by default the value is 0.
 The purpose of this variable is make it possible for an application to decide
 statement by statement what _soft ttl_ should be applied.
 ```
-set @maxscale.cache.soft_ttl=600;
+set @percona_proxy.cache.soft_ttl=600;
 SELECT a, b FROM unimportant;
-set @maxscale.cache.soft_ttl=60;
+set @percona_proxy.cache.soft_ttl=60;
 SELECT c, d FROM important;
 ```
 When data is `SELECT`ed from the unimportant table `unimportant`, the data
@@ -684,19 +684,19 @@ will be returned from the cache provided it is no older than 10 minutes,
 but when data is `SELECT`ed from the important table `important`, the
 data will be returned from the cache provided it is no older than 1 minute.
 
-Note that `@maxscale.cache.hard_ttl` overrules `@maxscale.cache.soft_ttl`
+Note that `@percona_proxy.cache.hard_ttl` overrules `@percona_proxy.cache.soft_ttl`
 in the sense that if the former is less that the latter, then _soft ttl_
 will, when used, be adjusted down to the value of _hard ttl_.
 
-The value of `@maxscale.cache.soft_ttl` can be queried
+The value of `@percona_proxy.cache.soft_ttl` can be queried
 ```
-SELECT @maxscale.cache.soft_ttl;
+SELECT @percona_proxy.cache.soft_ttl;
 ```
 but only after it has explicitly been set once.
 
-#### `@maxscale.cache.hard_ttl`
+#### `@percona_proxy.cache.hard_ttl`
 
-Using the variable `@maxscale.cache.hard_ttl` it is possible at runtime
+Using the variable `@percona_proxy.cache.hard_ttl` it is possible at runtime
 to specify _in seconds_ what _hard ttl_ should be applied. Its initial
 value is the value of the configuration parameter `hard_ttl`. That is,
 by default the value is 0.
@@ -704,26 +704,26 @@ by default the value is 0.
 The purpose of this variable is make it possible for an application to decide
 statement by statement what _hard ttl_ should be applied.
 
-Note that as `@maxscale.cache.hard_ttl` overrules `@maxscale.cache.soft_ttl`,
+Note that as `@percona_proxy.cache.hard_ttl` overrules `@percona_proxy.cache.soft_ttl`,
 is is important to ensure that the former is at least as large as the latter
 and for best overall performance that it is larger.
 
 ```
-set @maxscale.cache.soft_ttl=600, @maxscale.cache.hard_ttl=610;
+set @percona_proxy.cache.soft_ttl=600, @percona_proxy.cache.hard_ttl=610;
 SELECT a, b FROM unimportant;
-set @maxscale.cache.soft_ttl=60, @maxscale.cache.hard_ttl=65;
+set @percona_proxy.cache.soft_ttl=60, @percona_proxy.cache.hard_ttl=65;
 SELECT c, d FROM important;
 ```
 
-The value of `@maxscale.cache.hard_ttl` can be queried
+The value of `@percona_proxy.cache.hard_ttl` can be queried
 ```
-SELECT @maxscale.cache.hard_ttl;
+SELECT @percona_proxy.cache.hard_ttl;
 ```
 but only after it has explicitly been set once.
 
 #### Client Driven Caching
 
-With `@maxscale.cache.populate` and `@maxscale.cache.use` is it possible
+With `@percona_proxy.cache.populate` and `@percona_proxy.cache.use` is it possible
 to make the caching completely client driven.
 
 Provide no `rules` file, which means that _all_ `SELECT` statements are
@@ -736,25 +736,25 @@ module=cache
 enabled=false
 ```
 Now, in order to _mark_ statements that should be cached, set
-`@maxscale.cache.populate` to `true`, and perform those `SELECT`s.
+`@percona_proxy.cache.populate` to `true`, and perform those `SELECT`s.
 ```
-SET @maxscale.cache.populate=true;
+SET @percona_proxy.cache.populate=true;
 SELECT a, b FROM tbl1;
 SELECT c, d FROM tbl2;
 SELECT e, f FROM tbl3;
-SET @maxscale.cache.populate=false;
+SET @percona_proxy.cache.populate=false;
 ```
 Note that those `SELECT`s must return something in order for the
 statement to be _marked_ for caching.
 
-After this, the value of `@maxscale.cache.use` will decide whether
+After this, the value of `@percona_proxy.cache.use` will decide whether
 or not the cache is considered.
 ```
-SET @maxscale.cache.use=true;
+SET @percona_proxy.cache.use=true;
 SELECT a, b FROM tbl1;
-SET @maxscale.cache.use=false;
+SET @percona_proxy.cache.use=false;
 ```
-With `@maxscale.cache.use` being `true`, the cache is considered
+With `@percona_proxy.cache.use` being `true`, the cache is considered
 and the result returned from there, if not stale. If it is stale,
 the result is fetched from the server and the cached entry is updated.
 
@@ -763,9 +763,9 @@ from ever considering an entry to be stale and instead manually
 cause the cache to be updated when needed.
 ```
 UPDATE tbl1 SET a = ...;
-SET @maxscale.cache.populate=true;
+SET @percona_proxy.cache.populate=true;
 SELECT a, b FROM tbl1;
-SET @maxscale.cache.populate=false;
+SET @percona_proxy.cache.populate=false;
 ```
 
 ## Threads, Users and Invalidation
@@ -925,7 +925,7 @@ if _attribute_ is `column` then _value_ may contain one or two dots, used
 for separating table and column names, or database, table and column names.
 
 Note that if a qualified name is used as a _value_, then all parts of the
-name must be available for a match. Currently Maria DB MaxScale may not
+name must be available for a match. Currently Maria DB Percona Proxy may not
 always be capable of deducing in what table a particular column is. If
 that is the case, then a value like `tbl.field` may not necessarily
 be a match even if the field is `field` and the table actually is `tbl`.
@@ -1172,7 +1172,7 @@ There are two types of storages that can be used; _local_ and _shared_.
 
 The only _local_ storage implementation is `storage_inmemory` that simply
 stores the cache values in memory. The storage is not persistent and is
-destroyed when MaxScale terminates. Since the storage exists in the MaxScale
+destroyed when Percona Proxy terminates. Since the storage exists in the Percona Proxy
 process, it is very fast and provides almost always a performance benefit.
 
 Currently there are two _shared_ storages; `storage_memcached` and
@@ -1186,8 +1186,8 @@ the server there will be a network hop and often that network hop is, as far
 as the performance goes, what costs the most.
 
 The presence of a shared cache _may_ provide a performance benefit
-* if the network between MaxScale and the storage server (memcached or
-  Redis) is faster than the network between MaxScale and the database
+* if the network between Percona Proxy and the storage server (memcached or
+  Redis) is faster than the network between Percona Proxy and the database
   server,
 * if the used SELECT statements are heavy (that is, take a significant
   amount of time) to process for the database server, or
@@ -1211,9 +1211,9 @@ This storage module takes no arguments.
 This storage module uses [memcached](https://memcached.org/) for storing the
 cached data.
 
-Multiple MaxScale instances can share the same memcached server and items
-cached by one MaxScale instance will be used by the other. Note that all
-MaxScale instances should have exactly the same configuration, as otherwise
+Multiple Percona Proxy instances can share the same memcached server and items
+cached by one Percona Proxy instance will be used by the other. Note that all
+Percona Proxy instances should have exactly the same configuration, as otherwise
 there can be unintended sharing.
 ```
 storage=storage_memcached
@@ -1246,7 +1246,7 @@ in size will be cached.
 
 #### Example
 
-From MaxScale 23.02 onwards, the storage configuration should be provided
+From Percona Proxy 23.02 onwards, the storage configuration should be provided
 as nested parameters.
 ```
 [Cache-Filter]
@@ -1266,7 +1266,7 @@ storage_options="server=192.168.1.31,max_value_size=10M"
 * Configuration values given to `max_size` and `max_count` are ignored.
 
 #### Security
-_Neither_ the data in the memcached server _nor_ the traffic between MaxScale and
+_Neither_ the data in the memcached server _nor_ the traffic between Percona Proxy and
 the memcached server is encrypted. Consequently, _anybody_ with access to the
 memcached server or to the network have access to the cached data.
 
@@ -1276,12 +1276,12 @@ This storage module uses [redis](https://redis.io/) for storing the
 cached data.
 
 Note that Redis should be configured with no idle timeout or with a timeout that
-is very large. Otherwise MaxScale may have to repeatedly connect to Redis, which
+is very large. Otherwise Percona Proxy may have to repeatedly connect to Redis, which
 will hurt both the functionality and the performance.
 
-Multiple MaxScale instances can share the same redis server and items
-cached by one MaxScale instance will be used by the other. Note that all
-MaxScale instances should have exactly the same configuration, as otherwise
+Multiple Percona Proxy instances can share the same redis server and items
+cached by one Percona Proxy instance will be used by the other. Note that all
+Percona Proxy instances should have exactly the same configuration, as otherwise
 there can be unintended sharing.
 ```
 storage=storage_redis
@@ -1343,7 +1343,7 @@ Please see [ssl](#ssl-1) for more information.
 - **Dynamic**: No
 - **Default**: `""`
 
-The SSL client certificate that MaxScale should use with the Redis
+The SSL client certificate that Percona Proxy should use with the Redis
 server. The certificate must match the key defined in `ssl_key`.
 
 Please see [ssl](#ssl-1) for more information.
@@ -1355,7 +1355,7 @@ Please see [ssl](#ssl-1) for more information.
 - **Dynamic**: No
 - **Default**: `""`
 
-The SSL client private key MaxScale should use with the Redis server.
+The SSL client private key Percona Proxy should use with the Redis server.
 
 Please see [ssl](#ssl-1) for more information.
 
@@ -1373,7 +1373,7 @@ Please see [ssl](#ssl-1) for more information.
 
 #### Authentication
 
-If `password` is provided, MaxScale will authenticate against Redis when a connection
+If `password` is provided, Percona Proxy will authenticate against Redis when a connection
 has been created. The authentication is performed using the
 [auth](https://redis.io/commands/auth/) command, with only the `password` as argument,
 if no `username` was provided in the configuration, or `username` and `password` as
@@ -1396,7 +1396,7 @@ to be specifically enabled at compile time as explained
 
 #### Example
 
-From MaxScale 23.02 onwards, the storage configuration should be provided
+From Percona Proxy 23.02 onwards, the storage configuration should be provided
 as nested parameters.
 ```
 [Cache-Filter]
@@ -1553,7 +1553,7 @@ different approaches, the rules were formulated so that
 all SELECT statements would match.
 
 Note that these figures were obtained by running sysbench,
-MaxScale and the server in the same computer, so they are
+Percona Proxy and the server in the same computer, so they are
 only indicative.
 
 | `selects`          | Rule           | qps |

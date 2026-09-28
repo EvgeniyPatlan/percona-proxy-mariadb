@@ -45,7 +45,7 @@ void copy_files(TestConnections& test, mxt::MariaDBServer* srv, const string& di
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     auto master = mxt::ServerInfo::master_st;
     auto slave = mxt::ServerInfo::slave_st;
@@ -77,7 +77,7 @@ void test_main(TestConnections& test)
         if (test.ok())
         {
             test.tprintf("Running switchover");
-            mxs.maxctrl("call command mariadbmon switchover MariaDB-Monitor");
+            mxs.percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor");
             mxs.wait_for_monitor(1);
             auto state_after_switch = {slave, master, slave, slave};
             mxs.check_print_servers_status(state_after_switch);
@@ -118,7 +118,7 @@ void test_main(TestConnections& test)
             if (test.ok())
             {
                 test.tprintf("Switchover back to server1");
-                mxs.maxctrl("call command mariadbmon switchover MariaDB-Monitor server1");
+                mxs.percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor server1");
                 master_ind = 0;
                 mxs.wait_for_monitor(2);
                 test.expect(repl.sync_slaves(master_ind, 1), "Servers did not sync after switch.");

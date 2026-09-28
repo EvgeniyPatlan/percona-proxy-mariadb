@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     auto* srv1 = repl.backend(0);
 
@@ -77,7 +77,7 @@ void test_main(TestConnections& test)
     if (test.ok())
     {
         const string switch_cmd = "call command mariadbmon switchover MariaDB-Monitor";
-        auto res = mxs.maxctrl(switch_cmd);
+        auto res = mxs.percona_proxyctl(switch_cmd);
         if (res.rc == 0)
         {
             mxs.wait_for_monitor(1);
@@ -108,7 +108,7 @@ void test_main(TestConnections& test)
                 }
             }
 
-            res = mxs.maxctrl(switch_cmd);
+            res = mxs.percona_proxyctl(switch_cmd);
             if (res.rc == 0)
             {
                 mxs.wait_for_monitor(1);

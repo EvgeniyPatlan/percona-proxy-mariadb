@@ -135,7 +135,7 @@ endif()
 # MXS-4269
 add_test_executable(sanity_check.cc sanity_check replication LABELS readwritesplit LIGHT REPL_BACKEND)
 
-# Repeatedly connect to maxscale while the backends reject all connections, expect no crash
+# Repeatedly connect to percona-proxy while the backends reject all connections, expect no crash
 add_test_executable(backend_auth_fail.cc backend_auth_fail replication LABELS readconnroute REPL_BACKEND)
 
 # Test wildcard in user host name (user@127.%.%.%). Also test MXS-3172 escaped wildcard in database grant and
@@ -154,14 +154,14 @@ add_test_executable(rhint_comment.cc rhint_comment hints LABELS readwritesplit h
 # MXS-2838: Hints in prepared statements
 add_test_executable(mxs2838_ps_hints.cc mxs2838_ps_hints mxs2838_ps_hints LABELS hintfilter REPL_BACKEND)
 
-# MaxGUI test
-add_test_executable(test_maxgui.cc test_maxgui test_maxgui LABELS maxgui REPL_BACKEND)
+# Percona Proxy GUI test
+add_test_executable(test_gui.cc test_gui test_gui LABELS gui REPL_BACKEND)
 
 # Checks "SELECT * INTO OUTFILE" and "LOAD DATA LOCAL INFILE"
 add_test_executable(rwsplit_infile_outfile.cc rwsplit_infile_outfile replication LABELS readwritesplit REPL_BACKEND)
 
 # Regression case for the bug "'Current no. of conns' not going down"
-add_test_executable(router_conn_num.cc router_conn_num replication LABELS readwritesplit readconnroute maxscale REPL_BACKEND)
+add_test_executable(router_conn_num.cc router_conn_num replication LABELS readwritesplit readconnroute percona-proxy REPL_BACKEND)
 
 # Regression: Crash if no slave available
 add_test_executable(router_slaves_blocked.cc router_slaves_blocked replication LABELS readwritesplit REPL_BACKEND)
@@ -175,13 +175,13 @@ add_test_script(bug562.sh bug562.sh replication LABELS MySQLAuth REPL_BACKEND)
 # Regression case for the bug "Wrong charset settings"
 add_test_script(bug564.sh bug564.sh replication LABELS MySQLProtocol REPL_BACKEND)
 
-# Regression case for the bug "Clients CLIENT_FOUND_ROWS setting is ignored by maxscale"
+# Regression case for the bug "Clients CLIENT_FOUND_ROWS setting is ignored by percona-proxy"
 add_test_executable(mariadb_client_found_rows.cc mariadb_client_found_rows replication LABELS MySQLProtocol REPL_BACKEND)
 
 # Regression case for the bug "Crash if files from /dev/shm/ removed"
-add_test_script(bug567.sh bug567.sh bug567 LABELS maxscale REPL_BACKEND)
+add_test_script(bug567.sh bug567.sh bug567 LABELS percona-proxy REPL_BACKEND)
 
-# Regression case for the bug "Using regex filter hangs MaxScale"
+# Regression case for the bug "Using regex filter hangs Percona Proxy"
 add_test_executable(regexf_replace.cc regexf_replace regexf_replace LABELS regexfilter REPL_BACKEND)
 
 # Attempt to use GRANT with wrong IP, expect no crash or hangs
@@ -209,10 +209,10 @@ add_test_executable(auth_old_pw.cc auth_old_pw replication LABELS MySQLAuth MySQ
 add_test_executable(auth_long_hostname.cc auth_long_hostname replication LABELS MySQLAuth MySQLProtocol REPL_BACKEND)
 
 # Block backends (master or all slaves) and tries to connect Maxscale
-add_test_executable(no_backends_crash.cc no_backends_crash replication LABELS readwritesplit readconnroute maxscale REPL_BACKEND)
+add_test_executable(no_backends_crash.cc no_backends_crash replication LABELS readwritesplit readconnroute percona-proxy REPL_BACKEND)
 
 # Block all backends
-add_test_executable(startup_fail_no_servers.cc startup_fail_no_servers startup_fail_no_servers LABELS readwritesplit readconnroute maxscale REPL_BACKEND)
+add_test_executable(startup_fail_no_servers.cc startup_fail_no_servers startup_fail_no_servers LABELS readwritesplit readconnroute percona-proxy REPL_BACKEND)
 
 # Bad TEE filter configuration
 add_test_executable(teef_no_master.cc teef_no_master teef_no_master LABELS MySQLAuth MySQLProtocol REPL_BACKEND)
@@ -223,7 +223,7 @@ add_test_executable(auth_sqlmode_ansi.cc auth_sqlmode_ansi auth_sqlmode_ansi LAB
 # Prepared statement from PHP application
 add_test_executable(rwsplit_php_stmt.cc rwsplit_php_stmt replication LABELS readwritesplit LIGHT REPL_BACKEND)
 
-# Regression case for the bug "Regex filter and shorter than original replacement queries MaxScale" (crash)
+# Regression case for the bug "Regex filter and shorter than original replacement queries Percona Proxy" (crash)
 add_test_executable(regexf_replace_crash.cc regexf_replace_crash regexf_replace_crash LABELS regexfilter REPL_BACKEND)
 
 # Test MariaDB 10.2 bulk inserts
@@ -240,21 +240,21 @@ add_test_executable(change_master_during_session.cc change_master_during_session
 add_test_executable(connect_to_nonexisting_db.cc connect_to_nonexisting_db replication LABELS MySQLAuth MySQLProtoco LIGHT REPL_BACKEND)
 
 # check if max_connections parameter works
-add_test_executable(connection_limit.cc connection_limit connection_limit LABELS maxscale LIGHT REPL_BACKEND)
+add_test_executable(connection_limit.cc connection_limit connection_limit LABELS percona-proxy LIGHT REPL_BACKEND)
 
 # Tries to open to many connections, expect no crash
-add_test_executable(crash_out_of_files.cc crash_out_of_files load LABELS maxscale HEAVY REPL_BACKEND)
+add_test_executable(crash_out_of_files.cc crash_out_of_files load LABELS percona-proxy HEAVY REPL_BACKEND)
 
 # Tries INSERTs with size close to 0x0ffffff * N
 add_test_executable(different_size_rwsplit.cc different_size_rwsplit replication LABELS readwritesplit HEAVY REPL_BACKEND)
 
-# Tries to use 'maxkeys', 'maxpasswrd'
-add_test_executable(encrypted_passwords.cc encrypted_passwords replication LABELS maxscale LIGHT REPL_BACKEND)
+# Tries to use 'percona-proxy-keys', 'maxpasswrd'
+add_test_executable(encrypted_passwords.cc encrypted_passwords replication LABELS percona-proxy LIGHT REPL_BACKEND)
 
-# Basic MaxCtrl test. Also covers the following bugs:
-# MXS-3697: ENOENT: no such file or directory, stat '/~/.maxctrl.cnf' when running commands from the root directory.
+# Basic Percona Proxyctl test. Also covers the following bugs:
+# MXS-3697: ENOENT: no such file or directory, stat '/~/.percona-proxyctl.cnf' when running commands from the root directory.
 # MXS-4169: Listeners wrongly require ssl_ca_cert during creation
-add_test_executable(maxctrl_basic.cc maxctrl_basic maxctrl_basic LABELS maxctrl REPL_BACKEND)
+add_test_executable(percona-proxyctl_basic.cc percona-proxyctl_basic percona-proxyctl_basic LABELS percona-proxyctl REPL_BACKEND)
 
 # MXS-2167: Monitors should be able to use extra_port
 add_test_executable(mxs2167_extra_port.cc mxs2167_extra_port mxs2167_extra_port LABELS REPL_BACKEND)
@@ -289,11 +289,11 @@ add_test_executable(mxs1323_stress.cc mxs1323_stress mxs1323 LABELS readwritespl
 # A set of MariaDB server tests executed against Maxscale RWSplit
 add_test_script(mariadb_tests_hartmut.sh mariadb_tests_hartmut.sh replication LABELS readwritesplit REPL_BACKEND)
 
-# Checks tha Maxscale processis running as 'maxscale' user
-add_test_executable(maxscale_process_user.cc maxscale_process_user replication LABELS maxscale LIGHT REPL_BACKEND)
+# Checks tha Maxscale processis running as 'percona-proxy' user
+add_test_executable(percona_proxy_process_user.cc percona_proxy_process_user replication LABELS percona-proxy LIGHT REPL_BACKEND)
 
 # Regression case for the bug "Two monitors loaded at the same time result into not working installation"
-add_test_executable(mxs118.cc mxs118 mxs118 LABELS maxscale LIGHT REPL_BACKEND)
+add_test_executable(mxs118.cc mxs118 mxs118 LABELS percona-proxy LIGHT REPL_BACKEND)
 
 # Regression case for the bug "SELECT INTO OUTFILE query succeeds even if backed fails"
 add_test_executable(mxs280_select_outfile.cc mxs280_select_outfile replication LABELS readwritesplit REPL_BACKEND)
@@ -312,7 +312,7 @@ add_test_executable(binary_ps.cc binary_ps replication LABELS readwritesplit LIG
 add_test_executable(binary_ps_cursor.cc binary_ps_cursor replication LABELS readwritesplit LIGHT REPL_BACKEND)
 
 # Creates and closes a lot of connections, checks that 'list servers' shows 0 connections at the end
-add_test_executable(mxs321.cc mxs321 replication LABELS maxscale readwritesplit REPL_BACKEND)
+add_test_executable(mxs321.cc mxs321 replication LABELS percona-proxy readwritesplit REPL_BACKEND)
 
 # Load huge file with 'LOAD DATA LOCAL INFILE'. MXS-365.
 add_test_executable_ex(NAME load_data_local_infile SOURCE load_data_local_infile.cc
@@ -332,18 +332,18 @@ add_test_executable(mxs548_short_session_change_user.cc mxs548_short_session_cha
 # Playing with blocking and unblocking Master under load
 add_test_executable(mxs559_block_master.cc mxs559_block_master mxs559 LABELS readwritesplit REPL_BACKEND)
 
-# Regression case for the bug "MaxScale fails to start silently if config file is not readable"
-add_test_executable(mxs621_unreadable_cnf.cc mxs621_unreadable_cnf replication LABELS maxscale REPL_BACKEND)
+# Regression case for the bug "Percona Proxy fails to start silently if config file is not readable"
+add_test_executable(mxs621_unreadable_cnf.cc mxs621_unreadable_cnf replication LABELS percona-proxy REPL_BACKEND)
 
 # playing with 'restart service' and restart Maxscale under load
-add_test_executable(mxs657_restart.cc mxs657_restart replication LABELS maxscale HEAVY REPL_BACKEND)
-add_test_executable(mxs657_restart_service.cc mxs657_restart_service replication LABELS maxscale REPL_BACKEND)
+add_test_executable(mxs657_restart.cc mxs657_restart replication LABELS percona-proxy HEAVY REPL_BACKEND)
+add_test_executable(mxs657_restart_service.cc mxs657_restart_service replication LABELS percona-proxy REPL_BACKEND)
 
 # Connect using different default database using user with database and table level grants
 add_test_executable(mxs716.cc mxs716 replication LABELS MySQLAuth LIGHT REPL_BACKEND)
 
-# MaxScale configuration check functionality test (maxscale -c)
-add_test_executable(mxs722.cc mxs722 mxs722 LABELS maxscale LIGHT REPL_BACKEND)
+# Percona Proxy configuration check functionality test (percona-proxy -c)
+add_test_executable(mxs722.cc mxs722 mxs722 LABELS percona-proxy LIGHT REPL_BACKEND)
 
 # Checks "Current no. of conns" output after long blob inserting
 add_test_executable(mxs812_1.cc mxs812_1 longblob LABELS readwritesplit REPL_BACKEND)
@@ -351,13 +351,13 @@ add_test_executable(mxs812_1.cc mxs812_1 longblob LABELS readwritesplit REPL_BAC
 # Checks "Current no. of conns" output after long blob inserting
 add_test_executable(mxs812_2.cc mxs812_2 replication LABELS readwritesplit REPL_BACKEND)
 
-# Tests maxpasswd
-add_test_executable(mxs822_maxpasswd.cc mxs822_maxpasswd maxpasswd LABELS maxscale REPL_BACKEND)
+# Tests percona-proxy-passwd
+add_test_executable(mxs822_percona-proxy-passwd.cc mxs822_percona-proxy-passwd percona-proxy-passwd LABELS percona-proxy REPL_BACKEND)
 
 # Do only SELECTS during time > wait_timeout and then do INSERT
 add_test_executable(mxs827_write_timeout.cc mxs827_write_timeout mxs827_write_timeout LABELS readwritesplit REPL_BACKEND)
 
-# MXS-872: MaxScale doesn't understand roles
+# MXS-872: Percona Proxy doesn't understand roles
 # https://jira.mariadb.org/browse/MXS-872
 add_test_executable(mxs872_roles.cc mxs872_roles replication LABELS REPL_BACKEND)
 
@@ -370,28 +370,28 @@ add_test_executable(mxs874_slave_recovery.cc mxs874_slave_recovery mxs874 LABELS
 
 # A set of dynamic configuration tests
 # Server removal test
-add_test_executable(mxs922_bad_server.cc mxs922_bad_server mxs922 LABELS maxscale REPL_BACKEND)
+add_test_executable(mxs922_bad_server.cc mxs922_bad_server mxs922 LABELS percona-proxy REPL_BACKEND)
 
 # Server creation test
-add_test_executable(mxs922_server.cc mxs922_server mxs922_base LABELS maxscale REPL_BACKEND)
+add_test_executable(mxs922_server.cc mxs922_server mxs922_base LABELS percona-proxy REPL_BACKEND)
 
 # Monitor creation test
-add_test_executable(mxs922_monitor.cc mxs922_monitor mxs922_base LABELS maxscale REPL_BACKEND)
+add_test_executable(mxs922_monitor.cc mxs922_monitor mxs922_base LABELS percona-proxy REPL_BACKEND)
 
 # Double creation of listeners, expect no crash
-add_test_executable(mxs922_double_listener.cc mxs922_double_listener mxs922_base LABELS maxscale REPL_BACKEND)
+add_test_executable(mxs922_double_listener.cc mxs922_double_listener mxs922_base LABELS percona-proxy REPL_BACKEND)
 
 # Test persisting of configuration changes
-add_test_executable(mxs922_restart.cc mxs922_restart mxs922 LABELS maxscale REPL_BACKEND)
+add_test_executable(mxs922_restart.cc mxs922_restart mxs922 LABELS percona-proxy REPL_BACKEND)
 
 # Server scaling test
-add_test_executable(mxs922_scaling.cc mxs922_scaling mxs922_base LABELS maxscale REPL_BACKEND)
+add_test_executable(mxs922_scaling.cc mxs922_scaling mxs922_base LABELS percona-proxy REPL_BACKEND)
 
 # Dynamic listener SSL test
-add_test_executable(mxs922_listener_ssl.cc mxs922_listener_ssl mxs922_base LABELS maxscale REPL_BACKEND)
+add_test_executable(mxs922_listener_ssl.cc mxs922_listener_ssl mxs922_base LABELS percona-proxy REPL_BACKEND)
 
 # Alter routers at runtime
-add_test_executable(alter_router.cc alter_router alter_router LABELS maxscale REPL_BACKEND)
+add_test_executable(alter_router.cc alter_router alter_router LABELS percona-proxy REPL_BACKEND)
 
 # Test of MaxRows filter
 add_test_executable(mxs1071_maxrows.cc mxs1071_maxrows maxrows LABELS maxrowsfilter REPL_BACKEND)
@@ -445,12 +445,12 @@ add_test_executable(proxy_protocol.cc proxy_protocol proxy_protocol LABELS MySQL
 # MXS-3342: Crash with proxy protocol and persistent connections
 add_test_executable(mxs3342_proxy_protocol_pool.cc mxs3342_proxy_protocol_pool mxs3342_proxy_protocol_pool LABELS REPL_BACKEND)
 
-# Regression case for the bug "Defunct processes after maxscale have executed script during failover"
-add_test_executable(mxs1045.cc mxs1045 mxs1045 LABELS maxscale REPL_BACKEND)
+# Regression case for the bug "Defunct processes after percona-proxy have executed script during failover"
+add_test_executable(mxs1045.cc mxs1045 mxs1045 LABELS percona-proxy REPL_BACKEND)
 
 # MXS-1123: connect_timeout setting causes frequent disconnects
 # https://jira.mariadb.org/browse/MXS-1123
-add_test_executable(mxs1123.cc mxs1123 mxs1123 LABELS maxscale readwritesplit REPL_BACKEND)
+add_test_executable(mxs1123.cc mxs1123 mxs1123 LABELS percona-proxy readwritesplit REPL_BACKEND)
 
 # MXS-1319: Maxscale selecting extra whitespace while loading users
 # https://jira.mariadb.org/browse/MXS-1319
@@ -458,13 +458,13 @@ add_test_executable(mxs1319.cc mxs1319 replication LABELS MySQLAuth REPL_BACKEND
 
 # MXS-1418: Removing a server from a service breaks the connection
 # https://jira.mariadb.org/browse/MXS-1418
-add_test_executable(mxs1418.cc mxs1418 replication LABELS readwritesplit maxscale REPL_BACKEND)
+add_test_executable(mxs1418.cc mxs1418 replication LABELS readwritesplit percona-proxy REPL_BACKEND)
 
-# MXS-1295: MaxScale's readwritesplit router does not take into account the fact
+# MXS-1295: Percona Proxy's readwritesplit router does not take into account the fact
 # that stored procedure call may change the value of a user variable
 #
 # https://jira.mariadb.org/browse/MXS-1295
-add_test_executable(mxs1295_sp_call.cc mxs1295_sp_call mxs1295 LABELS maxscale readwritesplit REPL_BACKEND)
+add_test_executable(mxs1295_sp_call.cc mxs1295_sp_call mxs1295 LABELS percona-proxy readwritesplit REPL_BACKEND)
 
 # MXS-1457: Deleted servers are not ignored when users are loaded
 # https://jira.mariadb.org/browse/MXS-1457
@@ -500,7 +500,7 @@ add_test_executable(mxs1549_optimistic_trx.cc mxs1549_optimistic_trx mxs1549_opt
 # https://jira.mariadb.org/browse/MXS-1643
 add_test_executable(mxs1643_extra_events.cc mxs1643_extra_events mxs1643_extra_events LABELS mysqlmon REPL_BACKEND)
 
-# MXS-1653: sysbench failed to initialize w/ MaxScale read/write splitter
+# MXS-1653: sysbench failed to initialize w/ Percona Proxy read/write splitter
 # https://jira.mariadb.org/browse/MXS-1653
 add_test_executable(mxs1653_ps_hang.cc mxs1653_ps_hang replication LABELS readwritesplit REPL_BACKEND)
 
@@ -563,7 +563,7 @@ add_test_executable(mxs1873_large_sescmd.cc mxs1873_large_sescmd replication LAB
 # https://jira.mariadb.org/browse/MXS-1896
 add_test_executable(mxs1896_load_data_infile.cc mxs1896_load_data_infile replication LABELS readwritesplit REPL_BACKEND)
 
-# MXS-1899: generated [maxscale] section causes errors
+# MXS-1899: generated [percona-proxy] section causes errors
 # https://jira.mariadb.org/browse/MXS-1899
 add_test_executable(mxs1899_generated_cnf.cc mxs1899_generated_cnf replication LABELS REPL_BACKEND)
 
@@ -571,7 +571,7 @@ add_test_executable(mxs1899_generated_cnf.cc mxs1899_generated_cnf replication L
 add_test_executable(no_password.cc no_password replication LABELS MySQLAuth LIGHT REPL_BACKEND)
 
 # Open and immediatelly close a big number of connections
-add_test_executable(open_close_connections.cc open_close_connections replication LABELS maxscale readwritesplit REPL_BACKEND)
+add_test_executable(open_close_connections.cc open_close_connections replication LABELS percona-proxy readwritesplit REPL_BACKEND)
 
 # Check if prepared statement works via Maxscale (via RWSplit)
 add_test_executable(prepared_statement.cc prepared_statement replication LABELS readwritesplit LIGHT REPL_BACKEND)
@@ -586,7 +586,7 @@ add_test_executable(readconnrouter_slave.cc readconnrouter_slave replication LAB
 add_test_executable(regexfilter1.cc regexfilter1 regexfilter1 LABELS regexfilter LIGHT REPL_BACKEND)
 
 # check that Maxscale is reacting correctly on ctrc+c signal and termination does not take ages
-add_test_script(run_ctrl_c.sh run_ctrl_c.sh replication LABELS maxscale LIGHT REPL_BACKEND)
+add_test_script(run_ctrl_c.sh run_ctrl_c.sh replication LABELS percona-proxy LIGHT REPL_BACKEND)
 
 # run a set of queries in the loop (see setmix.sql) using Perl client
 add_test_script(run_session_hang.sh run_session_hang.sh replication LABELS readwritesplit REPL_BACKEND)
@@ -621,7 +621,7 @@ add_test_derived(short_sessions_ssl short_sessions replication LABELS readwrites
         BACKEND_SSL LISTENER_SSL REPL_BACKEND)
 
 # Regression case for crash if 'show monitors' command is issued, but no monitor is not running
-add_test_executable(show_monitor_crash.cc show_monitor_crash show_monitor_crash LABELS maxscale REPL_BACKEND)
+add_test_executable(show_monitor_crash.cc show_monitor_crash show_monitor_crash LABELS percona-proxy REPL_BACKEND)
 
 # Check how Maxscale works in case of one slave failure, only one slave is configured
 add_test_executable(slave_failover.cc slave_failover replication.one_slave LABELS readwritesplit REPL_BACKEND)
@@ -630,15 +630,15 @@ add_test_executable(slave_failover.cc slave_failover replication.one_slave LABEL
 add_test_executable(sql_queries.cc sql_queries replication LABELS readwritesplit REPL_BACKEND)
 
 # Execute queries of different size, check data is the same when accessing via Maxscale and directly to backend, one persistant connection configured
-add_test_derived(sql_queries_pers1 sql_queries sql_queries_pers1 LABELS maxscale readwritesplit HEAVY REPL_BACKEND)
+add_test_derived(sql_queries_pers1 sql_queries sql_queries_pers1 LABELS percona-proxy readwritesplit HEAVY REPL_BACKEND)
 
 # Execute queries of different size, check data is the same when accessing via Maxscale and directly to backend, 10 persistant connections configured
-add_test_derived(sql_queries_pers10 sql_queries sql_queries_pers10 LABELS maxscale readwritesplit HEAVY REPL_BACKEND)
+add_test_derived(sql_queries_pers10 sql_queries sql_queries_pers10 LABELS percona-proxy readwritesplit HEAVY REPL_BACKEND)
 
 # Execute queries of different size, check data is the same when accessing via Maxscale and directly to backend, client ssl is ON
-add_test_derived(ssl sql_queries ssl LABELS maxscale readwritesplit REPL_BACKEND LISTENER_SSL)
+add_test_derived(ssl sql_queries ssl LABELS percona-proxy readwritesplit REPL_BACKEND LISTENER_SSL)
 
-# Testing slaves who have lost their master and how MaxScale works with them
+# Testing slaves who have lost their master and how Percona Proxy works with them
 add_test_executable(stale_slaves.cc stale_slaves stale_slaves LABELS mysqlmon REPL_BACKEND)
 
 # Check temporal tables commands functionality
@@ -653,7 +653,7 @@ add_test_executable_notest(long_sysbench.cc long_sysbench replication LABELS rea
 # test effect of local_address in configuration file
 add_test_executable(local_address.cc local_address local_address LABELS REPL_BACKEND)
 
-# MXS-1628: Security scanner says MaxScale is vulnerable to ancient MySQL vulnerability
+# MXS-1628: Security scanner says Percona Proxy is vulnerable to ancient MySQL vulnerability
 # https://jira.mariadb.org/browse/MXS-1628
 add_test_executable(mxs1628_bad_handshake.cc mxs1628_bad_handshake replication LABELS REPL_BACKEND)
 
@@ -690,7 +690,7 @@ add_test_executable(mxs1929_start_from_scratch.cc mxs1929_start_from_scratch mxs
 # https://jira.mariadb.org/browse/MXS-1932
 add_test_executable(mxs1932_hidden_cnf.cc mxs1932_hidden_cnf replication LABELS REPL_BACKEND)
 
-# MXS-1985: MaxScale hangs on concurrent KILL processing
+# MXS-1985: Percona Proxy hangs on concurrent KILL processing
 # https://jira.mariadb.org/browse/MXS-1985
 add_test_executable(mxs1985_kill_hang.cc mxs1985_kill_hang replication LABELS REPL_BACKEND)
 
@@ -759,7 +759,7 @@ add_test_executable(mxs2521_double_exec.cc mxs2521_double_exec mxs2521_double_ex
 add_test_executable(sr_basics.cc sr_basics sr_basics LABELS REPL_BACKEND)
 add_test_executable(smart_query.cc smart_query smart_query LABELS REPL_BACKEND)
 
-# MXS-2490: Direct execution doesn't work with MaxScale
+# MXS-2490: Direct execution doesn't work with Percona Proxy
 # MXS-3392: Connection reset fails after execute_direct for an unknown table
 add_test_executable(ps_execute_direct.cc ps_execute_direct replication LABELS REPL_BACKEND readwritesplit)
 
@@ -921,10 +921,10 @@ add_test_executable(mxs4420_pipelined_ro_trx.cc mxs4420_pipelined_ro_trx mxs4420
 # MXS-4440: connection_keepalive doesn't work with long queries
 add_test_executable(mxs4440_long_query_keepalive.cc mxs4440_long_query_keepalive mxs4440_long_query_keepalive LABELS REPL_BACKEND readwritesplit)
 
-# MXS-4474: MaxScale hangs when worker writes messages to itself
+# MXS-4474: Percona Proxy hangs when worker writes messages to itself
 add_test_executable(mxs4474_worker_messages.cc mxs4474_worker_messages replication LABELS REPL_BACKEND readwritesplit)
 
-# MXS-4488: MaxScale hangs when client sends garbage
+# MXS-4488: Percona Proxy hangs when client sends garbage
 add_test_executable(mxs4488_garbage.cc mxs4488_garbage mxs4488_garbage LABELS REPL_BACKEND readwritesplit)
 
 # MXS-4505: transaction_replay_safe_commit=true should prevent about-to-commit transaction from being replayed
@@ -945,10 +945,10 @@ add_test_executable(mxs4615_partial_multistmt.cc mxs4615_partial_multistmt mxs46
 # MXS-4635: Connection metadata
 add_test_executable(mxs4635_custom_sysvars.cc mxs4635_custom_sysvars replication LABELS REPL_BACKEND readwritesplit)
 
-# MXS-4826: Forbid replication through MaxScale with allow_replication=false
+# MXS-4826: Forbid replication through Percona Proxy with allow_replication=false
 add_test_executable(mxs4826_allow_replication.cc mxs4826_allow_replication mxs4826_allow_replication LABELS REPL_BACKEND readwritesplit)
 
-# MXS-4847: Crash on `maxctrl show sessions`
+# MXS-4847: Crash on `percona-proxyctl show sessions`
 add_test_executable(mxs4847_diagnostics_crash.cc mxs4847_diagnostics_crash replication LABELS REPL_BACKEND)
 
 # MXS-4858: Crash on dump_last_statements=on_close
@@ -996,7 +996,7 @@ add_test_executable(mxs5415_retry_failed_reads_timeout.cc mxs5415_retry_failed_r
 # MXS-5432: Executing prepared statements too fast may stall query execution
 add_test_executable(mxs5432_queued_ps.cc mxs5432_queued_ps mxs5432_queued_ps LABELS REPL_BACKEND readwritesplit)
 
-# MXS-5910: Semi-sync through MaxScale doesn't work
+# MXS-5910: Semi-sync through Percona Proxy doesn't work
 add_test_executable(mxs5910_semisync_routing.cc mxs5910_semisync_routing replication LABELS REPL_BACKEND readwritesplit)
 
 ############################################
@@ -1057,7 +1057,7 @@ add_test_executable(mxs4010_avro_rotate.cc mxs4010_avro_rotate mxs4010_avro_rota
 add_subdirectory(galera)
 
 # Persistant connection test. Also MXS-3265.
-add_test_executable(pers_01.cc pers_01 pers_01 LABELS maxscale REPL_BACKEND readwritesplit)
+add_test_executable(pers_01.cc pers_01 pers_01 LABELS percona-proxy REPL_BACKEND readwritesplit)
 
 # Test with extremely big blob inserting/selecting with > 16 mb data blocks
 add_test_executable(mxs1110_16mb.cc mxs1110_16mb mxs1110_16mb LABELS readwritesplit readconnroute
@@ -1069,13 +1069,13 @@ add_test_derived(mxs1110_16mb_ssl mxs1110_16mb mxs1110_16mb LABELS readwritespli
 add_test_script(mariadb_tests_hartmut_galera.sh mariadb_tests_hartmut.sh galera_hartmut LABELS readwritesplit GALERA_BACKEND)
 
 # Crash with Galera and backend restart when persistant cfonnections are in use
-add_test_derived(mxs361 pers_02 mxs361 mxs361 LABELS maxscale REPL_BACKEND GALERA_BACKEND)
+add_test_derived(mxs361 pers_02 mxs361 mxs361 LABELS percona-proxy REPL_BACKEND GALERA_BACKEND)
 
 # Test big number of opened connections with persistent connections configured
-add_test_executable(pers_02.cc pers_02 pers_01 LABELS maxscale REPL_BACKEND readwritesplit)
+add_test_executable(pers_02.cc pers_02 pers_01 LABELS percona-proxy REPL_BACKEND readwritesplit)
 
 # Test of external script execution. Includes MXS-2723.
-add_test_executable(script.cc script script LABELS maxscale REPL_BACKEND GALERA_BACKEND)
+add_test_executable(script.cc script script LABELS percona-proxy REPL_BACKEND GALERA_BACKEND)
 
 # MXS-2441: Add support for read-only slaves to galeramon
 add_test_executable(mxs2441_galera_slaves.cc mxs2441_galera_slaves mxs2441_galera_slaves LABELS REPL_BACKEND GALERA_BACKEND)

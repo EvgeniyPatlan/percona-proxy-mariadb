@@ -15,9 +15,9 @@
 
 #include "config.hh"
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/router.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/service.hh>
 
 #include "consumer.hh"
 

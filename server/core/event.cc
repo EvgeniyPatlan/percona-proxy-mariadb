@@ -25,7 +25,7 @@ using namespace std;
 namespace
 {
 
-using namespace maxscale;
+using namespace percona_proxy;
 
 const char CN_UNKNOWN[] = "Unknown";
 
@@ -347,7 +347,7 @@ event::result_t action(const char* zName,
 
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 const char* log_level_to_string(int32_t level)
@@ -532,4 +532,4 @@ void log(id_t event_id,
     mxb_log_message(priority, modname, file, line, function, "%s", message);
 }
 }   // event
-}   // maxscale
+}   // percona-proxy

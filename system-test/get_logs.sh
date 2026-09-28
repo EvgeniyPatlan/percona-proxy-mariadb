@@ -16,15 +16,15 @@
 #set -x
 
 
-export maxscale_sshkey=$maxscale_keyfile
-if [ $maxscale_IP != "127.0.0.1" ] ; then
-    ssh -i $maxscale_sshkey -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet $maxscale_access_user@$maxscale_IP "mkdir -p logs; $maxscale_access_sudo cp $maxscale_log_dir/* logs/; $maxscale_access_sudo chmod a+r logs/*"
-    scp -i $maxscale_sshkey -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet $maxscale_access_user@$maxscale_IP:logs/* .
-    scp -i $maxscale_sshkey -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet $maxscale_access_user@$maxscale_IP:$maxscale_cnf .
+export percona_proxy_sshkey=$percona_proxy_keyfile
+if [ $percona_proxy_IP != "127.0.0.1" ] ; then
+    ssh -i $percona_proxy_sshkey -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet $percona_proxy_access_user@$percona_proxy_IP "mkdir -p logs; $percona_proxy_access_sudo cp $percona_proxy_log_dir/* logs/; $percona_proxy_access_sudo chmod a+r logs/*"
+    scp -i $percona_proxy_sshkey -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet $percona_proxy_access_user@$percona_proxy_IP:logs/* .
+    scp -i $percona_proxy_sshkey -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet $percona_proxy_access_user@$percona_proxy_IP:$percona_proxy_cnf .
 else
     mkdir -p logs;
-    sudo cp $maxscale_log_dir/* logs/
-    cp $maxscale_cnf logs/
+    sudo cp $percona_proxy_log_dir/* logs/
+    cp $percona_proxy_cnf logs/
     sudo chmod a+r logs/*
     cp logs/* .
 fi

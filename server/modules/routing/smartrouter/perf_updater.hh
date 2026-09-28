@@ -13,14 +13,14 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include "perf_info.hh"
 #include <maxbase/gcupdater.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/routingworker.hh>
 
 class PerformanceInfoUpdater : public maxbase::GCUpdater<SharedPerformanceInfo>
-                             , private maxscale::RoutingWorker::Data
+                             , private percona_proxy::RoutingWorker::Data
 {
 public:
     PerformanceInfoUpdater();
@@ -30,6 +30,6 @@ private:
     void make_updates(PerformanceInfoContainer* pData,
                       std::vector<typename SharedPerformanceInfo::InternalUpdate>& queue) override;
 
-    void init_for(maxscale::RoutingWorker* pWorker) override final;
-    void finish_for(maxscale::RoutingWorker* pWorker) override final;
+    void init_for(percona_proxy::RoutingWorker* pWorker) override final;
+    void finish_for(percona_proxy::RoutingWorker* pWorker) override final;
 };

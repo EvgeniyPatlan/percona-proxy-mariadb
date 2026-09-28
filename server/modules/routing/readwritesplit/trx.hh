@@ -13,10 +13,10 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <maxbase/checksum.hh>
-#include <maxscale/target.hh>
+#include <percona-proxy/target.hh>
 
 // A statement in a transaction.
 struct Stmt

@@ -31,11 +31,11 @@
 #include <maxbase/filesystem.hh>
 #include <maxbase/format.hh>
 #include <maxbase/jansson.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/router.hh>
-#include <maxscale/users.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/users.hh>
 
 #include "internal/adminusers.hh"
 #include "internal/admin.hh"
@@ -49,7 +49,7 @@ typedef std::set<std::string>    StringSet;
 typedef std::vector<std::string> StringVector;
 
 using std::tie;
-using maxscale::Monitor;
+using percona_proxy::Monitor;
 using namespace std::literals::string_literals;
 
 thread_local std::vector<std::string> runtime_errmsg;
@@ -199,8 +199,8 @@ bool save_config(const mxs::Config& config)
     if (should_save())
     {
         std::ostringstream ss;
-        config.persist_maxscale(ss);
-        ok = runtime_save_config("maxscale", ss.str());
+        config.persist_percona_proxy(ss);
+        ok = runtime_save_config("percona-proxy", ss.str());
     }
 
     return ok;
@@ -1333,7 +1333,7 @@ Service* get_service_from_listener_json(json_t* json)
         {
             if (!(rval = Service::find(json_string_value(svc))))
             {
-                MXB_ERROR("'%s' is not a valid service in MaxScale", json_string_value(svc));
+                MXB_ERROR("'%s' is not a valid service in Percona Proxy", json_string_value(svc));
             }
         }
         else
@@ -2261,7 +2261,7 @@ bool runtime_alter_user(const std::string& user, const std::string& type, json_t
     return rval;
 }
 
-bool runtime_alter_maxscale_from_json(json_t* json)
+bool runtime_alter_percona_proxy_from_json(json_t* json)
 {
     UnmaskPasswords unmask;
     bool rval = false;
@@ -2416,7 +2416,7 @@ bool runtime_remove_config(const char* name)
     if (mxs::Config::is_static_object(name))
     {
         auto msg = mxb::string_printf("Object '%s' is defined in a static configuration file and "
-                                      "cannot be permanently deleted. If MaxScale is restarted, "
+                                      "cannot be permanently deleted. If Percona Proxy is restarted, "
                                       "the object will appear again.", name);
         runtime_add_warning(msg);
     }

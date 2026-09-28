@@ -13,11 +13,11 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/config2.hh>
 #include "cache_storage_api.hh"
 
-namespace config = maxscale::config;
+namespace config = percona_proxy::config;
 
 enum cache_selects_t
 {

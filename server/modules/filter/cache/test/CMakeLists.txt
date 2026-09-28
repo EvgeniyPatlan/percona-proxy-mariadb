@@ -14,19 +14,19 @@ add_library(cachetester
 add_dependencies(cachetester connector-c)
 
 add_executable(testrules testrules.cc)
-target_link_libraries(testrules cache maxscale-common ${JANSSON_LIBRARIES})
+target_link_libraries(testrules cache percona-proxy-common ${JANSSON_LIBRARIES})
 
 add_executable(testkeygeneration
   testkeygeneration.cc
   ../../../parser_plugin/test/testreader.cc
   )
-target_link_libraries(testkeygeneration cachetester cache maxscale-common)
+target_link_libraries(testkeygeneration cachetester cache percona-proxy-common)
 
 add_executable(testrawstorage testrawstorage.cc)
-target_link_libraries(testrawstorage cachetester cache maxscale-common)
+target_link_libraries(testrawstorage cachetester cache percona-proxy-common)
 
 add_executable(testlrustorage testlrustorage.cc)
-target_link_libraries(testlrustorage cachetester cache maxscale-common)
+target_link_libraries(testlrustorage cachetester cache percona-proxy-common)
 
 add_executable(test_cacheoptions
   test_cacheoptions.cc
@@ -40,7 +40,7 @@ add_executable(test_cacheoptions
   ../../test/module.cc
   ../../test/queryclassifiermodule.cc
   )
-target_link_libraries(test_cacheoptions maxscale-common)
+target_link_libraries(test_cacheoptions percona-proxy-common)
 
 add_executable(keycheck
   keycheck.cc
@@ -62,13 +62,13 @@ add_executable(keycheck
   ../storage.cc
   ../storagefactory.cc
   )
-target_link_libraries(keycheck maxscale-common lzma)
+target_link_libraries(keycheck percona-proxy-common lzma)
 
 #add_executable(cache_stress cache_stress.cc)
 #target_link_libraries(cache_stress ${MARIADB_CONNECTOR_LIBRARIES} ssl crypt crypto dl pthread)
 
 add_executable(cache_bugs cache_bugs.cc)
-target_link_libraries(cache_bugs cache maxscale-common)
+target_link_libraries(cache_bugs cache percona-proxy-common)
 
 add_test(test_cache_bugs cache_bugs)
 

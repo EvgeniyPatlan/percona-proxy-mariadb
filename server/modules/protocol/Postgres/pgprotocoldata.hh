@@ -13,8 +13,8 @@
 #pragma once
 
 #include "postgresprotocol.hh"
-#include <maxscale/session.hh>
-#include <maxscale/history.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/history.hh>
 #include "pgauthenticatormodule.hh"
 
 class PgProtocolData final : public mxs::ProtocolData

@@ -141,7 +141,7 @@ struct MonitorInfo
 {
     int            id {-1};
     std::string    name;
-    mxt::MaxScale* maxscale {nullptr};
+    mxt::PerconaProxy* percona_proxy {nullptr};
 };
 
 const MonitorInfo* get_primary_monitor(TestConnections& test, MonitorInfo* monitors);
@@ -153,12 +153,12 @@ namespace backup
 void install_tools(TestConnections& test, int ind);
 
 /**
- * Copy ssh key from server1 to MaxScale node. Check that the key is accepted on targets.
+ * Copy ssh key from server1 to Percona Proxy node. Check that the key is accepted on targets.
  */
 void copy_ssh_keyfile(TestConnections& test, const std::vector<mxt::MariaDBServer*>& targets);
 
 /**
- * Delete ssh keyfile on MaxScale node.
+ * Delete ssh keyfile on Percona Proxy node.
  */
 void delete_ssh_keyfile(TestConnections& test);
 

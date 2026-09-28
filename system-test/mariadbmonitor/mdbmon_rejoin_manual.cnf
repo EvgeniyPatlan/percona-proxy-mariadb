@@ -1,4 +1,4 @@
-[maxscale]
+[percona-proxy]
 threads=2
 
 [MariaDB-Monitor]

@@ -46,7 +46,7 @@ using std::move;
 namespace
 {
 // These must match the labels recognized by MDBCI.
-const string label_mxs = "MAXSCALE";
+const string label_mxs = "PERCONA_PROXY";
 const string label_repl_be = "REPL_BACKEND";
 const string label_galera_be = "GALERA_BACKEND";
 const string label_2nd_mxs = "SECOND_MAXSCALE";
@@ -61,7 +61,7 @@ const int BROKEN_VM_FAIL = 201; // Exit code when failure caused by broken VMs
 
 namespace
 {
-bool start_maxscale = true;
+bool start_percona_proxy = true;
 string required_repl_version;
 bool restart_galera = false;
 }
@@ -97,9 +97,9 @@ void sigfatal_handler(int i)
     raise(i);
 }
 
-void TestConnections::skip_maxscale_start(bool value)
+void TestConnections::skip_percona_proxy_start(bool value)
 {
-    start_maxscale = !value;
+    start_percona_proxy = !value;
 }
 
 void TestConnections::require_repl_version(const char* version)
@@ -162,10 +162,10 @@ int TestConnections::prepare_for_test(int argc, char* argv[])
         return rc;
     }
 
-    // Stop MaxScale to prevent it from interfering with replication setup.
+    // Stop Percona Proxy to prevent it from interfering with replication setup.
     if (!m_mxs_manual_debug)
     {
-        stop_all_maxscales();
+        stop_all_percona_proxies();
     }
 
     if (galera && restart_galera && m_shared.settings.mdbci_test)
@@ -220,17 +220,17 @@ int TestConnections::prepare_for_test(int argc, char* argv[])
 
     if (rc == 0)
     {
-        if (m_init_maxscale && !m_mxs_manual_debug)
+        if (m_init_percona_proxy && !m_mxs_manual_debug)
         {
-            init_maxscales();
+            init_percona_proxies();
         }
 
         if (m_mdbci_called)
         {
-            auto res = maxscale->ssh_output("maxscale --version-full", false);
+            auto res = percona_proxy->ssh_output("percona-proxy --version-full", false);
             if (res.rc != 0)
             {
-                tprintf("Error retrieving MaxScale version info");
+                tprintf("Error retrieving Percona Proxy version info");
             }
             else
             {
@@ -293,8 +293,8 @@ TestConnections::~TestConnections()
     }
     delete repl;
     delete galera;
-    delete maxscale;
-    delete maxscale2;
+    delete percona_proxy;
+    delete percona_proxy2;
 
     // Wait for TCP sockets in the TIME_WAIT state to die. This can happen if the test repeatedly creates
     // connections and then closes them. Checking that we're ending the test with roughly as many connections
@@ -338,11 +338,11 @@ int TestConnections::cleanup()
     // access.
     if (!m_mxs_manual_debug)
     {
-        // Stop all MaxScales to detect crashes on exit.
+        // Stop all PerconaProxies to detect crashes on exit.
         bool sleep_more = false;
-        for (int i = 0; i < n_maxscales(); i++)
+        for (int i = 0; i < n_percona_proxies(); i++)
         {
-            auto mxs = my_maxscale(i);
+            auto mxs = my_percona_proxy(i);
             mxs->stop_and_check_stopped();
         }
 
@@ -417,7 +417,7 @@ int TestConnections::setup_vms()
         return vms_found;
     };
 
-    bool maxscale_installed = false;
+    bool percona_proxy_installed = false;
 
     bool vms_found = false;
     if (m_recreate_vms)
@@ -426,7 +426,7 @@ int TestConnections::setup_vms()
         if (call_mdbci_and_check("--recreate"))
         {
             vms_found = true;
-            maxscale_installed = true;
+            percona_proxy_installed = true;
         }
     }
     else
@@ -441,7 +441,7 @@ int TestConnections::setup_vms()
             if (call_mdbci_and_check())
             {
                 vms_found = true;
-                maxscale_installed = true;
+                percona_proxy_installed = true;
             }
         }
     }
@@ -450,11 +450,11 @@ int TestConnections::setup_vms()
     if (vms_found && initialize_nodes())
     {
         rval = 0;
-        if (m_reinstall_maxscale)
+        if (m_reinstall_percona_proxy)
         {
-            if (reinstall_maxscales())
+            if (reinstall_percona_proxies())
             {
-                maxscale_installed = true;
+                percona_proxy_installed = true;
             }
             else
             {
@@ -463,12 +463,12 @@ int TestConnections::setup_vms()
             }
         }
 
-        if (rval == 0 && maxscale_installed)
+        if (rval == 0 && percona_proxy_installed)
         {
             string src = string(mxt::SOURCE_DIR) + "/mdbci/add_core_cnf.sh";
-            for (int i = 0; i < n_maxscales(); i++)
+            for (int i = 0; i < n_percona_proxies(); i++)
             {
-                auto mxs = my_maxscale(i);
+                auto mxs = my_percona_proxy(i);
                 auto homedir = mxs->access_homedir();
                 mxs->copy_to_node(src.c_str(), homedir);
                 mxs->ssh_node_f(true, "%s/add_core_cnf.sh %s", homedir, verbose() ? "verbose" : "");
@@ -490,7 +490,7 @@ void TestConnections::add_result(bool result, const char* format, ...)
 
         if (m_state == State::RUNNING)
         {
-            maxscale->write_in_log(logger().latest_error());
+            percona_proxy->write_in_log(logger().latest_error());
         }
     }
 }
@@ -504,7 +504,7 @@ bool TestConnections::expect(bool result, const char* format, ...)
 
     if (!result && m_state == State::RUNNING)
     {
-        maxscale->write_in_log(logger().latest_error());
+        percona_proxy->write_in_log(logger().latest_error());
     }
     return result;
 }
@@ -518,7 +518,7 @@ void TestConnections::add_failure(const char* format, ...)
 
     if (m_state == State::RUNNING)
     {
-        maxscale->write_in_log(logger().latest_error());
+        percona_proxy->write_in_log(logger().latest_error());
     }
 }
 
@@ -592,12 +592,12 @@ bool TestConnections::read_network_config()
 void TestConnections::read_basic_settings()
 {
     // The following settings can be overridden by cmdline settings, but not by mdbci.
-    maxscale_ssl = readenv_bool("ssl", false);
+    percona_proxy_ssl = readenv_bool("ssl", false);
     m_use_ipv6 = readenv_bool("use_ipv6", false);
     backend_ssl = readenv_bool("backend_ssl", false);
     smoke = readenv_bool("smoke", true);
     m_threads = readenv_int("threads", 4);
-    m_maxscale_log_copy = !readenv_bool("no_maxscale_log_copy", false);
+    m_percona_proxy_log_copy = !readenv_bool("no_maxscale_log_copy", false);
 
     if (readenv_bool("no_nodes_check", false))
     {
@@ -606,7 +606,7 @@ void TestConnections::read_basic_settings()
 
     if (readenv_bool("no_maxscale_start", false))
     {
-        start_maxscale = false;
+        start_percona_proxy = false;
     }
 
     // The following settings are final, and not modified by either command line parameters or mdbci.
@@ -666,7 +666,7 @@ bool TestConnections::read_test_info()
         m_required_mdbci_labels = mdbci_labels;
         m_required_mdbci_labels_str = flatten_stringset(mdbci_labels);
 
-        tprintf("Test: '%s', MaxScale config file: '%s', all labels: '%s', mdbci labels: '%s'",
+        tprintf("Test: '%s', Percona Proxy config file: '%s', all labels: '%s', mdbci labels: '%s'",
                 m_shared.test_name.c_str(), m_cnf_template_path.c_str(), found->labels,
                 m_required_mdbci_labels_str.c_str());
 
@@ -677,7 +677,7 @@ bool TestConnections::read_test_info()
 
         if (test_labels.count("LISTENER_SSL") > 0)
         {
-            maxscale_ssl = true;
+            percona_proxy_ssl = true;
         }
     }
     else
@@ -689,16 +689,16 @@ bool TestConnections::read_test_info()
 }
 
 /**
- * Process a MaxScale configuration file. Replaces the placeholders in the text with correct values.
+ * Process a Percona Proxy configuration file. Replaces the placeholders in the text with correct values.
  *
- * @param mxs MaxScale to configure
+ * @param mxs Percona Proxy to configure
  * @param config_file_path Config file template path
  * @return True on success
  */
 bool
-TestConnections::process_template(mxt::MaxScale& mxs, const string& config_file_path)
+TestConnections::process_template(mxt::PerconaProxy& mxs, const string& config_file_path)
 {
-    tprintf("Processing MaxScale config file %s\n", config_file_path.c_str());
+    tprintf("Processing Percona Proxy config file %s\n", config_file_path.c_str());
     std::ifstream config_file(config_file_path);
     string file_contents;
     if (config_file.is_open())
@@ -711,7 +711,7 @@ TestConnections::process_template(mxt::MaxScale& mxs, const string& config_file_
     if (file_contents.empty())
     {
         int eno = errno;
-        add_failure("Failed to read MaxScale config file template '%s' or file was empty. Error %i: %s",
+        add_failure("Failed to read Percona Proxy config file template '%s' or file was empty. Error %i: %s",
                     config_file_path.c_str(), eno, mxb_strerror(eno));
         return false;
     }
@@ -790,7 +790,7 @@ port=4006)";
             for (int i = 0; i < cluster->N; i++)
             {
                 // These placeholders in the config template use the network config node name prefix,
-                // not the MaxScale config server name prefix.
+                // not the Percona Proxy config server name prefix.
                 string ip_ph = mxb::string_printf("###%s_server_IP_%0d###", nw_conf_prefix.c_str(), i + 1);
                 string ip_str = using_ip6 ? cluster->ip6(i) : cluster->ip_private(i);
                 replace_text(ip_ph, ip_str);
@@ -802,7 +802,7 @@ port=4006)";
             }
 
             // The following generates basic server definitions for all servers. These, confusingly,
-            // use the MaxScale config file name prefix in the placeholder.
+            // use the Percona Proxy config file name prefix in the placeholder.
             const char* prefix = cluster->cnf_server_prefix().c_str();
             string all_servers_ph = mxb::string_printf("###%s###", prefix);
             string all_servers_str = cluster->cnf_servers();
@@ -858,7 +858,7 @@ port=4006)";
             }
         };
 
-        if (backend_ssl || maxscale_ssl)
+        if (backend_ssl || percona_proxy_ssl)
         {
             // Use the same certificate in listener and server sections, as it's the same host.
             string ssl_cert = mxs.cert_path();
@@ -868,7 +868,7 @@ port=4006)";
             {
                 enable_ssl("server", ssl_cert, ssl_key, ssl_ca_cert);
             }
-            if (maxscale_ssl)
+            if (percona_proxy_ssl)
             {
                 enable_ssl("listener", ssl_cert, ssl_key, ssl_ca_cert);
             }
@@ -876,11 +876,11 @@ port=4006)";
 
         // TODO: Add more "smartness". Check which routers are enabled, etc ...
 
-        // Need to have some manual code here depending on if MaxScale is local or remote. In the remote case,
+        // Need to have some manual code here depending on if Percona Proxy is local or remote. In the remote case,
         // first generate the file locally, then copy to node. In the local case, just write directly to
         // destination.
         const bool remote_mxs = mxs.vm_node().is_remote();
-        string target_file = remote_mxs ? "gen_maxscale.cnf" : mxs.cnf_path();
+        string target_file = remote_mxs ? "gen_percona_proxy.cnf" : mxs.cnf_path();
         std::ofstream output_file(target_file);
         if (output_file.is_open())
         {
@@ -896,7 +896,7 @@ port=4006)";
     }
     else
     {
-        add_failure("Could not parse MaxScale configuration. Errors:");
+        add_failure("Could not parse Percona Proxy configuration. Errors:");
         for (auto& s : parse_res.errors)
         {
             tprintf("%s", s.c_str());
@@ -907,55 +907,55 @@ port=4006)";
 }
 
 /**
- * Copy maxscale.cnf and start MaxScale on all Maxscale VMs.
+ * Copy percona-proxy.cnf and start Percona Proxy on all Maxscale VMs.
  */
-void TestConnections::init_maxscales()
+void TestConnections::init_percona_proxies()
 {
-    // Always initialize the first MaxScale
-    init_maxscale(0);
+    // Always initialize the first Percona Proxy
+    init_percona_proxy(0);
 
     if (m_required_mdbci_labels.count(label_2nd_mxs))
     {
-        init_maxscale(1);
+        init_percona_proxy(1);
     }
-    else if (n_maxscales() > 1)
+    else if (n_percona_proxies() > 1)
     {
-        // Second MaxScale exists but is not required by test.
-        my_maxscale(1)->stop();
+        // Second Percona Proxy exists but is not required by test.
+        my_percona_proxy(1)->stop();
     }
 }
 
-void TestConnections::init_maxscale(int m)
+void TestConnections::init_percona_proxy(int m)
 {
-    auto mxs = my_maxscale(m);
+    auto mxs = my_percona_proxy(m);
 
-    // The config file path can be multivalued when running a test with multiple MaxScales.
+    // The config file path can be multivalued when running a test with multiple PerconaProxies.
     // Select the correct file.
     auto filepaths = mxb::strtok(m_cnf_template_path, ";");
     int n_files = filepaths.size();
     if (m < n_files)
     {
-        // Have a separate config file for this MaxScale.
+        // Have a separate config file for this Percona Proxy.
         process_template(*mxs, filepaths[m]);
     }
     else if (n_files >= 1)
     {
-        // Not enough config files given for all MaxScales. Use the config of first MaxScale. This can
+        // Not enough config files given for all PerconaProxies. Use the config of first Percona Proxy. This can
         // happen with the "check_backends"-test.
-        tprintf("MaxScale %i does not have a designated config file, only found %i files in test definition. "
-                "Using main MaxScale config file instead.", m, n_files);
+        tprintf("Percona Proxy %i does not have a designated config file, only found %i files in test definition. "
+                "Using main Percona Proxy config file instead.", m, n_files);
         process_template(*mxs, filepaths[0]);
     }
     else
     {
-        tprintf("No MaxScale config files defined. MaxScale may not start.");
+        tprintf("No Percona Proxy config files defined. Percona Proxy may not start.");
     }
 
     string mxs_cert_dir = mxb::string_printf("%s/certs", mxs->access_homedir());
     string test_cmd = mxb::string_printf("test -d %s", mxs_cert_dir.c_str());
     if (mxs->vm_node().run_cmd_output(test_cmd).rc != 0)
     {
-        tprintf("SSL certificate dir '%s' not found on MaxScale node, creating it and copying certificate.",
+        tprintf("SSL certificate dir '%s' not found on Percona Proxy node, creating it and copying certificate.",
                 mxs_cert_dir.c_str());
         auto mkdir_res = mxs->ssh_node_f(false, "rm -rf %s;mkdir -p -m a+wrx %s;",
                                          mxs_cert_dir.c_str(), mxs_cert_dir.c_str());
@@ -995,19 +995,19 @@ void TestConnections::init_maxscale(int m)
 
     mxs->delete_logs_and_rtfiles();
 
-    if (start_maxscale)
+    if (start_percona_proxy)
     {
-        expect(mxs->restart_maxscale() == 0, "Failed to start MaxScale");
+        expect(mxs->restart_percona_proxy() == 0, "Failed to start Percona Proxy");
         mxs->wait_for_monitor();
     }
     else
     {
-        mxs->stop_maxscale();
+        mxs->stop_percona_proxy();
     }
 }
 
 /**
- * Copies all MaxScale logs and (if happens) core to current workspace
+ * Copies all Percona Proxy logs and (if happens) core to current workspace
  */
 void TestConnections::copy_all_logs()
 {
@@ -1026,33 +1026,33 @@ void TestConnections::copy_all_logs()
         }
     }
 
-    if (m_maxscale_log_copy && !m_mxs_manual_debug)
+    if (m_percona_proxy_log_copy && !m_mxs_manual_debug)
     {
-        copy_maxscale_logs(0);
+        copy_percona_proxy_logs(0);
     }
 }
 
 /**
- * Copies logs from all MaxScales.
+ * Copies logs from all PerconaProxies.
  *
  * @param timestamp The timestamp to add to log file directory. 0 means no timestamp.
  */
-void TestConnections::copy_maxscale_logs(int timestamp)
+void TestConnections::copy_percona_proxy_logs(int timestamp)
 {
-    for (int i = 0; i < n_maxscales(); i++)
+    for (int i = 0; i < n_percona_proxies(); i++)
     {
-        auto mxs = my_maxscale(i);
+        auto mxs = my_percona_proxy(i);
         mxs->copy_log(i, timestamp, m_shared.test_name);
     }
 }
 
 /**
- * Copies all MaxScale logs and (if happens) core to current workspace and
+ * Copies all Percona Proxy logs and (if happens) core to current workspace and
  * sends time stamp to log copying script
  */
 void TestConnections::copy_all_logs_periodic()
 {
-    copy_maxscale_logs(logger().time_elapsed_s());
+    copy_percona_proxy_logs(logger().time_elapsed_s());
 }
 
 void TestConnections::revert_replicate_from_master()
@@ -1068,7 +1068,7 @@ void TestConnections::revert_replicate_from_master()
 
 bool TestConnections::log_matches(const char* pattern)
 {
-    return maxscale->log_matches(pattern);
+    return percona_proxy->log_matches(pattern);
 }
 
 void TestConnections::log_includes(const char* pattern)
@@ -1133,7 +1133,7 @@ int TestConnections::find_connected_slave1()
     repl->connect();
     for (int i = 0; i < repl->N; i++)
     {
-        conn_num = get_conn_num(repl->nodes[i], maxscale->ip(), maxscale->hostname(), (char*) "test");
+        conn_num = get_conn_num(repl->nodes[i], percona_proxy->ip(), percona_proxy->hostname(), (char*) "test");
         tprintf("connections to %d: %u\n", i, conn_num);
         if ((i != 0) && (conn_num != 0))
         {
@@ -1145,12 +1145,12 @@ int TestConnections::find_connected_slave1()
     return current_slave;
 }
 
-bool TestConnections::stop_all_maxscales()
+bool TestConnections::stop_all_percona_proxies()
 {
     bool rval = true;
-    for (int i = 0; i < n_maxscales(); i++)
+    for (int i = 0; i < n_percona_proxies(); i++)
     {
-        if (my_maxscale(i)->stop_maxscale() != 0)
+        if (my_percona_proxy(i)->stop_percona_proxy() != 0)
         {
             rval = false;
         }
@@ -1158,32 +1158,32 @@ bool TestConnections::stop_all_maxscales()
     return rval;
 }
 
-int TestConnections::check_maxscale_alive()
+int TestConnections::check_percona_proxy_alive()
 {
     int gr = global_result;
     tprintf("Connecting to Maxscale\n");
-    add_result(maxscale->connect_maxscale(), "Can not connect to Maxscale\n");
+    add_result(percona_proxy->connect_percona_proxy(), "Can not connect to Maxscale\n");
     tprintf("Trying simple query against all sevices\n");
     tprintf("RWSplit \n");
-    try_query(maxscale->conn_rwsplit, "show databases;");
+    try_query(percona_proxy->conn_rwsplit, "show databases;");
     tprintf("ReadConn Master \n");
-    try_query(maxscale->conn_master, "show databases;");
+    try_query(percona_proxy->conn_master, "show databases;");
     tprintf("ReadConn Slave \n");
-    try_query(maxscale->conn_slave, "show databases;");
-    maxscale->close_maxscale_connections();
+    try_query(percona_proxy->conn_slave, "show databases;");
+    percona_proxy->close_percona_proxy_connections();
     add_result(global_result - gr, "Maxscale is not alive\n");
-    my_maxscale(0)->expect_running_status(true);
+    my_percona_proxy(0)->expect_running_status(true);
 
     return global_result - gr;
 }
 
-int TestConnections::test_maxscale_connections(bool rw_split, bool rc_master, bool rc_slave)
+int TestConnections::test_percona_proxy_connections(bool rw_split, bool rc_master, bool rc_slave)
 {
     int rval = 0;
     int rc;
 
     tprintf("Testing RWSplit, expecting %s\n", (rw_split ? "success" : "failure"));
-    rc = execute_query(maxscale->conn_rwsplit, "select 1");
+    rc = execute_query(percona_proxy->conn_rwsplit, "select 1");
     if ((rc == 0) != rw_split)
     {
         tprintf("Error: Query %s\n", (rw_split ? "failed" : "succeeded"));
@@ -1191,7 +1191,7 @@ int TestConnections::test_maxscale_connections(bool rw_split, bool rc_master, bo
     }
 
     tprintf("Testing ReadConnRoute Master, expecting %s\n", (rc_master ? "success" : "failure"));
-    rc = execute_query(maxscale->conn_master, "select 1");
+    rc = execute_query(percona_proxy->conn_master, "select 1");
     if ((rc == 0) != rc_master)
     {
         tprintf("Error: Query %s", (rc_master ? "failed" : "succeeded"));
@@ -1199,7 +1199,7 @@ int TestConnections::test_maxscale_connections(bool rw_split, bool rc_master, bo
     }
 
     tprintf("Testing ReadConnRoute Slave, expecting %s\n", (rc_slave ? "success" : "failure"));
-    rc = execute_query(maxscale->conn_slave, "select 1");
+    rc = execute_query(percona_proxy->conn_slave, "select 1");
     if ((rc == 0) != rc_slave)
     {
         tprintf("Error: Query %s", (rc_slave ? "failed" : "succeeded"));
@@ -1235,7 +1235,7 @@ int TestConnections::create_connections(int conn_N, bool rwsplit_flag, bool mast
                 printf("RWSplit \t");
             }
 
-            rwsplit_conn[i] = maxscale->open_rwsplit_connection();
+            rwsplit_conn[i] = percona_proxy->open_rwsplit_connection();
             if (!rwsplit_conn[i])
             {
                 local_result++;
@@ -1249,7 +1249,7 @@ int TestConnections::create_connections(int conn_N, bool rwsplit_flag, bool mast
                 printf("ReadConn master \t");
             }
 
-            master_conn[i] = maxscale->open_readconn_master_connection();
+            master_conn[i] = percona_proxy->open_readconn_master_connection();
             if (mysql_errno(master_conn[i]) != 0)
             {
                 local_result++;
@@ -1263,7 +1263,7 @@ int TestConnections::create_connections(int conn_N, bool rwsplit_flag, bool mast
                 printf("ReadConn slave \t");
             }
 
-            slave_conn[i] = maxscale->open_readconn_slave_connection();
+            slave_conn[i] = percona_proxy->open_readconn_slave_connection();
             if (mysql_errno(slave_conn[i]) != 0)
             {
                 local_result++;
@@ -1278,7 +1278,7 @@ int TestConnections::create_connections(int conn_N, bool rwsplit_flag, bool mast
             }
 
             galera_conn[i] =
-                open_conn(4016, maxscale->ip4(), maxscale->user_name(), maxscale->password(), maxscale_ssl);
+                open_conn(4016, percona_proxy->ip4(), percona_proxy->user_name(), percona_proxy->password(), percona_proxy_ssl);
             if (mysql_errno(galera_conn[i]) != 0)
             {
                 local_result++;
@@ -1386,14 +1386,14 @@ void TestConnections::log_printf(const char* format, ...)
     tprintf("%s", msg.c_str());
     if (m_state == State::RUNNING)
     {
-        maxscale->write_in_log(std::move(msg));
+        percona_proxy->write_in_log(std::move(msg));
     }
 }
 
 int TestConnections::get_master_server_id()
 {
     int master_id = -1;
-    MYSQL* conn = maxscale->open_rwsplit_connection();
+    MYSQL* conn = percona_proxy->open_rwsplit_connection();
     char str[100];
     if (find_field(conn, "SELECT @@server_id, @@last_insert_id;", "@@server_id", str) == 0)
     {
@@ -1430,9 +1430,9 @@ void TestConnections::timeout_thread_func()
         {
             logger().add_failure("**** Timeout reached! Copying logs and exiting. ****");
 
-            for (int i = 0; i < n_maxscales(); i++)
+            for (int i = 0; i < n_percona_proxies(); i++)
             {
-                my_maxscale(i)->create_report();
+                my_percona_proxy(i)->create_report();
             }
 
             copy_all_logs();
@@ -1473,20 +1473,20 @@ int TestConnections::insert_select(int N)
     int result = 0;
 
     tprintf("Create t1\n");
-    create_t1(maxscale->conn_rwsplit);
+    create_t1(percona_proxy->conn_rwsplit);
 
     tprintf("Insert data into t1\n");
-    insert_into_t1(maxscale->conn_rwsplit, N);
+    insert_into_t1(percona_proxy->conn_rwsplit, N);
     repl->sync_slaves();
 
     tprintf("SELECT: rwsplitter\n");
-    result += select_from_t1(maxscale->conn_rwsplit, N);
+    result += select_from_t1(percona_proxy->conn_rwsplit, N);
 
     tprintf("SELECT: master\n");
-    result += select_from_t1(maxscale->conn_master, N);
+    result += select_from_t1(percona_proxy->conn_master, N);
 
     tprintf("SELECT: slave\n");
-    result += select_from_t1(maxscale->conn_slave, N);
+    result += select_from_t1(percona_proxy->conn_slave, N);
 
     return result;
 }
@@ -1498,11 +1498,11 @@ int TestConnections::use_db(char* db)
 
     sprintf(sql, "USE %s;", db);
     tprintf("selecting DB '%s' for rwsplit\n", db);
-    local_result += execute_query(maxscale->conn_rwsplit, "%s", sql);
+    local_result += execute_query(percona_proxy->conn_rwsplit, "%s", sql);
     tprintf("selecting DB '%s' for readconn master\n", db);
-    local_result += execute_query(maxscale->conn_master, "%s", sql);
+    local_result += execute_query(percona_proxy->conn_master, "%s", sql);
     tprintf("selecting DB '%s' for readconn slave\n", db);
-    local_result += execute_query(maxscale->conn_slave, "%s", sql);
+    local_result += execute_query(percona_proxy->conn_slave, "%s", sql);
     for (int i = 0; i < repl->N; i++)
     {
         tprintf("selecting DB '%s' for direct connection to node %d\n", db, i);
@@ -1521,7 +1521,7 @@ int TestConnections::check_t1_table(bool presence, char* db)
     repl->sync_slaves();
 
     tprintf("Checking: table 't1' should %s be found in '%s' database\n", expected, db);
-    int exists = check_if_t1_exists(maxscale->conn_rwsplit);
+    int exists = check_if_t1_exists(percona_proxy->conn_rwsplit);
 
     if (exists == presence)
     {
@@ -1532,7 +1532,7 @@ int TestConnections::check_t1_table(bool presence, char* db)
         add_result(1, "Table t1 is %s found in '%s' database using RWSplit\n", actual, db);
     }
 
-    exists = check_if_t1_exists(maxscale->conn_master);
+    exists = check_if_t1_exists(percona_proxy->conn_master);
 
     if (exists == presence)
     {
@@ -1546,7 +1546,7 @@ int TestConnections::check_t1_table(bool presence, char* db)
                    db);
     }
 
-    exists = check_if_t1_exists(maxscale->conn_slave);
+    exists = check_if_t1_exists(percona_proxy->conn_slave);
 
     if (exists == presence)
     {
@@ -1607,7 +1607,7 @@ int TestConnections::try_query(MYSQL* conn, const char* format, ...)
 StringSet TestConnections::get_server_status(const std::string& name)
 {
     StringSet rval;
-    auto res = maxscale->maxctrl("api get servers/" + name + " data.attributes.state");
+    auto res = percona_proxy->percona_proxyctl("api get servers/" + name + " data.attributes.state");
 
     if (res.rc == 0 && res.output.length() > 2)
     {
@@ -1626,7 +1626,7 @@ void TestConnections::check_current_operations(int value)
 {
     for (int i = 0; i < repl->N; i++)
     {
-        auto res = maxctrl("api get servers/server"
+        auto res = percona_proxyctl("api get servers/server"
                            + std::to_string(i + 1)
                            + " data.attributes.statistics.active_operations");
 
@@ -1637,28 +1637,28 @@ void TestConnections::check_current_operations(int value)
 
 void TestConnections::test_config(const string& config, int expected_rc)
 {
-    const char kill[] = "pkill -9 maxscale";
-    auto& mxs = *maxscale;
+    const char kill[] = "pkill -9 percona-proxy";
+    auto& mxs = *percona_proxy;
     mxs.stop();
     if (mxs.get_n_running_processes() == 0)
     {
         if (process_template(mxs, config))
         {
-            // On bad configs, the following returns an error before MaxScale daemonizes.
+            // On bad configs, the following returns an error before Percona Proxy daemonizes.
             // Successful configs return 0 from pkill.
             int rc = mxs.vm_node().run_cmd_sudo(
                 "ASAN_OPTIONS=detect_leaks=0 "
-                "maxscale -U maxscale -lstdout --piddir=/tmp && pkill maxscale");
+                "percona-proxy -U percona-proxy -lstdout --piddir=/tmp && pkill percona-proxy");
             if (expected_rc == 0)
             {
-                expect(rc == 0, "MaxScale start failed with error %i using config file '%s'.",
+                expect(rc == 0, "Percona Proxy start failed with error %i using config file '%s'.",
                        rc, config.c_str());
             }
             else
             {
                 if (rc == 0)
                 {
-                    add_failure("MaxScale start succeeded with bad config file '%s'.", config.c_str());
+                    add_failure("Percona Proxy start succeeded with bad config file '%s'.", config.c_str());
                 }
                 else if (rc != expected_rc)
                 {
@@ -1675,7 +1675,7 @@ void TestConnections::test_config(const string& config, int expected_rc)
     }
     else
     {
-        add_failure("MaxScale is not stopped, cannot test configuration.");
+        add_failure("Percona Proxy is not stopped, cannot test configuration.");
         mxs.vm_node().run_cmd_output_sudo(kill);
     }
 }
@@ -1731,7 +1731,7 @@ bool TestConnections::call_mdbci(const char* options)
 }
 
 /**
- * Read template file from maxscale-system-test/mdbci/templates and replace all placeholders with
+ * Read template file from percona-proxy-system-test/mdbci/templates and replace all placeholders with
  * actual values.
  *
  * @return True on success
@@ -1741,7 +1741,7 @@ bool TestConnections::process_mdbci_template()
     string box = envvar_get_set("box", "centos_7_libvirt");
     string backend_box = envvar_get_set("backend_box", "%s", box.c_str());
     envvar_get_set("vm_memory", "2048");
-    envvar_get_set("maxscale_product", "maxscale_ci");
+    envvar_get_set("percona_proxy_product", "percona_proxy_ci");
     envvar_get_set("force_maxscale_version", "true");
     envvar_get_set("force_backend_version", "true");
 
@@ -1787,12 +1787,12 @@ bool TestConnections::process_mdbci_template()
     return rval;
 }
 
-bool TestConnections::reinstall_maxscales()
+bool TestConnections::reinstall_percona_proxies()
 {
     bool rval = true;
-    for (int i = 0; i < n_maxscales(); i++)
+    for (int i = 0; i < n_percona_proxies(); i++)
     {
-        if (!my_maxscale(i)->reinstall(m_target, m_mdbci_config_name))
+        if (!my_percona_proxy(i)->reinstall(m_target, m_mdbci_config_name))
         {
             rval = false;
         }
@@ -1851,14 +1851,14 @@ bool TestConnections::read_cmdline_options(int argc, char* argv[])
         {"verbose",            no_argument,       0, 'v'},
         {"silent",             no_argument,       0, 'n'},
         {"quiet",              no_argument,       0, 'q'},
-        {"no-maxscale-start",  no_argument,       0, 's'},
-        {"no-maxscale-init",   no_argument,       0, 'i'},
+        {"no-percona-proxy-start",  no_argument,       0, 's'},
+        {"no-percona-proxy-init",   no_argument,       0, 'i'},
         {"no-nodes-check",     no_argument,       0, 'r'},
         {"no-redirect-stderr", no_argument,       0, 'R'},
         {"restart-galera",     no_argument,       0, 'g'},
         {"no-timeouts",        no_argument,       0, 'z'},
         {"local-test",         required_argument, 0, 'l'},
-        {"reinstall-maxscale", no_argument,       0, 'm'},
+        {"reinstall-percona-proxy", no_argument,       0, 'm'},
         {"serial-run",         no_argument,       0, 'e'},
         {"fix-clusters",       no_argument,       0, 'f'},
         {"recreate-vms",       no_argument,       0, 'c'},
@@ -1904,13 +1904,13 @@ bool TestConnections::read_cmdline_options(int argc, char* argv[])
 
         case 's':
             printf("Maxscale won't be started\n");
-            start_maxscale = false;
+            start_percona_proxy = false;
             m_mxs_manual_debug = true;
             break;
 
         case 'i':
             printf("Maxscale won't be started and Maxscale.cnf won't be uploaded\n");
-            m_init_maxscale = false;
+            m_init_percona_proxy = false;
             break;
 
         case 'r':
@@ -1951,7 +1951,7 @@ bool TestConnections::read_cmdline_options(int argc, char* argv[])
 
         case 'm':
             printf("Maxscale will be reinstalled.\n");
-            m_reinstall_maxscale = true;
+            m_reinstall_percona_proxy = true;
             break;
 
         case 'e':
@@ -2027,38 +2027,38 @@ bool TestConnections::initialize_nodes()
         initialize_cluster(galera, 4, false, backend_ssl);
     }
 
-    auto initialize_maxscale = [this, &funcs](mxt::MaxScale*& mxs_storage, int vm_ind) {
+    auto initialize_percona_proxy = [this, &funcs](mxt::PerconaProxy*& mxs_storage, int vm_ind) {
         delete mxs_storage;
         mxs_storage = nullptr;
-        string vm_name = mxb::string_printf("%s_%03d", mxt::MaxScale::prefix().c_str(), vm_ind);
+        string vm_name = mxb::string_printf("%s_%03d", mxt::PerconaProxy::prefix().c_str(), vm_ind);
 
-        auto new_maxscale = std::make_unique<mxt::MaxScale>(&m_shared);
-        if (new_maxscale->setup(m_network_config, vm_name))
+        auto new_percona_proxy = std::make_unique<mxt::PerconaProxy>(&m_shared);
+        if (new_percona_proxy->setup(m_network_config, vm_name))
         {
-            new_maxscale->set_use_ipv6(m_use_ipv6);
-            new_maxscale->set_ssl(maxscale_ssl);
+            new_percona_proxy->set_use_ipv6(m_use_ipv6);
+            new_percona_proxy->set_ssl(percona_proxy_ssl);
 
-            mxs_storage = new_maxscale.release();
+            mxs_storage = new_percona_proxy.release();
 
-            auto prepare_maxscales = [mxs_storage]() {
+            auto prepare_percona_proxies = [mxs_storage]() {
                 return mxs_storage->prepare_for_test();
             };
-            funcs.push_back(move(prepare_maxscales));
+            funcs.push_back(move(prepare_percona_proxies));
         }
     };
 
-    initialize_maxscale(maxscale, 0);
-    // Try to setup MaxScale2 even if test does not need it. It could be running and should be
+    initialize_percona_proxy(percona_proxy, 0);
+    // Try to setup PerconaProxy2 even if test does not need it. It could be running and should be
     // shut down when not used.
-    initialize_maxscale(maxscale2, 1);
+    initialize_percona_proxy(percona_proxy2, 1);
     mxb_assert(settings().mdbci_test);
 
-    int n_mxs_inited = n_maxscales();
+    int n_mxs_inited = n_percona_proxies();
     int n_mxs_expected = (m_required_mdbci_labels.count(label_2nd_mxs) > 0) ? 2 : 1;
     if (n_mxs_inited < n_mxs_expected)
     {
         error = true;
-        add_failure("Not enough MaxScales. Test requires %i, found %i.",
+        add_failure("Not enough PerconaProxies. Test requires %i, found %i.",
                     n_mxs_expected, n_mxs_inited);
     }
 
@@ -2129,19 +2129,19 @@ void TestConnections::write_node_env_vars()
 
     write_env_vars(repl);
     write_env_vars(galera);
-    if (maxscale)
+    if (percona_proxy)
     {
-        maxscale->write_env_vars();
+        percona_proxy->write_env_vars();
     }
 }
 
-int TestConnections::n_maxscales() const
+int TestConnections::n_percona_proxies() const
 {
-    // A maximum of two MaxScales are supported so far. Defining only the second MaxScale is an error.
+    // A maximum of two PerconaProxies are supported so far. Defining only the second Percona Proxy is an error.
     int rval = 0;
-    if (maxscale)
+    if (percona_proxy)
     {
-        rval = maxscale2 ? 2 : 1;
+        rval = percona_proxy2 ? 2 : 1;
     }
     return rval;
 }
@@ -2269,7 +2269,7 @@ int TestConnections::get_repl_master_idx()
     int rval = -1;
     if (repl)
     {
-        auto server_info = maxscale->get_servers();
+        auto server_info = percona_proxy->get_servers();
         for (size_t i = 0; i < server_info.size() && rval < 0; i++)
         {
             auto& info = server_info.get(i);
@@ -2308,21 +2308,21 @@ bool TestConnections::sync_repl_slaves()
 }
 
 /**
- * Helper function for selecting correct MaxScale.
+ * Helper function for selecting correct Percona Proxy.
  *
  * @param m Index, 0 or 1.
- * @return MaxScale object
+ * @return Percona Proxy object
  */
-mxt::MaxScale* TestConnections::my_maxscale(int m) const
+mxt::PerconaProxy* TestConnections::my_percona_proxy(int m) const
 {
-    mxt::MaxScale* rval = nullptr;
+    mxt::PerconaProxy* rval = nullptr;
     if (m == 0)
     {
-        rval = maxscale;
+        rval = percona_proxy;
     }
     else if (m == 1)
     {
-        rval = maxscale2;
+        rval = percona_proxy2;
     }
     return rval;
 }
@@ -2358,15 +2358,15 @@ bool TestConnections::setup_backends()
             config.erase(it_common);
         }
 
-        // Expecting each section to have "type" and "location" keys. Type is "maxscale", "server" or
+        // Expecting each section to have "type" and "location" keys. Type is "percona-proxy", "server" or
         // "galera". Location is "local", "docker" or "remote". Split the config into the supported types.
         using Sections = mxb::ini::map_result::Configuration;
-        Sections maxscales_cfg;
+        Sections percona_proxies_cfg;
         Sections servers_cfg;
         Sections galeras_cfg;
 
         string key_type = "type";
-        string val_mxs = "maxscale";
+        string val_mxs = "percona-proxy";
         string val_srv = "server";
         string val_gal = "galera";
         bool error = false;
@@ -2386,7 +2386,7 @@ bool TestConnections::setup_backends()
                 auto& val_type = it_type->second.value;
                 if (val_type == val_mxs)
                 {
-                    maxscales_cfg.insert(it);
+                    percona_proxies_cfg.insert(it);
                 }
                 else if (val_type == val_srv)
                 {
@@ -2408,18 +2408,18 @@ bool TestConnections::setup_backends()
 
         if (!error)
         {
-            int n_mxs = maxscales_cfg.size();
+            int n_mxs = percona_proxies_cfg.size();
             if (n_mxs == 1 || n_mxs == 2)
             {
                 int i = 0;
-                for (auto& kv : maxscales_cfg)
+                for (auto& kv : percona_proxies_cfg)
                 {
-                    auto new_mxs = std::make_unique<mxt::MaxScale>(&m_shared);
+                    auto new_mxs = std::make_unique<mxt::PerconaProxy>(&m_shared);
                     if (new_mxs->setup(kv))
                     {
                         new_mxs->set_use_ipv6(m_use_ipv6);
-                        new_mxs->set_ssl(maxscale_ssl);
-                        auto& target = (i == 0) ? maxscale : maxscale2;
+                        new_mxs->set_ssl(percona_proxy_ssl);
+                        auto& target = (i == 0) ? percona_proxy : percona_proxy2;
                         target = new_mxs.release();
                     }
                     else
@@ -2431,7 +2431,7 @@ bool TestConnections::setup_backends()
             }
             else
             {
-                add_failure("%s must have one or two MaxScale section(s). Found %d.",
+                add_failure("%s must have one or two Percona Proxy section(s). Found %d.",
                             m_test_settings_file.c_str(), n_mxs);
                 error = true;
             }
@@ -2510,14 +2510,14 @@ bool TestConnections::check_create_backends()
         bool backends_configured = false;
         bool backends_running = false;
 
-        auto check_mxs_backend = [&](mxt::MaxScale* mxs) {
+        auto check_mxs_backend = [&](mxt::PerconaProxy* mxs) {
             if (mxs)
             {
                 backends_configured = true;
                 switch (mxs->vm_node().type())
                 {
                 case maxtest::Node::Type::REMOTE:
-                    add_failure("Remote mode for MaxScale node not supported (yet).");
+                    add_failure("Remote mode for Percona Proxy node not supported (yet).");
                     break;
 
                 case maxtest::Node::Type::DOCKER:
@@ -2525,7 +2525,7 @@ bool TestConnections::check_create_backends()
                     break;
 
                 case maxtest::Node::Type::LOCAL:
-                    // Local MaxScale does not need to be running when starting test so check nothing.
+                    // Local Percona Proxy does not need to be running when starting test so check nothing.
                     backends_running = true;
                     break;
                 }
@@ -2534,11 +2534,11 @@ bool TestConnections::check_create_backends()
 
         if (label == label_mxs)
         {
-            check_mxs_backend(maxscale);
+            check_mxs_backend(percona_proxy);
         }
         else if (label == label_2nd_mxs)
         {
-            check_mxs_backend(maxscale2);
+            check_mxs_backend(percona_proxy2);
         }
         else if (label == label_repl_be)
         {

@@ -27,7 +27,7 @@ TestConnections* Test;
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 int exit_flag = 0;
 int start_flag = 0;
-int restart_flag = 0;   // 0 - restart service, 1 - restart maxscale
+int restart_flag = 0;   // 0 - restart service, 1 - restart percona-proxy
 unsigned int old_slave;
 void* kill_vm_thread(void* ptr);
 
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     int i, j;
 
 
-    Test->tprintf("Connecting to RWSplit %s\n", Test->maxscale->ip4());
+    Test->tprintf("Connecting to RWSplit %s\n", Test->percona_proxy->ip4());
 
     Test->reset_timeout();
 
@@ -53,12 +53,12 @@ int main(int argc, char* argv[])
     for (i = 0; i < iter; i++)
     {
         Test->tprintf("i= %d\n", i);
-        Test->maxscale->connect_maxscale();
+        Test->percona_proxy->connect_percona_proxy();
         for (j = 0; j < iter; j++)
         {
-            execute_query_silent(Test->maxscale->conn_rwsplit, "SELECT 1");
+            execute_query_silent(Test->percona_proxy->conn_rwsplit, "SELECT 1");
         }
-        Test->maxscale->close_maxscale_connections();
+        Test->percona_proxy->close_percona_proxy_connections();
         if (i > iter)
         {
             restart_flag = 1;
@@ -119,8 +119,8 @@ int main(int argc, char* argv[])
     exit_flag = 1;
     pthread_join(restart_t, NULL);
 
-    Test->tprintf("Checxking if MaxScale is still alive!\n");
-    Test->check_maxscale_alive();
+    Test->tprintf("Checxking if Percona Proxy is still alive!\n");
+    Test->check_percona_proxy_alive();
 
     int rval = Test->global_result;
     delete Test;
@@ -135,11 +135,11 @@ void* kill_vm_thread(void* ptr)
         sleep(2);
         if (restart_flag == 0)
         {
-            Test->maxctrl("start service RW-Split-Router");
+            Test->percona_proxyctl("start service RW-Split-Router");
         }
         else
         {
-            Test->maxscale->restart_maxscale();
+            Test->percona_proxy->restart_percona_proxy();
         }
     }
 

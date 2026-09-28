@@ -28,7 +28,7 @@ vector<string> get_lines(TestConnections& test, const string& log)
     const char* zTmp_file = "./mxs4410.txt";
 
     vector<string> rv;
-    test.maxscale->copy_from_node(log.c_str(), zTmp_file);
+    test.percona_proxy->copy_from_node(log.c_str(), zTmp_file);
     ifstream infile(zTmp_file);
 
     for (string line; getline(infile, line);)
@@ -54,9 +54,9 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     // Clean up old files
-    test.maxscale->ssh_node("rm -f /tmp/qla_mxs4410.log.*", true);
+    test.percona_proxy->ssh_node("rm -f /tmp/qla_mxs4410.log.*", true);
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Could not connect: %s", c.error());
 
     query(test, c, "CREATE DATABASE IF NOT EXISTS mxs4410");

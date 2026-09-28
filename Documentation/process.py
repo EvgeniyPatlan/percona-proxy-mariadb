@@ -56,14 +56,14 @@ for row in reader:
     elif row['Issue Type'] == 'Task':
         tasks.append(row)
 
-# Check if some bug-fix fixes a CVE. These are assumed to be CVEs of MaxScale.
+# Check if some bug-fix fixes a CVE. These are assumed to be CVEs of Percona Proxy.
 cves = find_cves(bugs)
 
 if len(cves) > 0:
     print_cves("## CVEs resolved.", cves)
 
 # If there are tasks, check if any of them fixes a CVE, which is assumed
-# to be a non-MaxScale one; e.g. a CVE of an external library.
+# to be a non-Percona Proxy one; e.g. a CVE of an external library.
 if len(tasks) > 0:
     cves = find_cves(tasks)
 

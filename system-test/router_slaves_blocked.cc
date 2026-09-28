@@ -30,7 +30,7 @@
  */
 
 // also relates to bug594
-// all slaves in MaxScale config have wrong IP
+// all slaves in Percona Proxy config have wrong IP
 
 #include <maxtest/testconnections.hh>
 
@@ -45,23 +45,23 @@ int main(int argc, char* argv[])
     }
 
     test.reset_timeout();
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     test.reset_timeout();
-    test.tprintf("Connecting to all MaxScale services, expecting no errors");
-    test.expect(test.maxscale->connect_maxscale() == 0, "Connection should not fail");
+    test.tprintf("Connecting to all Percona Proxy services, expecting no errors");
+    test.expect(test.percona_proxy->connect_percona_proxy() == 0, "Connection should not fail");
 
     test.reset_timeout();
     test.tprintf("Trying some queries, expecting no failures");
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE IF EXISTS t1");
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE TABLE t1 (x INT)");
-    test.try_query(test.maxscale->conn_rwsplit, "INSERT INTO t1 (x) VALUES (1)");
-    test.try_query(test.maxscale->conn_rwsplit, "select 'rwsplit' from t1");
-    test.try_query(test.maxscale->conn_master, "select 'rconn master' from t1");
-    test.try_query(test.maxscale->conn_slave, "select 'rconn slave' from t1 ");
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE IF EXISTS t1");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE TABLE t1 (x INT)");
+    test.try_query(test.percona_proxy->conn_rwsplit, "INSERT INTO t1 (x) VALUES (1)");
+    test.try_query(test.percona_proxy->conn_rwsplit, "select 'rwsplit' from t1");
+    test.try_query(test.percona_proxy->conn_master, "select 'rconn master' from t1");
+    test.try_query(test.percona_proxy->conn_slave, "select 'rconn slave' from t1 ");
 
     test.reset_timeout();
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 
     test.reset_timeout();
     test.repl->unblock_all_nodes();

@@ -16,7 +16,7 @@
 #include "nullfiltersession.hh"
 
 NullFilterSession::NullFilterSession(MXS_SESSION* pSession, SERVICE* pService, const NullFilter* pFilter)
-    : maxscale::FilterSession(pSession, pService)
+    : percona_proxy::FilterSession(pSession, pService)
     , m_filter(*pFilter)
 {
 }

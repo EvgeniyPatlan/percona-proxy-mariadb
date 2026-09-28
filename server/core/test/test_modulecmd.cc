@@ -17,13 +17,13 @@
  */
 
 #include <maxbase/maxbase.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/dcb.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/session.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/session.hh>
 
 #include "test_utils.hh"
 #include "../internal/monitormanager.hh"

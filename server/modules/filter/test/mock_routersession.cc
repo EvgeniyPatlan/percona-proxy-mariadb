@@ -12,16 +12,16 @@
  * Public License.
  */
 
-#include "maxscale/mock/routersession.hh"
-#include "maxscale/mock/backend.hh"
+#include "percona-proxy/mock/routersession.hh"
+#include "percona-proxy/mock/backend.hh"
 
-namespace maxscale
+namespace percona_proxy
 {
 
 namespace mock
 {
 
-RouterSession::RouterSession(Backend* pBackend, maxscale::mock::Session* session)
+RouterSession::RouterSession(Backend* pBackend, percona_proxy::mock::Session* session)
     : m_pBackend(pBackend)
     , m_pSession(session)
 {

@@ -15,11 +15,11 @@
 
 #include "common.hh"
 
-#include <maxscale/router.hh>
-#include <maxscale/backend.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/backend.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 #include <maxbase/shared_mutex.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/service.hh>
 
 #include "exporter.hh"
 #include "config.hh"

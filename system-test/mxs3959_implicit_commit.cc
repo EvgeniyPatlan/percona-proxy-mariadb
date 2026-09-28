@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
 
     c.query("CREATE OR REPLACE TABLE test.t1(id INT)");
@@ -29,9 +29,9 @@ int main(int argc, char** argv)
 
     // Block and unblock the master
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.repl->unblock_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
 
     c.query("COMMIT");
 

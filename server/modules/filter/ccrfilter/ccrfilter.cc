@@ -14,18 +14,18 @@
 
 #define MXB_MODULE_NAME "ccrfilter"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <stdio.h>
 #include <string.h>
-#include <maxscale/config2.hh>
-#include <maxscale/filter.hh>
-#include <maxscale/hint.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/pcre2.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/hint.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/pcre2.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 using std::string;
 
@@ -264,7 +264,7 @@ private:
 };
 
 CCRSession::CCRSession(MXS_SESSION* session, SERVICE* service, CCRFilter* instance)
-    : maxscale::FilterSession(session, service)
+    : percona_proxy::FilterSession(session, service)
     , m_instance(*instance)
     , m_match(m_instance.config().match.get())
     , m_ignore(m_instance.config().ignore.get())

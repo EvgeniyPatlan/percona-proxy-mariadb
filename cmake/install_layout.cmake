@@ -1,37 +1,37 @@
 # Set the install layout
 include(GNUInstallDirs)
 
-set(MAXSCALE_LIBDIR ${CMAKE_INSTALL_LIBDIR}/maxscale CACHE PATH "Library installation path")
-set(MAXSCALE_BINDIR ${CMAKE_INSTALL_BINDIR} CACHE PATH "Executable installation path")
-set(MAXSCALE_SHAREDIR ${CMAKE_INSTALL_DATADIR}/maxscale CACHE PATH "Share file installation path, includes licence and readme files")
-set(MAXSCALE_DOCDIR ${CMAKE_INSTALL_DOCDIR}/maxscale CACHE PATH "Documentation installation path, text versions only")
+set(PERCONA_PROXY_LIBDIR ${CMAKE_INSTALL_LIBDIR}/percona-proxy CACHE PATH "Library installation path")
+set(PERCONA_PROXY_BINDIR ${CMAKE_INSTALL_BINDIR} CACHE PATH "Executable installation path")
+set(PERCONA_PROXY_SHAREDIR ${CMAKE_INSTALL_DATADIR}/percona-proxy CACHE PATH "Share file installation path, includes licence and readme files")
+set(PERCONA_PROXY_DOCDIR ${CMAKE_INSTALL_DOCDIR}/percona-proxy CACHE PATH "Documentation installation path, text versions only")
 
 # These are the only hard-coded absolute paths
-set(MAXSCALE_VARDIR /var CACHE PATH "Data file path (usually /var/)")
-set(MAXSCALE_CONFDIR /etc CACHE PATH "Configuration file installation path (/etc/)")
+set(PERCONA_PROXY_VARDIR /var CACHE PATH "Data file path (usually /var/)")
+set(PERCONA_PROXY_CONFDIR /etc CACHE PATH "Configuration file installation path (/etc/)")
 
 # Default values for directories and subpaths where files are searched. These
-# are used in `include/maxscale/paths.hh.in`.
-set(DEFAULT_PID_SUBPATH "run/maxscale" CACHE PATH "Default PID file subpath")
-set(DEFAULT_LOG_SUBPATH "log/maxscale" CACHE PATH "Default log subpath")
-set(DEFAULT_DATA_SUBPATH "lib/maxscale" CACHE PATH "Default datadir subpath")
-set(DEFAULT_LIB_SUBPATH "${MAXSCALE_LIBDIR}" CACHE PATH "Default library subpath")
-set(DEFAULT_SHARE_SUBPATH "${MAXSCALE_SHAREDIR}" CACHE PATH "Default share subpath")
-set(DEFAULT_CACHE_SUBPATH "cache/maxscale" CACHE PATH "Default cache subpath")
-set(DEFAULT_LANG_SUBPATH "lib/maxscale" CACHE PATH "Default language file subpath")
-set(DEFAULT_EXEC_SUBPATH "${MAXSCALE_BINDIR}" CACHE PATH "Default executable subpath")
+# are used in `include/percona-proxy/paths.hh.in`.
+set(DEFAULT_PID_SUBPATH "run/percona-proxy" CACHE PATH "Default PID file subpath")
+set(DEFAULT_LOG_SUBPATH "log/percona-proxy" CACHE PATH "Default log subpath")
+set(DEFAULT_DATA_SUBPATH "lib/percona-proxy" CACHE PATH "Default datadir subpath")
+set(DEFAULT_LIB_SUBPATH "${PERCONA_PROXY_LIBDIR}" CACHE PATH "Default library subpath")
+set(DEFAULT_SHARE_SUBPATH "${PERCONA_PROXY_SHAREDIR}" CACHE PATH "Default share subpath")
+set(DEFAULT_CACHE_SUBPATH "cache/percona-proxy" CACHE PATH "Default cache subpath")
+set(DEFAULT_LANG_SUBPATH "lib/percona-proxy" CACHE PATH "Default language file subpath")
+set(DEFAULT_EXEC_SUBPATH "${PERCONA_PROXY_BINDIR}" CACHE PATH "Default executable subpath")
 set(DEFAULT_CONFIG_SUBPATH "etc" CACHE PATH "Default configuration subpath")
-set(DEFAULT_CONFIG_PERSIST_SUBPATH "maxscale.cnf.d" CACHE PATH "Default persisted configuration subpath")
-set(DEFAULT_MODULE_CONFIG_SUBPATH "${DEFAULT_CONFIG_SUBPATH}/maxscale.modules.d" CACHE PATH "Default configuration subpath")
-set(DEFAULT_CONNECTOR_PLUGIN_SUBPATH "${MAXSCALE_LIBDIR}/plugin" CACHE PATH "Default connector plugin subpath")
+set(DEFAULT_CONFIG_PERSIST_SUBPATH "percona-proxy.cnf.d" CACHE PATH "Default persisted configuration subpath")
+set(DEFAULT_MODULE_CONFIG_SUBPATH "${DEFAULT_CONFIG_SUBPATH}/percona-proxy.modules.d" CACHE PATH "Default configuration subpath")
+set(DEFAULT_CONNECTOR_PLUGIN_SUBPATH "${PERCONA_PROXY_LIBDIR}/plugin" CACHE PATH "Default connector plugin subpath")
 
-set(DEFAULT_PIDDIR ${MAXSCALE_VARDIR}/${DEFAULT_PID_SUBPATH} CACHE PATH "Default PID file directory")
-set(DEFAULT_LOGDIR ${MAXSCALE_VARDIR}/${DEFAULT_LOG_SUBPATH} CACHE PATH "Default log directory")
-set(DEFAULT_DATADIR ${MAXSCALE_VARDIR}/${DEFAULT_DATA_SUBPATH} CACHE PATH "Default datadir path")
+set(DEFAULT_PIDDIR ${PERCONA_PROXY_VARDIR}/${DEFAULT_PID_SUBPATH} CACHE PATH "Default PID file directory")
+set(DEFAULT_LOGDIR ${PERCONA_PROXY_VARDIR}/${DEFAULT_LOG_SUBPATH} CACHE PATH "Default log directory")
+set(DEFAULT_DATADIR ${PERCONA_PROXY_VARDIR}/${DEFAULT_DATA_SUBPATH} CACHE PATH "Default datadir path")
 set(DEFAULT_LIBDIR ${CMAKE_INSTALL_PREFIX}/${DEFAULT_LIB_SUBPATH}/ CACHE PATH "Default library path")
 set(DEFAULT_SHAREDIR ${CMAKE_INSTALL_PREFIX}/${DEFAULT_SHARE_SUBPATH}/ CACHE PATH "Default share path")
-set(DEFAULT_CACHEDIR ${MAXSCALE_VARDIR}/${DEFAULT_CACHE_SUBPATH} CACHE PATH "Default cache directory")
-set(DEFAULT_LANGDIR ${MAXSCALE_VARDIR}/${DEFAULT_LANG_SUBPATH} CACHE PATH "Default language file directory")
+set(DEFAULT_CACHEDIR ${PERCONA_PROXY_VARDIR}/${DEFAULT_CACHE_SUBPATH} CACHE PATH "Default cache directory")
+set(DEFAULT_LANGDIR ${PERCONA_PROXY_VARDIR}/${DEFAULT_LANG_SUBPATH} CACHE PATH "Default language file directory")
 set(DEFAULT_EXECDIR ${CMAKE_INSTALL_PREFIX}/${DEFAULT_EXEC_SUBPATH} CACHE PATH "Default executable directory")
 set(DEFAULT_CONFIGDIR /${DEFAULT_CONFIG_SUBPATH} CACHE PATH "Default configuration directory")
 set(DEFAULT_CONFIG_PERSISTDIR ${DEFAULT_DATADIR}/${DEFAULT_CONFIG_PERSIST_SUBPATH} CACHE PATH "Default persisted configuration directory")
@@ -45,16 +45,16 @@ if (TARGET_COMPONENT)
 endif()
 
 # Name of the common core library
-set(MAXSCALE_CORE maxscale-common)
+set(PERCONA_PROXY_CORE percona-proxy-common)
 
 #
-# Installation functions for MaxScale
+# Installation functions for Percona Proxy
 #
 # Do not directly install files with install(...) etc. commands. Use these
 # functions for all executables, modules and files that are to be installed
 # as a part of a package. These functions make additional checks that all
 # required parameters are present for the modules and make sure that the
-# targets are installed into right directories where MaxScale can find them.
+# targets are installed into right directories where Percona Proxy can find them.
 #
 
 # Installation functions for executables and modules.
@@ -65,7 +65,7 @@ function(install_executable target component)
   list(FIND TARGET_COMPONENT ${component} BUILD_COMPONENT)
 
   if(BUILD_COMPONENT GREATER -1 OR BUILD_ALL GREATER -1)
-    install(TARGETS ${target} DESTINATION ${MAXSCALE_BINDIR} COMPONENT "${component}")
+    install(TARGETS ${target} DESTINATION ${PERCONA_PROXY_BINDIR} COMPONENT "${component}")
   endif()
 
 endfunction()
@@ -74,7 +74,7 @@ function(install_executable_setuid target component)
   list(FIND TARGET_COMPONENT ${component} BUILD_COMPONENT)
 
   if(BUILD_COMPONENT GREATER -1 OR BUILD_ALL GREATER -1)
-    install(TARGETS ${target} DESTINATION ${MAXSCALE_BINDIR} COMPONENT "${component}" PERMISSIONS
+    install(TARGETS ${target} DESTINATION ${PERCONA_PROXY_BINDIR} COMPONENT "${component}" PERMISSIONS
             OWNER_READ OWNER_WRITE OWNER_EXECUTE SETUID GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
   endif()
 
@@ -94,11 +94,11 @@ function(install_module target component)
   list(FIND TARGET_COMPONENT ${component} BUILD_COMPONENT)
 
   if(BUILD_COMPONENT GREATER -1 OR BUILD_ALL GREATER -1)
-    install(TARGETS ${target} DESTINATION ${MAXSCALE_LIBDIR} COMPONENT "${component}")
+    install(TARGETS ${target} DESTINATION ${PERCONA_PROXY_LIBDIR} COMPONENT "${component}")
   endif()
 
   # Make all modules dependent on the core
-  add_dependencies(${target} ${MAXSCALE_CORE})
+  add_dependencies(${target} ${PERCONA_PROXY_CORE})
 endfunction()
 
 # Installation functions for interpreted scripts.
@@ -110,7 +110,7 @@ function(install_script target component)
   list(FIND TARGET_COMPONENT ${component} BUILD_COMPONENT)
 
   if(BUILD_COMPONENT GREATER -1 OR BUILD_ALL GREATER -1)
-    install(PROGRAMS ${target} DESTINATION ${MAXSCALE_BINDIR}
+    install(PROGRAMS ${target} DESTINATION ${PERCONA_PROXY_BINDIR}
       PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
       COMPONENT "${component}")
   endif()
@@ -118,7 +118,7 @@ function(install_script target component)
 endfunction()
 
 # Installation functions for files and programs. These all go to the share directory
-# of MaxScale which for packages is /usr/share/maxscale.
+# of Percona Proxy which for packages is /usr/share/percona-proxy.
 #
 # @param File to install
 # @param Component where this file should be included
@@ -126,7 +126,7 @@ function(install_file file component)
 
   list(FIND TARGET_COMPONENT ${component} BUILD_COMPONENT)
   if(BUILD_COMPONENT GREATER -1 OR BUILD_ALL GREATER -1)
-    install(FILES ${file} DESTINATION ${MAXSCALE_SHAREDIR} COMPONENT "${component}")
+    install(FILES ${file} DESTINATION ${PERCONA_PROXY_SHAREDIR} COMPONENT "${component}")
   endif()
 endfunction()
 
@@ -135,7 +135,7 @@ function(install_program file component)
   list(FIND TARGET_COMPONENT ${component} BUILD_COMPONENT)
 
   if(BUILD_COMPONENT GREATER -1 OR BUILD_ALL GREATER -1)
-    install(PROGRAMS ${file} DESTINATION ${MAXSCALE_SHAREDIR} COMPONENT "${component}")
+    install(PROGRAMS ${file} DESTINATION ${PERCONA_PROXY_SHAREDIR} COMPONENT "${component}")
   endif()
 
 endfunction()
@@ -164,7 +164,7 @@ function(install_header header component)
   list(FIND TARGET_COMPONENT ${component} BUILD_COMPONENT)
 
   if(BUILD_COMPONENT GREATER -1 OR BUILD_ALL GREATER -1)
-    install(FILES ${header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/maxscale COMPONENT "${component}")
+    install(FILES ${header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/percona-proxy COMPONENT "${component}")
   endif()
 
 endfunction()

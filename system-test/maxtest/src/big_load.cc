@@ -79,35 +79,35 @@ void load(long int* new_inserts,
     }
 
     nodes->connect();
-    Test->maxscale->connect_rwsplit();
+    Test->percona_proxy->connect_rwsplit();
 
     data.i1 = 0;
     data.i2 = 0;
     data.exit_flag = 0;
     data.Test = Test;
     data.rwsplit_only = rwsplit_only;
-    // connect to the MaxScale server (rwsplit)
+    // connect to the Percona Proxy server (rwsplit)
 
-    if (Test->maxscale->conn_rwsplit == NULL)
+    if (Test->percona_proxy->conn_rwsplit == NULL)
     {
         if (report_errors)
         {
-            Test->add_result(1, "Can't connect to MaxScale\n");
+            Test->add_result(1, "Can't connect to Percona Proxy\n");
         }
         // Test->copy_all_logs();
         exit(1);
     }
     else
     {
-        create_t1(Test->maxscale->conn_rwsplit);
+        create_t1(Test->percona_proxy->conn_rwsplit);
         create_insert_string(sql, sql_l, 1);
 
-        if ((execute_query(Test->maxscale->conn_rwsplit, "%s", sql) != 0) && (report_errors))
+        if ((execute_query(Test->percona_proxy->conn_rwsplit, "%s", sql) != 0) && (report_errors))
         {
             Test->add_result(1, "Query %s failed\n", sql);
         }
         // close connections
-        Test->maxscale->close_rwsplit();
+        Test->percona_proxy->close_rwsplit();
 
         if (nodes == Test->repl)
         {
@@ -159,41 +159,41 @@ void* query_thread1(void* ptr)
     MYSQL* conn3 = nullptr;
     int conn_err = 0;
     thread_data* data = (thread_data*) ptr;
-    auto mxs_ip = data->Test->maxscale->ip4();
-    auto mxs_user = data->Test->maxscale->user_name();
-    auto mxs_pw = data->Test->maxscale->password();
+    auto mxs_ip = data->Test->percona_proxy->ip4();
+    auto mxs_user = data->Test->percona_proxy->user_name();
+    auto mxs_pw = data->Test->percona_proxy->password();
 
-    conn1 = open_conn_db_timeout(data->Test->maxscale->rwsplit_port, mxs_ip,
+    conn1 = open_conn_db_timeout(data->Test->percona_proxy->rwsplit_port, mxs_ip,
                                  "test",
                                  mxs_user,
                                  mxs_pw,
                                  20,
-                                 data->Test->maxscale_ssl);
-    // conn1 = data->Test->maxscales->open_rwsplit_connection(0);
+                                 data->Test->percona_proxy_ssl);
+    // conn1 = data->Test->percona_proxies->open_rwsplit_connection(0);
     if (mysql_errno(conn1) != 0)
     {
         conn_err++;
     }
     if (data->rwsplit_only == 0)
     {
-        // conn2 = data->Test->maxscales->open_readconn_master_connection(0);
-        conn2 = open_conn_db_timeout(data->Test->maxscale->readconn_master_port, mxs_ip,
+        // conn2 = data->Test->percona_proxies->open_readconn_master_connection(0);
+        conn2 = open_conn_db_timeout(data->Test->percona_proxy->readconn_master_port, mxs_ip,
                                      "test",
                                      mxs_user,
                                      mxs_pw,
                                      20,
-                                     data->Test->maxscale_ssl);
+                                     data->Test->percona_proxy_ssl);
         if (mysql_errno(conn2) != 0)
         {
             conn_err++;
         }
-        // conn3 = data->Test->maxscales->open_readconn_slave_connection(0);
-        conn3 = open_conn_db_timeout(data->Test->maxscale->readconn_slave_port, mxs_ip,
+        // conn3 = data->Test->percona_proxies->open_readconn_slave_connection(0);
+        conn3 = open_conn_db_timeout(data->Test->percona_proxy->readconn_slave_port, mxs_ip,
                                      "test",
                                      mxs_user,
                                      mxs_pw,
                                      20,
-                                     data->Test->maxscale_ssl);
+                                     data->Test->percona_proxy_ssl);
         if (mysql_errno(conn3) != 0)
         {
             conn_err++;
@@ -237,35 +237,35 @@ void* query_thread2(void* ptr)
     MYSQL* conn2 = nullptr;
     MYSQL* conn3 = nullptr;
     thread_data* data = (thread_data*) ptr;
-    auto mxs_ip = data->Test->maxscale->ip4();
-    auto mxs_user = data->Test->maxscale->user_name();
-    auto mxs_pw = data->Test->maxscale->password();
+    auto mxs_ip = data->Test->percona_proxy->ip4();
+    auto mxs_user = data->Test->percona_proxy->user_name();
+    auto mxs_pw = data->Test->percona_proxy->password();
 
-    // conn1 = data->Test->maxscales->open_rwsplit_connection(0);
-    conn1 = open_conn_db_timeout(data->Test->maxscale->rwsplit_port, mxs_ip,
+    // conn1 = data->Test->percona_proxies->open_rwsplit_connection(0);
+    conn1 = open_conn_db_timeout(data->Test->percona_proxy->rwsplit_port, mxs_ip,
                                  "test",
                                  mxs_user,
                                  mxs_pw,
                                  20,
-                                 data->Test->maxscale_ssl);
+                                 data->Test->percona_proxy_ssl);
     if (data->rwsplit_only == 0)
     {
-        // conn2 = data->Test->maxscales->open_readconn_master_connection(0);
-        // conn3 = data->Test->maxscales->open_readconn_slave_connection(0);
+        // conn2 = data->Test->percona_proxies->open_readconn_master_connection(0);
+        // conn3 = data->Test->percona_proxies->open_readconn_slave_connection(0);
 
-        conn2 = open_conn_db_timeout(data->Test->maxscale->readconn_master_port, mxs_ip,
+        conn2 = open_conn_db_timeout(data->Test->percona_proxy->readconn_master_port, mxs_ip,
                                      "test",
                                      mxs_user,
                                      mxs_pw,
                                      20,
-                                     data->Test->maxscale_ssl);
+                                     data->Test->percona_proxy_ssl);
         // if (mysql_errno(conn2) != 0) { conn_err++; }
-        conn3 = open_conn_db_timeout(data->Test->maxscale->readconn_slave_port, mxs_ip,
+        conn3 = open_conn_db_timeout(data->Test->percona_proxy->readconn_slave_port, mxs_ip,
                                      "test",
                                      mxs_user,
                                      mxs_pw,
                                      20,
-                                     data->Test->maxscale_ssl);
+                                     data->Test->percona_proxy_ssl);
         // if (mysql_errno(conn3) != 0) { conn_err++; }
     }
     while (data->exit_flag == 0)

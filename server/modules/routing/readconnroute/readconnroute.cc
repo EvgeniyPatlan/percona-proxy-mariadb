@@ -37,8 +37,8 @@
 
 #include "readconnroute.hh"
 
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/service.hh>
 
 config::Specification RCR::Config::s_specification(MXB_MODULE_NAME, config::Specification::ROUTER);
 
@@ -399,8 +399,8 @@ bool RCRSession::routeQuery(GWBUF&& buffer)
 }
 
 bool RCRSession::clientReply(GWBUF&& packet,
-                             const maxscale::ReplyRoute& down,
-                             const maxscale::Reply& reply)
+                             const percona_proxy::ReplyRoute& down,
+                             const percona_proxy::Reply& reply)
 {
     if (reply.is_complete())
     {
@@ -418,14 +418,14 @@ RCR::RCR(SERVICE* service)
 {
 }
 
-maxscale::SessionStats& RCR::session_stats(maxscale::Target* pTarget)
+percona_proxy::SessionStats& RCR::session_stats(percona_proxy::Target* pTarget)
 {
     return (*m_target_stats)[pTarget];
 }
 
-maxscale::TargetSessionStats RCR::combined_target_stats() const
+percona_proxy::TargetSessionStats RCR::combined_target_stats() const
 {
-    maxscale::TargetSessionStats stats;
+    percona_proxy::TargetSessionStats stats;
     const auto& targets = m_service.get_children();
 
     for (const auto& a : m_target_stats.collect_values())
@@ -452,7 +452,7 @@ json_t* RCR::diagnostics() const
 
     for (const auto& a : combined_target_stats())
     {
-        maxscale::SessionStats::CurrentStats stats = a.second.current_stats();
+        percona_proxy::SessionStats::CurrentStats stats = a.second.current_stats();
 
         total_packets += stats.total_queries;
 

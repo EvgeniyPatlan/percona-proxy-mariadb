@@ -99,7 +99,7 @@ bool connect_mariadb(MYSQL* newconn,
 
 bool MariaDB::open(const std::string& host, int port, const std::string& db)
 {
-    mxb_assert(port >= 0);      // MaxScale config loader should not accept negative values. 0 is ok.
+    mxb_assert(port >= 0);      // Percona Proxy config loader should not accept negative values. 0 is ok.
     close();
 
     auto newconn = mysql_init(nullptr);
@@ -122,7 +122,7 @@ bool MariaDB::open(const std::string& host, int port, const std::string& db)
     }
 
     // LOAD DATA LOCAL INFILE is supported by default. This can be turned off to prevent non-local clients
-    // from accessing files on the MaxScale server.
+    // from accessing files on the Percona Proxy server.
     if (!m_settings.local_infile)
     {
         unsigned int off = 0;

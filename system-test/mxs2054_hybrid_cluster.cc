@@ -22,10 +22,10 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    test.maxctrl("set server server3 running");
-    test.maxctrl("set server server3 slave");
-    test.maxctrl("set server server4 running");
-    test.maxctrl("set server server4 slave");
+    test.percona_proxyctl("set server server3 running");
+    test.percona_proxyctl("set server server3 slave");
+    test.percona_proxyctl("set server server4 running");
+    test.percona_proxyctl("set server server4 slave");
 
     test.repl->connect();
     execute_query(test.repl->nodes[0], "CREATE OR REPLACE TABLE test.t1 AS SELECT 1 AS id");
@@ -35,15 +35,15 @@ int main(int argc, char** argv)
     test.repl->sync_slaves();
     test.repl->disconnect();
 
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
 
-    Row server1 = get_row(test.maxscale->conn_rwsplit,
+    Row server1 = get_row(test.percona_proxy->conn_rwsplit,
                           "SELECT @@server_id, @@last_insert_id, id FROM test.t1");
-    Row server2 = get_row(test.maxscale->conn_rwsplit, "SELECT @@server_id, id FROM test.t2");
-    Row server3 = get_row(test.maxscale->conn_rwsplit, "SELECT @@server_id, id FROM test.t3");
-    Row server4 = get_row(test.maxscale->conn_rwsplit, "SELECT @@server_id, id FROM test.t4");
+    Row server2 = get_row(test.percona_proxy->conn_rwsplit, "SELECT @@server_id, id FROM test.t2");
+    Row server3 = get_row(test.percona_proxy->conn_rwsplit, "SELECT @@server_id, id FROM test.t3");
+    Row server4 = get_row(test.percona_proxy->conn_rwsplit, "SELECT @@server_id, id FROM test.t4");
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     test.repl->connect();
     test.expect(server1[0] == test.repl->get_server_id_str(0),

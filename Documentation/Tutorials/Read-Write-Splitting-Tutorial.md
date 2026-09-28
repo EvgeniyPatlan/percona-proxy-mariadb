@@ -1,12 +1,12 @@
-# Read-Write Splitting with MariaDB MaxScale
+# Read-Write Splitting with Percona Proxy for MariaDB
 
 The goal of this tutorial is to configure a system that appears to the client as a single
-database. MariaDB MaxScale will split the statements such that write statements are sent
+database. Percona Proxy for MariaDB will split the statements such that write statements are sent
 to the primary server and read statements are balanced across the replica servers.
 
-## Setting up MariaDB MaxScale
+## Setting up Percona Proxy for MariaDB
 
-This tutorial is a part of [MariaDB MaxScale Tutorial](MaxScale-Tutorial.md).
+This tutorial is a part of [Percona Proxy for MariaDB Tutorial](Percona Proxy-Tutorial.md).
 Please read it and follow the instructions. Return here once basic setup is complete.
 
 ## Configuring the service
@@ -21,8 +21,8 @@ name *Splitter-Service*.
 type=service
 router=readwritesplit
 servers=dbserv1, dbserv2, dbserv3
-user=maxscale
-password=maxscale_pw
+user=percona-proxy
+password=percona_proxy_pw
 ```
 *router* defines the routing module used. Here we use *readwritesplit* for
 query-level read-write-splitting.
@@ -33,7 +33,7 @@ addresses of the servers.
 
 The *user* and *password* parameters define the credentials the service uses to populate
 user authentication data. These users were created at the start of the
-[MaxScale Tutorial](MaxScale-Tutorial.md).
+[Percona Proxy Tutorial](Percona Proxy-Tutorial.md).
 
 For increased security, see [password encryption](Encrypting-Passwords.md).
 
@@ -59,6 +59,6 @@ The optional *address*-parameter defines the local address the listener should b
 This may be required when the host machine has multiple network interfaces. The
 default behavior is to listen on all network interfaces (the IPv6 address `::`).
 
-## Starting MariaDB MaxScale
+## Starting Percona Proxy for MariaDB
 
-For the last steps, please return to [MaxScale Tutorial](MaxScale-Tutorial.md).
+For the last steps, please return to [Percona Proxy Tutorial](Percona Proxy-Tutorial.md).

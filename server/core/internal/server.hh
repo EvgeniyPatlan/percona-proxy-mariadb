@@ -22,13 +22,13 @@
 #include <map>
 #include <mutex>
 #include <set>
-#include <maxscale/config.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/connection_metadata.hh>
-#include <maxscale/server.hh>
-#include <maxscale/workerlocal.hh>
-#include <maxscale/measurements.hh>
-#include <maxscale/response_distribution.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/connection_metadata.hh>
+#include <percona-proxy/server.hh>
+#include <percona-proxy/workerlocal.hh>
+#include <percona-proxy/measurements.hh>
+#include <percona-proxy/response_distribution.hh>
 
 // Private server implementation
 class Server : public SERVER
@@ -299,11 +299,11 @@ public:
     bool    is_mxs_service() const override;
 
     // response distribution for this thread and server
-    maxscale::ResponseDistribution&       response_distribution(mxb::MeasureTime::Operation opr);
-    const maxscale::ResponseDistribution& response_distribution(mxb::MeasureTime::Operation opr) const;
+    percona_proxy::ResponseDistribution&       response_distribution(mxb::MeasureTime::Operation opr);
+    const percona_proxy::ResponseDistribution& response_distribution(mxb::MeasureTime::Operation opr) const;
 
     // Tallied up ResponseDistribution over all threads for this server
-    maxscale::ResponseDistribution get_complete_response_distribution(mxb::MeasureTime::Operation opr) const;
+    percona_proxy::ResponseDistribution get_complete_response_distribution(mxb::MeasureTime::Operation opr) const;
 
     bool is_resp_distribution_enabled() const
     {
@@ -450,7 +450,7 @@ private:
 
     mxs::WorkerLocal<std::unordered_map<uint32_t, uint64_t>> m_gtids;
 
-    using GlobalDistributions = mxs::WorkerLocal<maxscale::ResponseDistribution>;
+    using GlobalDistributions = mxs::WorkerLocal<percona_proxy::ResponseDistribution>;
     GlobalDistributions m_read_distributions;
     GlobalDistributions m_write_distributions;
     json_t* response_distribution_to_json(mxb::MeasureTime::Operation opr) const;
@@ -518,7 +518,7 @@ private:
     maxbase::MeasureTime m_query_time;
 
     // TODO: This causes a cross-thread read if the session is moved
-    maxscale::ResponseDistribution& m_read_distribution;    // reference to entry in WorkerLocal
-    maxscale::ResponseDistribution& m_write_distribution;   // reference to entry in WorkerLocal
+    percona_proxy::ResponseDistribution& m_read_distribution;    // reference to entry in WorkerLocal
+    percona_proxy::ResponseDistribution& m_write_distribution;   // reference to entry in WorkerLocal
     mxb::TimePoint                  m_conn_wait_start;
 };

@@ -14,7 +14,7 @@
 #pragma once
 
 #include "nosqlprotocol.hh"
-#include <maxscale/protocol2.hh>
+#include <percona-proxy/protocol2.hh>
 #include "configuration.hh"
 #include "nosqlusermanager.hh"
 

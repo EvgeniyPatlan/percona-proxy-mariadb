@@ -150,7 +150,7 @@ std::string process_connection_string(std::string str, int64_t timeout)
         // the end of the Protocol option is what disables the SAVEPOINT functionality.
         str += ";Protocol=7.4-0";
         // It also emulates cursors by default which end up causing the whole resultset to be read
-        // into memory. This would cause MaxScale to run out of memory so we need to use real cursors.
+        // into memory. This would cause Percona Proxy to run out of memory so we need to use real cursors.
         // To make it a little bit faster, fetch 1000 rows instead of the default 100 rows.
         str += ";UseDeclareFetch=1;Fetch=1000";
         // Disable parsing in the driver, let the server deal with everything.

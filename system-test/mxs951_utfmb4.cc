@@ -33,7 +33,7 @@ using std::string;
 int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
-    test.maxscale->stop_and_check_stopped();
+    test.percona_proxy->stop_and_check_stopped();
 
     auto repl = test.repl;
     auto N = repl->N;
@@ -47,8 +47,8 @@ int main(int argc, char* argv[])
 
     repl->stop_nodes();
     repl->start_nodes();
-    test.maxscale->start_and_check_started();
-    test.maxscale->wait_for_monitor(1);
+    test.percona_proxy->start_and_check_started();
+    test.percona_proxy->wait_for_monitor(1);
 
     test.tprintf("Set utf8mb4 for backend");
     repl->execute_query_all_nodes("SET GLOBAL character_set_server = 'utf8mb4';");
@@ -59,8 +59,8 @@ int main(int argc, char* argv[])
     test.reset_timeout();
 
     test.tprintf("Restart Maxscale");
-    test.maxscale->restart_maxscale();
-    test.check_maxscale_alive();
+    test.percona_proxy->restart_percona_proxy();
+    test.check_percona_proxy_alive();
 
     test.tprintf("Restore backend configuration\n");
 

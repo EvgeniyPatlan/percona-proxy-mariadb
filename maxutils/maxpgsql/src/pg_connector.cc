@@ -109,7 +109,7 @@ bool PgSQL::open(const std::string& host, int port, const std::string& db)
     string port_str = std::to_string(port);
     add_param("port", port_str.c_str());
     add_param("dbname", db.c_str());
-    add_param("application_name", "MaxScale");
+    add_param("application_name", "Percona Proxy");
 
     add_param("user", m_settings.user.c_str());
     add_param("password", m_settings.password.c_str());

@@ -12,11 +12,11 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
-#include <maxscale/paths.hh>
+#include <percona-proxy/paths.hh>
 #include "storagefactory.hh"
 #include "cache.hh"
 #include "cache_storage_api.hh"

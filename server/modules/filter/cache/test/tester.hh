@@ -13,8 +13,8 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/buffer.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/buffer.hh>
 #include <ostream>
 #include <string>
 #include <vector>

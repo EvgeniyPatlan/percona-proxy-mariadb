@@ -12,7 +12,7 @@
  */
 
 #include "pgbackendconnection.hh"
-#include <maxscale/server.hh>
+#include <percona-proxy/server.hh>
 
 namespace
 {

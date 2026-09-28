@@ -70,34 +70,34 @@ int main(int argc, char* argv[])
     execute_query(test->repl->nodes[0], "CREATE OR REPLACE TABLE test.t1 (id INT);");
     execute_query(test->repl->nodes[0], "CREATE OR REPLACE TABLE test.t2 (id INT);");
 
-    test->maxscale->connect_rwsplit();
+    test->percona_proxy->connect_rwsplit();
 
     test->tprintf("Test `time`. The first SELECT within 10 seconds should go the "
                   "master and all SELECTs after it should go to the slaves.");
 
-    test->try_query(test->maxscale->conn_rwsplit, "INSERT INTO test.t1 VALUES (1)");
+    test->try_query(test->percona_proxy->conn_rwsplit, "INSERT INTO test.t1 VALUES (1)");
     sleep(1);
-    test->add_result(!is_master(test->maxscale->conn_rwsplit), "Master should reply to the first SELECT");
+    test->add_result(!is_master(test->percona_proxy->conn_rwsplit), "Master should reply to the first SELECT");
     sleep(11);
-    test->add_result(is_master(test->maxscale->conn_rwsplit),
+    test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                      "Master should NOT reply to the second SELECT");
 
 
     test->tprintf("Change test setup for `count`, the first three selects after an "
                   "insert should go to the master.");
 
-    test->maxscale->close_maxscale_connections();
-    test->check_maxctrl("alter filter ccrfilter time 0s count 3");
-    test->maxscale->connect_rwsplit();
+    test->percona_proxy->close_percona_proxy_connections();
+    test->check_percona_proxyctl("alter filter ccrfilter time 0s count 3");
+    test->percona_proxy->connect_rwsplit();
 
-    test->try_query(test->maxscale->conn_rwsplit, "INSERT INTO test.t1 VALUES (1)");
-    test->add_result(!is_master(test->maxscale->conn_rwsplit), "Master should reply to the first SELECT");
-    test->add_result(!is_master(test->maxscale->conn_rwsplit),
+    test->try_query(test->percona_proxy->conn_rwsplit, "INSERT INTO test.t1 VALUES (1)");
+    test->add_result(!is_master(test->percona_proxy->conn_rwsplit), "Master should reply to the first SELECT");
+    test->add_result(!is_master(test->percona_proxy->conn_rwsplit),
                      "Master should reply to the second SELECT");
-    test->add_result(!is_master(test->maxscale->conn_rwsplit), "Master should reply to the third SELECT");
-    test->add_result(is_master(test->maxscale->conn_rwsplit),
+    test->add_result(!is_master(test->percona_proxy->conn_rwsplit), "Master should reply to the third SELECT");
+    test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                      "Master should NOT reply to the fourth SELECT");
-    test->add_result(is_master(test->maxscale->conn_rwsplit),
+    test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                      "Master should NOT reply to the fifth SELECT");
 
 
@@ -105,78 +105,78 @@ int main(int argc, char* argv[])
                   "to t1 should go to the slaves and selects after an insert to t2 "
                   "should go to the master.");
 
-    test->maxscale->close_maxscale_connections();
-    test->check_maxctrl("alter filter ccrfilter match t2");
-    test->maxscale->connect_rwsplit();
+    test->percona_proxy->close_percona_proxy_connections();
+    test->check_percona_proxyctl("alter filter ccrfilter match t2");
+    test->percona_proxy->connect_rwsplit();
 
 
     test->tprintf("t1 first, should be ignored");
 
-    test->try_query(test->maxscale->conn_rwsplit, "INSERT INTO test.t1 VALUES (1)");
-    test->add_result(is_master(test->maxscale->conn_rwsplit),
+    test->try_query(test->percona_proxy->conn_rwsplit, "INSERT INTO test.t1 VALUES (1)");
+    test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                      "Master should NOT reply to the first SELECT");
-    test->add_result(is_master(test->maxscale->conn_rwsplit),
+    test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                      "Master should NOT reply to the second SELECT");
 
     test->tprintf("t2 should match and trigger the critical reads");
 
-    test->try_query(test->maxscale->conn_rwsplit, "INSERT INTO test.t2 VALUES (1)");
-    test->add_result(!is_master(test->maxscale->conn_rwsplit), "Master should reply to the first SELECT");
-    test->add_result(!is_master(test->maxscale->conn_rwsplit),
+    test->try_query(test->percona_proxy->conn_rwsplit, "INSERT INTO test.t2 VALUES (1)");
+    test->add_result(!is_master(test->percona_proxy->conn_rwsplit), "Master should reply to the first SELECT");
+    test->add_result(!is_master(test->percona_proxy->conn_rwsplit),
                      "Master should reply to the second SELECT");
-    test->add_result(!is_master(test->maxscale->conn_rwsplit), "Master should reply to the third SELECT");
-    test->add_result(is_master(test->maxscale->conn_rwsplit),
+    test->add_result(!is_master(test->percona_proxy->conn_rwsplit), "Master should reply to the third SELECT");
+    test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                      "Master should NOT reply to the fourth SELECT");
-    test->add_result(is_master(test->maxscale->conn_rwsplit),
+    test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                      "Master should NOT reply to the fifth SELECT");
 
     test->tprintf("Test that options=ignorecase works");
 
-    test->maxscale->close_maxscale_connections();
-    test->maxscale->ssh_node("sed -i -e 's/match=.*/match=INSERT/' /etc/maxscale.cnf", true);
-    test->maxscale->restart_maxscale();
-    test->maxscale->connect_maxscale();
+    test->percona_proxy->close_percona_proxy_connections();
+    test->percona_proxy->ssh_node("sed -i -e 's/match=.*/match=INSERT/' /etc/percona-proxy.cnf", true);
+    test->percona_proxy->restart_percona_proxy();
+    test->percona_proxy->connect_percona_proxy();
 
     for (const char* query : {"insert into test.t2 values (1)", "INSERT INTO test.t2 VALUES (1)"})
     {
-        test->try_query(test->maxscale->conn_rwsplit, "%s", query);
-        test->add_result(!is_master(test->maxscale->conn_rwsplit),
+        test->try_query(test->percona_proxy->conn_rwsplit, "%s", query);
+        test->add_result(!is_master(test->percona_proxy->conn_rwsplit),
                          "Master should reply to the first SELECT");
-        test->add_result(!is_master(test->maxscale->conn_rwsplit),
+        test->add_result(!is_master(test->percona_proxy->conn_rwsplit),
                          "Master should reply to the second SELECT");
-        test->add_result(!is_master(test->maxscale->conn_rwsplit),
+        test->add_result(!is_master(test->percona_proxy->conn_rwsplit),
                          "Master should reply to the third SELECT");
-        test->add_result(is_master(test->maxscale->conn_rwsplit),
+        test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                          "Master should NOT reply to the fourth SELECT");
-        test->add_result(is_master(test->maxscale->conn_rwsplit),
+        test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                          "Master should NOT reply to the fifth SELECT");
     }
 
     test->tprintf("Change test setup for `count` and `ignore`, expects the same "
                   "results as previous test.");
 
-    test->maxscale->close_maxscale_connections();
-    test->check_maxctrl("alter filter ccrfilter match \"''\" ignore t1");
-    test->maxscale->connect_rwsplit();
+    test->percona_proxy->close_percona_proxy_connections();
+    test->check_percona_proxyctl("alter filter ccrfilter match \"''\" ignore t1");
+    test->percona_proxy->connect_rwsplit();
 
     test->tprintf("t1 first, should be ignored");
 
-    test->try_query(test->maxscale->conn_rwsplit, "INSERT INTO test.t1 VALUES (1)");
-    test->add_result(is_master(test->maxscale->conn_rwsplit),
+    test->try_query(test->percona_proxy->conn_rwsplit, "INSERT INTO test.t1 VALUES (1)");
+    test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                      "Master should NOT reply to the first SELECT");
-    test->add_result(is_master(test->maxscale->conn_rwsplit),
+    test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                      "Master should NOT reply to the second SELECT");
 
     test->tprintf("t2 should match and trigger the critical reads");
 
-    test->try_query(test->maxscale->conn_rwsplit, "INSERT INTO test.t2 VALUES (1)");
-    test->add_result(!is_master(test->maxscale->conn_rwsplit), "Master should reply to the first SELECT");
-    test->add_result(!is_master(test->maxscale->conn_rwsplit),
+    test->try_query(test->percona_proxy->conn_rwsplit, "INSERT INTO test.t2 VALUES (1)");
+    test->add_result(!is_master(test->percona_proxy->conn_rwsplit), "Master should reply to the first SELECT");
+    test->add_result(!is_master(test->percona_proxy->conn_rwsplit),
                      "Master should reply to the second SELECT");
-    test->add_result(!is_master(test->maxscale->conn_rwsplit), "Master should reply to the third SELECT");
-    test->add_result(is_master(test->maxscale->conn_rwsplit),
+    test->add_result(!is_master(test->percona_proxy->conn_rwsplit), "Master should reply to the third SELECT");
+    test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                      "Master should NOT reply to the fourth SELECT");
-    test->add_result(is_master(test->maxscale->conn_rwsplit),
+    test->add_result(is_master(test->percona_proxy->conn_rwsplit),
                      "Master should NOT reply to the fifth SELECT");
 
     execute_query(test->repl->nodes[0], "DROP TABLE test.t1");

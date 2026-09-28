@@ -23,9 +23,9 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    test.maxscale->connect();
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE TEMPORARY TABLE test.temp(id INT)");
-    test.maxscale->disconnect();
+    test.percona_proxy->connect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE TEMPORARY TABLE test.temp(id INT)");
+    test.percona_proxy->disconnect();
 
     test.log_excludes("The provided buffer does not contain a COM_QUERY, but a COM_QUIT");
     return test.global_result;

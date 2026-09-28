@@ -33,15 +33,15 @@ public:
 
     void run() override
     {
-        // Set the address of "pinloki"-server to the IP of MaxScale, so that the address used by
+        // Set the address of "pinloki"-server to the IP of Percona Proxy, so that the address used by
         // MariaDB-Monitor matches the address used by server2. Reconfigure the monitor so that it
         // updates its internal bookkeeping.
-        test.maxscale->maxctrlf("alter server pinloki address=%s", test.maxscale->ip4());
-        test.maxscale->maxctrl("unlink monitor mariadb-cluster pinloki");
-        test.maxscale->maxctrl("link monitor mariadb-cluster pinloki");
-        test.maxscale->wait_for_monitor(1);
+        test.percona_proxy->percona_proxyctlf("alter server pinloki address=%s", test.percona_proxy->ip4());
+        test.percona_proxy->percona_proxyctl("unlink monitor mariadb-cluster pinloki");
+        test.percona_proxy->percona_proxyctl("link monitor mariadb-cluster pinloki");
+        test.percona_proxy->wait_for_monitor(1);
 
-        auto servers = test.maxscale->get_servers();
+        auto servers = test.percona_proxy->get_servers();
         servers.print();
         auto slave_st = mxt::ServerInfo::slave_st;
         servers.check_servers_status({mxt::ServerInfo::master_st, slave_st, slave_st, slave_st,
@@ -58,18 +58,18 @@ public:
         check_gtid();
 
         // Run the diagnostics function, mainly for code coverage.
-        test.check_maxctrl("show services");
+        test.check_percona_proxyctl("show services");
 
         // Some simple sanity checks
-        auto rows = maxscale.rows("SHOW MASTER STATUS");
+        auto rows = percona_proxy.rows("SHOW MASTER STATUS");
         test.expect(!rows.empty(), "SHOW MASTER STATUS should return a resultset");
-        test.expect(!maxscale.query("This should not break anything"), "Bad SQL should fail");
-        test.expect(!maxscale.query("CHANGE MASTER 'name' TO MASTER_HOST='localhost'"),
+        test.expect(!percona_proxy.query("This should not break anything"), "Bad SQL should fail");
+        test.expect(!percona_proxy.query("CHANGE MASTER 'name' TO MASTER_HOST='localhost'"),
                     "CHANGE MASTER with connection name should fail");
 
         auto direct = test.repl->backend(2)->admin_connection()->query("SHOW SLAVE STATUS");
         test.expect(direct->next_row(), "Empty direct result");
-        auto c = test.maxscale->open_rwsplit_connection2();
+        auto c = test.percona_proxy->open_rwsplit_connection2();
 
         const auto variables = {"Master_Log_File", "Read_Master_Log_Pos", "Exec_Master_Log_Pos"};
 
@@ -79,15 +79,15 @@ public:
 
             for (int i = 0; i < 10 && test.ok(); i++)
             {
-                if (auto via_maxscale = c->query("SHOW SLAVE STATUS"))
+                if (auto via_percona_proxy = c->query("SHOW SLAVE STATUS"))
                 {
-                    test.expect(via_maxscale->next_row(), "Empty maxscale result");
+                    test.expect(via_percona_proxy->next_row(), "Empty percona-proxy result");
                     ok = true;
 
                     for (std::string field : variables)
                     {
                         auto expected = direct->get_string(field);
-                        result = via_maxscale->get_string(field);
+                        result = via_percona_proxy->get_string(field);
 
                         if (expected != result)
                         {

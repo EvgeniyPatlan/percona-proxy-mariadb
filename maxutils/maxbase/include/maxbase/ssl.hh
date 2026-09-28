@@ -46,8 +46,8 @@ std::string to_string(uint32_t version);
 enum class KeyUsage
 {
     NONE,   // No specific purpose
-    CLIENT, // Used with outbound connection where MaxScale acts as a client
-    SERVER, // Used with inbound connections where MaxScale is the server
+    CLIENT, // Used with outbound connection where Percona Proxy acts as a client
+    SERVER, // Used with inbound connections where Percona Proxy is the server
 };
 
 // SSL configuration

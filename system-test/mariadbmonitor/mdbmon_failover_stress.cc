@@ -22,7 +22,7 @@ namespace
 void test_main(TestConnections& test)
 {
     auto& repl = *test.repl;
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     semisync::check_semisync_off(test);
 

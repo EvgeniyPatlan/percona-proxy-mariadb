@@ -16,7 +16,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "maxavro_internal.hh"
-#include <maxscale/log.hh>
+#include <percona-proxy/log.hh>
 #include <errno.h>
 
 /**

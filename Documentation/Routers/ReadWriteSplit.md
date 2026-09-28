@@ -34,7 +34,7 @@ session nor long-running transactions will be closed by readwritesplit. To
 forcefully close the connections, use the following command:
 
 ```
-maxctrl set server <server> maintenance --force
+percona-proxyctl set server <server> maintenance --force
 ```
 
 If a server is put into the `Draining` state while a connection is open, the
@@ -45,14 +45,14 @@ servers that are neither `Draining` nor `Drained` will be used.
 ## Configuration
 
 Readwritesplit router-specific settings are specified in the configuration file
-of MariaDB MaxScale in its specific section. The section can be freely named but
+of Percona Proxy for MariaDB in its specific section. The section can be freely named but
 the name is used later as a reference in a listener section.
 
 For more details about the standard service parameters, refer to the
 [Configuration Guide](../Getting-Started/Configuration-Guide.md).
 
 Starting with 2.3, all router parameters can be configured at runtime. Use
-`maxctrl alter service` to modify them. The changed configuration will only be
+`percona-proxyctl alter service` to modify them. The changed configuration will only be
 taken into use by new sessions.
 
 ## Parameters
@@ -69,18 +69,18 @@ at any moment. The default is to use at most 255 replica connections per client
 connection. In older versions the default was to use all available replicas with
 no limit.
 
-For MaxScale 2.5.12 and newer, the minimum value is 0.
+For Percona Proxy 2.5.12 and newer, the minimum value is 0.
 
-For MaxScale versions 2.5.11 and older, the minimum value is 1. These versions
+For Percona Proxy versions 2.5.11 and older, the minimum value is 1. These versions
 suffer from a bug ([MXS-3536](https://jira.mariadb.org/browse/MXS-3536)) that
 causes the parameter to accept any values but only function when a value greater
 than one was given.
 
-Starting with MaxScale 2.5.0, the use of percentage values in
+Starting with Percona Proxy 2.5.0, the use of percentage values in
 `max_slave_connections` is deprecated. The support for percentages will be
 removed in a future release.
 
-For example, if you have configured MaxScale with one primary and three replicas
+For example, if you have configured Percona Proxy with one primary and three replicas
 and set `max_slave_connections=2`, for each client connection a connection to
 the primary and two replica connections would be opened. The read query load
 balancing is then done between these two replicas and writes are sent to the
@@ -167,7 +167,7 @@ when the server has caught up enough to be a valid routing target, another warni
 is logged. These messages are only logged when a query is being routed and the
 replication state changes.
 
-Starting with MaxScale versions 23.08.7, 24.02.3 and 24.08.1, readwritesplit
+Starting with Percona Proxy versions 23.08.7, 24.02.3 and 24.08.1, readwritesplit
 will discard connections to any servers that have excessive replication lag. The
 connection will be discarded if a server is lagging behind by more than twice
 the amount of `max_replication_lag` and the server is behind by more than 300
@@ -190,7 +190,7 @@ SET @rownum := 0;
 SELECT @rownum := @rownum + 1 AS rownum, user, host FROM mysql.user;
 ```
 
-By default MaxScale will route both the `SET` and `SELECT` statements to all
+By default Percona Proxy will route both the `SET` and `SELECT` statements to all
 nodes. Any future reads of the user variables can also be performed on any node.
 
 The possible values for this parameter are:
@@ -200,9 +200,9 @@ The possible values for this parameter are:
   * Modifications to user variables inside `SELECT` statements as well as reads
     of user variables are routed to all servers.
 
-    Versions before MaxScale 22.08 returned an error if a user variable was
+    Versions before Percona Proxy 22.08 returned an error if a user variable was
     modified inside of a `SELECT` statement when `use_sql_variables_in=all` was
-    used. MaxScale 22.08 will instead route the query to all servers and discard
+    used. Percona Proxy 22.08 will instead route the query to all servers and discard
     the extra results.
 
 * `master`
@@ -229,15 +229,15 @@ SELECT @myid; -- Might return 1 or 0
 
 ### `connection_keepalive`
 
-** Note: ** This parameter has been moved into the MaxScale core. For the
+** Note: ** This parameter has been moved into the Percona Proxy core. For the
    current documentation, read the
    [`connection_keepalive`](../Getting-Started/Configuration-Guide.md#connection_keepalive)
    section in the configuration guide.
 
-Send keepalive pings to backend servers. This feature was introduced in MaxScale
+Send keepalive pings to backend servers. This feature was introduced in Percona Proxy
 2.2.0. The default value is 300 seconds starting with 2.3.2 and for older
 versions the feature was disabled by default. This parameter was converted into
-a service parameter in MaxScale 2.5.0.
+a service parameter in Percona Proxy 2.5.0.
 
 ### `master_reconnection`
 
@@ -247,7 +247,7 @@ a service parameter in MaxScale 2.5.0.
 - **Default**: false
 
 Allow the primary server to change mid-session. This feature was introduced in
-MaxScale 2.3.0 and is disabled by default. This feature requires that
+Percona Proxy 2.3.0 and is disabled by default. This feature requires that
 `disable_sescmd_history` is not used.
 
 When a readwritesplit session starts, it will pick a primary server as the
@@ -288,13 +288,13 @@ connects to and how the load balancing is done. The default behavior is to route
 read queries to the replica server with the lowest amount of ongoing queries i.e.
 `least_current_operations`.
 
-All of the load balancing methods use MaxScale's own accounting. Connections and
-queries done directly on the database and not through MaxScale are not taken
+All of the load balancing methods use Percona Proxy's own accounting. Connections and
+queries done directly on the database and not through Percona Proxy are not taken
 into account by readwritesplit. For example, if server A has 100 queries running
-all of which are routed through MaxScale and server B has 115 queries but only
-95 of those were routed through MaxScale, server B is considered a better
+all of which are routed through Percona Proxy and server B has 115 queries but only
+95 of those were routed through Percona Proxy, server B is considered a better
 candidate even if the absolute number of active queries on it is higher. This is
-because MaxScale only tracks the connections and queries routed through the same
+because Percona Proxy only tracks the connections and queries routed through the same
 process.
 
 The option syntax:
@@ -308,7 +308,7 @@ Where `<criteria>` is one of the following values.
 * `least_current_operations` (default), the replica with least active operations
 * `adaptive_routing`, based on server average response times.
 * `least_behind_master`, the replica with smallest replication lag
-* `least_global_connections`, the replica with least connections from MariaDB MaxScale
+* `least_global_connections`, the replica with least connections from Percona Proxy for MariaDB
 * `least_router_connections`, the replica with least connections from this service
 
 `least_current_operations` uses the current number of active operations
@@ -327,7 +327,7 @@ any traffic, the network lag to the server as measured by the monitor is used as
 the proxy of the true response time. This selection criteria is designed for
 heterogeneous clusters: servers of differing hardware, differing network
 distances, or when other loads are running on the servers (including a
-backup). If the servers are queried by other clients than MaxScale, the load
+backup). If the servers are queried by other clients than Percona Proxy, the load
 caused by them is indirectly taken into account.
 
 `least_behind_master` uses the measured replication lag as the load balancing
@@ -346,37 +346,37 @@ uses a metric that's too coarse (number of connections) to load balance
 something that's finer (individual SQL queries).
 
 The `least_global_connections` and `least_router_connections` use the
-connections from MariaDB MaxScale to the server, not the amount of connections
+connections from Percona Proxy for MariaDB to the server, not the amount of connections
 reported by the server itself.
 
-Starting with MaxScale versions 2.5.29, 6.4.11, 22.08.9, 23.02.5 and 23.08.1,
+Starting with Percona Proxy versions 2.5.29, 6.4.11, 22.08.9, 23.02.5 and 23.08.1,
 lowercase versions of the values are also accepted. For example,
 `slave_selection_criteria=LEAST_CURRENT_OPERATIONS` and
 `slave_selection_criteria=least_current_operations` are both accepted as valid
 values.
 
-Starting with MaxScale 23.08.1, the legacy uppercase values have been
+Starting with Percona Proxy 23.08.1, the legacy uppercase values have been
 deprecated. All runtime modifications of the parameter will now be persisted in
 lowercase. The uppercase values are still accepted but will be removed in a
-future MaxScale release.
+future Percona Proxy release.
 
 ### `max_sescmd_history`
 
 This parameter has been moved to
-[the MaxScale core](../Getting-Started/Configuration-Guide.md#max_sescmd_history)
-in MaxScale 6.0.
+[the Percona Proxy core](../Getting-Started/Configuration-Guide.md#max_sescmd_history)
+in Percona Proxy 6.0.
 
 ### `disable_sescmd_history`
 
 This parameter has been moved to
-[the MaxScale core](../Getting-Started/Configuration-Guide.md#disable_sescmd_history)
-in MaxScale 6.0.
+[the Percona Proxy core](../Getting-Started/Configuration-Guide.md#disable_sescmd_history)
+in Percona Proxy 6.0.
 
 ### `prune_sescmd_history`
 
 This parameter has been moved to
-[the MaxScale core](../Getting-Started/Configuration-Guide.md#prune_sescmd_history)
-in MaxScale 6.0.
+[the Percona Proxy core](../Getting-Started/Configuration-Guide.md#prune_sescmd_history)
+in Percona Proxy 6.0.
 
 ### `master_accept_reads`
 
@@ -405,7 +405,7 @@ master_accept_reads=true
 - **Dynamic**: Yes
 - **Default**: false
 
-This option is disabled by default since MaxScale 2.2.1. In older versions, this
+This option is disabled by default since Percona Proxy 2.2.1. In older versions, this
 option was enabled by default.
 
 When a client executes a multi-statement query, it will be treated as if it were
@@ -433,7 +433,7 @@ strict_multi_stmt=true
 
 Similar to `strict_multi_stmt`, this option allows all queries after a CALL
 operation on a stored procedure to be routed to the primary. This option is
-disabled by default and was added in MaxScale 2.1.9.
+disabled by default and was added in Percona Proxy 2.1.9.
 
 All warnings and restrictions that apply to `strict_multi_stmt` also apply to
 `strict_sp_calls`.
@@ -490,7 +490,7 @@ parameter.
 
 **Note:** If `master_failure_mode` is set to `error_on_write` and the connection
 to the primary is lost, by default, clients will not be able to execute write
-queries without reconnecting to MariaDB MaxScale once a new primary is
+queries without reconnecting to Percona Proxy for MariaDB once a new primary is
 available. If [`master_reconnection`](#master_reconnection) is enabled, the
 session can recover if one of the replicas is promoted as the primary.
 
@@ -535,19 +535,19 @@ When combined with the `master_reconnection` parameter, failures of writes done
 outside of transactions can be hidden from the client connection. This allows a
 primary to be replaced while writes are being sent.
 
-Starting with MaxScale 21.06.18, 22.08.15, 23.02.12, 23.08.8, 24.02.4 and
+Starting with Percona Proxy 21.06.18, 22.08.15, 23.02.12, 23.08.8, 24.02.4 and
 24.08.1, `delayed_retry` will no longer attempt to retry a query if it was
 already sent to the database. If a query is received while a valid target server
 is not available, the execution of the query is delayed until a valid target is
 found or the delayed retry timeout is hit. If a query was already sent, it will
 not be replayed to prevent duplicate execution of statements.
 
-In older versions of MaxScale, duplicate execution of a statement can occur if
+In older versions of Percona Proxy, duplicate execution of a statement can occur if
 the connection to the server is lost or the server crashes but the server comes
 back up before the timeout for the retrying is exceeded. At this point, if the
 server managed to read the client's statement, it will be executed. For this
 reason, it is recommended to only enable `delayed_retry` for older versions of
-MaxScale when the possibility of duplicate statement execution is an acceptable
+Percona Proxy when the possibility of duplicate statement execution is an acceptable
 risk.
 
 ### `delayed_retry_timeout`
@@ -562,7 +562,7 @@ The duration to wait until an error is returned to the client when
 
 The timeout is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second.
@@ -574,7 +574,7 @@ even if the duration is longer than a second.
 - **Dynamic**: Yes
 - **Default**: false
 
-Replay interrupted transactions. This parameter was added in MaxScale 2.3.0 and
+Replay interrupted transactions. This parameter was added in Percona Proxy 2.3.0 and
 is disabled by default. Enabling this parameter enables both `delayed_retry` and
 `master_reconnection` and sets `master_failure_mode` to `fail_on_write`, thereby
 overriding any configured values for these parameters.
@@ -610,11 +610,11 @@ The amount of memory needed to store a particular transaction will be slightly
 larger than the length in bytes of the SQL used in the transaction. If the limit
 is ever exceeded, a message will be logged at the info level.
 
-Starting with MaxScale 6.4.10, the number of times that this limit has been
-exceeded is shown in `maxctrl show service` as `trx_max_size_exceeded`.
+Starting with Percona Proxy 6.4.10, the number of times that this limit has been
+exceeded is shown in `percona-proxyctl show service` as `trx_max_size_exceeded`.
 
 Read [the configuration guide](../Getting-Started/Configuration-Guide.md#sizes)
-for more details on size type parameters in MaxScale.
+for more details on size type parameters in Percona Proxy.
 
 ### `transaction_replay_attempts`
 
@@ -640,7 +640,7 @@ attempts is reset.
 - **Default**: 0s
 
 The time how long transactions are attempted for. This feature is disabled by
-default and was added in MaxScale 6.2.1. To explicitly disable this feature, set
+default and was added in Percona Proxy 6.2.1. To explicitly disable this feature, set
 the value to 0 seconds.
 
 The timeout is
@@ -665,7 +665,7 @@ happens due to problems like the max_connections limit being hit on the database
 server.
 
 With the introduction of `transaction_replay_timeout`, these problems are
-avoided. Starting with MaxScale 6.2.1, this is the recommended method of
+avoided. Starting with Percona Proxy 6.2.1, this is the recommended method of
 controlling the timeouts for transaction replay.
 
 ### `transaction_replay_retry_on_deadlock`
@@ -676,8 +676,8 @@ controlling the timeouts for transaction replay.
 - **Default**: false
 
 Enable automatic retrying of transactions that end up in a deadlock. This
-parameter was added in MaxScale 2.4.6 and the feature is disabled by
-default. MaxScale versions from 2.4.0 to 2.4.5 always tried to replay deadlocked
+parameter was added in Percona Proxy 2.4.6 and the feature is disabled by
+default. Percona Proxy versions from 2.4.0 to 2.4.5 always tried to replay deadlocked
 transactions.
 
 If this feature is enabled and a transaction returns a deadlock error
@@ -698,8 +698,8 @@ interrupted, there is a risk of duplicating the transaction if it is
 replayed. This parameter prevents the retrying of transactions that are about to
 commit.
 
-This parameter was added in MaxScale 23.08.0 and is enabled by default. The
-older version of MaxScale always attempted to replay the transaction even if
+This parameter was added in Percona Proxy 23.08.0 and is enabled by default. The
+older version of Percona Proxy always attempted to replay the transaction even if
 there was a risk of duplicating the transaction.
 
 If the data that is about to be modified is read before it is modified and it is
@@ -718,7 +718,7 @@ SQL is correctly formed and compatible with this behavior.
 - **Default**: false
 
 Retry transactions that end in checksum mismatch. This parameter was added in
-MaxScale 6.2.1 is disabled by default.
+Percona Proxy 6.2.1 is disabled by default.
 
 When enabled, any replayed transactions that end with a checksum mismatch are
 retried until they either succeeds or one of the transaction replay limits is
@@ -803,7 +803,7 @@ All limitations that apply to `transaction_replay` also apply to
 - **Default**: `none`
 
 Enable causal reads. This parameter is disabled by default and was introduced in
-MaxScale 2.3.0.
+Percona Proxy 2.3.0.
 
 If a client connection modifies the database and `causal_reads` is enabled, any
 subsequent reads performed on replica servers will be done in a manner that
@@ -863,18 +863,18 @@ The possible values for this parameter are:
     inside a single GTID domain.This mode gives similar benefits as the `local`
     mode in that it improves read scalability at the cost of latency.
 
-    With MaxScale versions 2.5.14 and older, multi-domain use of causal_reads
-    could cause non-causal reads to occur. Starting with MaxScale 2.5.15, this
+    With Percona Proxy versions 2.5.14 and older, multi-domain use of causal_reads
+    could cause non-causal reads to occur. Starting with Percona Proxy 2.5.15, this
     was fixed and all the GTID coordinates are passed alongside all requests
     which makes multi-domain GTIDs safe to use. However, this does mean that the
     GTID coordinates will never be reset: if replication is reset and and GTID
     coordinates go "backwards", readwritesplit will not consider these as being
     newer than the ones already stored. To reset the stored GTID coordinates in
-    readwritesplit, MaxScale must be restarted.
+    readwritesplit, Percona Proxy must be restarted.
 
-    MaxScale 6.4.11 added the new `reset-gtid` module command to
+    Percona Proxy 6.4.11 added the new `reset-gtid` module command to
     readwritesplit. This allows the global GTID state used by
-    `causal_reads=global` to be reset without having to restart MaxScale.
+    `causal_reads=global` to be reset without having to restart Percona Proxy.
 
 * `fast`
 
@@ -921,7 +921,7 @@ The possible values for this parameter are:
     regardless of where a write originated from but it comes at the cost of
     increased latency. For every read, a round trip to the current primary server
     is done. This means that the latency of any given SELECT statement increases
-    by roughly twice the network latency between MaxScale and the database
+    by roughly twice the network latency between Percona Proxy and the database
     cluster. In addition, an extra SELECT statement is always executed on the
     primary which places some load on the server.
 
@@ -938,10 +938,10 @@ The possible values for this parameter are:
     the most load on the primary node as even a moderate write load can cause
     the GTIDs of replicas to lag too far behind.
 
-Before MaxScale 2.5.0, the `causal_reads` parameter was a boolean
+Before Percona Proxy 2.5.0, the `causal_reads` parameter was a boolean
 parameter. False values translated to `none` and true values translated to
 `local`. The use of boolean parameters is deprecated but still accepted in
-MaxScale 2.5.0.
+Percona Proxy 2.5.0.
 
 #### Implementation of `causal_reads`
 
@@ -952,7 +952,7 @@ help of the `MASTER_GTID_WAIT` function.
 
 If the replica has not caught up to the primary within the configured time, as
 specified by [causal_reads_timeout](#causal_reads_timeout), it will
-be retried on the primary. In MaxScale 2.3.0 an error was returned to the client
+be retried on the primary. In Percona Proxy 2.3.0 an error was returned to the client
 when the replica timed out.
 
 The exception to this rule is the `fast` mode which does not do any
@@ -979,14 +979,14 @@ By prefixing these types of SELECT statements with a command that guarantees
 consistent results for the reads, read scalability can be improved without
 sacrificing consistency.
 
-The set of example SQL above will be translated by MaxScale into the following
+The set of example SQL above will be translated by Percona Proxy into the following
 statements.
 
 ```sql
 INSERT INTO test.t1 (id) VALUES (1);
 
 -- These are executed as one multi-query
-SET @maxscale_secret_variable=(
+SET @percona_proxy_secret_variable=(
     SELECT CASE
            WHEN MASTER_GTID_WAIT('0-3000-8', 10) = 0 THEN 1
            ELSE (SELECT 1 FROM INFORMATION_SCHEMA.ENGINES)
@@ -1014,7 +1014,7 @@ COM_STMT_PREPARE:  SELECT * FROM test.t1 WHERE id = ?;
 COM_STMT_EXECUTE:  ? = 123
 ```
 
-The SQL that MaxScale executes will be the following:
+The SQL that Percona Proxy executes will be the following:
 
 ```
 COM_QUERY:         INSERT INTO test.t1 (id) VALUES (1);
@@ -1039,7 +1039,7 @@ It is recommend that the session command history is enabled whenever prepared
 statements are used with `causal_reads`. This allows new connections to be
 created whenever a causal read times out.
 
-Starting with MaxScale 2.5.17, a failed causal read inside of a read-only
+Starting with Percona Proxy 2.5.17, a failed causal read inside of a read-only
 transaction started with `START TRANSACTION READ ONLY` will return the following
 error:
 
@@ -1049,7 +1049,7 @@ SQLSTATE: 25006
 Message:  Causal read timed out while in a read-only transaction, cannot retry command.
 ```
 
-Older versions of MaxScale attempted to retry the command on the current primary
+Older versions of Percona Proxy attempted to retry the command on the current primary
 server which would cause the connection to be closed and a warning to be logged.
 
 #### Limitations of Causal Reads
@@ -1058,7 +1058,7 @@ server which would cause the connection to be closed and a warning to be logged.
   replication mechanisms. As Galera does not update the `gtid_slave_pos`
   variable when events are replicated via the Galera library, the
   [`MASTER_GTID_WAIT`](https://mariadb.com/kb/en/library/master_gtid_wait/)
-  function used by MaxScale to synchronize reads will wait until the
+  function used by Percona Proxy to synchronize reads will wait until the
   timeout. With Galera this is not a serious issue as it, by nature, is a
   mostly-synchronous replication mechanism.
 
@@ -1094,7 +1094,7 @@ default value is 10 seconds.
 
 The timeout is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second.
@@ -1118,14 +1118,14 @@ initial connection creation is skipped. If the client executes only read
 queries, no connection to the primary is made. If only write queries are made,
 only the primary connection is used.
 
-In MaxScale 23.08.2, if a [session command](#routing-to-every-session-backend)
+In Percona Proxy 23.08.2, if a [session command](#routing-to-every-session-backend)
 is received as the first command, the default behavior is to execute it on a
 replica. If [master_accept_reads](#master_accept_reads) is enabled, the query is
 executed on the primary server, if one is available. In practice this means that
 workloads which are mostly reads with infrequent writes should disable
 `master_accept_reads` if they also use `lazy_connect`.
 
-Older versions of MaxScale always tried to execute all session commands on the
+Older versions of Percona Proxy always tried to execute all session commands on the
 primary node if one was available.
 
 ### `reuse_prepared_statements`
@@ -1210,12 +1210,12 @@ hints when you are sure that they can cause no harm.
 An exception to this rule is `transaction_replay`: when it is enabled, all
 routing hints inside transaction are ignored. This is done to prevent changes
 done inside a re-playable transaction from affecting servers outside of the
-transaction. This behavior was added in MaxScale 6.1.4. Older versions allowed
+transaction. This behavior was added in Percona Proxy 6.1.4. Older versions allowed
 routing hints to override the transaction logic.
 
 ### Known Limitations of Routing Hints
 
-* If a `SELECT` statement with a `maxscale route to slave` hint is received
+* If a `SELECT` statement with a `percona-proxy route to slave` hint is received
   while autocommit is disabled, the query will be routed to a replica server. This
   causes some metadata locks to be acquired on the database in question which
   will block DDL statements on the server until either the connection is closed
@@ -1229,15 +1229,15 @@ The readwritesplit router implements the following module commands.
 
 The command resets the global GTID state in the router. It can be used with
 `causal_reads=global` to reset the state. This can be useful when the cluster is
-reverted to an earlier state and the GTIDs recorded in MaxScale are no longer
+reverted to an earlier state and the GTIDs recorded in Percona Proxy are no longer
 valid.
 
 The first and only argument to the command is the router name. For example, to
 reset the GTID state of a readwritesplit named `My-RW-Router`, the following
-MaxCtrl command should be used:
+Percona Proxyctl command should be used:
 
 ```
-maxctrl call command readwritesplit reset-gtid My-RW-Router
+percona-proxyctl call command readwritesplit reset-gtid My-RW-Router
 ```
 
 ## Examples
@@ -1288,9 +1288,9 @@ session to the primary when the isolation level is set to serializable. This
 retains the correctness of the isolation level which can otherwise cause
 problems.
 
-Starting with MaxScale 23.08, once the transaction isolation level is set to
+Starting with Percona Proxy 23.08, once the transaction isolation level is set to
 something other than `SERIALIZABLE`, the session is no longer locked to the
-primary and returns to its normal state. Older versions of MaxScale remain
+primary and returns to its normal state. Older versions of Percona Proxy remain
 locked to the primary even if the session goes out of the `SERIALIZABLE`
 isolation level.
 
@@ -1309,7 +1309,7 @@ of the following group:
 * `SHOW` statements except `SHOW MASTER STATUS`
 
 The list of supported built-in fuctions can be found
-[here](https://github.com/mariadb-corporation/MaxScale/blob/23.02/query_classifier/qc_sqlite/builtin_functions.cc).
+[here](https://github.com/mariadb-corporation/Percona Proxy/blob/23.02/query_classifier/qc_sqlite/builtin_functions.cc).
 
 ### Routing to every session backend
 
@@ -1334,7 +1334,7 @@ The router stores all of the executed session commands so that in case of a
 replica failure, a replacement replica can be chosen and the session command history
 can be repeated on that new replica. This means that the router stores each
 executed session command for the duration of the session. Applications that use
-long-running sessions might cause MariaDB MaxScale to consume a growing amount
+long-running sessions might cause Percona Proxy for MariaDB to consume a growing amount
 of memory unless the sessions are closed. This can be solved by adjusting the
 value of `max_sescmd_history`.
 
@@ -1371,8 +1371,8 @@ closed (MXS-1816).
 When transaction replay is enabled, readwritesplit calculates a checksum of the
 server responses for each transaction. This is used to determine whether a
 replayed transaction was identical to the original transaction. Starting with
-MaxScale 23.08, a 128-bit xxHash checksum is stored for each statement that is
-in the transaction. Older versions of MaxScale used a single 160-bit SHA1
+Percona Proxy 23.08, a 128-bit xxHash checksum is stored for each statement that is
+in the transaction. Older versions of Percona Proxy used a single 160-bit SHA1
 checksum for the whole transaction.
 
 If the results from the replacement server are not identical when the
@@ -1390,9 +1390,9 @@ whether the transaction was successfully committed. This means that there
 is a possibility for duplicate transaction execution which can result in
 data duplication in certain cases.
 
-In MaxScale 23.08, the `transaction_replay_safe_commit` variable controls
+In Percona Proxy 23.08, the `transaction_replay_safe_commit` variable controls
 whether a replay is attempted or not whenever a `COMMIT` is interrupted. By
-default the transaction will not be replayed. Older versions of MaxScale always
+default the transaction will not be replayed. Older versions of Percona Proxy always
 replayed the transaction.
 
 Data duplication can happen if the transaction consists of the following
@@ -1424,10 +1424,10 @@ present. The exception to this are the transaction management statements such as
 `BEGIN` and `START TRANSACTION`: they are detected and will cause the
 transaction to be correctly reset.
 
-In older versions of MaxScale, if a connection to a server is lost while a
+In older versions of Percona Proxy, if a connection to a server is lost while a
 statement is being executed and the result was partially delivered to the
 client, readwritesplit would immediately close the session without attempting to
-replay the failing statement. Starting with MaxScale 23.08, this limitation no
+replay the failing statement. Starting with Percona Proxy 23.08, this limitation no
 longer applies if the statement was done inside of a transaction and
 `transaction_replay` is enabled
 ([MXS-4549](https://jira.mariadb.org/browse/MXS-4549)).
@@ -1526,7 +1526,7 @@ SELECT ..INTO variable|OUTFILE|DUMPFILE
 SET autocommit=1|0
 ```
 
-Prior to MaxScale 2.3.0, session commands that were 2²⁴ - 1 bytes or longer were
+Prior to Percona Proxy 2.3.0, session commands that were 2²⁴ - 1 bytes or longer were
 not supported and caused the session to be closed.
 
 There is a possibility for misbehavior. If `USE mytable` is executed in one of
@@ -1551,7 +1551,7 @@ If a SELECT query modifies a user variable when the `use_sql_variables_in`
 parameter is set to `all`, it will not be routed and the client will receive an
 error. A log message is written into the log further explaining the reason for
 the error. Here is an example use of a SELECT query which modifies a user
-variable and how MariaDB MaxScale responds to it.
+variable and how Percona Proxy for MariaDB responds to it.
 
 ```
 MySQL [(none)]> set @id=1;

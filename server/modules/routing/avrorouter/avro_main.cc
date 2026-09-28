@@ -19,15 +19,15 @@
 #include <sys/stat.h>
 #include <glob.h>
 #include <unistd.h>
-#include <maxscale/maxscale.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/router.hh>
-#include <maxscale/service.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/percona-proxy.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/config2.hh>
 
 using namespace maxbase;
 namespace cfg = mxs::config;
@@ -197,7 +197,7 @@ bool conversion_task_ctl(Avro* inst, bool start)
 {
     bool rval = false;
 
-    if (!maxscale_is_shutting_down())
+    if (!percona_proxy_is_shutting_down())
     {
         Worker* worker = mxs::MainWorker::get();
         std::unique_ptr<ConversionCtlTask> task(new(std::nothrow) ConversionCtlTask(inst, start));
@@ -344,7 +344,7 @@ extern "C" MXS_MODULE* MXS_CREATE_MODULE()
                                1,
                                args_purge,
                                "Purge created Avro files and reset conversion state. "
-                               "NOTE: MaxScale must be restarted after this call.");
+                               "NOTE: Percona Proxy must be restarted after this call.");
 
     static modulecmd_arg_type_t args_rotate[] =
     {

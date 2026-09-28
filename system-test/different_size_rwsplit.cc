@@ -41,7 +41,7 @@ void different_packet_size(TestConnections& test)
                 sql.append(constant_size, 'a');
                 sql.append(suffix);
 
-                auto c = test.maxscale->rwsplit();
+                auto c = test.percona_proxy->rwsplit();
                 test.expect(c.connect(), "Failed to connect: %s", c.error());
                 test.expect(c.query(sql), "Query with size %lu failed: %s", sql.size(), c.error());
                 done(sql.size());

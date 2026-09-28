@@ -100,7 +100,7 @@ void test_table_in_key(TestConnections& test)
     test.expect(conn.connect(), "Connection to master failed: %s", conn.error());
     conn.query("DROP TABLE IF EXISTS test.t2");
 
-    test.check_maxctrl("alter service Kafka-Importer topics second_topic table_name_in key");
+    test.check_percona_proxyctl("alter service Kafka-Importer topics second_topic table_name_in key");
 
     test.tprintf("Producing 100 messages");
     Producer producer(test);
@@ -117,7 +117,7 @@ void test_table_in_key(TestConnections& test)
 
     test.expect(read_rows(test, "t2", NUM_MSG), "Failed to read rows");
 
-    test.check_maxctrl("alter service Kafka-Importer batch_size 1");
+    test.check_percona_proxyctl("alter service Kafka-Importer batch_size 1");
 
     test.tprintf("Producing a message with a table name that must be escaped");
     producer.produce_message("second_topic", "test.`that's-a-bad-name`",
@@ -145,7 +145,7 @@ void test_custom_engine(TestConnections& test)
     test.expect(conn.connect(), "Connection to master failed: %s", conn.error());
     conn.query("DROP TABLE IF EXISTS test.custom_engine");
 
-    test.check_maxctrl("alter service Kafka-Importer topics=custom_engine engine=Aria");
+    test.check_percona_proxyctl("alter service Kafka-Importer topics=custom_engine engine=Aria");
 
     test.tprintf("Producing some messages, table should be created with ENGINE=Aria");
     Producer producer(test);
@@ -184,13 +184,13 @@ void test_custom_engine(TestConnections& test)
 
 int main(int argc, char** argv)
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
     Kafka kafka(test);
     kafka.create_topic("test.t1");
     kafka.create_topic("second_topic");
     kafka.create_topic("custom_engine");
-    test.maxscale->start();
+    test.percona_proxy->start();
 
     test_table_in_topic(test);
     test_table_in_key(test);

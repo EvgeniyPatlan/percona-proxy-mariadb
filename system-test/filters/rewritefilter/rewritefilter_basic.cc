@@ -111,31 +111,31 @@ void test_rewrites(MYSQL* conn)
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test {argc, argv};
 
-    /* Copy the rewrite template file to the maxscale node */
+    /* Copy the rewrite template file to the percona-proxy node */
     auto rf_file = "rewrite.rf"s;
     std::string from = mxt::SOURCE_DIR + "/filters/rewritefilter/"s + rf_file;
-    std::string to = test.maxscale->access_homedir() + rf_file;
-    test.maxscale->copy_to_node(from.c_str(), to.c_str());
-    test.maxscale->ssh_node(("chmod a+r "s + to).c_str(), true);
+    std::string to = test.percona_proxy->access_homedir() + rf_file;
+    test.percona_proxy->copy_to_node(from.c_str(), to.c_str());
+    test.percona_proxy->ssh_node(("chmod a+r "s + to).c_str(), true);
 
     test.repl->connect();
-    test.maxscale->start();
-    test.maxscale->connect_rwsplit("test");
+    test.percona_proxy->start();
+    test.percona_proxy->connect_rwsplit("test");
 
     try
     {
         std::cout << "Create table" << std::endl;
-        CreateTable create{test.maxscale->conn_rwsplit};
+        CreateTable create{test.percona_proxy->conn_rwsplit};
 
         std::cout << "Insert rows" << std::endl;
         test.reset_timeout();
-        insert_rows(test.maxscale->conn_rwsplit);
+        insert_rows(test.percona_proxy->conn_rwsplit);
 
         std::cout << "Test rewrites" << std::endl;
-        test_rewrites(test.maxscale->conn_rwsplit);
+        test_rewrites(test.percona_proxy->conn_rwsplit);
     }
     catch (DatabaseError& ex)
     {

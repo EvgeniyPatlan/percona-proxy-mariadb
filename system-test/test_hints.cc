@@ -34,54 +34,54 @@ static struct result
     int         reply;
 } queries[] =
 {
-    {"select @@server_id; -- maxscale begin route to master",                       SERVER1},
+    {"select @@server_id; -- percona-proxy begin route to master",                       SERVER1},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id; -- maxscale route to server server3",                     SERVER3},
+    {"select @@server_id; -- percona-proxy route to server server3",                     SERVER3},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id; -- maxscale end",                                         NOT_MASTER},
-    {"select @@server_id; -- maxscale named1 prepare route to master",              NOT_MASTER},
-    {"select @@server_id; -- maxscale named1 begin",                                SERVER1},
+    {"select @@server_id; -- percona-proxy end",                                         NOT_MASTER},
+    {"select @@server_id; -- percona-proxy named1 prepare route to master",              NOT_MASTER},
+    {"select @@server_id; -- percona-proxy named1 begin",                                SERVER1},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id; -- maxscale route to server server3",                     SERVER3},
+    {"select @@server_id; -- percona-proxy route to server server3",                     SERVER3},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id; -- maxscale end",                                         NOT_MASTER},
-    {"select @@server_id; -- maxscale shorthand1 begin route to server server2",    SERVER2},
+    {"select @@server_id; -- percona-proxy end",                                         NOT_MASTER},
+    {"select @@server_id; -- percona-proxy shorthand1 begin route to server server2",    SERVER2},
     {"select @@server_id;",                                                         SERVER2},
-    {"select @@server_id; -- maxscale route to server server3",                     SERVER3},
+    {"select @@server_id; -- percona-proxy route to server server3",                     SERVER3},
     {"select @@server_id;",                                                         SERVER2},
-    {"select @@server_id; -- maxscale end",                                         NOT_MASTER},
-    {"select @@server_id; # maxscale begin route to master",                        SERVER1},
+    {"select @@server_id; -- percona-proxy end",                                         NOT_MASTER},
+    {"select @@server_id; # percona-proxy begin route to master",                        SERVER1},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id; # maxscale route to server server3",                      SERVER3},
+    {"select @@server_id; # percona-proxy route to server server3",                      SERVER3},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id; # maxscale end",                                          SERVER2},
-    {"select @@server_id; # maxscale named2 prepare route to master",               NOT_MASTER},
-    {"select @@server_id; # maxscale named2 begin",                                 SERVER1},
+    {"select @@server_id; # percona-proxy end",                                          SERVER2},
+    {"select @@server_id; # percona-proxy named2 prepare route to master",               NOT_MASTER},
+    {"select @@server_id; # percona-proxy named2 begin",                                 SERVER1},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id; # maxscale route to server server3",                      SERVER3},
+    {"select @@server_id; # percona-proxy route to server server3",                      SERVER3},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id; # maxscale end",                                          NOT_MASTER},
-    {"select @@server_id; # maxscale shorthand2 begin route to server server2",     SERVER2},
+    {"select @@server_id; # percona-proxy end",                                          NOT_MASTER},
+    {"select @@server_id; # percona-proxy shorthand2 begin route to server server2",     SERVER2},
     {"select @@server_id;",                                                         SERVER2},
-    {"select @@server_id; # maxscale route to server server3",                      SERVER3},
+    {"select @@server_id; # percona-proxy route to server server3",                      SERVER3},
     {"select @@server_id;",                                                         SERVER2},
-    {"select @@server_id; # maxscale end",                                          NOT_MASTER},
-    {"select @@server_id/* maxscale begin route to master */;",                     SERVER1},
+    {"select @@server_id; # percona-proxy end",                                          NOT_MASTER},
+    {"select @@server_id/* percona-proxy begin route to master */;",                     SERVER1},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id/* maxscale route to server server3 */;",                   SERVER3},
+    {"select @@server_id/* percona-proxy route to server server3 */;",                   SERVER3},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id/* maxscale end */;",                                       NOT_MASTER},
-    {"select @@server_id/* maxscale named3 prepare route to master */;",            NOT_MASTER},
-    {"select @@server_id/* maxscale named3 begin */;",                              SERVER1},
+    {"select @@server_id/* percona-proxy end */;",                                       NOT_MASTER},
+    {"select @@server_id/* percona-proxy named3 prepare route to master */;",            NOT_MASTER},
+    {"select @@server_id/* percona-proxy named3 begin */;",                              SERVER1},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id/* maxscale route to server server3 */;",                   SERVER3},
+    {"select @@server_id/* percona-proxy route to server server3 */;",                   SERVER3},
     {"select @@server_id;",                                                         SERVER1},
-    {"select @@server_id/* maxscale end */;",                                       NOT_MASTER},
-    {"select @@server_id/* maxscale shorthand3 begin route to server server2 */; ", SERVER2},
+    {"select @@server_id/* percona-proxy end */;",                                       NOT_MASTER},
+    {"select @@server_id/* percona-proxy shorthand3 begin route to server server2 */; ", SERVER2},
     {"select @@server_id;",                                                         SERVER2},
-    {"select @@server_id/* maxscale route to server server3 */;",                   SERVER3},
+    {"select @@server_id/* percona-proxy route to server server3 */;",                   SERVER3},
     {"select @@server_id;",                                                         SERVER2},
-    {"select @@server_id/* maxscale end */;",                                       NOT_MASTER},
+    {"select @@server_id/* percona-proxy end */;",                                       NOT_MASTER},
     {NULL,                                                                          SERVER1}
 };
 
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 {
     TestConnections* test = new TestConnections(argc, argv);
     test->repl->connect();
-    test->maxscale->connect_maxscale();
+    test->percona_proxy->connect_percona_proxy();
 
     char server_id[test->repl->N][1024];
 
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
     for (int i = 0; queries[i].query; i++)
     {
         char str[1024];
-        find_field(test->maxscale->conn_rwsplit, queries[i].query, "@@server_id", str);
+        find_field(test->percona_proxy->conn_rwsplit, queries[i].query, "@@server_id", str);
         if (queries[i].reply == NOT_MASTER)
         {
             test->expect(strcmp(server_id[0], str) != 0,

@@ -18,7 +18,7 @@
 #include "rpl_event.hh"
 #include "file_reader.hh"
 #include <maxbase/log.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/routingworker.hh>
 #include <fstream>
 #include <iostream>
 #include <iomanip>

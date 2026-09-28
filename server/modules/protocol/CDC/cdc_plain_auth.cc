@@ -12,20 +12,20 @@
  * Public License.
  */
 
-#include <maxscale/protocol/cdc/module_names.hh>
+#include <percona-proxy/protocol/cdc/module_names.hh>
 #define MXB_MODULE_NAME MXS_CDC_PROTOCOL_NAME
 
 #include "cdc_plain_auth.hh"
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <maxscale/protocol/cdc/cdc.hh>
-#include <maxscale/event.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/users.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/protocol/cdc/cdc.hh>
+#include <percona-proxy/event.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/users.hh>
+#include <percona-proxy/utils.hh>
 
 /* Allowed time interval (in seconds) after last update*/
 #define CDC_USERS_REFRESH_TIME 30
@@ -97,7 +97,7 @@ bool cdc_add_new_user(const MODULECMD_ARG* args, json_t** output)
     }
     else
     {
-        modulecmd_set_error("Failed to create directory '%s'. Read the MaxScale "
+        modulecmd_set_error("Failed to create directory '%s'. Read the Percona Proxy "
                             "log for more details.",
                             path);
     }
@@ -118,7 +118,7 @@ int CDCAuthenticatorModule::cdc_auth_check(char* username, uint8_t* auth_data)
 }
 
 /**
- * @brief Authenticates a CDC user who is a client to MaxScale.
+ * @brief Authenticates a CDC user who is a client to Percona Proxy.
  *
  * @param generic_dcb Request handler DCB connected to the client
  * @return Authentication status
@@ -158,7 +158,7 @@ int CDCClientAuthenticator::authenticate(DCB* generic_dcb)
         }
         else if (dcb->service()->config()->log_auth_warnings)
         {
-            MXS_LOG_EVENT(maxscale::event::AUTHENTICATION_FAILURE,
+            MXS_LOG_EVENT(percona_proxy::event::AUTHENTICATION_FAILURE,
                           "%s: login attempt for user '%s' from [%s], authentication failed.",
                           dcb->service()->name(),
                           m_user,

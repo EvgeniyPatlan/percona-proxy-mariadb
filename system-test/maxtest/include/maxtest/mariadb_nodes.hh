@@ -156,7 +156,7 @@ private:
     int      m_port {-1};       /**< Main server port. Typically 3306. */
     bool     m_blocked {false}; /**< Blocked by iptables-rule */
 
-    const std::string m_cnf_name;   /**< MaxScale config name of server */
+    const std::string m_cnf_name;   /**< Percona Proxy config name of server */
     Node&             m_vm;
     MariaDBCluster&   m_cluster;
     const int         m_ind {-1};
@@ -473,13 +473,13 @@ public:
     void reset_server_settings(int node);
 
     /**
-     * @brief cnf_servers Generates backend servers description for maxscale.cnf
+     * @brief cnf_servers Generates backend servers description for percona-proxy.cnf
      * @return Servers description including IPs, ports
      */
     virtual std::string cnf_servers();
 
     /**
-     * @brief cnf_servers_line Generates list of backend servers for serivces definition in maxscale.cnf
+     * @brief cnf_servers_line Generates list of backend servers for serivces definition in percona-proxy.cnf
      * @return List of servers, e.g server1,server2,server3,...
      */
     std::string cnf_servers_line();
@@ -534,7 +534,7 @@ protected:
      * Constructor
      *
      * @param shared Global data
-     * @param cnf_server_prefix Node prefix in MaxScale config file
+     * @param cnf_server_prefix Node prefix in Percona Proxy config file
      */
     MariaDBCluster(mxt::SharedData* shared, const std::string& cnf_server_prefix);
 
@@ -577,7 +577,7 @@ protected:
     bool run_on_every_backend(const std::function<bool(int)>& func);
 
     std::string m_test_dir;             /**< path to test application */
-    /**< Prefix for backend server name in MaxScale config. E.g. 'server', 'gserver' */
+    /**< Prefix for backend server name in Percona Proxy config. E.g. 'server', 'gserver' */
     std::string m_cnf_server_prefix;
 
 private:

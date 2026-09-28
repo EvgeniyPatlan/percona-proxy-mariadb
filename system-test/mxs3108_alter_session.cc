@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection failed: %s", conn.error());
 
     std::string cmd_no_filters = "alter session-filters " + std::to_string(conn.thread_id());
@@ -45,14 +45,14 @@ int main(int argc, char* argv[])
     test.tprintf("Simple modification of filters");
 
     test.expect(conn.field("SELECT 1") == "1", "Filter should not be applied. Error: %s", conn.error());
-    test.check_maxctrl(cmd_one_filter);
+    test.check_percona_proxyctl(cmd_one_filter);
     test.expect(conn.field("SELECT 1") == "2", "Filter should be applied. Error: %s", conn.error());
-    test.check_maxctrl(cmd_no_filters);
+    test.check_percona_proxyctl(cmd_no_filters);
     test.expect(conn.field("SELECT 1") == "1", "Filter should not be applied. Error: %s", conn.error());
 
     test.expect(conn.send_query("SELECT SLEEP(3)"), "Failed to send query: %s", conn.error());
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    test.check_maxctrl(cmd_one_filter);
+    test.check_percona_proxyctl(cmd_one_filter);
     test.expect(conn.read_query_result(), "Failed to read query result: %s", conn.error());
     test.expect(conn.field("SELECT 1") == "2", "Filter should be applied");
 
@@ -63,11 +63,11 @@ int main(int argc, char* argv[])
 
     for (int i = 0; i < 5; i++)
     {
-        test.check_maxctrl(cmd_one_filter);
+        test.check_percona_proxyctl(cmd_one_filter);
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        test.check_maxctrl(cmd_two_filters);
+        test.check_percona_proxyctl(cmd_two_filters);
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        test.check_maxctrl(cmd_no_filters);
+        test.check_percona_proxyctl(cmd_no_filters);
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
@@ -76,11 +76,11 @@ int main(int argc, char* argv[])
 
     test.tprintf("Session log configuration");
 
-    test.check_maxctrl("alter session " + std::to_string(conn.thread_id()) + " log_info true");
+    test.check_percona_proxyctl("alter session " + std::to_string(conn.thread_id()) + " log_info true");
     test.expect(conn.query("SELECT 123"), "Query failed: %s", conn.error());
     test.log_includes("info   :.*SELECT 123");
 
-    test.check_maxctrl("alter session " + std::to_string(conn.thread_id()) + " log_info false");
+    test.check_percona_proxyctl("alter session " + std::to_string(conn.thread_id()) + " log_info false");
     test.expect(conn.query("SELECT 456"), "Query failed: %s", conn.error());
     test.log_excludes("info   :.*SELECT 456");
 

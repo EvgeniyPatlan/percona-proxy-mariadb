@@ -13,12 +13,12 @@
  */
 
 /**
- * @file bug662.cpp regression case for bug 662 ("MaxScale hangs in startup if backend server is not
- * responsive"), covers also bug680 ("RWSplit can't load DB user if backend is not available at MaxScale
+ * @file bug662.cpp regression case for bug 662 ("Percona Proxy hangs in startup if backend server is not
+ * responsive"), covers also bug680 ("RWSplit can't load DB user if backend is not available at Percona Proxy
  * start")
  *
  * - Block all Mariadb servers
- * - Restart MaxScale
+ * - Restart Percona Proxy
  * - Unblock Mariadb servers
  * - Sleep and check if Maxscale is alive
  */
@@ -28,7 +28,7 @@
 int main(int argc, char* argv[])
 {
     TestConnections* Test = new TestConnections(argc, argv);
-    Test->maxscale->connect_maxscale();
+    Test->percona_proxy->connect_percona_proxy();
 
     for (int i = 0; i < Test->repl->N; i++)
     {
@@ -38,11 +38,11 @@ int main(int argc, char* argv[])
     }
 
     Test->reset_timeout();
-    Test->tprintf("Restarting MaxScale");
-    Test->maxscale->restart_maxscale();
+    Test->tprintf("Restarting Percona Proxy");
+    Test->percona_proxy->restart_percona_proxy();
 
-    Test->tprintf("Checking if MaxScale is alive by connecting to with maxctrl\n");
-    Test->check_maxctrl("show servers");
+    Test->tprintf("Checking if Percona Proxy is alive by connecting to with percona-proxyctl\n");
+    Test->check_percona_proxyctl("show servers");
 
     for (int i = 0; i < Test->repl->N; i++)
     {
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
     sleep(3);
 
     Test->reset_timeout();
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
 
     int rval = Test->global_result;
     delete Test;

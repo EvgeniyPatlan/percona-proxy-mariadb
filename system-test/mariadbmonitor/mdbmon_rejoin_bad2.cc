@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     auto maxconn = mxs.open_rwsplit_connection2();
     generate_traffic_and_check(test, maxconn.get(), 5);
@@ -44,8 +44,8 @@ void test_main(TestConnections& test)
 
     if (test.ok())
     {
-        test.tprintf("Stopping MaxScale for a moment.");
-        // Stop maxscale to prevent an unintended rejoin.
+        test.tprintf("Stopping Percona Proxy for a moment.");
+        // Stop percona-proxy to prevent an unintended rejoin.
         mxs.stop_and_check_stopped();
         // Restart old master. Then add some events to it.
         test.tprintf("Restart node 0 and add more events.");
@@ -53,7 +53,7 @@ void test_main(TestConnections& test)
         auto conn = repl.backend(0)->open_connection();
         generate_traffic_and_check_nosync(test, conn.get(), 5);
 
-        test.tprintf("Starting MaxScale, node 0 should not be able to join because it has extra events.");
+        test.tprintf("Starting Percona Proxy, node 0 should not be able to join because it has extra events.");
         mxs.start_and_check_started();
         mxs.sleep_and_wait_for_monitor(2, 1);
         mxs.check_print_servers_status({mxt::ServerInfo::RUNNING, mxt::ServerInfo::master_st,

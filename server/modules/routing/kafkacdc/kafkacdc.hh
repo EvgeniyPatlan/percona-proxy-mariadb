@@ -15,10 +15,10 @@
 
 #define MXB_MODULE_NAME "kafkacdc"
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/router.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/paths.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/paths.hh>
 
 #include "../replicator/replicator.hh"
 #include "kafka_common.hh"

@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
     auto master = test.repl->get_connection(0);
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     EXPECT(master.connect());
 
     // Create a table

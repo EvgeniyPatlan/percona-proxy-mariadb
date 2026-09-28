@@ -13,7 +13,7 @@
  */
 
 /**
- * Runs the MariaDB Connector/R2DBC test suite against MaxScale
+ * Runs the MariaDB Connector/R2DBC test suite against Percona Proxy
  */
 #include "connector_common.hh"
 

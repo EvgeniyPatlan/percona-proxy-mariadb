@@ -17,7 +17,7 @@
 int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
-    MYSQL* mysql = test.maxscale->open_rwsplit_connection();
+    MYSQL* mysql = test.percona_proxy->open_rwsplit_connection();
 
     test.expect(mysql_query(mysql,
                             "CREATE OR REPLACE PROCEDURE MY_TEST_SP(IN id INT)"

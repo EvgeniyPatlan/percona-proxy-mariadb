@@ -18,7 +18,7 @@
 
 size_t get_size(TestConnections& test)
 {
-    auto res = test.maxctrl("api get maxscale/threads/0 data.attributes.stats.query_classifier_cache.size");
+    auto res = test.percona_proxyctl("api get percona-proxy/threads/0 data.attributes.stats.query_classifier_cache.size");
     int64_t size = 0;
     std::istringstream ss(res.output);
     ss >> size;
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     test.tprintf("Initial cache size: %lu", size);
     test.expect(size == 0, "Expected an empty cache, got %lu bytes", size);
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
     c.query("SELECT 1");    // This query should end up in the cache
 

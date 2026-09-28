@@ -17,7 +17,7 @@
  * installation")
  *
  * - Configure two monitors using same backend serves
- * - try to connect to maxscale
+ * - try to connect to percona-proxy
  * - check logs for warning
  */
 
@@ -29,9 +29,9 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
-    test.maxscale->restart_maxscale();
+    test.percona_proxy->restart_percona_proxy();
 
     test.log_includes("is already monitored by");
 

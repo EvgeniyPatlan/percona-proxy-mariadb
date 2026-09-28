@@ -25,12 +25,12 @@ void test_change_user(TestConnections& test, Ssl ssl, int port, const char* user
                       const char* user2, const char* pw2)
 {
     const char change_failed[] = "COM_CHANGE_USER from %s to %s failed.";
-    auto mxs_ssl = ssl == Ssl::ON ? mxt::MaxScale::SslMode::ON : mxt::MaxScale::SslMode::OFF;
-    auto conn1 = test.maxscale->try_open_connection(mxs_ssl, port, user1, pw1);
+    auto mxs_ssl = ssl == Ssl::ON ? mxt::PerconaProxy::SslMode::ON : mxt::PerconaProxy::SslMode::OFF;
+    auto conn1 = test.percona_proxy->try_open_connection(mxs_ssl, port, user1, pw1);
     bool ok1 = conn1->change_user(user2, pw2, "");
     test.expect(ok1, change_failed, user1, user2);
     // Try the other way around
-    auto conn2 = test.maxscale->try_open_connection(mxs_ssl, port, user2, pw2);
+    auto conn2 = test.percona_proxy->try_open_connection(mxs_ssl, port, user2, pw2);
     bool ok2 = conn2->change_user(user1, pw1, "");
     test.expect(ok2, change_failed, user2, user1);
     if (ok1 && ok2)
@@ -42,7 +42,7 @@ void test_change_user(TestConnections& test, Ssl ssl, int port, const char* user
 void test_main(TestConnections& test)
 {
     auto& repl = *test.repl;
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto* master_srv = repl.backend(0);
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
 

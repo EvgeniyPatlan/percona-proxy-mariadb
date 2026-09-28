@@ -97,8 +97,8 @@ enum class Expectation
 
 void run_test(TestConnections& test, Expectation expectation)
 {
-    MYSQL* a = test.maxscale->open_rwsplit_connection();
-    MYSQL* b = test.maxscale->open_rwsplit_connection();
+    MYSQL* a = test.percona_proxy->open_rwsplit_connection();
+    MYSQL* b = test.percona_proxy->open_rwsplit_connection();
     test.expect(a && b, "Failed to create both connections.");
 
     test.expect(Query::execute(a, "BEGIN"), "First BEGIN failed.");
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    MYSQL* pConn = test.maxscale->open_rwsplit_connection();
+    MYSQL* pConn = test.percona_proxy->open_rwsplit_connection();
     test.expect(pConn, "Could not connect to rwsplit.");
 
     // Preparations
@@ -156,7 +156,7 @@ int main(int argc, char* argv[])
     run_test(test, Expectation::FAILURE);
 
     // Turn on transaction replay.
-    test.check_maxctrl("alter service RWS transaction_replay true");
+    test.check_percona_proxyctl("alter service RWS transaction_replay true");
 
     // Test with 'transaction_replay=true' => should succeed.
     cout << "Testing with 'transaction_replay=true', UPDATE should succeed." << endl;

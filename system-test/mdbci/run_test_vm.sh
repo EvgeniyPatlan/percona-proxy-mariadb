@@ -61,10 +61,10 @@ key=`mdbci show keyfile --silent test_vm`
 sshopt="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o ConnectTimeout=120  "
 
 
-ssh -i $key $sshopt $me@$ip "mkdir -p .ssh; mkdir -p ${MDBCI_VM_PATH}; mkdir -p mdbci; mkdir -p MaxScale"
-rsync -e "ssh -i $key $sshopt" -a $(realpath ${script_dir}/../..)/ $me@$ip:/home/$me/MaxScale/
-ssh -i $key $sshopt $me@$ip "chown -R $me:$me MaxScale"
-ssh -i $key $sshopt $me@$ip "chmod -R a+r MaxScale"
+ssh -i $key $sshopt $me@$ip "mkdir -p .ssh; mkdir -p ${MDBCI_VM_PATH}; mkdir -p mdbci; mkdir -p Percona Proxy"
+rsync -e "ssh -i $key $sshopt" -a $(realpath ${script_dir}/../..)/ $me@$ip:/home/$me/Percona Proxy/
+ssh -i $key $sshopt $me@$ip "chown -R $me:$me Percona Proxy"
+ssh -i $key $sshopt $me@$ip "chmod -R a+r Percona Proxy"
 
 scp -i $key $sshopt $HOME/.config/mdbci/max-tst.key $me@$ip:~/.ssh/id_rsa
 ssh -i $key $sshopt $me@$ip "chmod 400 .ssh/id_rsa"
@@ -100,7 +100,7 @@ test_env_list=(
     "template"
     "config_to_clone"
     "test_branch"
-    "maxscale_product"
+    "percona_proxy_product"
     "force_maxscale_version"
     "force_backend_version"
 )
@@ -117,8 +117,8 @@ cat test_env
 scp -i $key $sshopt test_env $me@$ip:~/
 
 ssh -i $key $sshopt $me@$ip "sudo usermod --shell /bin/bash $me"
-ssh -i $key $sshopt $me@$ip "sudo ./MaxScale/BUILD/install_test_build_deps.sh"
-ssh -i $key $sshopt $me@$ip ". ./test_env; env; ./MaxScale/system-test/mdbci/run_test.sh"
+ssh -i $key $sshopt $me@$ip "sudo ./Percona Proxy/BUILD/install_test_build_deps.sh"
+ssh -i $key $sshopt $me@$ip ". ./test_env; env; ./Percona Proxy/system-test/mdbci/run_test.sh"
 if [ $? != 0 ] ; then
     echo "Tests execution FAILED! exiting"
     exit 1
@@ -127,7 +127,7 @@ fi
 . ${script_dir}/configure_log_dir.sh
 mkdir -p LOGS
 mkdir -p ${logs_publish_dir}
-scp -i $key $sshopt -r $me@$ip:./MaxScale/build/system-test/LOGS/* LOGS/
+scp -i $key $sshopt -r $me@$ip:./Percona Proxy/build/system-test/LOGS/* LOGS/
 
 
 cp core.* ${logs_publish_dir}

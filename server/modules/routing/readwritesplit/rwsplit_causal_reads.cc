@@ -13,7 +13,7 @@
  */
 
 #include "rwsplitsession.hh"
-#include <maxscale/service.hh>
+#include <percona-proxy/service.hh>
 
 /**
  * Discard the result of MASTER_GTID_WAIT statement
@@ -198,7 +198,7 @@ void RWSplitSession::add_prefix_wait_gtid(GWBUF& origin)
      * Pack wait function and client query into a multistatments will save a round trip latency,
      * and prevent the client query being executed on timeout.
      * For example:
-     * SET @maxscale_secret_variable=(SELECT CASE WHEN MASTER_GTID_WAIT('232-1-1', 10) = 0
+     * SET @percona_proxy_secret_variable=(SELECT CASE WHEN MASTER_GTID_WAIT('232-1-1', 10) = 0
      * THEN 1 ELSE (SELECT 1 FROM INFORMATION_SCHEMA.ENGINES) END); SELECT * FROM `city`;
      * when MASTER_GTID_WAIT('232-1-1', 0.05) == 1 (timeout), it will return
      * an error, and SELECT * FROM `city` will not be executed, then we can retry
@@ -213,7 +213,7 @@ void RWSplitSession::add_prefix_wait_gtid(GWBUF& origin)
     std::string gtid_position = m_config->causal_reads == CausalReads::GLOBAL ?
         m_router->last_gtid() : m_gtid_pos.to_string();
 
-    ss << "SET @maxscale_secret_variable=(SELECT CASE WHEN "
+    ss << "SET @percona_proxy_secret_variable=(SELECT CASE WHEN "
        << wait_func
        << "('" << gtid_position << "', " << m_config->causal_reads_timeout.count() << ") = 0 "
        << "THEN 1 ELSE (SELECT 1 FROM INFORMATION_SCHEMA.ENGINES) END);";

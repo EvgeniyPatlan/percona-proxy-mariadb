@@ -13,10 +13,10 @@
  */
 
 /**
- * @file gateway.c - The entry point of MaxScale
+ * @file gateway.c - The entry point of Percona Proxy
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #ifdef HAVE_GLIBC
 #include <execinfo.h>
@@ -56,19 +56,19 @@
 #include <maxbase/pretty_print.hh>
 #include <maxbase/watchdognotifier.hh>
 #include <maxsql/mariadb.hh>
-#include <maxscale/built_in_modules.hh>
-#include <maxscale/cachingparser.hh>
-#include <maxscale/dcb.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/maxscale.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/server.hh>
-#include <maxscale/sqlite3.hh>
-#include <maxscale/threadpool.hh>
-#include <maxscale/utils.hh>
-#include <maxscale/version.hh>
+#include <percona-proxy/built_in_modules.hh>
+#include <percona-proxy/cachingparser.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/percona-proxy.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/server.hh>
+#include <percona-proxy/sqlite3.hh>
+#include <percona-proxy/threadpool.hh>
+#include <percona-proxy/utils.hh>
+#include <percona-proxy/version.hh>
 #include <maxsql/odbc.hh>
 
 #include "internal/admin.hh"
@@ -77,7 +77,7 @@
 #include "internal/defaults.hh"
 #include "internal/dcb.hh"
 #include "internal/http_sql.hh"
-#include "internal/maxscale.hh"
+#include "internal/percona-proxy.hh"
 #include "internal/modules.hh"
 #include "internal/monitormanager.hh"
 #include "internal/profiler.hh"
@@ -94,7 +94,7 @@
 #include <sanitizer/lsan_interface.h>
 #endif
 
-using namespace maxscale;
+using namespace percona_proxy;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -179,7 +179,7 @@ static struct option long_options[] =
 };
 #endif
 
-static int  write_pid_file();   /* write MaxScale pidfile */
+static int  write_pid_file();   /* write Percona Proxy pidfile */
 static bool lock_dir(const std::string& path);
 static bool lock_directories();
 static void unlock_directories();
@@ -210,7 +210,7 @@ static bool init_sqlite3();
 static bool init_base_libraries();
 static void finish_base_libraries();
 static bool redirect_stdout_and_stderr(const std::string& path);
-static bool is_maxscale_already_running();
+static bool is_percona_proxy_already_running();
 
 void set_sql_batch_size(const char* arg)
 {
@@ -229,24 +229,24 @@ void set_sql_batch_size(const char* arg)
 namespace
 {
 
-/* Exit status for MaxScale */
-const int MAXSCALE_SHUTDOWN = 0;        /* Normal shutdown */
-const int MAXSCALE_BADCONFIG = 1;       /* Configuration file error */
-const int MAXSCALE_NOLIBRARY = 2;       /* No embedded library found */
-const int MAXSCALE_NOSERVICES = 3;      /* No services could be started */
-const int MAXSCALE_ALREADYRUNNING = 4;  /* MaxScale is already running */
-const int MAXSCALE_BADARG = 5;          /* Bad command line argument */
-const int MAXSCALE_INTERNALERROR = 6;   /* Internal error, see error log */
-const int MAXSCALE_RESTARTING = 75;     /* MaxScale must restart (same as EX_TEMPFAIL from BSD sysexits.h */
+/* Exit status for Percona Proxy */
+const int PERCONA_PROXY_SHUTDOWN = 0;        /* Normal shutdown */
+const int PERCONA_PROXY_BADCONFIG = 1;       /* Configuration file error */
+const int PERCONA_PROXY_NOLIBRARY = 2;       /* No embedded library found */
+const int PERCONA_PROXY_NOSERVICES = 3;      /* No services could be started */
+const int PERCONA_PROXY_ALREADYRUNNING = 4;  /* Percona Proxy is already running */
+const int PERCONA_PROXY_BADARG = 5;          /* Bad command line argument */
+const int PERCONA_PROXY_INTERNALERROR = 6;   /* Internal error, see error log */
+const int PERCONA_PROXY_RESTARTING = 75;     /* Percona Proxy must restart (same as EX_TEMPFAIL from BSD sysexits.h */
 
 // The default configuration file name
-const char default_cnf_fname[] = "maxscale.cnf";
+const char default_cnf_fname[] = "percona-proxy.cnf";
 
 string get_absolute_fname(const string& relative_path, const char* fname);
 bool   is_file_and_readable(const string& absolute_pathname);
 bool   path_is_readable(const string& absolute_pathname);
 
-string resolve_maxscale_conf_fname(const string& cnf_file_arg);
+string resolve_percona_proxy_conf_fname(const string& cnf_file_arg);
 }
 
 #define VA_MESSAGE(message, format) \
@@ -288,11 +288,11 @@ const DEBUG_ARGUMENT debug_arguments[] =
     },
     {
         "enable-statement-logging", enable_statement_logging,
-        "enable the logging of monitor and authenticator SQL statements sent by MaxScale to the servers"
+        "enable the logging of monitor and authenticator SQL statements sent by Percona Proxy to the servers"
     },
     {
         "disable-statement-logging", disable_statement_logging,
-        "disable the logging of monitor and authenticator SQL statements sent by MaxScale to the servers"
+        "disable the logging of monitor and authenticator SQL statements sent by Percona Proxy to the servers"
     },
     {
         "enable-cors", enable_cors,
@@ -394,7 +394,7 @@ static void ssl_free_dynlock(struct CRYPTO_dynlock_value* n, const char* file, i
  * The thread ID callback function for OpenSSL dynamic locks.
  * @param id Id to modify
  */
-static void maxscale_ssl_id(CRYPTO_THREADID* id)
+static void percona_proxy_ssl_id(CRYPTO_THREADID* id)
 {
     CRYPTO_THREADID_set_numeric(id, pthread_self());
 }
@@ -422,24 +422,24 @@ static void process_sigusr1()
 
 /**
  * Handler for SIGUSR1 signal. A SIGUSR1 signal will cause
- * maxscale to rotate all log files.
+ * percona-proxy to rotate all log files.
  */
 static void sigusr1_handler(int i)
 {
     mxs::MainWorker::get()->execute_signal_safe(process_sigusr1);
 }
 
-static const char shutdown_msg[] = "\n\nShutting down MaxScale\n\n";
+static const char shutdown_msg[] = "\n\nShutting down Percona Proxy\n\n";
 static const char patience_msg[] =
     "\n"
     "Patience is a virtue...\n"
-    "Shutdown in progress, but one more Ctrl-C or SIGTERM and MaxScale goes down,\n"
+    "Shutdown in progress, but one more Ctrl-C or SIGTERM and Percona Proxy goes down,\n"
     "no questions asked.\n";
 
 static void sigterm_handler(int i)
 {
     this_unit.last_signal = i;
-    int n_shutdowns = maxscale_shutdown();
+    int n_shutdowns = percona_proxy_shutdown();
 
     if (n_shutdowns == 1)
     {
@@ -460,7 +460,7 @@ static void sigterm_handler(int i)
 static void sigint_handler(int i)
 {
     this_unit.last_signal = i;
-    int n_shutdowns = maxscale_shutdown();
+    int n_shutdowns = percona_proxy_shutdown();
 
     if (n_shutdowns == 1)
     {
@@ -510,9 +510,9 @@ static void sigfatal_handler(int i)
 
     const mxs::Config& cnf = mxs::Config::get();
 
-    PRINT_AND_LOG("MaxScale %s received fatal signal %d. "
+    PRINT_AND_LOG("Percona Proxy %s received fatal signal %d. "
                   "Commit ID: %s, System name: %s, Release string: %s, Thread: %s",
-                  MAXSCALE_VERSION, i, maxscale_commit(),
+                  PERCONA_PROXY_VERSION, i, percona_proxy_commit(),
                   cnf.sysname.c_str(), cnf.release_string.c_str(), mxb::get_thread_name().c_str());
 
     if (this_unit.watchdog)
@@ -576,7 +576,7 @@ static void sigfatal_handler(int i)
         // The GDB stacktrace failed for some reason or it wasn't installed.
         // Try to generate a normal stacktrace.
         MXB_NOTICE("%s", using_gdb ?
-                   "GDB failed to produce output, generating stacktrace in MaxScale." :
+                   "GDB failed to produce output, generating stacktrace in Percona Proxy." :
                    "For a more detailed stacktrace, install GDB.");
 
         auto cb = [](const char* cmd) {
@@ -677,7 +677,7 @@ static int signal_set(int sig, void (* handler)(int))
 /**
  * @brief Create the data directory for this process
  *
- * This will prevent conflicts when multiple MaxScale instances are run on the
+ * This will prevent conflicts when multiple Percona Proxy instances are run on the
  * same machine.
  * @param base Base datadir path
  * @param datadir The result where the process specific datadir is stored
@@ -744,7 +744,7 @@ int ntfw_cb(const char* filename,
         {
             int eno = errno;
             errno = 0;
-            MXB_ERROR("Failed to remove the data directory %s of MaxScale due to %d, %s.",
+            MXB_ERROR("Failed to remove the data directory %s of Percona Proxy due to %d, %s.",
                       filename_string.c_str(),
                       eno,
                       mxb_strerror(eno));
@@ -781,7 +781,7 @@ void cleanup_old_process_datadirs()
 
 namespace
 {
-string resolve_maxscale_conf_fname(const string& cnf_file_arg)
+string resolve_percona_proxy_conf_fname(const string& cnf_file_arg)
 {
     string cnf_full_path;
     if (!cnf_file_arg.empty())
@@ -835,11 +835,11 @@ static bool check_dir_access(const char* dirname, bool rd, bool wr)
     }
     else if (rd && access(dirname, R_OK) != 0)
     {
-        ss << "MaxScale doesn't have read permission to '" << dirname << "'.";
+        ss << "Percona Proxy doesn't have read permission to '" << dirname << "'.";
     }
     else if (wr && access(dirname, W_OK) != 0)
     {
-        ss << "MaxScale doesn't have write permission to '" << dirname << "'.";
+        ss << "Percona Proxy doesn't have write permission to '" << dirname << "'.";
     }
 
     auto err = ss.str();
@@ -859,11 +859,11 @@ static int init_log(const mxs::Config& cnf)
     if (!cnf.config_check && !mxs_mkdir_all(mxs::logdir(), 0777, false))
     {
         fprintf(stderr, "alert: Cannot create log directory '%s': %s\n", mxs::logdir(), mxb_strerror(errno));
-        rval = MAXSCALE_BADCONFIG;
+        rval = PERCONA_PROXY_BADCONFIG;
     }
-    else if (!mxs_log_init("maxscale", mxs::logdir(), cnf.log_target))
+    else if (!mxs_log_init("percona-proxy", mxs::logdir(), cnf.log_target))
     {
-        rval = MAXSCALE_INTERNALERROR;
+        rval = PERCONA_PROXY_INTERNALERROR;
     }
 
     return rval;
@@ -982,8 +982,8 @@ static void usage()
             "  -B, --libdir=PATH           path to module directory\n"
             "  -C, --configdir=PATH        path to configuration file directory\n"
             "  -D, --datadir=PATH          path to data directory,\n"
-            "                              stores internal MaxScale data\n"
-            "  -E, --execdir=PATH          path to the maxscale and other executable files\n"
+            "                              stores internal Percona Proxy data\n"
+            "  -E, --execdir=PATH          path to the percona-proxy and other executable files\n"
             "  -F, --persistdir=PATH       path to persisted configuration directory\n"
             "  -M, --module_configdir=PATH path to module configuration directory\n"
             "  -H, --connector_plugindir=PATH\n"
@@ -994,12 +994,12 @@ static void usage()
             "  -R, --basedir=PATH          base path for all other paths\n"
             "  -r  --runtimedir=PATH       base path for all other paths expect binaries\n"
             "  -U, --user=USER             user ID and group ID of specified user are used to\n"
-            "                              run MaxScale\n"
+            "                              run Percona Proxy\n"
             "  -s, --syslog=[yes|no]       log messages to syslog (default:yes)\n"
-            "  -S, --maxlog=[yes|no]       log messages to MaxScale log (default: yes)\n"
+            "  -S, --maxlog=[yes|no]       log messages to Percona Proxy log (default: yes)\n"
             "  -G, --log_augmentation=0|1  augment messages with the name of the function\n"
             "                              where the message was logged (default: 0)\n"
-            "  -p, --passive               start MaxScale as a passive standby\n"
+            "  -p, --passive               start Percona Proxy as a passive standby\n"
             "  -g, --debug=arg1,arg2,...   enable or disable debug features. Supported arguments:\n",
             program_invocation_short_name);
     for (int i = 0; debug_arguments[i].action != NULL; i++)
@@ -1031,11 +1031,11 @@ static void usage()
             "\n"
             "If '--basedir' is provided then all other paths, including the default\n"
             "configuration file path, are defined relative to that. As an example,\n"
-            "if '--basedir /path/maxscale' is specified, then, for instance, the log\n"
-            "dir will be '/path/maxscale/var/log/maxscale', the config dir will be\n"
-            "'/path/maxscale/etc' and the default config file will be\n"
-            "'/path/maxscale/etc/maxscale.cnf'.\n\n"
-            "MaxScale documentation: https://mariadb.com/kb/en/maxscale/ \n",
+            "if '--basedir /path/percona-proxy' is specified, then, for instance, the log\n"
+            "dir will be '/path/percona-proxy/var/log/percona-proxy', the config dir will be\n"
+            "'/path/percona-proxy/etc' and the default config file will be\n"
+            "'/path/percona-proxy/etc/percona-proxy.cnf'.\n\n"
+            "Percona Proxy documentation: https://mariadb.com/kb/en/percona-proxy/ \n",
             mxs::configdir(),
             default_cnf_fname,
             mxs::configdir(),
@@ -1067,7 +1067,7 @@ static bool delete_signal(sigset_t* sigset, int signum, const char* signame)
 
     if (rc != 0)
     {
-        MXB_ALERT("Failed to delete signal %s from the signal set of MaxScale: %s",
+        MXB_ALERT("Failed to delete signal %s from the signal set of Percona Proxy: %s",
                   signame, mxb_strerror(errno));
     }
 
@@ -1085,7 +1085,7 @@ bool disable_signals(void)
 
     if (sigfillset(&sigset) != 0)
     {
-        MXB_ALERT("Failed to initialize set the signal set for MaxScale: %s", mxb_strerror(errno));
+        MXB_ALERT("Failed to initialize set the signal set for Percona Proxy: %s", mxb_strerror(errno));
         return false;
     }
 
@@ -1143,7 +1143,7 @@ bool disable_signals(void)
 
     if (sigprocmask(SIG_SETMASK, &sigset, NULL) != 0)
     {
-        MXB_ALERT("Failed to set the signal set for MaxScale: %s", mxb_strerror(errno));
+        MXB_ALERT("Failed to set the signal set for Percona Proxy: %s", mxb_strerror(errno));
         return false;
     }
 
@@ -1156,7 +1156,7 @@ bool disable_normal_signals(void)
 
     if (sigfillset(&sigset) != 0)
     {
-        MXB_ALERT("Failed to initialize the signal set for MaxScale: %s", mxb_strerror(errno));
+        MXB_ALERT("Failed to initialize the signal set for Percona Proxy: %s", mxb_strerror(errno));
         return false;
     }
 
@@ -1182,7 +1182,7 @@ bool disable_normal_signals(void)
 
     if (sigprocmask(SIG_SETMASK, &sigset, NULL) != 0)
     {
-        MXB_ALERT("Failed to set the signal set for MaxScale: %s", mxb_strerror(errno));
+        MXB_ALERT("Failed to set the signal set for Percona Proxy: %s", mxb_strerror(errno));
         return false;
     }
 
@@ -1248,7 +1248,7 @@ bool configure_critical_signals(void)
 }
 
 /**
- * Configures signal handling of MaxScale.
+ * Configures signal handling of Percona Proxy.
  *
  * @return True, if all signals could be configured, false otherwise.
  */
@@ -1302,7 +1302,7 @@ bool setup_signals()
 
         if (eno != 0)
         {
-            MXB_ALERT("Failed to initialise signal mask for MaxScale: %s", mxb_strerror(eno));
+            MXB_ALERT("Failed to initialise signal mask for Percona Proxy: %s", mxb_strerror(eno));
         }
         else
         {
@@ -1393,7 +1393,7 @@ bool set_runtime_dirs(const char* basedir)
 }
 
 /**
- * Set the directories of MaxScale relative to a basedir
+ * Set the directories of Percona Proxy relative to a basedir
  *
  * @param basedir The base directory relative to which the other are set.
  *
@@ -1408,7 +1408,7 @@ bool set_dirs(const char* basedir)
 
     // The two paths here are not inside set_runtime_dirs on purpose: they are set by --basedir but not by
     // --runtimedir. The former is used with tarball installations and the latter is used to run multiple
-    // MaxScale instances on the same server.
+    // Percona Proxy instances on the same server.
 
     if (rv && (rv = handle_path_arg(&path, basedir, cmake_defaults::DEFAULT_LIB_SUBPATH)))
     {
@@ -1442,7 +1442,7 @@ public:
 
     ~ChildExit()
     {
-        if (m_child_pipe != -1 && m_rc != MAXSCALE_SHUTDOWN)
+        if (m_child_pipe != -1 && m_rc != PERCONA_PROXY_SHUTDOWN)
         {
             write_child_exit_code(m_child_pipe, m_rc) ;
             ::close(m_child_pipe);
@@ -1464,11 +1464,11 @@ private:
 
 /**
  * @mainpage
- * The main entry point into MaxScale
+ * The main entry point into Percona Proxy
  */
 int main(int argc, char** argv)
 {
-    int rc = MAXSCALE_SHUTDOWN;
+    int rc = PERCONA_PROXY_SHUTDOWN;
 
     std::ios_base::sync_with_stdio();
 
@@ -1476,7 +1476,7 @@ int main(int argc, char** argv)
     if (!mxb_log_init(MXB_LOG_TARGET_STDERR))
     {
         cerr << "alert: Could not initialize the startup log." << endl;
-        return MAXSCALE_INTERNALERROR;
+        return PERCONA_PROXY_INTERNALERROR;
     }
 
     atexit(mxb_log_finish);
@@ -1485,7 +1485,7 @@ int main(int argc, char** argv)
 
     mxs::Config& cnf = Config::get();
 
-    maxscale_reset_starttime();
+    percona_proxy_reset_starttime();
 
     // Option string for getopt
     const char accepted_opts[] = "dnce:f:g:l:vVs:S:?L:D:C:B:U:A:P:G:N:E:F:M:H:J:p:R:r:";
@@ -1510,19 +1510,19 @@ int main(int argc, char** argv)
         switch (opt)
         {
         case 'n':
-            /*< Daemon mode, MaxScale forks and parent exits. */
+            /*< Daemon mode, Percona Proxy forks and parent exits. */
             this_unit.daemon_mode = true;
             break;
 
         case 'd':
-            /*< Non-daemon mode, MaxScale does not fork. */
+            /*< Non-daemon mode, Percona Proxy does not fork. */
             this_unit.daemon_mode = false;
             break;
 
         case 'f':
             /*<
              * Simply copy the conf file argument. Expand or validate
-             * it when MaxScale home directory is resolved.
+             * it when Percona Proxy home directory is resolved.
              */
             if (optarg[0] != '-')
             {
@@ -1539,24 +1539,24 @@ int main(int argc, char** argv)
             break;
 
         case 'v':
-            printf("MaxScale %s\n", MAXSCALE_VERSION);
+            printf("Percona Proxy %s\n", PERCONA_PROXY_VERSION);
             return EXIT_SUCCESS;
 
         case 'V':
-            printf("MaxScale %s - %s\n", MAXSCALE_VERSION, maxscale_commit());
+            printf("Percona Proxy %s - %s\n", PERCONA_PROXY_VERSION, percona_proxy_commit());
 
-            // MAXSCALE_SOURCE is two values separated by a space, see CMakeLists.txt
-            if (strcmp(maxscale_source(), " ") != 0)
+            // PERCONA_PROXY_SOURCE is two values separated by a space, see CMakeLists.txt
+            if (strcmp(percona_proxy_source(), " ") != 0)
             {
-                printf("Source:        %s\n", maxscale_source());
+                printf("Source:        %s\n", percona_proxy_source());
             }
-            if (strcmp(maxscale_cmake_flags(), "") != 0)
+            if (strcmp(percona_proxy_cmake_flags(), "") != 0)
             {
-                printf("CMake flags:   %s\n", maxscale_cmake_flags());
+                printf("CMake flags:   %s\n", percona_proxy_cmake_flags());
             }
-            if (strcmp(maxscale_jenkins_build_tag(), "") != 0)
+            if (strcmp(percona_proxy_jenkins_build_tag(), "") != 0)
             {
-                printf("Jenkins build: %s\n", maxscale_jenkins_build_tag());
+                printf("Jenkins build: %s\n", percona_proxy_jenkins_build_tag());
             }
             return EXIT_SUCCESS;
 
@@ -1813,7 +1813,7 @@ int main(int argc, char** argv)
 
         if (!succp)
         {
-            return MAXSCALE_BADARG;
+            return PERCONA_PROXY_BADARG;
         }
     }
 
@@ -1841,7 +1841,7 @@ int main(int argc, char** argv)
     int child_pipe = -1;
     if (!this_unit.daemon_mode)
     {
-        MXB_NOTICE("MaxScale will be run in the terminal process.");
+        MXB_NOTICE("Percona Proxy will be run in the terminal process.");
     }
     else
     {
@@ -1850,7 +1850,7 @@ int main(int argc, char** argv)
 
         if (child_pipe == -1)
         {
-            return MAXSCALE_INTERNALERROR;
+            return PERCONA_PROXY_INTERNALERROR;
         }
     }
 
@@ -1860,14 +1860,14 @@ int main(int argc, char** argv)
     // NOTE: From here on, rc *must* be assigned the return value, before returning.
     if (!setup_signals())
     {
-        rc = MAXSCALE_INTERNALERROR;
+        rc = PERCONA_PROXY_INTERNALERROR;
         return rc;
     }
 
-    const string cnf_file_path = resolve_maxscale_conf_fname(cnf_file_arg);
+    const string cnf_file_path = resolve_percona_proxy_conf_fname(cnf_file_arg);
     if (cnf_file_path.empty())
     {
-        rc = MAXSCALE_BADCONFIG;
+        rc = PERCONA_PROXY_BADCONFIG;
         return rc;
     }
 
@@ -1876,7 +1876,7 @@ int main(int argc, char** argv)
     auto cfg_file_read_res = sniff_configuration(cnf_file_path);
     if (!cfg_file_read_res.success)
     {
-        rc = MAXSCALE_BADCONFIG;
+        rc = PERCONA_PROXY_BADCONFIG;
         return rc;
     }
 
@@ -1890,14 +1890,14 @@ int main(int argc, char** argv)
     }
 
     // Now we are ready to close the initial startup log and initialize
-    // the actual MaxScale log.
+    // the actual Percona Proxy log.
     mxb_log_finish();
 
     rc = init_log(cnf);
 
     if (rc != 0)
     {
-        cerr << "alert: Could not initialize the MaxScale log." << endl;
+        cerr << "alert: Could not initialize the Percona Proxy log." << endl;
 
         // The atexit function was registered the first time the log was initialized and now that it failed to
         // properly initialize again, the mxb_log_finish() function would end up being called with a
@@ -1909,7 +1909,7 @@ int main(int argc, char** argv)
 
     if (!init_base_libraries())
     {
-        rc = MAXSCALE_INTERNALERROR;
+        rc = PERCONA_PROXY_INTERNALERROR;
         return rc;
     }
 
@@ -1924,15 +1924,15 @@ int main(int argc, char** argv)
 
     if (!config_load(cnf_file_path, cfg_file_read_res.config, config_context))
     {
-        MXB_ALERT("Failed to open or read the MaxScale configuration "
+        MXB_ALERT("Failed to open or read the Percona Proxy configuration "
                   "file. See the error log for details.");
-        rc = MAXSCALE_BADCONFIG;
+        rc = PERCONA_PROXY_BADCONFIG;
         return rc;
     }
 
     if (!apply_main_config(config_context))
     {
-        rc = MAXSCALE_BADCONFIG;
+        rc = PERCONA_PROXY_BADCONFIG;
         return rc;
     }
 
@@ -1946,7 +1946,7 @@ int main(int argc, char** argv)
     {
         // Try to create the persisted configuration directory. This needs to be done
         // before the path validation done by check_paths() to prevent it from failing.
-        // The directory wont' exist if it's the first time MaxScale is starting up
+        // The directory wont' exist if it's the first time Percona Proxy is starting up
         // with this configuration.
         mxs_mkdir_all(mxs::config_persistdir(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
@@ -1954,19 +1954,19 @@ int main(int argc, char** argv)
         // if run manually from the command line, it won't exist.
         if (!mxs_mkdir_all(mxs::piddir(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH))
         {
-            rc = MAXSCALE_INTERNALERROR;
+            rc = PERCONA_PROXY_INTERNALERROR;
             return rc;
         }
 
         if (!check_paths())
         {
-            rc = MAXSCALE_BADCONFIG;
+            rc = PERCONA_PROXY_BADCONFIG;
             return rc;
         }
 
         if (!cnf.debug.empty() && !handle_debug_args(&cnf.debug[0]))
         {
-            rc = MAXSCALE_INTERNALERROR;
+            rc = PERCONA_PROXY_INTERNALERROR;
             return rc;
         }
 
@@ -1974,25 +1974,25 @@ int main(int argc, char** argv)
         {
             if (!redirect_stdout_and_stderr(this_unit.redirect_output_to))
             {
-                rc = MAXSCALE_INTERNALERROR;
+                rc = PERCONA_PROXY_INTERNALERROR;
                 return rc;
             }
         }
 
-        if (is_maxscale_already_running())
+        if (is_percona_proxy_already_running())
         {
-            rc = MAXSCALE_ALREADYRUNNING;
+            rc = PERCONA_PROXY_ALREADYRUNNING;
             return rc;
         }
     }
 
     if (!cnf.syslog.get() && !cnf.maxlog.get())
     {
-        MXB_WARNING("Both MaxScale and Syslog logging disabled.");
+        MXB_WARNING("Both Percona Proxy and Syslog logging disabled.");
     }
 
-    // Config successfully read and we are a unique MaxScale, time to log some info.
-    maxscale_log_info_blurb(LogBlurbAction::STARTUP);
+    // Config successfully read and we are a unique Percona Proxy, time to log some info.
+    percona_proxy_log_info_blurb(LogBlurbAction::STARTUP);
 
     if (!this_unit.daemon_mode)
     {
@@ -2020,7 +2020,7 @@ int main(int argc, char** argv)
     {
         if (!change_cwd())
         {
-            rc = MAXSCALE_INTERNALERROR;
+            rc = PERCONA_PROXY_INTERNALERROR;
             return rc;
         }
     }
@@ -2030,7 +2030,7 @@ int main(int argc, char** argv)
         cleanup_old_process_datadirs();
         /*
          * Set the data directory. We use a unique directory name to avoid conflicts
-         * if multiple instances of MaxScale are being run on the same machine.
+         * if multiple instances of Percona Proxy are being run on the same machine.
          */
         char process_datadir[PATH_MAX + 1];
         if (create_datadir(mxs::datadir(), process_datadir))
@@ -2041,7 +2041,7 @@ int main(int argc, char** argv)
         else
         {
             MXB_ALERT("Cannot create data directory '%s': %s", mxs::datadir(), mxb_strerror(errno));
-            rc = MAXSCALE_BADCONFIG;
+            rc = PERCONA_PROXY_BADCONFIG;
             return rc;
         }
     }
@@ -2050,7 +2050,7 @@ int main(int argc, char** argv)
 
     if (cnf.qc_cache_properties.max_size)
     {
-        // Config::n_threads as MaxScale is not yet running.
+        // Config::n_threads as Percona Proxy is not yet running.
         int64_t size_per_thr = cnf.qc_cache_properties.max_size / mxs::Config::get().n_threads;
         MXB_NOTICE("Query classification results are cached and reused. "
                    "Memory used per thread: %s", mxb::pretty_size(size_per_thr).c_str());
@@ -2059,7 +2059,7 @@ int main(int argc, char** argv)
     if (!mxs::CachingParser::set_properties(cnf.qc_cache_properties))
     {
         MXB_ALERT("Could not set properties of the query classifier.");
-        rc = MAXSCALE_INTERNALERROR;
+        rc = PERCONA_PROXY_INTERNALERROR;
         return rc;
     }
 
@@ -2074,7 +2074,7 @@ int main(int argc, char** argv)
     if (!load_encryption_keys(secretsdir))
     {
         MXB_ALERT("Error loading password decryption key.");
-        rc = MAXSCALE_SHUTDOWN;
+        rc = PERCONA_PROXY_SHUTDOWN;
         return rc;
     }
 
@@ -2106,9 +2106,9 @@ int main(int argc, char** argv)
             {
                 if (!config_process(config_context))
                 {
-                    MXB_ALERT("Failed to process the MaxScale configuration file %s.",
+                    MXB_ALERT("Failed to process the Percona Proxy configuration file %s.",
                               cnf_file_path.c_str());
-                    rc = MAXSCALE_BADCONFIG;
+                    rc = PERCONA_PROXY_BADCONFIG;
                     main_worker.start_shutdown();
                     return;
                 }
@@ -2122,7 +2122,7 @@ int main(int argc, char** argv)
                         MXB_NOTICE("Configuration exported to '%s'", export_cnf);
                     }
 
-                    rc = MAXSCALE_SHUTDOWN;
+                    rc = PERCONA_PROXY_SHUTDOWN;
                     main_worker.start_shutdown();
                     return;
                 }
@@ -2135,7 +2135,7 @@ int main(int argc, char** argv)
                 {
                     if (res == mxs::ConfigManager::Startup::RESTART)
                     {
-                        MXB_NOTICE("Attempting to restart MaxScale");
+                        MXB_NOTICE("Attempting to restart Percona Proxy");
 
                         if (this_unit.daemon_mode)
                         {
@@ -2146,17 +2146,17 @@ int main(int argc, char** argv)
                             //   https://github.com/systemd/systemd/issues/19295
                             //   https://github.com/systemd/systemd/pull/19685
 
-                            write_child_exit_code(child_pipe, MAXSCALE_SHUTDOWN);
+                            write_child_exit_code(child_pipe, PERCONA_PROXY_SHUTDOWN);
                         }
 
-                        rc = MAXSCALE_RESTARTING;
+                        rc = PERCONA_PROXY_RESTARTING;
                     }
                     else
                     {
                         MXB_ALERT("Failed to apply cached configuration, cannot continue. "
-                                  "To start MaxScale without the cached configuration, disable "
+                                  "To start Percona Proxy without the cached configuration, disable "
                                   "configuration synchronization or remove the cached file.");
-                        rc = MAXSCALE_BADCONFIG;
+                        rc = PERCONA_PROXY_BADCONFIG;
                     }
 
                     main_worker.start_shutdown();
@@ -2186,7 +2186,7 @@ int main(int argc, char** argv)
                 else
                 {
                     MXB_ALERT("Failed to initialize REST API.");
-                    rc = MAXSCALE_INTERNALERROR;
+                    rc = PERCONA_PROXY_INTERNALERROR;
                     main_worker.start_shutdown();
                     return;
                 }
@@ -2205,7 +2205,7 @@ int main(int argc, char** argv)
                 {
                     MXB_ALERT("The value of '%s' is not the name of a monitor: %s.",
                               CN_CONFIG_SYNC_CLUSTER, cluster.c_str());
-                    rc = MAXSCALE_BADCONFIG;
+                    rc = PERCONA_PROXY_BADCONFIG;
                     main_worker.start_shutdown();
                     return;
                 }
@@ -2215,8 +2215,8 @@ int main(int argc, char** argv)
 
                 if (!Service::launch_all())
                 {
-                    MXB_ALERT("Failed to start all MaxScale services.");
-                    rc = MAXSCALE_NOSERVICES;
+                    MXB_ALERT("Failed to start all Percona Proxy services.");
+                    rc = PERCONA_PROXY_NOSERVICES;
                     main_worker.start_shutdown();
                     return;
                 }
@@ -2224,13 +2224,13 @@ int main(int argc, char** argv)
 
             if (RoutingWorker::start_workers(config_threadcount()))
             {
-                MXB_NOTICE("MaxScale started with %d worker threads.", config_threadcount());
+                MXB_NOTICE("Percona Proxy started with %d worker threads.", config_threadcount());
             }
             else
             {
                 MXB_ALERT("Failed to start routing workers.");
-                rc = MAXSCALE_INTERNALERROR;
-                maxscale_shutdown();
+                rc = PERCONA_PROXY_INTERNALERROR;
+                percona_proxy_shutdown();
                 return;
             }
 
@@ -2243,7 +2243,7 @@ int main(int argc, char** argv)
             }
             else
             {
-                // If MaxScale is run as a systemd service with Type=notify, we need to send a READY=1
+                // If Percona Proxy is run as a systemd service with Type=notify, we need to send a READY=1
                 // notification to tell systemd that startup has completed. Outside of systemd services, this does
                 // nothing.
 #ifdef HAVE_SYSTEMD
@@ -2263,9 +2263,9 @@ int main(int argc, char** argv)
         {
             if (main_worker.execute(do_startup, RoutingWorker::EXECUTE_QUEUED))
             {
-                // This call will block until MaxScale is shut down.
+                // This call will block until Percona Proxy is shut down.
                 main_worker.run();
-                MXB_NOTICE("MaxScale is shutting down.");
+                MXB_NOTICE("Percona Proxy is shutting down.");
 
                 // Stop the threadpool before shutting down the REST-API. The pool might still
                 // have queued responses in it that use it and thus they should be allowed to
@@ -2282,24 +2282,24 @@ int main(int argc, char** argv)
 
                 MonitorManager::destroy_all_monitors();
 
-                maxscale_start_teardown();
+                percona_proxy_start_teardown();
                 service_destroy_instances();
                 filter_destroy_instances();
                 Listener::clear();
                 ServerManager::destroy_all();
 
-                MXB_NOTICE("MaxScale shutdown completed.");
+                MXB_NOTICE("Percona Proxy shutdown completed.");
             }
             else
             {
                 MXB_ALERT("Failed to queue startup task.");
-                rc = MAXSCALE_INTERNALERROR;
+                rc = PERCONA_PROXY_INTERNALERROR;
             }
         }
         else
         {
             MXB_ALERT("Failed to install signal handlers.");
-            rc = MAXSCALE_INTERNALERROR;
+            rc = PERCONA_PROXY_INTERNALERROR;
         }
 
         RoutingWorker::finish();
@@ -2307,7 +2307,7 @@ int main(int argc, char** argv)
     else
     {
         MXB_ALERT("Failed to initialize routing workers.");
-        rc = MAXSCALE_INTERNALERROR;
+        rc = PERCONA_PROXY_INTERNALERROR;
     }
 
     watchdog_notifier.stop();
@@ -2344,7 +2344,7 @@ static void unlink_pidfile(void)
     }
 }
 
-bool pid_is_maxscale(int pid)
+bool pid_is_percona_proxy(int pid)
 {
     bool rval = false;
     std::stringstream ss;
@@ -2354,7 +2354,7 @@ bool pid_is_maxscale(int pid)
 
     if (file && std::getline(file, line))
     {
-        if (line == "maxscale" && pid != getpid())
+        if (line == "percona-proxy" && pid != getpid())
         {
             rval = true;
         }
@@ -2364,10 +2364,10 @@ bool pid_is_maxscale(int pid)
 }
 
 /**
- * Check if the maxscale.pid file exists and has a valid PID in it. If one has already been
- * written and a MaxScale process is running, this instance of MaxScale should shut down.
- * @return True if the conditions for starting MaxScale are not met and false if
- * no PID file was found or there is no process running with the PID of the maxscale.pid
+ * Check if the percona-proxy.pid file exists and has a valid PID in it. If one has already been
+ * written and a Percona Proxy process is running, this instance of Percona Proxy should shut down.
+ * @return True if the conditions for starting Percona Proxy are not met and false if
+ * no PID file was found or there is no process running with the PID of the percona-proxy.pid
  * file. If false is returned, this process should continue normally.
  */
 static bool pid_file_exists()
@@ -2379,7 +2379,7 @@ static bool pid_file_exists()
     pid_t pid;
     bool lock_failed = false;
 
-    snprintf(pathbuf, PATH_MAX, "%s/maxscale.pid", mxs::piddir());
+    snprintf(pathbuf, PATH_MAX, "%s/percona-proxy.pid", mxs::piddir());
     pathbuf[PATH_MAX] = '\0';
 
     if (access(pathbuf, F_OK) != 0)
@@ -2420,8 +2420,8 @@ static bool pid_file_exists()
         {
             /** Empty file */
             MXB_ALERT("PID file read from '%s'. File was empty. If the file is the "
-                      "correct PID file and no other MaxScale processes are running, "
-                      "please remove it manually and start MaxScale again.", pathbuf);
+                      "correct PID file and no other Percona Proxy processes are running, "
+                      "please remove it manually and start Percona Proxy again.", pathbuf);
             unlock_pidfile();
             return true;
         }
@@ -2433,17 +2433,17 @@ static bool pid_file_exists()
         {
             /** Bad PID */
             MXB_ALERT("PID file read from '%s'. File contents not valid. If the file "
-                      "is the correct PID file and no other MaxScale processes are "
-                      "running, please remove it manually and start MaxScale again.", pathbuf);
+                      "is the correct PID file and no other Percona Proxy processes are "
+                      "running, please remove it manually and start Percona Proxy again.", pathbuf);
             unlock_pidfile();
             return true;
         }
 
-        if (pid_is_maxscale(pid))
+        if (pid_is_percona_proxy(pid))
         {
-            MXB_ALERT("MaxScale is already running. Process id: %d. "
+            MXB_ALERT("Percona Proxy is already running. Process id: %d. "
                       "Use another location for the PID file to run multiple "
-                      "instances of MaxScale on the same machine.", pid);
+                      "instances of Percona Proxy on the same machine.", pid);
             unlock_pidfile();
         }
         else
@@ -2463,7 +2463,7 @@ static bool pid_file_exists()
     else
     {
         MXB_ALERT("Cannot open PID file '%s', no read permissions. Please confirm "
-                  "that the user running MaxScale has read permissions on the file.",
+                  "that the user running Percona Proxy has read permissions on the file.",
                   pathbuf);
     }
     return true;
@@ -2472,14 +2472,14 @@ static bool pid_file_exists()
 /**
  * Write process pid into pidfile anc close it
  * Parameters:
- * @param home_dir The MaxScale home dir
+ * @param home_dir The Percona Proxy home dir
  * @return 0 on success, 1 on failure
  *
  */
 
 static int write_pid_file()
 {
-    snprintf(this_unit.pidfile, PATH_MAX, "%s/maxscale.pid", mxs::piddir());
+    snprintf(this_unit.pidfile, PATH_MAX, "%s/percona-proxy.pid", mxs::piddir());
 
     if (this_unit.pidfd == PIDFD_CLOSED)
     {
@@ -2497,7 +2497,7 @@ static int write_pid_file()
             if (errno == EWOULDBLOCK)
             {
                 MXB_ALERT("Failed to lock PID file '%s', another process is holding a lock on it. "
-                          "Please confirm that no other MaxScale process is using the same "
+                          "Please confirm that no other Percona Proxy process is using the same "
                           "PID file location.",
                           this_unit.pidfile);
             }
@@ -2514,7 +2514,7 @@ static int write_pid_file()
     /* truncate pidfile content */
     if (ftruncate(this_unit.pidfd, 0))
     {
-        MXB_ALERT("MaxScale failed to truncate PID file '%s': %s", this_unit.pidfile, mxb_strerror(errno));
+        MXB_ALERT("Percona Proxy failed to truncate PID file '%s': %s", this_unit.pidfile, mxb_strerror(errno));
         unlock_pidfile();
         return -1;
     }
@@ -2524,7 +2524,7 @@ static int write_pid_file()
 
     if (pwrite(this_unit.pidfd, pidstr.c_str(), len, 0) != len)
     {
-        MXB_ALERT("MaxScale failed to write into PID file '%s': %s", this_unit.pidfile, mxb_strerror(errno));
+        MXB_ALERT("Percona Proxy failed to write into PID file '%s': %s", this_unit.pidfile, mxb_strerror(errno));
         unlock_pidfile();
         return -1;
     }
@@ -2615,7 +2615,7 @@ static int set_user(const char* user)
 #ifdef SS_DEBUG
     else
     {
-        printf("Running MaxScale as: %s %d:%d\n", pwname->pw_name, pwname->pw_uid, pwname->pw_gid);
+        printf("Running Percona Proxy as: %s %d:%d\n", pwname->pw_name, pwname->pw_uid, pwname->pw_gid);
     }
 #endif
 
@@ -2686,11 +2686,11 @@ static void log_exit_status()
     switch (this_unit.last_signal)
     {
     case SIGTERM:
-        MXB_NOTICE("MaxScale received signal SIGTERM. Exiting.");
+        MXB_NOTICE("Percona Proxy received signal SIGTERM. Exiting.");
         break;
 
     case SIGINT:
-        MXB_NOTICE("MaxScale received signal SIGINT. Exiting.");
+        MXB_NOTICE("Percona Proxy received signal SIGINT. Exiting.");
         break;
 
     default:
@@ -2726,7 +2726,7 @@ static int daemonize(void)
 
             if (pid < 0)
             {
-                MXB_ALERT("Forking MaxScale failed, the process cannot be turned into a daemon: %s",
+                MXB_ALERT("Forking Percona Proxy failed, the process cannot be turned into a daemon: %s",
                           mxb_strerror(errno));
             }
             else if (pid != 0)
@@ -2740,13 +2740,13 @@ static int daemonize(void)
                 if (nread == -1)
                 {
                     MXB_ALERT("Failed to read data from child process pipe: %s", mxb_strerror(errno));
-                    exit(MAXSCALE_INTERNALERROR);
+                    exit(PERCONA_PROXY_INTERNALERROR);
                 }
                 else if (nread == 0)
                 {
                     /** Child process has exited or closed write pipe */
                     MXB_ALERT("No data read from child process pipe.");
-                    exit(MAXSCALE_INTERNALERROR);
+                    exit(PERCONA_PROXY_INTERNALERROR);
                 }
 
                 _exit(child_status);
@@ -2757,7 +2757,7 @@ static int daemonize(void)
                 close(daemon_pipe[0]);
                 if (setsid() < 0)
                 {
-                    MXB_ALERT("Creating a new session for the daemonized MaxScale process failed: %s",
+                    MXB_ALERT("Creating a new session for the daemonized Percona Proxy process failed: %s",
                               mxb_strerror(errno));
                     close(daemon_pipe[1]);
                 }
@@ -2919,12 +2919,12 @@ static bool user_is_acceptable(const char* specified_user)
         {
             if (specified_user && (strcmp(specified_user, "root") == 0))
             {
-                // MaxScale was invoked as root and with --user=root.
+                // Percona Proxy was invoked as root and with --user=root.
                 acceptable = true;
             }
             else
             {
-                MXB_ALERT("MaxScale cannot be run as root.");
+                MXB_ALERT("Percona Proxy cannot be run as root.");
             }
         }
         else
@@ -2934,7 +2934,7 @@ static bool user_is_acceptable(const char* specified_user)
     }
     else
     {
-        MXB_ALERT("Could not obtain user information, MaxScale will not run: %s", mxb_strerror(errno));
+        MXB_ALERT("Could not obtain user information, Percona Proxy will not run: %s", mxb_strerror(errno));
     }
 
     return acceptable;
@@ -2955,7 +2955,7 @@ static bool init_sqlite3()
     if (sqlite3_config(SQLITE_CONFIG_MULTITHREAD) != SQLITE_OK)
     {
         MXB_ERROR("Could not set the threading mode of SQLite to Multi-thread. "
-                  "MaxScale will terminate.");
+                  "Percona Proxy will terminate.");
         rv = false;
     }
 
@@ -2964,7 +2964,7 @@ static bool init_sqlite3()
 
 static bool lock_dir(const std::string& path)
 {
-    std::string lock = path + "/maxscale.lock";
+    std::string lock = path + "/percona-proxy.lock";
     int fd = open(lock.c_str(), O_WRONLY | O_CREAT | O_CLOEXEC, 0777);
     std::string pid = std::to_string(getpid());
 
@@ -2979,7 +2979,7 @@ static bool lock_dir(const std::string& path)
         if (errno == EACCES || errno == EAGAIN)
         {
             MXB_ERROR("Failed to lock directory with file '%s', another process is holding a lock on it. "
-                      "Please confirm that no other MaxScale process is using the "
+                      "Please confirm that no other Percona Proxy process is using the "
                       "directory %s",
                       lock.c_str(),
                       path.c_str());
@@ -3062,7 +3062,7 @@ static bool init_ssl()
         CRYPTO_set_dynlock_destroy_callback(ssl_free_dynlock);
         CRYPTO_set_dynlock_lock_callback(ssl_lock_dynlock);
 #ifdef OPENSSL_1_0
-        CRYPTO_THREADID_set_callback(maxscale_ssl_id);
+        CRYPTO_THREADID_set_callback(percona_proxy_ssl_id);
 #else
         CRYPTO_set_id_callback(pthread_self);
 #endif
@@ -3103,7 +3103,7 @@ static bool init_base_libraries()
             }
             else
             {
-                MXB_ALERT("Failed to initialize MaxScale base library.");
+                MXB_ALERT("Failed to initialize Percona Proxy base library.");
 
                 // No finalization of sqlite3
                 finish_ssl();
@@ -3156,7 +3156,7 @@ static bool redirect_stdout_and_stderr(const std::string& path)
     return rv;
 }
 
-static bool is_maxscale_already_running()
+static bool is_percona_proxy_already_running()
 {
     bool rv = true;
 

@@ -56,17 +56,17 @@
  *  thrown in /root/test.php on line 10
  *
  *  - Error log
- *  Feb 12 19:14:01 363d6aec0f8c MaxScale[263]: Error: Failed to obtain address for host ::1, Address family
+ *  Feb 12 19:14:01 363d6aec0f8c Percona Proxy[263]: Error: Failed to obtain address for host ::1, Address family
  * for hostname not supported
- *  Feb 12 19:14:01 363d6aec0f8c MaxScale[263]: Warning: Failed to add user root@::1 for service [RW Split
- * Router]. This user will be unavailable via MaxScale.
- *  Feb 12 19:14:01 363d6aec0f8c MaxScale[263]: Warning: Failed to add user root@127.0.0.1 for service [RW
- * Split Router]. This user will be unavailable via MaxScale.
- *  Feb 12 19:14:10 363d6aec0f8c MaxScale[263]: Warning : The query can't be routed to all backend servers
+ *  Feb 12 19:14:01 363d6aec0f8c Percona Proxy[263]: Warning: Failed to add user root@::1 for service [RW Split
+ * Router]. This user will be unavailable via Percona Proxy.
+ *  Feb 12 19:14:01 363d6aec0f8c Percona Proxy[263]: Warning: Failed to add user root@127.0.0.1 for service [RW
+ * Split Router]. This user will be unavailable via Percona Proxy.
+ *  Feb 12 19:14:10 363d6aec0f8c Percona Proxy[263]: Warning : The query can't be routed to all backend servers
  * because it includes SELECT and SQL variable modifications which is not supported. Set
  * use_sql_variables_in=master or split the query to two, where SQL variable modifications are done in the
  * first and the SELECT in the second one.
- *  Feb 12 19:14:10 363d6aec0f8c MaxScale[263]: Error : Can't route
+ *  Feb 12 19:14:10 363d6aec0f8c Percona Proxy[263]: Error : Can't route
  * MYSQL_COM_STMT_PREPARE:QUERY_TYPE_READ|QUERY_TYPE_PREPARE_STMT:"MYSQL_COM_STMT_PREPARE". SELECT with
  * session data modification is not supported if configuration parameter use_sql_variables_in=all .
  *
@@ -85,10 +85,10 @@ int main(int argc, char* argv[])
     sprintf(str,
             "php %s/rwsplit_php_stmt.php %s %d %s %s",
             mxt::SOURCE_DIR,
-            Test->maxscale->ip4(),
-            Test->maxscale->rwsplit_port,
-            Test->maxscale->user_name().c_str(),
-            Test->maxscale->password().c_str());
+            Test->percona_proxy->ip4(),
+            Test->percona_proxy->rwsplit_port,
+            Test->percona_proxy->user_name().c_str(),
+            Test->percona_proxy->password().c_str());
 
     Test->tprintf("Executing PHP script: %s\n", str);
     Test->add_result(system(str), "PHP script FAILED!\n");

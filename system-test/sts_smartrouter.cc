@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     auto ids = test.repl->get_all_server_ids_str();
     test.repl->disconnect();
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection should work: %s", conn.error());
 
     test.log_printf("Test 1: Basic routing");

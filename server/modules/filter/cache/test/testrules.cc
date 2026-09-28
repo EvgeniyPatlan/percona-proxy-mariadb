@@ -16,10 +16,10 @@
 #include <algorithm>
 #include <iostream>
 #include <maxbase/alloc.hh>
-#include <maxscale/config.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
 #include "../../../../core/test/test_utils.hh"
 
 using namespace std;

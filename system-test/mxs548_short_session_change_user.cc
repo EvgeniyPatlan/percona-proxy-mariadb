@@ -19,7 +19,7 @@
  * - create load on Master (3 threads are inserting data into 't1' in the loop)
  * - in 40 parallel threads open connection, execute change_user to 'user', execute change_user to default
  * user, close connection
- * - repeat test first only for RWSplit and second for all maxscales->routers[0]
+ * - repeat test first only for RWSplit and second for all percona_proxies->routers[0]
  * - check logs for lack of "Unable to write to backend 'server2' due to authentication failure" errors
  * - check for lack of crashes in the log
  */
@@ -37,9 +37,9 @@ void query_thread(TestConnections& test)
     while (keep_running && test.ok())
     {
         std::vector<Connection> conns;
-        conns.emplace_back(test.maxscale->rwsplit());
-        conns.emplace_back(test.maxscale->readconn_master());
-        conns.emplace_back(test.maxscale->readconn_slave());
+        conns.emplace_back(test.percona_proxy->rwsplit());
+        conns.emplace_back(test.percona_proxy->readconn_master());
+        conns.emplace_back(test.percona_proxy->readconn_slave());
 
         for (auto& conn : conns)
         {
@@ -59,17 +59,17 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     test.repl->connect();
-    test.maxscale->connect_maxscale();
-    create_t1(test.maxscale->conn_rwsplit);
+    test.percona_proxy->connect_percona_proxy();
+    create_t1(test.percona_proxy->conn_rwsplit);
     test.repl->execute_query_all_nodes("set global max_connections = 2000;");
     test.repl->sync_slaves();
 
     test.tprintf("Creating user 'user' ");
-    test.try_query(test.maxscale->conn_rwsplit, "DROP USER IF EXISTS user@'%%'");
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE USER user@'%%' IDENTIFIED BY 'pass2'");
-    test.try_query(test.maxscale->conn_rwsplit, "GRANT SELECT ON test.* TO user@'%%'");
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE IF EXISTS test.t1");
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE TABLE test.t1 (x1 int, fl int)");
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP USER IF EXISTS user@'%%'");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE USER user@'%%' IDENTIFIED BY 'pass2'");
+    test.try_query(test.percona_proxy->conn_rwsplit, "GRANT SELECT ON test.* TO user@'%%'");
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE IF EXISTS test.t1");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE TABLE test.t1 (x1 int, fl int)");
     test.repl->sync_slaves();
 
     std::vector<std::thread> threads;
@@ -93,11 +93,11 @@ int main(int argc, char** argv)
     }
 
     test.tprintf("Dropping tables and users");
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE test.t1;");
-    test.try_query(test.maxscale->conn_rwsplit, "DROP USER user@'%%'");
-    test.maxscale->close_maxscale_connections();
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE test.t1;");
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP USER user@'%%'");
+    test.percona_proxy->close_percona_proxy_connections();
 
-    test.check_maxscale_alive();
+    test.check_percona_proxy_alive();
     test.log_excludes("due to authentication failure");
     test.log_excludes("due to handshake failure");
 

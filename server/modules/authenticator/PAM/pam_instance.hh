@@ -16,7 +16,7 @@
 #include "pam_auth_common.hh"
 #include <string>
 #include <maxbase/pam_utils.hh>
-#include <maxscale/protocol/mariadb/authenticator.hh>
+#include <percona-proxy/protocol/mariadb/authenticator.hh>
 
 class SERVICE;
 namespace maxbase

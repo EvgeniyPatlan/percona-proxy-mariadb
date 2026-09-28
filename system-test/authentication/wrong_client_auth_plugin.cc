@@ -14,7 +14,7 @@
 
 #include <maxtest/testconnections.hh>
 
-// Try to connect with mysql client using the plugin "mysql_clear_password". MaxScale should switch back
+// Try to connect with mysql client using the plugin "mysql_clear_password". Percona Proxy should switch back
 // to "mysql_native_password".
 
 void test_main(TestConnections& test);
@@ -57,7 +57,7 @@ void test_main(TestConnections& test)
         mysql_close(maxconn);
     };
 
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     const char* host = mxs.ip4();
     int port = mxs.ports[0];
     const char* user = mxs.user_name().c_str();

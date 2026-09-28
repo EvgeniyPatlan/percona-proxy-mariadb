@@ -17,7 +17,7 @@
 void block_and_query(TestConnections& test, Connection& c, int i, int last)
 {
     test.repl->block_node(i);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
 
     test.log_printf("Node %d blocked, routing query", i);
     auto num = c.field("SELECT COUNT(*) FROM test.t1");
@@ -36,7 +36,7 @@ void block_and_query(TestConnections& test, Connection& c, int i, int last)
 
     test.log_printf("Unblocking node %d", i);
     test.repl->unblock_node(i);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
 }
 
 int main(int argc, char** argv)
@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     repl.query("INSERT INTO test.t1 VALUES (1)");
     test.repl->sync_slaves();
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
 
     // The node selection used to return the first value from a std::set<mxs::Target*>. This means that the
     // value was not deterministic and thus the test must be repeated in the inverse iteration order to make

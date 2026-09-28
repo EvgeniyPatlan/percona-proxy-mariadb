@@ -12,7 +12,7 @@
  */
 
 #include "pgserver.hh"
-#include "maxscale/secrets.hh"
+#include "percona-proxy/secrets.hh"
 
 using std::string;
 
@@ -21,7 +21,7 @@ PgServer::PgServer(SERVER* server, const SharedSettings& shared)
 {
 }
 
-maxscale::MonitorServer::ConnectResult PgServer::ping_or_connect()
+percona_proxy::MonitorServer::ConnectResult PgServer::ping_or_connect()
 {
     if (m_conn.is_open())
     {

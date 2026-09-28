@@ -103,7 +103,7 @@ RewriteFilter::RewriteFilter::Config::Config(const std::string& name, RewriteFil
     add_native(&Config::m_settings, &Settings::regex_grammar, &rewritefilter::regex_grammar);
 }
 
-bool RewriteFilter::Config::post_configure(const std::map<std::string, maxscale::ConfigParameters>&)
+bool RewriteFilter::Config::post_configure(const std::map<std::string, percona_proxy::ConfigParameters>&)
 {
     bool ok = true;
     try

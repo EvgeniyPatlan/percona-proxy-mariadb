@@ -14,7 +14,7 @@
 
 #include "rwsplitsession.hh"
 
-using namespace maxscale;
+using namespace percona_proxy;
 
 using std::chrono::duration_cast;
 using std::chrono::microseconds;
@@ -370,7 +370,7 @@ static void log_server_connections(select_criteria_t criteria, const PRWBackends
         {
         case LEAST_GLOBAL_CONNECTIONS:
         case LEAST_ROUTER_CONNECTIONS:
-            MXB_INFO("MaxScale connections : %ld in \t%s %s",
+            MXB_INFO("Percona Proxy connections : %ld in \t%s %s",
                      b->target()->stats().n_current_conns(),
                      b->name(), b->target()->status_string().c_str());
             break;

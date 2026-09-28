@@ -24,7 +24,7 @@
 #include "mariadbmon_utils.hh"
 
 using std::string;
-using mxt::MaxScale;
+using mxt::PerconaProxy;
 
 namespace
 {
@@ -56,7 +56,7 @@ void test_main(TestConnections& test)
     const int target_ind = 1;
     const char purge_logs[] = "flush binary logs; purge binary logs before now();";
 
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
     auto* source_be = repl.backend(source_ind);
     auto* target_be = repl.backend(target_ind);
@@ -146,7 +146,7 @@ void test_main(TestConnections& test)
     repl.start_node(3);
     mxs.wait_for_monitor();
     mxs.get_servers().print();
-    auto res = mxs.maxctrl("call command mariadbmon reset-replication MariaDB-Monitor server1");
+    auto res = mxs.percona_proxyctl("call command mariadbmon reset-replication MariaDB-Monitor server1");
     test.expect(res.rc == 0, "Replication reset failed.");
     mxs.wait_for_monitor();
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
@@ -159,7 +159,7 @@ void test_main(TestConnections& test)
 void test_encrypted_rebuild(TestConnections& test, mxt::MariaDBServer* source, mxt::MariaDBServer* target)
 {
     const int orig_rows = 2;
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     const int target_rows = 50;
     auto target_name = target->cnf_name().c_str();
     test.tprintf("Stop replication on %s, then add more rows to %s on %s.",
@@ -201,8 +201,8 @@ void test_encrypted_rebuild(TestConnections& test, mxt::MariaDBServer* source, m
 
 void run_rebuild(TestConnections& test, const string& rebuild_cmd, int target_ind, int master_ind)
 {
-    auto& mxs = *test.maxscale;
-    auto res = mxs.maxctrl(rebuild_cmd);
+    auto& mxs = *test.percona_proxy;
+    auto res = mxs.percona_proxyctl(rebuild_cmd);
     if (res.rc == 0)
     {
         bool op_success = wait_for_cmd_completion(test);
@@ -234,7 +234,7 @@ bool wait_for_cmd_completion(TestConnections& test)
     mxb::StopWatch timer;
     while (timer.split() < 30s)
     {
-        auto op_status = test.maxscale->maxctrl("call command mariadbmon fetch-cmd-result MariaDB-Monitor");
+        auto op_status = test.percona_proxy->percona_proxyctl("call command mariadbmon fetch-cmd-result MariaDB-Monitor");
         if (op_status.rc != 0)
         {
             test.add_failure("Failed to check backup operation status: %s",
@@ -345,6 +345,6 @@ void check_encr_tbl_row_count(TestConnections& test, mxt::MariaDB* conn, int n_e
 int main(int argc, char* argv[])
 {
     TestConnections test;
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return test.run_test(argc, argv, test_main);
 }

@@ -14,10 +14,10 @@
 #include "pgclientconnection.hh"
 #include "pgbackendconnection.hh"
 #include <maxbase/format.hh>
-#include <maxscale/dcb.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/service.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/utils.hh>
 #include <unistd.h>
 #include "pgprotocoldata.hh"
 #include "pgusermanager.hh"
@@ -119,7 +119,7 @@ void add_packet_keydata(GWBUF& gwbuf, uint32_t id, uint32_t key)
 {
     const size_t auth_len = 1   // Byte1('K')
         + 4                     // Int32(12) len
-        + 4                     // Int32 PID (session ID in maxscale)
+        + 4                     // Int32 PID (session ID in percona-proxy)
         + 4;                    // Int32 The "secret" key
     std::array<uint8_t, auth_len> data;
 

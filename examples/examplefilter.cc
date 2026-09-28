@@ -30,7 +30,7 @@
  */
 
 #include "examplefilter.hh"
-#include <maxscale/config2.hh>
+#include <percona-proxy/config2.hh>
 
 namespace
 {
@@ -47,7 +47,7 @@ cfg::ParamBool s_global_counts(
     true, cfg::Param::AT_STARTUP);
 }
 
-// This declares a module in MaxScale
+// This declares a module in Percona Proxy
 extern "C" MXS_MODULE* MXS_CREATE_MODULE()
 {
     static const char DESC[] = "An example filter that counts the number of queries and replies "

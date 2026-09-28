@@ -1,4 +1,4 @@
-[maxscale]
+[percona-proxy]
 threads=###threads###
 debug=allow-duplicate-servers
 log_info=1

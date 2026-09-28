@@ -12,12 +12,12 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <iomanip>
 #include <iostream>
 #include <unistd.h>
-#include <maxscale/paths.hh>
-#include <maxscale/protocol/mariadb/trxboundaryparser.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/protocol/mariadb/trxboundaryparser.hh>
 
 using namespace std;
 
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
         if (mxs_log_init(NULL, ".", MXB_LOG_TARGET_DEFAULT))
         {
             size_t len = strlen(zStatement);
-            maxscale::TrxBoundaryParser parser;
+            percona_proxy::TrxBoundaryParser parser;
 
             struct timespec start;
             clock_gettime(CLOCK_MONOTONIC_RAW, &start);

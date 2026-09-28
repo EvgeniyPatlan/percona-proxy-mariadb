@@ -22,15 +22,15 @@
 #include "perf_info.hh"
 #include "perf_updater.hh"
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/router.hh>
-#include <maxscale/service.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 
 #include <future>
 
-namespace config = maxscale::config;
+namespace config = percona_proxy::config;
 
 class SmartRouterSession;
 

@@ -237,7 +237,7 @@ int main(int argc, char** argv)
 
     for (auto& a : tests)
     {
-        conns.emplace_back(test.maxscale->rwsplit());
+        conns.emplace_back(test.percona_proxy->rwsplit());
         test.expect(conns.back().connect(), "Failed to connect: %s", conns.back().error());
     }
 
@@ -251,9 +251,9 @@ int main(int argc, char** argv)
 
     // Block and unblock the master
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.repl->unblock_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
 
     for (size_t i = 0; i < tests.size(); i++)
     {

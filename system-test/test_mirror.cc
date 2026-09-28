@@ -143,7 +143,7 @@ void run_sql(TestConnections& test)
 {
     for (auto& t : test_cases)
     {
-        auto conn = test.maxscale->rwsplit();
+        auto conn = test.percona_proxy->rwsplit();
         test.expect(conn.connect(), "Connection should work: %s", conn.error());
         t.id = conn.thread_id();
         conn.query(t.query);
@@ -153,16 +153,16 @@ void run_sql(TestConnections& test)
 
 void test_file(TestConnections& test, Mode mode)
 {
-    test.check_maxctrl("alter service Mirror-Router"
+    test.check_percona_proxyctl("alter service Mirror-Router"
                        " exporter file"
                        " file /tmp/mirror.txt");
 
     run_sql(test);
 
-    test.maxscale->stop();
-    test.maxscale->copy_from_node("/tmp/mirror.txt", "./mirror.txt");
-    test.maxscale->ssh_node_f(true, "rm /tmp/mirror.txt");
-    test.maxscale->start();
+    test.percona_proxy->stop();
+    test.percona_proxy->copy_from_node("/tmp/mirror.txt", "./mirror.txt");
+    test.percona_proxy->ssh_node_f(true, "rm /tmp/mirror.txt");
+    test.percona_proxy->start();
 
     std::ifstream infile("mirror.txt");
     std::string line;
@@ -187,7 +187,7 @@ void test_file(TestConnections& test, Mode mode)
 
 void test_kafka(TestConnections& test, Mode mode)
 {
-    test.check_maxctrl("alter service Mirror-Router"
+    test.check_percona_proxyctl("alter service Mirror-Router"
                        " exporter kafka"
                        " kafka_broker 127.0.0.1:4008"
                        " kafka_topic mirror-topic");
@@ -224,19 +224,19 @@ int main(int argc, char** argv)
     kafka.create_topic("mirror-topic");
 
     test.tprintf("Testing exporter=file, report=always");
-    test.check_maxctrl("alter service Mirror-Router report always");
+    test.check_percona_proxyctl("alter service Mirror-Router report always");
     test_file(test, Mode::ALL);
 
     test.tprintf("Testing exporter=file, report=on_conflict");
-    test.check_maxctrl("alter service Mirror-Router report on_conflict");
+    test.check_percona_proxyctl("alter service Mirror-Router report on_conflict");
     test_file(test, Mode::MISMATCHES);
 
     test.tprintf("Testing exporter=kafka, report=always");
-    test.check_maxctrl("alter service Mirror-Router report always");
+    test.check_percona_proxyctl("alter service Mirror-Router report always");
     test_kafka(test, Mode::ALL);
 
     test.tprintf("Testing exporter=kafka, report=on_conflict");
-    test.check_maxctrl("alter service Mirror-Router report on_conflict");
+    test.check_percona_proxyctl("alter service Mirror-Router report on_conflict");
     test_kafka(test, Mode::MISMATCHES);
 
     return test.global_result;

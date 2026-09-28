@@ -15,13 +15,13 @@
 
 /** @file REST API resources */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <string>
 #include <vector>
 
-#include <maxscale/server.hh>
-#include <maxscale/http.hh>
+#include <percona-proxy/server.hh>
+#include <percona-proxy/http.hh>
 
 #include "httprequest.hh"
 #include "httpresponse.hh"
@@ -154,18 +154,18 @@ private:
 HttpResponse resource_handle_request(const HttpRequest& request);
 
 /**
- * Get MaxScale logs as JSON
+ * Get Percona Proxy logs as JSON
  *
- * @param host   The hostname of this MaxScale, sent by the client.
+ * @param host   The hostname of this Percona Proxy, sent by the client.
  *
  * @return The logs as a JSON API resource.
  */
 json_t* mxs_logs_to_json(const char* host);
 
 /**
- * Get MaxScale log data as JSON
+ * Get Percona Proxy log data as JSON
  *
- * @param host     The hostname of this MaxScale, sent by the client.
+ * @param host     The hostname of this Percona Proxy, sent by the client.
  * @param cursor   The cursor where to read log entries for. An empty string means no cursor is open.
  * @param rows     How many rows of logs to read.
  * @param priority Log priorities to include or empty set for all priorities

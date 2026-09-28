@@ -19,14 +19,14 @@
 
 #define MXB_MODULE_NAME "readconnroute"
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/router.hh>
-#include <maxscale/session_stats.hh>
-#include <maxscale/workerlocal.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/session_stats.hh>
+#include <percona-proxy/workerlocal.hh>
+#include <percona-proxy/config2.hh>
 
 class RCR;
-namespace config = maxscale::config;
+namespace config = percona_proxy::config;
 
 /**
  * The client session structure used within this router.
@@ -129,21 +129,21 @@ public:
      *
      * @return a reference to the SessionStats of the Target (of the calling thread).
      */
-    maxscale::SessionStats& session_stats(maxscale::Target* pTarget);
+    percona_proxy::SessionStats& session_stats(percona_proxy::Target* pTarget);
 
     /**
      * @brief Combine stats for all servers across all threads
      *
      * @return reference to the TargetSessionStats of this thread.
      */
-    maxscale::TargetSessionStats combined_target_stats() const;
+    percona_proxy::TargetSessionStats combined_target_stats() const;
 
 private:
     RCR(SERVICE* service);
 
     mxs::Endpoint* get_connection(const mxs::Endpoints& endpoints);
 
-    mxs::WorkerLocal<maxscale::TargetSessionStats> m_target_stats;
+    mxs::WorkerLocal<percona_proxy::TargetSessionStats> m_target_stats;
 
     Config   m_config;
     SERVICE& m_service;

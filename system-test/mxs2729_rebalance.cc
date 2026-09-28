@@ -60,8 +60,8 @@ ostream& operator<<(ostream& out, const std::map<int, ThreadInfo>& m)
 map<int, ThreadInfo> get_thread_info(TestConnections& test)
 {
     map<int, ThreadInfo> rv;
-    auto result = test.maxctrl("api get maxscale/threads");
-    test.expect(result.rc == 0, "MaxCtrl command returned %d: %s", result.rc, result.output.c_str());
+    auto result = test.percona_proxyctl("api get percona-proxy/threads");
+    test.expect(result.rc == 0, "Percona Proxyctl command returned %d: %s", result.rc, result.output.c_str());
 
     json_error_t error;
     json_t* pJson = json_loads(result.output.c_str(), 0, &error);
@@ -99,7 +99,7 @@ void move_connections_to_thread(TestConnections& test,
     {
         if (kv.first != tid)
         {
-            string curl {"curl -s -u admin:mariadb -X POST http://127.0.0.1:8989/v1/maxscale/threads/"};
+            string curl {"curl -s -u admin:mariadb -X POST http://127.0.0.1:8989/v1/percona-proxy/threads/"};
 
             curl += std::to_string(kv.first);
             curl += "/rebalance?";
@@ -107,7 +107,7 @@ void move_connections_to_thread(TestConnections& test,
 
             cout << curl << endl;
 
-            auto result = test.maxscale->ssh_output(curl);
+            auto result = test.percona_proxy->ssh_output(curl);
 
             cout << result.output << endl;
         }
@@ -118,12 +118,12 @@ void start_rebalancing(TestConnections& test, int rebalance_period, int rebalanc
 {
     std::ostringstream ss;
 
-    ss << "alter maxscale"
+    ss << "alter percona-proxy"
        << " rebalance_window " << rebalance_period * 2
        << " rebalance_threshold " << rebalance_threshold
        << " rebalance_period " << rebalance_period << "s";
 
-    test.check_maxctrl(ss.str());
+    test.check_percona_proxyctl(ss.str());
 }
 }
 
@@ -133,9 +133,9 @@ void run(TestConnections* pTest, mxb::Semaphore* pSem_ready, mxb::Semaphore* pSe
     mxb::Semaphore& sem_ready = *pSem_ready;
     mxb::Semaphore& sem_exit = *pSem_exit;
 
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     bool connected = c.connect();
-    test.expect(connected, "Could not connect to MaxScale.");
+    test.expect(connected, "Could not connect to Percona Proxy.");
 
     if (!connected)
     {

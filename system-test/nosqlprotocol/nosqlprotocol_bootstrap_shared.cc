@@ -14,7 +14,7 @@
 
 #include <maxbase/assert.hh>
 #include <maxtest/maxrest.hh>
-#include <maxtest/maxscales.hh>
+#include <maxtest/percona_proxies.hh>
 #include <maxtest/testconnections.hh>
 #include <iostream>
 #include <mongocxx/client.hpp>
@@ -48,7 +48,7 @@ void setup(TestConnections& test, MYSQL* pMysql)
     required_query(test, pMysql, "GRANT ALL PRIVILEGES ON *.* TO 'admin.nosql_admin'@'%' WITH GRANT OPTION");
 }
 
-void connect_to_nosql(TestConnections& test, mxt::MaxScale& maxscale,
+void connect_to_nosql(TestConnections& test, mxt::PerconaProxy& percona_proxy,
                       const string& user, const string& password,
                       bool should_succeed)
 {
@@ -62,7 +62,7 @@ void connect_to_nosql(TestConnections& test, mxt::MaxScale& maxscale,
     s += ":";
     s += password;
     s += "@";
-    s += maxscale.ip();
+    s += percona_proxy.ip();
     s += ":4008";
     s += "/admin";
 
@@ -96,18 +96,18 @@ void connect_to_nosql(TestConnections& test, mxt::MaxScale& maxscale,
     }
 }
 
-void test_connecting_to_nosql(TestConnections& test, mxt::MaxScale& maxscale)
+void test_connecting_to_nosql(TestConnections& test, mxt::PerconaProxy& percona_proxy)
 {
-    connect_to_nosql(test, maxscale, "nosql_admin", "nosql_password", true);
-    connect_to_nosql(test, maxscale, "nosql_admin", "wrong_password", false);
-    connect_to_nosql(test, maxscale, "wrong_user", "wrong_password", false);
+    connect_to_nosql(test, percona_proxy, "nosql_admin", "nosql_password", true);
+    connect_to_nosql(test, percona_proxy, "nosql_admin", "wrong_password", false);
+    connect_to_nosql(test, percona_proxy, "wrong_user", "wrong_password", false);
 }
 
 bool find_master(TestConnections& test, time_t max_wait)
 {
     bool found_master = false;
 
-    auto* pMaxscale1 = test.maxscale;
+    auto* pMaxscale1 = test.percona_proxy;
 
     MaxRest maxrest(&test, pMaxscale1);
 
@@ -137,8 +137,8 @@ bool find_nosql_user(TestConnections& test, time_t max_wait)
 {
     bool found_nosql_user = false;
 
-    auto* pMaxscale1 = test.maxscale;
-    auto* pMaxscale2 = test.maxscale2;
+    auto* pMaxscale1 = test.percona_proxy;
+    auto* pMaxscale2 = test.percona_proxy2;
 
     time_t start = time(nullptr);
     time_t elapsed = 0;
@@ -178,8 +178,8 @@ void test_main(TestConnections& test)
 
         if (test.global_result == 0)
         {
-            auto* pMaxscale1 = test.maxscale;
-            auto* pMaxscale2 = test.maxscale2;
+            auto* pMaxscale1 = test.percona_proxy;
+            auto* pMaxscale2 = test.percona_proxy2;
 
             pMaxscale1->start();
             pMaxscale2->start();
@@ -217,7 +217,7 @@ void test_main(TestConnections& test)
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
 
     TestConnections test;
 

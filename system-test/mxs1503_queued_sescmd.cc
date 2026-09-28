@@ -30,17 +30,17 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     auto query = [&test](std::string q) {
-            return execute_query_silent(test.maxscale->conn_rwsplit, q.c_str());
+            return execute_query_silent(test.percona_proxy->conn_rwsplit, q.c_str());
         };
 
     auto check_result = [&test](std::string name, std::string res) {
             std::string sql = "SELECT " + name;
             char value[1024];
-            return find_field(test.maxscale->conn_rwsplit, sql.c_str(), name.c_str(), value) == 0
+            return find_field(test.percona_proxy->conn_rwsplit, sql.c_str(), name.c_str(), value) == 0
                    && res == value;
         };
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
     test.expect(query("DROP TABLE IF EXISTS test.t1;") == 0, "DROP TABLE should work.");
     test.expect(query("CREATE TABLE test.t1 (id INT);") == 0, "CREATE TABLE should work.");
 
@@ -53,10 +53,10 @@ int main(int argc, char** argv)
     // Block the master to trigger reconnection
     cout << "Blocking master" << endl;
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     cout << "Unblocking master" << endl;
     test.repl->unblock_node(0);
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     // Check that inserts work
     cout << "Selecting user variables" << endl;

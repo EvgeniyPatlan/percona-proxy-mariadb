@@ -44,7 +44,7 @@ int mysql_query_ex(MYSQL* conn, const std::string& query, int query_retries, tim
 bool mysql_is_net_error(unsigned int errcode);
 
 /**
- * Enable/disable the logging of all SQL statements MaxScale sends to
+ * Enable/disable the logging of all SQL statements Percona Proxy sends to
  * the servers.
  *
  * @param enable If true, enable, if false, disable.

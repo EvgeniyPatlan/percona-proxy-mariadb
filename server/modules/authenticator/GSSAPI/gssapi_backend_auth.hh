@@ -13,8 +13,8 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/protocol/mariadb/authenticator.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/protocol/mariadb/authenticator.hh>
 
 class GSSAPIBackendAuthenticator : public mariadb::BackendAuthenticator
 {

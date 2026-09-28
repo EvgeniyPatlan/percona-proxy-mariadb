@@ -18,9 +18,9 @@
 #include "template_reader.hh"
 #include "sql_rewriter.hh"
 
-#include <maxscale/config2.hh>
-#include <maxscale/filter.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 
 #include <memory>
 

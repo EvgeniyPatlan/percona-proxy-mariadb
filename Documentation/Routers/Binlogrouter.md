@@ -2,9 +2,9 @@
 
 The binlogrouter is a router that acts as a replication proxy for MariaDB
 primary-replica replication. The router connects to a primary, retrieves the binary
-logs and stores them locally. Replica servers can connect to MaxScale like they
+logs and stores them locally. Replica servers can connect to Percona Proxy like they
 would connect to a normal primary server. If the primary server goes down,
-replication between MaxScale and the replicas can still continue up to the latest
+replication between Percona Proxy and the replicas can still continue up to the latest
 point to which the binlogrouter replicated to. The primary can be changed without
 disconnecting the replicas and without them noticing that the primary server has
 changed. This allows for a more highly available replication setup.
@@ -77,7 +77,7 @@ supports. The following commands are supported:
      stop at the oldest file that a replica is still reading.
 
      **NOTE:** You should still take precaution not to purge files that a potential
-     replica will need in the future. MaxScale can only detect that a file is
+     replica will need in the future. Percona Proxy can only detect that a file is
      in active use when a replica is connected, and requesting events from it.
 
  * `SHOW MASTER STATUS`
@@ -128,7 +128,7 @@ supports. The following commands are supported:
      * `@@gtid_slave_pos`, `@@gtid_current_pos` or `@@gtid_binlog_pos`: All of
        these return the latest GTID replicated from the primary.
 
-     * `version()` or `@@version`: The version string returned by MaxScale when
+     * `version()` or `@@version`: The version string returned by Percona Proxy when
        a client connects to it.
 
      * `UNIX_TIMESTAMP()`: The current timestamp.
@@ -206,7 +206,7 @@ replication, the binlogrouter will acknowledge the replicated events.
 ## Configuration Parameters
 
 The binlogrouter is configured similarly to how normal routers are configured in
-MaxScale. It requires at least one listener where clients can connect to and one
+Percona Proxy. It requires at least one listener where clients can connect to and one
 server from which the database user information can be retrieved. An example
 configuration can be found in the [example](#example) section of this document.
 
@@ -215,7 +215,7 @@ configuration can be found in the [example](#example) section of this document.
 - **Type**: path
 - **Mandatory**: No
 - **Dynamic**: No
-- **Default**: `/var/lib/maxscale/binlogs`
+- **Default**: `/var/lib/percona-proxy/binlogs`
 
 Directory where binary log files are stored.
 
@@ -226,7 +226,7 @@ Directory where binary log files are stored.
 - **Dynamic**: No
 - **Default**: `1234`
 
-The server ID that MaxScale uses when connecting to the master and when serving
+The server ID that Percona Proxy uses when connecting to the master and when serving
 binary logs to the slaves.
 
 ### `net_timeout`
@@ -325,14 +325,14 @@ key versions and remain readable as long as the key versions used to encrypt
 them are available.
 
 Once binary log encryption has been enabled, the encryption key ID cannot be
-changed and the key must remain available to MaxScale in order for replication
+changed and the key must remain available to Percona Proxy in order for replication
 to work. If an encryption key is not available or the key manager fails to
 retrieve it, the replication from the currently selected primary server will
 stop. If the replication is restarted manually, the encryption key retrieval is
 attempted again.
 
 Re-encryption of binlogs using another encryption key is not possible. However,
-this is possible if the data is replicated to a second MaxScale server that uses
+this is possible if the data is replicated to a second Percona Proxy server that uses
 a different encryption key. The same approach can also be used to decrypt
 binlogs.
 
@@ -377,12 +377,12 @@ from for the semi-synchronous replication to take place.
 
 ## New installation
 
- 1. Configure and start MaxScale.
+ 1. Configure and start Percona Proxy.
 
  1. If you have not configured `select_master=true` (automatic
     primary selection), issue a `CHANGE MASTER TO` command to binlogrouter.
 ```
-mysql -u USER -pPASSWORD -h maxscale-IP -P binlog-PORT
+mysql -u USER -pPASSWORD -h percona-proxy-IP -P binlog-PORT
 CHANGE MASTER TO master_host="primary-IP", master_port=primary-PORT, master_user=USER, master_password="PASSWORD", master_use_gtid=slave_pos;
 START SLAVE;
 ```
@@ -391,7 +391,7 @@ START SLAVE;
 ```
 mysql -u USER -pPASSWORD -h replica-IP -P replica-PORT
 STOP SLAVE;
-CHANGE MASTER TO master_host="maxscale-IP", master_port=binlog-PORT,
+CHANGE MASTER TO master_host="percona-proxy-IP", master_port=binlog-PORT,
 master_user="USER", master_password="PASSWORD", master_use_gtid=slave_pos;
 START SLAVE;
 SHOW SLAVE STATUS \G
@@ -419,7 +419,7 @@ and store all the data.
 ### Deployment
 
 The method described here inflicts the least downtime. Assuming you have
-configured MaxScale version 2.5 or newer, and it is ready to go:
+configured Percona Proxy version 2.5 or newer, and it is ready to go:
 
  1. Redirect each replica that replicates from Binlogrouter to replicate from the
     primary.
@@ -432,17 +432,17 @@ START SLAVE;
 SHOW SLAVE STATUS \G
 ```
 
- 1. Stop the old version of MaxScale, and start the new one.
+ 1. Stop the old version of Percona Proxy, and start the new one.
     Verify routing functionality.
 
  1. Issue a `CHANGE MASTER TO` command, or use [select_master](#select_master).
 ```
-mysql -u USER -pPASSWORD -h maxscale-IP -P binlog-PORT
+mysql -u USER -pPASSWORD -h percona-proxy-IP -P binlog-PORT
 CHANGE MASTER TO master_host="primary-IP", master_port=primary-PORT,
 master_user=USER,master_password="PASSWORD", master_use_gtid=slave_pos;
 ```
 
- 1. Run `maxctrl list servers`. Make sure all your servers are accounted for.
+ 1. Run `percona-proxyctl list servers`. Make sure all your servers are accounted for.
     Pick the lowest gtid state (e.g. 0-1000-1234,1-1001-5678) on display and
     issue this command to Binlogrouter:
 ```
@@ -459,7 +459,7 @@ See [select_master](#select_master).
 ```
 mysql -u USER -pPASSWORD -h replica-IP -P replica-PORT
 STOP SLAVE;
-CHANGE MASTER TO master_host="maxscale-IP", master_port=binlog-PORT,
+CHANGE MASTER TO master_host="percona-proxy-IP", master_port=binlog-PORT,
 master_user="USER", master_password="PASSWORD",
 master_use_gtid=slave_pos;
 START SLAVE;

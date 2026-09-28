@@ -16,16 +16,16 @@
  * MySQL Protocol common routines for client to gateway and gateway to backend
  */
 
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
-#include <maxscale/protocol/mariadb/authenticator.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/protocol/mariadb/authenticator.hh>
 
 #include <openssl/sha.h>
 #include <maxbase/format.hh>
 #include <maxbase/hexdump.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/service.hh>
-#include <maxscale/target.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/target.hh>
+#include <percona-proxy/utils.hh>
 #include "packet_parser.hh"
 
 #include <mysql.h>

@@ -18,9 +18,9 @@
 #include <string>
 #include <vector>
 #include <maxbase/format.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/routingworker.hh>
 
 #include "internal/monitormanager.hh"
 #include "internal/service.hh"

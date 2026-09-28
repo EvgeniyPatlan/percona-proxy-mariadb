@@ -1,7 +1,7 @@
 # Maxscale CDC Connector
 
-The C++ connector for the [MariaDB MaxScale](https://mariadb.com/products/technology/maxscale)
-[CDC system](https://mariadb.com/kb/en/mariadb-enterprise/mariadb-maxscale-22-avrorouter-tutorial/).
+The C++ connector for the [Percona Proxy for MariaDB](https://mariadb.com/products/technology/percona-proxy)
+[CDC system](https://mariadb.com/kb/en/mariadb-enterprise/mariadb-percona-proxy-22-avrorouter-tutorial/).
 
 ## Usage
 
@@ -10,8 +10,8 @@ easily embedded into existing applications.
 
 To start using the connector, either download it from the
 [MariaDB website](https://mariadb.com/downloads/mariadb-tx/connector) or
-[configure the MaxScale repository](https://mariadb.com/kb/en/library/mariadb-package-repository-setup-and-usage/)
-and install the `maxscale-cdc-connector` package.
+[configure the Percona Proxy repository](https://mariadb.com/kb/en/library/mariadb-package-repository-setup-and-usage/)
+and install the `percona-proxy-cdc-connector` package.
 
 ## API Overview
 
@@ -30,8 +30,8 @@ To close the connection, destroy the instantiated object.
 ## Examples
 
 The source code
-[contains an example](https://github.com/mariadb-corporation/MaxScale/blob/2.2/connectors/cdc-connector/examples/main.cpp)
-that demonstrates basic usage of the MaxScale CDC Connector.
+[contains an example](https://github.com/mariadb-corporation/Percona Proxy/blob/2.2/connectors/cdc-connector/examples/main.cpp)
+that demonstrates basic usage of the Percona Proxy CDC Connector.
 
 ## Dependencies
 
@@ -69,6 +69,6 @@ sudo zypper install -y libjansson-devel openssl-devel cmake make gcc-c++ git
 
 ## Building and Packaging
 
-To build and package the connector as a library, follow MaxScale build
+To build and package the connector as a library, follow Percona Proxy build
 instructions with the exception of adding `-DTARGET_COMPONENT=devel` to the
 CMake call.

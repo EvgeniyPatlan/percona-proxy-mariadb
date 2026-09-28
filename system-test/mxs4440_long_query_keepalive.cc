@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     auto master_id = test.repl->get_server_id_str(0);
     test.expect(master_id != "-1", "Failed to fetch @@server_id from node 0");
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     test.expect(c.query("SET wait_timeout = 10"), "'SET wait_timeout' failed: %s", c.error());
 

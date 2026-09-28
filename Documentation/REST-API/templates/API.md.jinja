@@ -1,6 +1,6 @@
 # REST API
 
-This document describes the version 1 of the MaxScale REST API.
+This document describes the version 1 of the Percona Proxy REST API.
 
 [TOC]
 
@@ -17,23 +17,23 @@ section of the configuration guide for more details on how to configure the REST
 
 ## Authentication
 
-The MaxScale REST API uses [HTTP Basic Access](https://tools.ietf.org/html/rfc2617#section-2)
-authentication with the MaxScale administrative interface users. The default
+The Percona Proxy REST API uses [HTTP Basic Access](https://tools.ietf.org/html/rfc2617#section-2)
+authentication with the Percona Proxy administrative interface users. The default
 user is `admin:mariadb`.
 
-It is highly recommended to enable HTTPS on the MaxScale REST API to make the
-communication between the client and MaxScale secure. Without it, the passwords
+It is highly recommended to enable HTTPS on the Percona Proxy REST API to make the
+communication between the client and Percona Proxy secure. Without it, the passwords
 can be intercepted from the network traffic. Refer to the
 [Configuration Guide](../Getting-Started/Configuration-Guide.md#admin_ssl_key) for more
-details on how to enable HTTPS for the MaxScale REST API.
+details on how to enable HTTPS for the Percona Proxy REST API.
 
 For more details on how administrative interface users are created and managed,
-refer to the [MaxCtrl](../Reference/MaxCtrl.md) documentation as well as the
+refer to the [Percona Proxyctl](../Reference/Percona Proxyctl.md) documentation as well as the
 documentation of the [users](Resources-User.md) resource.
 
 ### JSON Web Tokens
 
-MaxScale supports authentication via
+Percona Proxy supports authentication via
 [JSON Web Tokens](https://tools.ietf.org/html/rfc7519).
 
 ```
@@ -96,7 +96,7 @@ token above would be used in the following manner:
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhZG1pbiIsImV4cCI6MTU4MzI1NDE1MSwiaWF0IjoxNTgzMjI1MzUxLCJpc3MiOiJtYXhzY2FsZSJ9.B1BqhjjKaCWKe3gVXLszpOPfeu8cLiwSb4CMIJAoyqw
 ```
 
-If MaxScale is restarted, all generated tokens are invalidated.
+If Percona Proxy is restarted, all generated tokens are invalidated.
 
 #### `/auth` Request Parameters
 
@@ -123,10 +123,10 @@ given in the HTTP query string.
 
 ## Resources
 
-The MaxScale REST API provides the following resources. All resources conform to
+The Percona Proxy REST API provides the following resources. All resources conform to
 the [JSON API](http://jsonapi.org/format/) specification.
 
-- [maxscale](Resources-MaxScale.md)
+- [percona-proxy](Resources-Percona Proxy.md)
 - [services](Resources-Service.md)
 - [servers](Resources-Server.md)
 - [listeners](Resources-Listener.md)
@@ -139,11 +139,11 @@ the [JSON API](http://jsonapi.org/format/) specification.
 In addition to the named resources, the REST API will respond with a HTTP 200 OK
 response to GET requests on the root resource (`/`) as well as the namespace
 root resource (`/v1/`). These can be used for HTTP health checks to determine
-whether MaxScale is running.
+whether Percona Proxy is running.
 
 ## API Versioning
 
-All of the current resources are in the `/v1/` namespace of the MaxScale REST
+All of the current resources are in the `/v1/` namespace of the Percona Proxy REST
 API. Further additions to the namespace can be added that do not break backwards
 compatibility of any existing resources. What this means in practice is that:
 
@@ -155,7 +155,7 @@ fields can be added, old ones can be removed and the meaning of existing fields
 can change. The aim is to be as backwards compatible as reasonably possible
 without sacrificing the clarity and functionality of the API.
 
-Since MaxScale 2.4.0, the use of the version prefix `/v1/` is optional: if the
+Since Percona Proxy 2.4.0, the use of the version prefix `/v1/` is optional: if the
 prefix is not used, the latest API version is used.
 
 ### Resource Relationships
@@ -234,7 +234,7 @@ the resource documentation.
 
 All parameters that use boolean values use the same rules that are used for the
 [boolean values](../Getting-Started/Configuration-Guide.md#booleans) in the
-MaxScale configuration. For example, both `pretty=off` and `pretty=false`
+Percona Proxy configuration. For example, both `pretty=off` and `pretty=false`
 disable the `pretty` option.
 
 All the resources that return JSON content also support the following
@@ -308,7 +308,7 @@ parameters. Parameters are given in the HTTP query string:
 
     The value inside the brackets must be a valid
     [JSONPath](https://www.ietf.org/archive/id/draft-ietf-jsonpath-base-21.html)
-    expression that MaxScale supports. The currently supported syntax is:
+    expression that Percona Proxy supports. The currently supported syntax is:
 
     - dot notation: `$.store.book`
     - bracket notation: `$['store']['book']`
@@ -319,7 +319,7 @@ parameters. Parameters are given in the HTTP query string:
     - optional root object: `store.book`
 
     The root object being optional is an extension to the JSONPath specification
-    that MaxScale implements.
+    that Percona Proxy implements.
 
     The `expr` value must be a
     [filter-expression](#filter-expressions). Similarly to the other `filter`
@@ -359,14 +359,14 @@ parameters. Parameters are given in the HTTP query string:
 
     If this parameter is set to `false` then the configuration synchronization
     is disabled for this request. This can be used to perform configuration
-    changes when MaxScale is unable to reach the cluster used to synchronize the
+    changes when Percona Proxy is unable to reach the cluster used to synchronize the
     configuration. The modifications to the local configuration will be
     overwritten when the next modification to the cluster's configuration is
     done which means this should only be used to perform temporary fixes.
 
 ### Filter Expressions
 
-MaxScale 24.02 added support for expressions in the `filter` request
+Percona Proxy 24.02 added support for expressions in the `filter` request
 parameter. Each resource in a resource collection that evaluates to a true value
 will be kept in the returned result. All rows that evaluate to false are
 removed.
@@ -396,7 +396,7 @@ expression as `V`. For the logical operators, the sub-expression is marked as
 
 Ranges of values can be defined using an `and()` expression with the range
 limits defined with the ordering operators `ge()` and `le()`.  To filter the
-sessions in MaxScale to ones that have an ID between 50 and 100, the following
+sessions in Percona Proxy to ones that have an ID between 50 and 100, the following
 filtering expression can be used.
 
 ```
@@ -514,7 +514,7 @@ English and it uses the server's local timezone.
 
 An identifier for a specific version of a resource. The value of this header
 changes whenever a resource is modified via the REST API. It will not change if
-an internal MaxScale event (e.g. server changing state or statistics being
+an internal Percona Proxy event (e.g. server changing state or statistics being
 updated) causes a change.
 
 When the client sends the `If-Match` or `If-None-Match` header, the provided

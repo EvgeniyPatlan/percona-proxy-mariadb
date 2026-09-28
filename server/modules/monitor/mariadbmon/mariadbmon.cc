@@ -22,15 +22,15 @@
 #include <mysql.h>
 #include <maxbase/assert.hh>
 #include <maxbase/format.hh>
-#include <maxscale/mainworker.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/mainworker.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/utils.hh>
 
 using std::string;
 using maxbase::string_printf;
-using maxscale::Monitor;
-using maxscale::MonitorServer;
+using percona_proxy::Monitor;
+using percona_proxy::MonitorServer;
 
 // Config parameter names
 const char* const CN_AUTO_FAILOVER = "auto_failover";
@@ -1196,7 +1196,7 @@ void MariaDBMonitor::check_acquire_masterlock()
     }
 }
 
-bool MariaDBMonitor::is_slave_maxscale() const
+bool MariaDBMonitor::is_slave_percona_proxy() const
 {
     return server_locks_in_use() && !is_cluster_owner();
 }
@@ -1423,7 +1423,7 @@ extern "C" MXS_MODULE* MXS_CREATE_MODULE()
         "A MariaDB Primary/Replica replication monitor",
         "V1.5.0",
         MXS_NO_MODULE_CAPABILITIES,
-        &maxscale::MonitorApi<MariaDBMonitor>::s_api,
+        &percona_proxy::MonitorApi<MariaDBMonitor>::s_api,
         nullptr,                                    /* Process init. */
         nullptr,                                    /* Process finish. */
         nullptr,                                    /* Thread init. */

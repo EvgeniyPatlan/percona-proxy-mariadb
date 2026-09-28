@@ -11,7 +11,7 @@
  * of this software will be governed by version 2 or later of the General
  * Public License.
  */
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,13 +24,13 @@
 #include <string>
 
 #include <maxbase/alloc.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/users.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/users.hh>
 #include <maxbase/pam_utils.hh>
 #include <maxbase/filesystem.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/event.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/event.hh>
 #include <maxbase/format.hh>
 
 #include "internal/adminusers.hh"
@@ -300,7 +300,7 @@ bool load_rest_users()
                 else
                 {
                     MXB_ERROR("Failed to dump new users. Please rename the file '%s' manually to '%s' and "
-                              "restart MaxScale to attempt again.", old_users_buc, pathc);
+                              "restart Percona Proxy to attempt again.", old_users_buc, pathc);
                 }
             }
         }
@@ -403,7 +403,7 @@ mxs::user_account_type admin_user_is_pam_account(const std::string& username, co
     }
     else if (auth_attempted)
     {
-        MXS_LOG_EVENT(maxscale::event::AUTHENTICATION_FAILURE, "%s", pam_res.error.c_str());
+        MXS_LOG_EVENT(percona_proxy::event::AUTHENTICATION_FAILURE, "%s", pam_res.error.c_str());
     }
 
     return rval;

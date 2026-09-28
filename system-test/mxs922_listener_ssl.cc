@@ -29,20 +29,20 @@ int main(int argc, char* argv[])
     config.create_listener(Config::SERVICE_RWSPLIT);
     config.create_monitor("mysql-monitor", "mysqlmon", 500);
     config.reset();
-    test->maxscale->wait_for_monitor();
+    test->percona_proxy->wait_for_monitor();
 
-    test->maxscale->connect_maxscale();
-    test->try_query(test->maxscale->conn_rwsplit, "select @@server_id");
+    test->percona_proxy->connect_percona_proxy();
+    test->try_query(test->percona_proxy->conn_rwsplit, "select @@server_id");
     config.create_ssl_listener(Config::SERVICE_RCONN_SLAVE);
 
-    auto& mxs = *test->maxscale;
-    auto conn = mxs.try_open_connection(mxt::MaxScale::SslMode::ON, mxs.readconn_slave_port,
+    auto& mxs = *test->percona_proxy;
+    auto conn = mxs.try_open_connection(mxt::PerconaProxy::SslMode::ON, mxs.readconn_slave_port,
                                         mxs.user_name(), mxs.password(), "test");
     test->expect(conn->is_open(), "Connection failed.");
     auto res = conn->simple_query("select @@server_id");
     test->expect(!res.empty(), "Query failed.");
 
-    test->maxscale->expect_running_status(true);
+    test->percona_proxy->expect_running_status(true);
     int rval = test->global_result;
     delete test;
     return rval;

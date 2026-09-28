@@ -13,7 +13,7 @@
  */
 
 /**
- * @file bug565.cpp  regression case for bug 565 ( "Clients CLIENT_FOUND_ROWS setting is ignored by maxscale"
+ * @file bug565.cpp  regression case for bug 565 ( "Clients CLIENT_FOUND_ROWS setting is ignored by percona-proxy"
  *) MAX-311
  *
  * - open connection with CLIENT_FOUND_ROWS flag
@@ -30,7 +30,7 @@
  *  Created attachment 155 [details]
  *  test for mysql_affected_rows() with/without CLIENT_FOUND_ROWS connection flag
  *
- *  Even worse: connections via maxscale always behave as if CLIENT_FOUND_ROWS is set even though the default
+ *  Even worse: connections via percona-proxy always behave as if CLIENT_FOUND_ROWS is set even though the default
  * is NOT having it set.
  *
  *  When doing the same update two times in a row without CLIENT_FOUND_ROWS
@@ -51,7 +51,7 @@
  *  update #2: 0
  *  update #3: 2
  *
- *  while through maxscale it is
+ *  while through percona-proxy it is
  *
  *  update #1: 2
  *  update #2: 2
@@ -78,25 +78,25 @@ int main(int argc, char* argv[])
 
 
     test.repl->connect();
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
 
-    conn_found_rows = open_conn_db_flags(test.maxscale->rwsplit_port,
-                                         test.maxscale->ip4(),
+    conn_found_rows = open_conn_db_flags(test.percona_proxy->rwsplit_port,
+                                         test.percona_proxy->ip4(),
                                          (char*) "test",
-                                         test.maxscale->user_name(),
-                                         test.maxscale->password(),
+                                         test.percona_proxy->user_name(),
+                                         test.percona_proxy->password(),
                                          CLIENT_FOUND_ROWS,
-                                         test.maxscale_ssl);
+                                         test.percona_proxy_ssl);
 
     test.reset_timeout();
-    execute_query(test.maxscale->conn_rwsplit, "DROP TABLE IF EXISTS t1");
-    execute_query(test.maxscale->conn_rwsplit,
+    execute_query(test.percona_proxy->conn_rwsplit, "DROP TABLE IF EXISTS t1");
+    execute_query(test.percona_proxy->conn_rwsplit,
                   "CREATE TABLE t1(id INT PRIMARY KEY, val INT, msg VARCHAR(100))");
-    execute_query(test.maxscale->conn_rwsplit,
+    execute_query(test.percona_proxy->conn_rwsplit,
                   "INSERT INTO t1 VALUES (1, 1, 'foo'), (2, 1, 'bar'), (3, 2, 'baz'), (4, 2, 'abc')");
 
     test.reset_timeout();
-    execute_query_affected_rows(test.maxscale->conn_rwsplit,
+    execute_query_affected_rows(test.percona_proxy->conn_rwsplit,
                                 "UPDATE t1 SET msg='xyz' WHERE val=2",
                                 &rows);
     test.tprintf("update #1: %ld (expeced value is 2)\n", (long) rows);
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
     }
 
     test.reset_timeout();
-    execute_query_affected_rows(test.maxscale->conn_rwsplit,
+    execute_query_affected_rows(test.percona_proxy->conn_rwsplit,
                                 "UPDATE t1 SET msg='xyz' WHERE val=2",
                                 &rows);
     test.tprintf("update #2: %ld  (expeced value is 0)\n", (long) rows);
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
         test.add_result(1, "Affected rows is not 2\n");
     }
 
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 
     mysql_close(conn_found_rows);
 

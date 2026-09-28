@@ -31,9 +31,9 @@ int main(int argc, char** argv)
                   test.repl->ip_private(2),
                   test.repl->port(2));
     execute_query(test.repl->nodes[3], "START SLAVE");
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto master_st = mxt::ServerInfo::master_st;
     auto slave_st = mxt::ServerInfo::slave_st;
     auto relay = mxt::ServerInfo::RELAY | slave_st;

@@ -46,9 +46,9 @@ struct TestCase
 
 void run_test(TestConnections& test, TestCase test_case)
 {
-    test.maxscale->connect();
+    test.percona_proxy->connect();
 
-    MYSQL_STMT* stmt = mysql_stmt_init(test.maxscale->conn_rwsplit);
+    MYSQL_STMT* stmt = mysql_stmt_init(test.percona_proxy->conn_rwsplit);
     std::string query = "SELECT * FROM test.t1";
     unsigned long cursor_type = CURSOR_TYPE_READ_ONLY;
     mysql_stmt_attr_set(stmt, STMT_ATTR_CURSOR_TYPE, &cursor_type);
@@ -63,17 +63,17 @@ void run_test(TestConnections& test, TestCase test_case)
     }
 
     cout << test_case.name << endl;
-    test.expect(test_case.func(test.maxscale->conn_rwsplit, stmt, bind),
+    test.expect(test_case.func(test.percona_proxy->conn_rwsplit, stmt, bind),
                 "Test '%s' failed: %s %s", test_case.name.c_str(),
-                mysql_error(test.maxscale->conn_rwsplit),
+                mysql_error(test.percona_proxy->conn_rwsplit),
                 mysql_stmt_error(stmt));
 
     mysql_stmt_close(stmt);
 
-    test.expect(mysql_query(test.maxscale->conn_rwsplit, "SELECT 1") == 0,
-                "Normal queries should work: %s", mysql_error(test.maxscale->conn_rwsplit));
+    test.expect(mysql_query(test.percona_proxy->conn_rwsplit, "SELECT 1") == 0,
+                "Normal queries should work: %s", mysql_error(test.percona_proxy->conn_rwsplit));
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 }
 
 
@@ -81,19 +81,19 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    test.maxctrl("enable log-priority info");
-    test.maxscale->connect();
+    test.percona_proxyctl("enable log-priority info");
+    test.percona_proxy->connect();
 
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id INT)");
-    test.try_query(test.maxscale->conn_rwsplit, "BEGIN");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id INT)");
+    test.try_query(test.percona_proxy->conn_rwsplit, "BEGIN");
 
     for (int i = 0; i < 100; i++)
     {
-        execute_query(test.maxscale->conn_rwsplit, "INSERT INTO test.t1 VALUES (%d)", i);
+        execute_query(test.percona_proxy->conn_rwsplit, "INSERT INTO test.t1 VALUES (%d)", i);
     }
 
-    test.try_query(test.maxscale->conn_rwsplit, "COMMIT");
-    test.maxscale->disconnect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "COMMIT");
+    test.percona_proxy->disconnect();
     test.repl->sync_slaves();
 
     vector<TestCase> tests =

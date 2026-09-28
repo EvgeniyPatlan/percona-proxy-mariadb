@@ -32,8 +32,8 @@ public:
         {
             test.expect(master.query("INSERT INTO test.t1 VALUES (" + std::to_string(i) + ")"),
                         "INSERT failed: %s", master.error());
-            test.expect(maxscale.query("STOP SLAVE"), "STOP SLAVE failed: %s", maxscale.error());
-            test.expect(maxscale.query("START SLAVE"), "START SLAVE failed: %s", maxscale.error());
+            test.expect(percona_proxy.query("STOP SLAVE"), "STOP SLAVE failed: %s", percona_proxy.error());
+            test.expect(percona_proxy.query("START SLAVE"), "START SLAVE failed: %s", percona_proxy.error());
         }
 
         slave.query("STOP SLAVE;START SLAVE;");

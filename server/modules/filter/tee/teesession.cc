@@ -18,7 +18,7 @@
 #include <set>
 #include <string>
 
-#include <maxscale/listener.hh>
+#include <percona-proxy/listener.hh>
 
 TeeSession::TeeSession(MXS_SESSION* session, SERVICE* service, LocalClient* client,
                        const mxb::Regex& match, const mxb::Regex& exclude, bool sync)

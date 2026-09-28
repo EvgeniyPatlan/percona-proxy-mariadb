@@ -50,13 +50,13 @@ private:
         test.tprintf("Flush logs until the promoted slave is ahead of the master");
         flush_until_ahead(slave, master.field("SHOW MASTER STATUS"));
 
-        test.tprintf("Point MaxScale to it");
-        maxscale.query("STOP SLAVE");
-        maxscale.query(change_master_sql(test.repl->ip(1), test.repl->port(1)));
-        maxscale.query("START SLAVE");
+        test.tprintf("Point Percona Proxy to it");
+        percona_proxy.query("STOP SLAVE");
+        percona_proxy.query(change_master_sql(test.repl->ip(1), test.repl->port(1)));
+        percona_proxy.query("START SLAVE");
 
-        test.tprintf("Point demoted master to maxscale");
-        master.query(change_master_sql(test.maxscale->ip(), test.maxscale->rwsplit_port,
+        test.tprintf("Point demoted master to percona-proxy");
+        master.query(change_master_sql(test.percona_proxy->ip(), test.percona_proxy->rwsplit_port,
                                        GtidPos::CURRENT));
         master.query("START SLAVE");
 
@@ -68,13 +68,13 @@ private:
         test.tprintf("Flush logs until the demoted master is ahead of the promoted slave");
         flush_until_ahead(master, slave.field("SHOW MASTER STATUS"));
 
-        test.tprintf("Point MaxScale to the original master");
-        maxscale.query("STOP SLAVE");
-        maxscale.query(change_master_sql(test.repl->ip(0), test.repl->port(0)));
-        maxscale.query("START SLAVE");
+        test.tprintf("Point Percona Proxy to the original master");
+        percona_proxy.query("STOP SLAVE");
+        percona_proxy.query(change_master_sql(test.repl->ip(0), test.repl->port(0)));
+        percona_proxy.query("START SLAVE");
 
-        test.tprintf("Point original slave back at MaxScale");
-        slave.query(change_master_sql(test.maxscale->ip(), test.maxscale->rwsplit_port,
+        test.tprintf("Point original slave back at Percona Proxy");
+        slave.query(change_master_sql(test.percona_proxy->ip(), test.percona_proxy->rwsplit_port,
                                       GtidPos::CURRENT));
         slave.query("START SLAVE");
 
@@ -85,8 +85,8 @@ private:
     void check(Connection& m, Connection& s)
     {
         m.query("INSERT INTO test.t1 VALUES (1)");
-        sync(m, maxscale);
-        sync(maxscale, s);
+        sync(m, percona_proxy);
+        sync(percona_proxy, s);
 
         auto master_rows = m.field("SELECT COUNT(*) FROM test.t1");
         auto slave_rows = s.field("SELECT COUNT(*) FROM test.t1");

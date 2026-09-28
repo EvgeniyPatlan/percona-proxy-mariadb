@@ -23,10 +23,10 @@ using std::endl;
 
 void test1(TestConnections& test)
 {
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
     test.reset_timeout();
 
-    MYSQL_STMT* stmt = mysql_stmt_init(test.maxscale->conn_rwsplit);
+    MYSQL_STMT* stmt = mysql_stmt_init(test.percona_proxy->conn_rwsplit);
     const char* query = "SELECT @@server_id";
     char buffer[100] = "";
     my_bool err = false;
@@ -58,18 +58,18 @@ void test1(TestConnections& test)
 
     cout << "Close statement" << endl;
     mysql_stmt_close(stmt);
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 }
 
 void test2(TestConnections& test)
 {
     test.reset_timeout();
 
-    MYSQL* conn = open_conn_db_timeout(test.maxscale->rwsplit_port,
-                                       test.maxscale->ip(),
+    MYSQL* conn = open_conn_db_timeout(test.percona_proxy->rwsplit_port,
+                                       test.percona_proxy->ip(),
                                        "test",
-                                       test.maxscale->user_name(),
-                                       test.maxscale->password(),
+                                       test.percona_proxy->user_name(),
+                                       test.percona_proxy->password(),
                                        1,
                                        false);
 
@@ -144,10 +144,10 @@ void test2(TestConnections& test)
 
 void test3(TestConnections& test)
 {
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
     test.reset_timeout();
 
-    MYSQL_STMT* stmt = mysql_stmt_init(test.maxscale->conn_rwsplit);
+    MYSQL_STMT* stmt = mysql_stmt_init(test.percona_proxy->conn_rwsplit);
     const char* query = "SELECT @@server_id";
     char buffer[100] = "";
     my_bool err = false;
@@ -162,9 +162,9 @@ void test3(TestConnections& test)
     test.add_result(mysql_stmt_prepare(stmt, query, strlen(query)), "Failed to prepare");
 
     cout << "Start transaction" << endl;
-    test.add_result(mysql_query(test.maxscale->conn_rwsplit, "START TRANSACTION"),
+    test.add_result(mysql_query(test.percona_proxy->conn_rwsplit, "START TRANSACTION"),
                     "START TRANSACTION should succeed: %s",
-                    mysql_error(test.maxscale->conn_rwsplit));
+                    mysql_error(test.percona_proxy->conn_rwsplit));
 
 
     unsigned long cursor_type = CURSOR_TYPE_READ_ONLY;
@@ -181,12 +181,12 @@ void test3(TestConnections& test)
     test.add_result(strlen(buffer) == 0, "Expected result buffer to not be empty");
 
     cout << "Commit" << endl;
-    test.add_result(mysql_query(test.maxscale->conn_rwsplit, "COMMIT"),
+    test.add_result(mysql_query(test.percona_proxy->conn_rwsplit, "COMMIT"),
                     "COMMIT should succeed: %s",
-                    mysql_error(test.maxscale->conn_rwsplit));
+                    mysql_error(test.percona_proxy->conn_rwsplit));
 
     mysql_stmt_close(stmt);
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 
     char server_id[1024];
     test.repl->connect();
@@ -198,17 +198,17 @@ void test3(TestConnections& test)
 
 void test4(TestConnections& test)
 {
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
     test.reset_timeout();
 
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id VARCHAR(200))");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id VARCHAR(200))");
 
     for (int i = 0; i < 100; i++)
     {
-        test.try_query(test.maxscale->conn_rwsplit, "INSERT INTO test.t1 VALUES ('test4')");
+        test.try_query(test.percona_proxy->conn_rwsplit, "INSERT INTO test.t1 VALUES ('test4')");
     }
 
-    MYSQL_STMT* stmt = mysql_stmt_init(test.maxscale->conn_rwsplit);
+    MYSQL_STMT* stmt = mysql_stmt_init(test.percona_proxy->conn_rwsplit);
     const char* query = "SELECT * FROM test.t1";
     char buffer[100] = "";
     my_bool err = false;
@@ -243,15 +243,15 @@ void test4(TestConnections& test)
 
     mysql_stmt_close(stmt);
 
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE test.t1");
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE test.t1");
 
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 }
 
 void test_mxs3801(TestConnections& test)
 {
     test.reset_timeout();
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
 
     test.expect(c.query("CREATE OR REPLACE PROCEDURE sp() SELECT 1"),

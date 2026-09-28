@@ -46,7 +46,7 @@ add_test_executable_ex(NAME ed25519_authentication SOURCE ed25519_authentication
 add_test_executable_ex(NAME auth_mariadb_passthrough SOURCE auth_mariadb_passthrough.cc
         CONFIG auth_mariadb_passthrough.cnf VMS repl_backend LIBS auth_utils)
 
-# Regression case for the bug "MaxScale ignores host in user authentication"
+# Regression case for the bug "Percona Proxy ignores host in user authentication"
 add_test_executable_ex(NAME auth_hostname SOURCE auth_hostname.cc CONFIG auth_hostname.cnf
         VMS repl_backend LABELS MariaDBAuth)
 

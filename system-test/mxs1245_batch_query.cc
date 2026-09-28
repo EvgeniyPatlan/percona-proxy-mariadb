@@ -53,7 +53,7 @@ void test_master_failure(TestConnections& test, MYSQL* mysql)
 
     send_batch(test, mysql, NUM_QUERY, query);
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     test.expect(c.query("FLUSH TABLES WITH READ LOCK"), "Failed to lock tables: %s", c.error());
 
@@ -61,9 +61,9 @@ void test_master_failure(TestConnections& test, MYSQL* mysql)
 
     test.reset_timeout();
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.repl->unblock_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
 
     for (int i = 0; i < NUM_QUERY * 2 && test.ok(); i++)
     {
@@ -75,10 +75,10 @@ void test_master_failure(TestConnections& test, MYSQL* mysql)
 void test_trx_replay(TestConnections& test, MYSQL* mysql)
 {
     // Enable transaction_replay and reconnect to take it into use
-    test.check_maxctrl("alter service RW-Split-Router transaction_replay true");
-    test.check_maxctrl("alter service RW-Split-Router delayed_retry_timeout 30s");
-    test.maxscale->connect_rwsplit();
-    mysql = test.maxscale->conn_rwsplit;
+    test.check_percona_proxyctl("alter service RW-Split-Router transaction_replay true");
+    test.check_percona_proxyctl("alter service RW-Split-Router delayed_retry_timeout 30s");
+    test.percona_proxy->connect_rwsplit();
+    mysql = test.percona_proxy->conn_rwsplit;
 
     const std::string query = "UPDATE test.t1 SET id = 1 WHERE id = 1";
     const int NUM_QUERY = 5;
@@ -86,7 +86,7 @@ void test_trx_replay(TestConnections& test, MYSQL* mysql)
     test.expect(mysql_query(mysql, "BEGIN") == 0, "BEGIN should work: %s", mysql_error(mysql));
     send_batch(test, mysql, NUM_QUERY, query);
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     test.expect(c.query("FLUSH TABLES WITH READ LOCK"), "Failed to lock tables: %s", c.error());
 
@@ -94,25 +94,25 @@ void test_trx_replay(TestConnections& test, MYSQL* mysql)
 
     test.reset_timeout();
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.repl->unblock_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
 
     read_results(test, mysql, NUM_QUERY * 2);
 
     test.expect(mysql_query(mysql, "COMMIT") == 0, "COMMIT should work: %s", mysql_error(mysql));
 
     // Revert the configuration change and reconnect
-    test.check_maxctrl("alter service RW-Split-Router transaction_replay false");
-    test.maxscale->connect_rwsplit();
+    test.check_percona_proxyctl("alter service RW-Split-Router transaction_replay false");
+    test.percona_proxy->connect_rwsplit();
 }
 
 void test_optimistic_trx(TestConnections& test, MYSQL* mysql)
 {
     // Enable optimistic_trx and reconnect to take it into use
-    test.check_maxctrl("alter service RW-Split-Router optimistic_trx true");
-    test.maxscale->connect_rwsplit();
-    mysql = test.maxscale->conn_rwsplit;
+    test.check_percona_proxyctl("alter service RW-Split-Router optimistic_trx true");
+    test.percona_proxy->connect_rwsplit();
+    mysql = test.percona_proxy->conn_rwsplit;
 
     const std::string read_query = "SELECT * FROM test.t1";
     const std::string write_query = "INSERT INTO test.t1 VALUES (1)";
@@ -135,8 +135,8 @@ void test_optimistic_trx(TestConnections& test, MYSQL* mysql)
     test.expect(mysql_query(mysql, "COMMIT") == 0, "COMMIT should work: %s", mysql_error(mysql));
 
     // Revert the configuration change and reconnect
-    test.check_maxctrl("alter service RW-Split-Router optimistic_trx false");
-    test.maxscale->connect_rwsplit();
+    test.check_percona_proxyctl("alter service RW-Split-Router optimistic_trx false");
+    test.percona_proxy->connect_rwsplit();
 }
 
 int main(int argc, char** argv)
@@ -153,15 +153,15 @@ int main(int argc, char** argv)
         "SELECT LAST_INSERT_ID()",
     };
 
-    test.maxscale->connect_rwsplit();
-    mysql_query(test.maxscale->conn_rwsplit, "CREATE TABLE test.t1(id INT)");
+    test.percona_proxy->connect_rwsplit();
+    mysql_query(test.percona_proxy->conn_rwsplit, "CREATE TABLE test.t1(id INT)");
 
     test.log_printf("Testing streaming of various queries");
 
     for (const auto& query : queries)
     {
         test.tprintf("  %s", query.c_str());
-        run_test(test, test.maxscale->conn_rwsplit, query);
+        run_test(test, test.percona_proxy->conn_rwsplit, query);
     }
 
     test.log_printf("Run the same test but inside a transaction");
@@ -169,21 +169,21 @@ int main(int argc, char** argv)
     for (const auto& query : queries)
     {
         test.tprintf("  %s", query.c_str());
-        mysql_query(test.maxscale->conn_rwsplit, "START TRANSACTION");
-        run_test(test, test.maxscale->conn_rwsplit, query);
-        mysql_query(test.maxscale->conn_rwsplit, "COMMIT");
+        mysql_query(test.percona_proxy->conn_rwsplit, "START TRANSACTION");
+        run_test(test, test.percona_proxy->conn_rwsplit, query);
+        mysql_query(test.percona_proxy->conn_rwsplit, "COMMIT");
     }
 
     test.log_printf("Testing master failure during query streaming");
-    test_master_failure(test, test.maxscale->conn_rwsplit);
+    test_master_failure(test, test.percona_proxy->conn_rwsplit);
 
     test.log_printf("Testing transaction_replay with query streaming");
-    test_trx_replay(test, test.maxscale->conn_rwsplit);
+    test_trx_replay(test, test.percona_proxy->conn_rwsplit);
 
     test.log_printf("Testing optimistic_trx with query streaming");
-    test_optimistic_trx(test, test.maxscale->conn_rwsplit);
+    test_optimistic_trx(test, test.percona_proxy->conn_rwsplit);
 
-    mysql_query(test.maxscale->conn_rwsplit, "DROP TABLE test.t1");
+    mysql_query(test.percona_proxy->conn_rwsplit, "DROP TABLE test.t1");
 
     return test.global_result;
 }

@@ -19,7 +19,7 @@
 
 void test_mxs4615(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
 
     std::thread thr([&](){
@@ -31,19 +31,19 @@ void test_mxs4615(TestConnections& test)
 
     // Block and unblock the master
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.repl->unblock_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
 
     thr.join();
 }
 
 void test_mxs5387(TestConnections& test)
 {
-    test.check_maxctrl("create filter Hint hintfilter");
-    test.check_maxctrl("alter service-filters RW-Split-Router Hint");
+    test.check_percona_proxyctl("create filter Hint hintfilter");
+    test.check_percona_proxyctl("alter service-filters RW-Split-Router Hint");
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     MXT_EXPECT(c.connect());
     MXT_EXPECT(c.query(
         R"(
@@ -58,10 +58,10 @@ END
     test.repl->sync_slaves();
 
     c.query("CALL interrupted_call()");
-    c.query("CALL interrupted_call() -- maxscale route to slave");
+    c.query("CALL interrupted_call() -- percona-proxy route to slave");
 
     MXT_EXPECT(c.query("DROP PROCEDURE interrupted_call"));
-    test.check_maxctrl("destroy filter --force Hint");
+    test.check_percona_proxyctl("destroy filter --force Hint");
 }
 
 void test_main(TestConnections& test)

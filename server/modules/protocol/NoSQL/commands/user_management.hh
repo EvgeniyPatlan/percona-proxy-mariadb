@@ -18,8 +18,8 @@
 #include <uuid/uuid.h>
 #include "../nosqlscram.hh"
 #include "../nosqlusermanager.hh"
-#include "maxscale.hh"
-#include <maxscale/utils.hh>
+#include "percona-proxy.hh"
+#include <percona-proxy/utils.hh>
 
 using namespace std;
 
@@ -460,7 +460,7 @@ private:
                 ostringstream ss;
                 ss << "Could create MariaDB user '" << m_db << "." << m_user << "'@'" << m_host << "', "
                    << "but could not give the required GRANTs. The current used does not have "
-                   << "the required privileges. See the MaxScale log for more details.";
+                   << "the required privileges. See the Percona Proxy log for more details.";
 
                 throw SoftError(ss.str(), error::UNAUTHORIZED);
             }
@@ -884,7 +884,7 @@ public:
                 if (nStatements == 0)
                 {
                     ss << "Could partially update the MariaDB grants and could update the corresponding "
-                       << "roles in the local nosqlprotocol database. See the MaxScale log for more details.";
+                       << "roles in the local nosqlprotocol database. See the Percona Proxy log for more details.";
                 }
                 else
                 {
@@ -1088,7 +1088,7 @@ public:
                 if (nStatements == 0)
                 {
                     ss << "Could partially update the MariaDB grants and could update the corresponding "
-                       << "roles in the local nosqlprotocol database. See the MaxScale log for more details.";
+                       << "roles in the local nosqlprotocol database. See the Percona Proxy log for more details.";
                 }
                 else
                 {

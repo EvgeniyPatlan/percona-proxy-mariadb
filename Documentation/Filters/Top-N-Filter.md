@@ -4,7 +4,7 @@
 
 ## Overview
 
-The top filter is a filter module for MariaDB MaxScale that monitors every SQL
+The top filter is a filter module for Percona Proxy for MariaDB that monitors every SQL
 statement that passes through the filter. It measures the duration of that
 statement, the time between the statement being sent and the first result being
 returned. The top N times are kept, along with the SQL text itself and a list
@@ -108,7 +108,7 @@ for `match` and `exclude`.
 - **Default**: None
 
 Defines an address that is used to match against
-the address from which the client connection to MariaDB MaxScale originates.
+the address from which the client connection to Percona Proxy for MariaDB originates.
 Only sessions that originate from this address will be logged.
 
 ```
@@ -123,7 +123,7 @@ source=127.0.0.1
 - **Default**: None
 
 Defines a username that is used to match against
-the user from which the client connection to MariaDB MaxScale originates. Only
+the user from which the client connection to Percona Proxy for MariaDB originates. Only
 sessions that are connected using this username will result in results being
 generated.
 

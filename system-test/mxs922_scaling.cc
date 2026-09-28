@@ -26,7 +26,7 @@ void* query_thread(void* data)
 {
     TestConnections* test = static_cast<TestConnections*>(data);
 
-    MYSQL* mysql = test->maxscale->open_rwsplit_connection();
+    MYSQL* mysql = test->percona_proxy->open_rwsplit_connection();
     my_bool yes = true;
     mysql_options(mysql, MYSQL_OPT_RECONNECT, &yes);
 
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 
     sleep(1);
 
-    test->check_maxscale_alive();
+    test->check_percona_proxy_alive();
 
     int rval = test->global_result;
     delete test;

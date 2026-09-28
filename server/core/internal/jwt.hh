@@ -13,7 +13,7 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <maxbase/assert.hh>
 
 #include <map>
@@ -22,7 +22,7 @@
 #include <string>
 #include <tuple>
 
-namespace maxscale
+namespace percona_proxy
 {
 namespace jwt
 {
@@ -76,7 +76,7 @@ bool init();
  * for uniquely identifying a user. Custom values could be added but, for the sake simplicity, we only use the
  * one standard value to store the actual user information.
  *
- * @param issuer   The issuer of this token (e.g. maxscale)
+ * @param issuer   The issuer of this token (e.g. percona-proxy)
  * @param subject  The recipient of the token. The information stored here is not encrypted so don't store
  *                 anything sensitive in it.
  * @param max_age  The age in seconds the token is valid for.

@@ -44,7 +44,7 @@ add_test_executable_ex(
   NAME nosqlprotocol_bootstrap_shared
   SOURCE nosqlprotocol_bootstrap_shared.cc
   CONFIG nosqlprotocol_bootstrap_shared.cnf nosqlprotocol_bootstrap_shared.cnf
-  VMS repl_backend second_maxscale
+  VMS repl_backend second_percona_proxy
   LABELS nosqlprotocol)
 add_dependencies(nosqlprotocol_bootstrap_shared mongo-cxx-driver mongo-c-driver)
 

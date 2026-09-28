@@ -13,5 +13,5 @@
 #
 
 sleep 5
-sudo /usr/bin/killall maxscale -s INT || sudo pkill -INT maxscale
+sudo /usr/bin/killall percona-proxy -s INT || sudo pkill -INT percona-proxy
 

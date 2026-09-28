@@ -13,10 +13,10 @@
  * Public License.
  */
 
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 #define MXB_MODULE_NAME MXS_MARIADB_PROTOCOL_NAME
 
-#include <maxscale/protocol/mariadb/client_connection.hh>
+#include <percona-proxy/protocol/mariadb/client_connection.hh>
 
 #include <inttypes.h>
 #include <limits.h>
@@ -32,20 +32,20 @@
 #include <maxbase/proxy_protocol.hh>
 #include <maxbase/format.hh>
 #include <maxbase/pretty_print.hh>
-#include <maxscale/event.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/modinfo.hh>
-#include <maxscale/protocol.hh>
-#include <maxscale/protocol/mariadb/authenticator.hh>
-#include <maxscale/protocol/mariadb/backend_connection.hh>
-#include <maxscale/protocol/mariadb/local_client.hh>
-#include <maxscale/protocol/mariadb/mariadbparser.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/router.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/session.hh>
-#include <maxscale/ssl.hh>
-#include <maxscale/version.hh>
+#include <percona-proxy/event.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/modinfo.hh>
+#include <percona-proxy/protocol.hh>
+#include <percona-proxy/protocol/mariadb/authenticator.hh>
+#include <percona-proxy/protocol/mariadb/backend_connection.hh>
+#include <percona-proxy/protocol/mariadb/local_client.hh>
+#include <percona-proxy/protocol/mariadb/mariadbparser.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/ssl.hh>
+#include <percona-proxy/version.hh>
 #include <maxsql/mariadb.hh>
 
 #include "detect_special_query.hh"
@@ -77,19 +77,19 @@ const char WRONG_SEQ_FMT[] = "Client (%s) sent packet with unexpected sequence n
 const int ER_BAD_HANDSHAKE = 1043;
 const char BAD_HANDSHAKE_MSG[] = "Bad handshake";   // Matches server message
 const char BAD_HANDSHAKE_FMT[] = "Client (%s) sent an invalid HandshakeResponse.";
-// MaxScale-specific message. Possibly useful for clarifying that MaxScale is expecting SSL connection.
+// Percona Proxy-specific message. Possibly useful for clarifying that Percona Proxy is expecting SSL connection.
 const char BAD_SSL_HANDSHAKE_MSG[] = "Bad SSL handshake";
 const char BAD_SSL_HANDSHAKE_FMT[] = "Client (%s) sent an invalid SSLRequest.";
 const char HANDSHAKE_ERRSTATE[] = "08S01";
 
 // The past-the-end value for the session command IDs we generate (includes prepared statements). When this ID
 // value is reached, the counter is reset back to 1. This makes sure we reserve the values 0 and 0xffffffff as
-// special values that are never assigned by MaxScale.
+// special values that are never assigned by Percona Proxy.
 const uint32_t MAX_SESCMD_ID = std::numeric_limits<uint32_t>::max();
 static_assert(MAX_SESCMD_ID == MARIADB_PS_DIRECT_EXEC_ID);
 
 // Default version string sent to clients
-const string default_version = string("5.5.5-10.4.32 ") + MAXSCALE_VERSION + "-maxscale";
+const string default_version = string("5.5.5-10.4.32 ") + PERCONA_PROXY_VERSION + "-percona-proxy";
 
 class ThisUnit
 {
@@ -763,7 +763,7 @@ MariaDBClientConnection::process_authentication(AuthType auth_type)
                 else
                 {
                     // Should not get client data (or read events) before users have actually been updated.
-                    // This can happen if client hangs up while MaxScale is waiting for the update.
+                    // This can happen if client hangs up while Percona Proxy is waiting for the update.
                     MXB_ERROR("Client %s sent data when waiting for user account update. Closing session.",
                               m_session_data->user_and_host().c_str());
                     send_misc_error("Unexpected client event");
@@ -834,7 +834,7 @@ MariaDBClientConnection::process_authentication(AuthType auth_type)
 
         case AuthState::CHANGE_USER_OK:
             {
-                // Reauthentication to MaxScale succeeded, but the query still needs to be successfully
+                // Reauthentication to Percona Proxy succeeded, but the query still needs to be successfully
                 // routed.
                 rval = complete_change_user_p1() ? StateMachineRes::DONE : StateMachineRes::ERROR;
                 state_machine_continue = false;
@@ -1136,7 +1136,7 @@ bool MariaDBClientConnection::should_inspect_query(GWBUF& buffer) const
 
 /**
  * Some SQL commands/queries need to be detected and handled by the protocol
- * and MaxScale instead of being routed forward as is.
+ * and Percona Proxy instead of being routed forward as is.
  *
  * @param buffer Query buffer
  * @return see @c spec_com_res_t
@@ -1673,7 +1673,7 @@ void MariaDBClientConnection::error(DCB* event_dcb, const char* error)
         }
 
         // The client did not send a COM_QUIT packet
-        std::string errmsg {"Connection killed by MaxScale"};
+        std::string errmsg {"Connection killed by Percona Proxy"};
         std::string extra {session_get_close_reason(m_session)};
 
         if (!extra.empty())
@@ -1800,7 +1800,7 @@ int MariaDBClientConnection::send_auth_error(int packet_number, const char* mysq
  * @brief Send a standard MariaDB error message, emulating real server
  *
  * Supports the sending to a client of a standard database error, for
- * circumstances where the error is generated within MaxScale but should
+ * circumstances where the error is generated within Percona Proxy but should
  * appear like a backend server error. First introduced to support connection
  * throttling, to send "Too many connections" error.
  *
@@ -1820,7 +1820,7 @@ int MariaDBClientConnection::send_standard_error(int packet_number, int error_nu
  * @brief Create a standard MariaDB error message, emulating real server
  *
  * Supports the sending to a client of a standard database error, for
- * circumstances where the error is generated within MaxScale but should
+ * circumstances where the error is generated within Percona Proxy but should
  * appear like a backend server error. First introduced to support connection
  * throttling, to send "Too many connections" error.
  *
@@ -2005,7 +2005,7 @@ void MariaDBClientConnection::execute_kill_user(const char* user, kill_type_t ty
 
 void MariaDBClientConnection::send_ok_for_kill()
 {
-    // Check if the DCB is still open. If MaxScale is shutting down, the DCB is
+    // Check if the DCB is still open. If Percona Proxy is shutting down, the DCB is
     // already closed when this callback is called and an error about a write to a
     // closed DCB would be logged.
     if (m_dcb->is_open())
@@ -2383,7 +2383,7 @@ void MariaDBClientConnection::cancel_change_user_p2(const GWBUF& buffer)
     auto& curr_auth_data = m_session_data->auth_data;
     auto& orig_auth_data = m_change_user.auth_data_bu;
 
-    MXB_WARNING("COM_CHANGE_USER from '%s' to '%s' succeeded on MaxScale but "
+    MXB_WARNING("COM_CHANGE_USER from '%s' to '%s' succeeded on Percona Proxy but "
                 "returned (0x%0hhx) on backends: %s",
                 orig_auth_data->user.c_str(), curr_auth_data->user.c_str(),
                 mxs_mysql_get_command(buffer), mariadb::extract_error(buffer).c_str());
@@ -2596,7 +2596,7 @@ void MariaDBClientConnection::send_authentication_error(AuthErrorType error, con
 
     if (m_session->service->config()->log_auth_warnings)
     {
-        MXS_LOG_EVENT(maxscale::event::AUTHENTICATION_FAILURE, "%s", total_msg.c_str());
+        MXS_LOG_EVENT(percona_proxy::event::AUTHENTICATION_FAILURE, "%s", total_msg.c_str());
     }
     else
     {
@@ -2914,7 +2914,7 @@ bool MariaDBClientConnection::process_normal_packet(GWBUF&& buffer)
 
             if (inspect)
             {
-                // Track MaxScale-specific sql. If the variable setting succeeds, the query is routed normally
+                // Track Percona Proxy-specific sql. If the variable setting succeeds, the query is routed normally
                 // so that the same variable is visible on backend.
                 string errmsg = handle_variables(buffer);
                 if (!errmsg.empty())
@@ -3083,7 +3083,7 @@ MariaDBClientConnection::clientReply(GWBUF&& buffer, const mxs::ReplyRoute& down
                 }
                 else
                 {
-                    // Change user succeeded on MaxScale but failed on backends. Cancel it.
+                    // Change user succeeded on Percona Proxy but failed on backends. Cancel it.
                     cancel_change_user_p2(buffer);
                 }
                 break;

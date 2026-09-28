@@ -23,14 +23,14 @@ void test_main(TestConnections& test);
 int main(int argc, char* argv[])
 {
     TestConnections test;
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return test.run_test(argc, argv, test_main);
 }
 
 void test_main(TestConnections& test)
 {
     auto& repl = *test.repl;
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     const auto N = repl.N;
     const int avro_delay = 8;
 
@@ -92,11 +92,11 @@ void test_main(TestConnections& test)
         mxs.start();
         mxs.wait_for_monitor();
         mxs.get_servers().print();
-        test.tprintf("MaxScale started, waiting for Avro to process...");
+        test.tprintf("Percona Proxy started, waiting for Avro to process...");
         sleep(avro_delay);
         mxs.expect_running_status(true);
         mxs.stop();
-        // MaxScale should have now processed all binlogs and saved its spot.
+        // Percona Proxy should have now processed all binlogs and saved its spot.
 
         const string show_binlogs = "show binary logs;";
         auto res = conn->query(show_binlogs);
@@ -121,15 +121,15 @@ void test_main(TestConnections& test)
             print_gtids();
         }
 
-        // Start MaxScale. It should not complain about missing binlog files.
+        // Start Percona Proxy. It should not complain about missing binlog files.
         mxs.start();
         sleep(avro_delay);
-        // If the following log message is changed in MaxScale, this test becomes useless.
+        // If the following log message is changed in Percona Proxy, this test becomes useless.
         test.log_excludes("Failed to read replicated event");
     }
 
     conn->cmd("drop database test;");
-    auto res = mxs.maxctrl("call command mariadbmon reset-replication MariaDB-Monitor");
+    auto res = mxs.percona_proxyctl("call command mariadbmon reset-replication MariaDB-Monitor");
     test.expect(res.rc == 0, "reset-replication failed: %s", res.output.c_str());
     sleep(2);
     conn->cmd(flush);

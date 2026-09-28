@@ -38,7 +38,7 @@ struct Counters
 Counters get_counters(TestConnections& test)
 {
     mxb::Json js;
-    auto res = test.maxctrl("api get services/Sharding-Router "
+    auto res = test.percona_proxyctl("api get services/Sharding-Router "
                             "data.attributes.router_diagnostics");
     MXT_EXPECT(js.load_string(res.output));
 
@@ -66,7 +66,7 @@ bool compare_counters(TestConnections& test, const Counters& expected)
 
 void one_session(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     MXT_EXPECT(c.connect());
     MXT_EXPECT(c.query("SELECT 1"));
     c.disconnect();
@@ -89,7 +89,7 @@ void test_main(TestConnections& test)
     one_session(test);
     MXT_EXPECT(compare_counters(test, expected));
 
-    test.check_maxctrl("alter service Sharding-Router refresh_interval=2s");
+    test.check_percona_proxyctl("alter service Sharding-Router refresh_interval=2s");
 
     // Wait long enough to make all entries stale
     sleep(3);
@@ -104,14 +104,14 @@ void test_main(TestConnections& test)
     one_session(test);
     MXT_EXPECT(compare_counters(test, expected));
 
-    test.check_maxctrl("alter service Sharding-Router refresh_interval=2000s");
+    test.check_percona_proxyctl("alter service Sharding-Router refresh_interval=2000s");
 
     // Should be in the cache
     expected.hits++;
     one_session(test);
     MXT_EXPECT(compare_counters(test, expected));
 
-    test.check_maxctrl("call command schemarouter clear Sharding-Router");
+    test.check_percona_proxyctl("call command schemarouter clear Sharding-Router");
 
     // Should cause a miss
     expected.misses++;
@@ -119,7 +119,7 @@ void test_main(TestConnections& test)
     one_session(test);
     MXT_EXPECT(compare_counters(test, expected));
 
-    test.check_maxctrl("call command schemarouter invalidate Sharding-Router");
+    test.check_percona_proxyctl("call command schemarouter invalidate Sharding-Router");
 
     // Should hit a stale shard
     expected.stale++;

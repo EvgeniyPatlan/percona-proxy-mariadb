@@ -4,7 +4,7 @@
 
 ## Overview
 
-The Regex filter is a filter module for MariaDB MaxScale that is able to rewrite
+The Regex filter is a filter module for Percona Proxy for MariaDB that is able to rewrite
 query content using regular expression matches and text substitution. The
 regular expressions use the
 [PCRE2 syntax](http://www.pcre.org/current/doc/html/pcre2syntax.html).
@@ -84,7 +84,7 @@ replace=ENGINE =
 - **Default**: None
 
 The optional source parameter defines an address that is used to match against
-the address from which the client connection to MariaDB MaxScale
+the address from which the client connection to Percona Proxy for MariaDB
 originates. Only sessions that originate from this address will have the match
 and replacement applied to them.
 
@@ -100,7 +100,7 @@ source=127.0.0.1
 - **Default**: None
 
 The optional user parameter defines a username that is used to match against
-the user from which the client connection to MariaDB MaxScale originates. Only
+the user from which the client connection to Percona Proxy for MariaDB originates. Only
 sessions that are connected using this username will have the match and
 replacement applied to them.
 

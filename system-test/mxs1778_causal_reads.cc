@@ -27,9 +27,9 @@ void basic_test(TestConnections& test)
     test.tprintf("%s", __func__);
     const int N_QUERIES = 100;
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
 
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id INT)");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1(id INT)");
 
     for (int i = 0; i < N_QUERIES; i++)
     {
@@ -37,17 +37,17 @@ void basic_test(TestConnections& test)
         std::string insert = "INSERT INTO test.t1 VALUES (" + value + ")";
         std::string select = "SELECT @@server_id, COUNT(*) FROM test.t1 WHERE id = " + value;
 
-        test.try_query(test.maxscale->conn_rwsplit, "%s", insert.c_str());
-        Row row = get_row(test.maxscale->conn_rwsplit, select);
+        test.try_query(test.percona_proxy->conn_rwsplit, "%s", insert.c_str());
+        Row row = get_row(test.percona_proxy->conn_rwsplit, select);
         test.expect(!row.empty() && row [0] != master && row[1] == "1",
                     "At %d: Row is %s",
                     i,
                     row.empty() ? "empty" : (row[0] + " " + row[1]).c_str());
     }
 
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE test.t1");
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE test.t1");
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 }
 
 void master_retry_test(TestConnections& test)
@@ -56,9 +56,9 @@ void master_retry_test(TestConnections& test)
     const int MAX_QUERIES = 10000;
     bool ok = false;
 
-    test.maxctrl("alter service RW-Split-Router causal_reads_timeout 1s");
+    test.percona_proxyctl("alter service RW-Split-Router causal_reads_timeout 1s");
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Connection should work");
     conn.query("CREATE OR REPLACE TABLE test.t1(id INT)");
 
@@ -80,12 +80,12 @@ void master_retry_test(TestConnections& test)
     conn.query("DROP TABLE test.t1");
     test.expect(ok, "Master should reply at least once");
 
-    test.maxctrl("alter service RW-Split-Router causal_reads_timeout 10s");
+    test.percona_proxyctl("alter service RW-Split-Router causal_reads_timeout 10s");
 }
 
 void mxs4005(TestConnections& test)
 {
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     conn.set_options(0);
     test.expect(conn.connect(), "Connection should work");
     conn.query("CREATE OR REPLACE TABLE test.t1(id INT)");

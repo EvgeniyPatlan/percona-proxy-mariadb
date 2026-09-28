@@ -42,18 +42,18 @@ int main(int argc, char** argv)
     test.repl->connect();
     execute_query(test.repl->nodes[0], "CREATE DATABASE db1");
     execute_query(test.repl->nodes[0], "CREATE TABLE db1.t1(id INT)");
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
 
     test.tprintf("Loading local data file");
 
-    test.try_query(test.maxscale->conn_rwsplit, "LOAD DATA LOCAL INFILE 'data.csv' INTO TABLE db1.t1");
+    test.try_query(test.percona_proxy->conn_rwsplit, "LOAD DATA LOCAL INFILE 'data.csv' INTO TABLE db1.t1");
 
     test.tprintf("Verifying that data was loaded");
 
-    long total = execute_query_count_rows(test.maxscale->conn_rwsplit, "SELECT * FROM db1.t1");
+    long total = execute_query_count_rows(test.percona_proxy->conn_rwsplit, "SELECT * FROM db1.t1");
     test.add_result(total != 100, "Expected 100 rows, got %ld", total);
 
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 
     test.repl->execute_query_all_nodes("DROP DATABASE db1");
 

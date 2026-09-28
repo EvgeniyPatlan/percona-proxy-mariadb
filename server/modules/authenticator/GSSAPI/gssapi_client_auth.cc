@@ -15,10 +15,10 @@
 #include "gssapi_common.hh"
 #include "gssapi_client_auth.hh"
 
-#include <maxscale/protocol/mariadb/authenticator.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/protocol/mariadb/authenticator.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/service.hh>
 
 using AuthRes = mariadb::ClientAuthenticator::AuthRes;
 using std::string;
@@ -32,7 +32,7 @@ GSSAPIClientAuthenticator::GSSAPIClientAuthenticator(const std::string& service_
  * @brief Create a AuthSwitchRequest packet
  *
  * This function also contains the first part of the GSSAPI authentication.
- * The server (MaxScale) send the principal name that will be used to generate
+ * The server (Percona Proxy) send the principal name that will be used to generate
  * the token the client will send us. The principal name needs to exist in the
  * GSSAPI server in order for the client to be able to request a token.
  *
@@ -148,14 +148,14 @@ bool GSSAPIClientAuthenticator::validate_gssapi_token(AuthenticationData& auth_d
         }
         else
         {
-            cred_init_ok = true;    // MaxScale/server credentials are ok.
+            cred_init_ok = true;    // Percona Proxy/server credentials are ok.
         }
     }
 
     bool auth_ok = false;
     if (cred_init_ok)
     {
-        // MaxScale does not support complicated authentication schemes involving multiple messages. If
+        // Percona Proxy does not support complicated authentication schemes involving multiple messages. If
         // gssapi wants more communication, authentication fails.
         gss_ctx_id_t handle = GSS_C_NO_CONTEXT;
         gss_buffer_desc in = GSS_C_EMPTY_BUFFER;

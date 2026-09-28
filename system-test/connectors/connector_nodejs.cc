@@ -13,7 +13,7 @@
  */
 
 /**
- * Runs the MariaDB Connector/NodeJS test suite against MaxScale
+ * Runs the MariaDB Connector/NodeJS test suite against Percona Proxy
  */
 #include "connector_common.hh"
 

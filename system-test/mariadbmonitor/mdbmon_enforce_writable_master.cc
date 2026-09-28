@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 
 void run_test(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     mxs.check_servers_status(mxt::ServersInfo::default_repl_states());
 
     auto master_conn = test.repl->backend(0)->try_open_connection();
@@ -61,9 +61,9 @@ void run_test(TestConnections& test)
 
     if (test.ok())
     {
-        // Try again. This time, stop MaxScale before setting read_only. Monitor should read the journal
+        // Try again. This time, stop Percona Proxy before setting read_only. Monitor should read the journal
         // and see that server1 should be master.
-        test.logger().log_msgf("Stop MaxScale, set master read_only, start MaxScale. "
+        test.logger().log_msgf("Stop Percona Proxy, set master read_only, start Percona Proxy. "
                                "Check monitor removes read_only and detects the master.");
         mxs.stop();
         set_ro();

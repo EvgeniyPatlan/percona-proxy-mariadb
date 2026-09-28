@@ -12,13 +12,13 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <stdlib.h>
 #include <iostream>
 
-#include <maxscale/paths.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/utils.hh>
 
 #include "storagefactory.hh"
 #include "teststorage.hh"

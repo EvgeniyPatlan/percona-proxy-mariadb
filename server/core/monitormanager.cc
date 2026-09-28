@@ -12,19 +12,19 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <fcntl.h>
 #include <maxbase/format.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/protocol/mariadb/maxscale.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/protocol/mariadb/percona-proxy.hh>
 
 #include "internal/config.hh"
 #include "internal/monitormanager.hh"
 #include "internal/modules.hh"
 
-using maxscale::Monitor;
+using percona_proxy::Monitor;
 using Guard = std::lock_guard<std::mutex>;
 using std::string;
 using mxb::string_printf;

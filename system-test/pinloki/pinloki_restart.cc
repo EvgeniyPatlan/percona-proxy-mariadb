@@ -30,15 +30,15 @@ public:
         for (int i = 0; i < 20 && test.ok(); i++)
         {
             master.query("INSERT INTO test.t1 VALUES (" + std::to_string(i) + ")");
-            test.maxscale->restart();
-            test.expect(maxscale.connect(), "Reconnection after restart should work");
-            sync(master, maxscale);
+            test.percona_proxy->restart();
+            test.expect(percona_proxy.connect(), "Reconnection after restart should work");
+            sync(master, percona_proxy);
         }
 
         // This makes sure the slave is actively replicating
         slave.query("STOP SLAVE");
         slave.query("START SLAVE");
-        sync(maxscale, slave);
+        sync(percona_proxy, slave);
 
         auto master_rows = master.field("SELECT COUNT(*) FROM test.t1");
         auto slave_rows = slave.field("SELECT COUNT(*) FROM test.t1");

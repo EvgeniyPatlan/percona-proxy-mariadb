@@ -12,16 +12,16 @@
  * Public License.
  */
 
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 #define MXB_MODULE_NAME MXS_MARIADBAUTH_AUTHENTICATOR_NAME
 
 #include "mysql_auth.hh"
 #include <maxbase/format.hh>
-#include <maxscale/authenticator.hh>
-#include <maxscale/built_in_modules.hh>
-#include <maxscale/config_common.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/authenticator.hh>
+#include <percona-proxy/built_in_modules.hh>
+#include <percona-proxy/config_common.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/utils.hh>
 #include <openssl/sha.h>
 
 using AuthRes = mariadb::ClientAuthenticator::AuthRes;

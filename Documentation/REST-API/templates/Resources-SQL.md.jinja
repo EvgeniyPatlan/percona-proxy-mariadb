@@ -7,11 +7,11 @@ The SQL resource represents a database connection.
 ## SQL Connection Interface
 
 The following endpoints provide a simple REST API interface for executing
-SQL queries on servers and services in MaxScale.
+SQL queries on servers and services in Percona Proxy.
 
 This endpoint also supports executing SQL queries using an ODBC driver. The
 results returned by connections that use ODBC drivers can differ from the ones
-returned by normal SQL connections to objects in MaxScale.
+returned by normal SQL connections to objects in Percona Proxy.
 
 This document uses the `:id` value in the URL to represent a connection ID and
 the `:query_id` to represent a query ID. These values do not need to be manually
@@ -86,17 +86,17 @@ The request body must be a JSON object consisting of the following fields:
 
   - The object to connect to. This is a mandatory value and the
     given value must be the name of a valid server, service or listener in
-    MaxScale or the value `odbc` if an ODBC connection is being made.
+    Percona Proxy or the value `odbc` if an ODBC connection is being made.
 
 - `user`
 
   - The username to use when creating the connection. This is a mandatory value
-    when connecting to an object in MaxScale.
+    when connecting to an object in Percona Proxy.
 
 - `password`
 
   - The password for the user. This is a mandatory value when connecting to an
-    object in MaxScale.
+    object in Percona Proxy.
 
 - `db`
 
@@ -481,11 +481,11 @@ POST /v1/sql/:id/etl/prepare
 ```
 
 The ETL operation requires two connections: an ODBC connection to a remote
-server (source connection) and a connection to a server in MaxScale (destination
+server (source connection) and a connection to a server in Percona Proxy (destination
 connection). All ETL operations must be done on the ODBC connection.
 
 The ETL operations require that the MariaDB ODBC driver is installed on the
-MaxScale server. This driver is often available in the package manager of your
+Percona Proxy server. This driver is often available in the package manager of your
 operating system but it can also be downloaded from the MariaDB
 website. Installation instructions for installing the driver manually can be
 found
@@ -496,7 +496,7 @@ The request body must be a JSON object consisting of the following fields:
 - `target`
 
   The target connection ID that defines the destination server. This must be the
-  ID of a connection (i.e. `data.attributes.id` ) to a server in MaxScale
+  ID of a connection (i.e. `data.attributes.id` ) to a server in Percona Proxy
   created via the `POST /v1/sql/` endpoint.
 
 - `type`
@@ -511,7 +511,7 @@ The request body must be a JSON object consisting of the following fields:
     - `postgresql`
 
       Extract data from a PostgreSQL database. This requires that the PostgreSQL
-      ODBC driver is installed on the MaxScale server. This driver is often
+      ODBC driver is installed on the Percona Proxy server. This driver is often
       available in the package manager of your operating system.
 
     - `generic`

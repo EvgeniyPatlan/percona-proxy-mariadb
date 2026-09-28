@@ -12,11 +12,11 @@
  * Public License.
  */
 
-#include "maxscale/module.hh"
+#include "percona-proxy/module.hh"
 #include <string>
 #include "../../../core/internal/modules.hh"
 
-namespace maxscale
+namespace percona_proxy
 {
 
 //

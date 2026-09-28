@@ -12,13 +12,13 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
-#include <maxscale/cn_strings.hh>
-#include <maxscale/json.hh>
-#include <maxscale/paths.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/json.hh>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/utils.hh>
 #include <maxbase/checksum.hh>
 #include <maxbase/json.hh>
 #include <maxbase/filesystem.hh>
@@ -50,7 +50,7 @@ const char CN_STATUS[] = "status";
 
 const char STATUS_OK[] = "OK";
 const char SCOPE_NAME[] = "ConfigManager";
-const char TABLE[] = "maxscale_config";
+const char TABLE[] = "percona_proxy_config";
 
 struct ThisUnit
 {
@@ -166,7 +166,7 @@ bool is_noop_chage(const mxb::Json& lhs, const mxb::Json& rhs)
 }
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 // static
@@ -315,13 +315,13 @@ bool ConfigManager::revert_changes()
     }
     catch (const ConfigManager::Exception& e)
     {
-        MXB_ERROR("Failed to revert the failed configuration change, the MaxScale configuration "
+        MXB_ERROR("Failed to revert the failed configuration change, the Percona Proxy configuration "
                   "is in an indeterminate state. The error that caused the failure was: %s",
                   e.what());
 
         if (discard_config())
         {
-            MXB_ALERT("Aborting the MaxScale process...");
+            MXB_ALERT("Aborting the Percona Proxy process...");
             raise(SIGABRT);
         }
         else
@@ -497,9 +497,9 @@ std::string ConfigManager::checksum() const
     if (m_current_config)
     {
         // Use the sorted and compacted JSON as the checksum. This way the same state will result
-        // in the same checksum and differing MaxScale instances will thus result in a different
+        // in the same checksum and differing Percona Proxy instances will thus result in a different
         // checksum. One example where the checksum is expected to differ is when the local network
-        // address or port that is used in a listener is different in each MaxScale instance.
+        // address or port that is used in a listener is different in each Percona Proxy instance.
         auto cnf = m_current_config.get_object(CN_CONFIG);
         auto json_str = mxb::json_dump(cnf.get_json(), JSON_COMPACT | JSON_SORT_KEYS);
         rval = mxb::checksum<mxb::Sha1Sum>(json_str);
@@ -599,7 +599,7 @@ mxb::Json ConfigManager::create_config(int64_t version)
     append_config(arr.get_json(), service_list_to_json(""));
     append_config(arr.get_json(), FilterDef::filter_list_to_json(""));
     append_config(arr.get_json(), Listener::to_json_collection(""));
-    append_config(arr.get_json(), remove_local_parameters(mxs::Config::get().maxscale_to_json("")));
+    append_config(arr.get_json(), remove_local_parameters(mxs::Config::get().percona_proxy_to_json("")));
 
     mxb::Json rval(mxb::Json::Type::OBJECT);
 
@@ -732,7 +732,7 @@ ConfigManager::Type ConfigManager::to_type(const std::string& type)
         {CN_SERVICES, Type::SERVICES},
         {CN_LISTENERS, Type::LISTENERS},
         {CN_FILTERS, Type::FILTERS},
-        {CN_MAXSCALE, Type::MAXSCALE}
+        {CN_MAXSCALE, Type::PERCONA_PROXY}
     };
 
     auto it = types.find(type);
@@ -777,8 +777,8 @@ bool ConfigManager::is_same_object(const mxb::Json& lhs, const mxb::Json& rhs, s
             return true;
             break;
 
-        case Type::MAXSCALE:
-            // Only one MaxScale exists and it is only updated
+        case Type::PERCONA_PROXY:
+            // Only one Percona Proxy exists and it is only updated
             return true;
 
         case Type::UNKNOWN:
@@ -917,7 +917,7 @@ void ConfigManager::remove_old_object(const std::string& name, const std::string
         }
         break;
 
-    case Type::MAXSCALE:
+    case Type::PERCONA_PROXY:
     case Type::UNKNOWN:
         mxb_assert(!true);
         throw error("Found old object of unexpected type '", type, "': ", name);
@@ -1012,7 +1012,7 @@ void ConfigManager::create_new_object(const std::string& name, const std::string
         }
         break;
 
-    case Type::MAXSCALE:
+    case Type::PERCONA_PROXY:
         // We'll end up here when we're loading a cached configuration
         mxb_assert(m_version == 0);
         break;
@@ -1130,7 +1130,7 @@ void ConfigManager::update_object(const std::string& name, const std::string& ty
         {
             // Ignore changes to port, address and socket for listeners. This prevents
             // configurations on the same machine from conflicting with each other and
-            // it also allows different MaxScales to listen on different ports.
+            // it also allows different PerconaProxies to listen on different ports.
             auto attr = m_tmp.at("data/attributes");
             mxb::Json old_params;
 
@@ -1174,8 +1174,8 @@ void ConfigManager::update_object(const std::string& name, const std::string& ty
         }
         break;
 
-    case Type::MAXSCALE:
-        if (!runtime_alter_maxscale_from_json(js))
+    case Type::PERCONA_PROXY:
+        if (!runtime_alter_percona_proxy_from_json(js))
         {
             throw error("Failed to configure global options");
         }
@@ -1266,7 +1266,7 @@ json_t* ConfigManager::remove_local_parameters(json_t* json)
 
 std::string ConfigManager::dynamic_config_filename() const
 {
-    return std::string(mxs::datadir()) + "/maxscale-config.json";
+    return std::string(mxs::datadir()) + "/percona-proxy-config.json";
 }
 
 const std::string& ConfigManager::get_cluster() const
@@ -1377,7 +1377,7 @@ void ConfigManager::verify_sync()
             queue_sync();
             throw error("Configuration conflict detected: version stored in the cluster",
                         " (", version, ") is not the same as the local version (", m_version, "),",
-                        " MaxScale is out of sync.");
+                        " Percona Proxy is out of sync.");
         }
     }
 }
@@ -1446,7 +1446,7 @@ mxb::Json ConfigManager::fetch_config()
                 // If the configuration on server-A causes server-B to be chosen and the configuration on
                 // server-B causes server-A to be chosen, the configuration would oscillate between the two if
                 // the version values were different. Ignoring older configurations guaratees that we
-                // stabilize to some known configuration which is easier to deal with (for both MaxScale and
+                // stabilize to some known configuration which is easier to deal with (for both Percona Proxy and
                 // the users) than trying to figure out which of the configurations is the real one.
                 mxb_assert(m_server);
                 MXB_WARNING("The local configuration version (%ld) is ahead of the cluster "

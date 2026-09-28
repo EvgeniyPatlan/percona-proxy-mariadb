@@ -18,7 +18,7 @@ namespace
 {
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto master = mxt::ServerInfo::master_st;
     auto slave = mxt::ServerInfo::slave_st;
     auto normal_status = mxt::ServersInfo::default_repl_states();
@@ -48,7 +48,7 @@ void test_main(TestConnections& test)
         {
             mxb::StopWatch timer;
             test.tprintf("Exclusive lock taken on server1, attempting normal switchover.");
-            auto res = mxs.maxctrl("-t 20s call command mariadbmon switchover MariaDB-Monitor");
+            auto res = mxs.percona_proxyctl("-t 20s call command mariadbmon switchover MariaDB-Monitor");
             // Switch should fail and take switchover_timeout=5s to do so.
             test.expect(res.rc != 0, "Normal switchover succeeded when it should have failed.");
             auto dur_s = mxb::to_secs(timer.lap());
@@ -65,7 +65,7 @@ void test_main(TestConnections& test)
                 // Forced switch should work but still take ~5s.
                 test.tprintf("Attempting switchover-force.");
                 timer.restart();
-                res = mxs.maxctrl("-t 20s call command mariadbmon switchover-force MariaDB-Monitor");
+                res = mxs.percona_proxyctl("-t 20s call command mariadbmon switchover-force MariaDB-Monitor");
                 test.expect(res.rc == 0, "Forced switchover failed: %s", res.output.c_str());
                 dur_s = mxb::to_secs(timer.lap());
                 test.expect(dur_s > dur_s_expected,
@@ -79,7 +79,7 @@ void test_main(TestConnections& test)
         // Disconnect to clear any locks.
         lock_conn = nullptr;
         // Switch back here to handle the case where the first switch unintentionally worked.
-        auto res = mxs.maxctrl("call command mariadbmon switchover MariaDB-Monitor server1");
+        auto res = mxs.percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor server1");
         test.expect(res.rc == 0, "Switchover back to server1 failed.");
         mxs.wait_for_monitor(1);
         mxs.check_print_servers_status(normal_status);
@@ -128,7 +128,7 @@ void test_main(TestConnections& test)
                                  "delay is too high.");
 
                     mxb::StopWatch timer;
-                    res = mxs.maxctrl("-t 20s call command mariadbmon switchover MariaDB-Monitor server2");
+                    res = mxs.percona_proxyctl("-t 20s call command mariadbmon switchover MariaDB-Monitor server2");
                     test.expect(res.rc != 0, "Normal switchover succeeded when it should have failed.");
                     auto failtime = mxb::to_secs(timer.lap());
                     double failtime_expected = 1.1;
@@ -143,7 +143,7 @@ void test_main(TestConnections& test)
                     {
                         test.tprintf("Trying forced switchover, it should succeed.");
                         timer.restart();
-                        res = mxs.maxctrl("-t 20s call command mariadbmon switchover-force MariaDB-Monitor "
+                        res = mxs.percona_proxyctl("-t 20s call command mariadbmon switchover-force MariaDB-Monitor "
                                           "server2");
                         test.expect(res.rc == 0, "switchover-force failed: %s", res.output.c_str());
                         auto dur_s = mxb::to_secs(timer.lap());
@@ -160,7 +160,7 @@ void test_main(TestConnections& test)
 
             // Replication is messed up, reset it.
             mxs.wait_for_monitor(1);
-            mxs.maxctrl("call command mariadbmon reset-replication MariaDB-Monitor server1");
+            mxs.percona_proxyctl("call command mariadbmon reset-replication MariaDB-Monitor server1");
             mxs.wait_for_monitor();
             mxs.check_print_servers_status(normal_status);
         }

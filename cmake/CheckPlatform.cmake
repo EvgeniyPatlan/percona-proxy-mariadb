@@ -5,7 +5,7 @@ include(CheckLibraryExists)
 include(CheckIncludeFiles)
 include(CheckCXXSourceCompiles)
 
-# Check for libraries MaxScale depends on
+# Check for libraries Percona Proxy depends on
 find_library(HAVE_LIBSSL NAMES ssl)
 if(NOT HAVE_LIBSSL)
   message(FATAL_ERROR "Could not find libssl")

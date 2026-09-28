@@ -4,18 +4,18 @@
 
 ## Overview
 
-The tee filter is a "plumbing" fitting in the MariaDB MaxScale filter toolkit.
+The tee filter is a "plumbing" fitting in the Percona Proxy for MariaDB filter toolkit.
 It can be used in a filter pipeline of a service to make copies of requests from
-the client and send the copies to another service within MariaDB MaxScale.
+the client and send the copies to another service within Percona Proxy for MariaDB.
 
-**Please Note:** Starting with MaxScale 2.2.0, any client that connects to a
+**Please Note:** Starting with Percona Proxy 2.2.0, any client that connects to a
   service which uses a tee filter will require a grant for the loopback address,
   i.e. `127.0.0.1`.
 
 ## Configuration
 
 The configuration block for the TEE filter requires the minimal filter
-parameters in its section within the MaxScale configuration file. The service to
+parameters in its section within the Percona Proxy configuration file. The service to
 send the duplicates to must be defined.
 
 ```
@@ -105,7 +105,7 @@ options=case,extended
 - **Default**: None
 
 The optional source parameter defines an address that is used to match against
-the address from which the client connection to MariaDB MaxScale originates.
+the address from which the client connection to Percona Proxy for MariaDB originates.
 Only sessions that originate from this address will be replicated.
 ```
 source=127.0.0.1
@@ -119,7 +119,7 @@ source=127.0.0.1
 - **Default**: None
 
 The optional user parameter defines a user name that is used to match against
-the user from which the client connection to MariaDB MaxScale originates. Only
+the user from which the client connection to Percona Proxy for MariaDB originates. Only
 sessions that are connected using this username are replicated.
 ```
 user=john
@@ -184,7 +184,7 @@ Assume an order processing system that has a table called orders. You also have
 another database server, the datamart server, that requires all inserts into
 orders to be replicated to it. Deletes and updates are not, however, required.
 
-Set up a service in MariaDB MaxScale, called Orders, to communicate with the
+Set up a service in Percona Proxy for MariaDB, called Orders, to communicate with the
 order processing system with the tee filter applied to it. Also set up a service
 to talk to the datamart server, using the DataMart service. The tee filter would
 have as its service entry the DataMart service, by adding a match parameter of

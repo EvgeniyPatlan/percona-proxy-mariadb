@@ -16,15 +16,15 @@
 
 void check_connections(TestConnections& test, const std::vector<int>& expected)
 {
-    test.maxscale->get_servers().check_connections(expected);
+    test.percona_proxy->get_servers().check_connections(expected);
 }
 
 void cycle_master(TestConnections& test)
 {
     test.repl->block_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
     test.repl->unblock_node(0);
-    test.maxscale->wait_for_monitor(2);
+    test.percona_proxy->wait_for_monitor(2);
 }
 
 int main(int argc, char** argv)
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 
     for (int i = 0; i < 10; i++)
     {
-        Connection c = test.maxscale->rwsplit();
+        Connection c = test.percona_proxy->rwsplit();
         test.expect(c.connect(), "Failed to connect: %s", c.error());
         connections.push_back(std::move(c));
     }
@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     check_connections(test, {0, 0, 0, 0});
 
     test.tprintf("Enable transaction_replay and reconnect");
-    test.check_maxctrl("alter service RW-Split-Router transaction_replay true");
+    test.check_percona_proxyctl("alter service RW-Split-Router transaction_replay true");
 
     for (auto& c : connections)
     {
@@ -71,7 +71,7 @@ int main(int argc, char** argv)
     check_connections(test, {10, 0, 0, 0});
 
     test.tprintf("Switch master to server2, expecting 10 connections on server2");
-    test.check_maxctrl("call command mariadbmon switchover MariaDB-Monitor server2");
+    test.check_percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor server2");
 
     for (auto& c : connections)
     {
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
     check_connections(test, {0, 10, 0, 0});
 
     test.tprintf("Switch master to server1, expecting 10 connections on server1");
-    test.check_maxctrl("call command mariadbmon switchover MariaDB-Monitor server1");
+    test.check_percona_proxyctl("call command mariadbmon switchover MariaDB-Monitor server1");
 
     for (auto& c : connections)
     {

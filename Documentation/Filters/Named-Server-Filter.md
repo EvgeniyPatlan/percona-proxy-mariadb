@@ -4,7 +4,7 @@
 
 ## Overview
 
-The **namedserverfilter** is a MariaDB MaxScale filter module able to route
+The **namedserverfilter** is a Percona Proxy for MariaDB filter module able to route
 queries to servers based on regular expression  (regex) matches. Since it is a
 filter instead of a router, the NamedServerFilter only sets routing suggestions.
 It requires a compatible router to be effective. Currently, both
@@ -107,8 +107,8 @@ accordingly. The target can be one of the following:
  * `->slave` (adds a `HINT_ROUTE_TO_SLAVE` hint)
  * `->all` (adds a `HINT_ROUTE_TO_ALL` hint)
 
-The support for service names was added in MaxScale 6.3.2. Older
-versions of MaxScale did not accept service names in the `target`
+The support for service names was added in Percona Proxy 6.3.2. Older
+versions of Percona Proxy did not accept service names in the `target`
 parameters.
 
 ```
@@ -130,7 +130,7 @@ from other client IPs is simply left as is and routed straight through.
 ```
 source=127.0.0.1
 ```
-Since MaxScale 2.1 it's also possible to use % wildcards:
+Since Percona Proxy 2.1 it's also possible to use % wildcards:
 
 ```
 source=192.%.%.%
@@ -139,7 +139,7 @@ source=192.168.10.%
 ```
 Note that using `source=%` to match any IP is not allowed.
 
-Since MaxScale 2.3 it's also possible to specify multiple addresses separated
+Since Percona Proxy 2.3 it's also possible to specify multiple addresses separated
 by comma. Incoming client connections are subsequently checked against each.
 ```
 source=192.168.21.3,192.168.10.%

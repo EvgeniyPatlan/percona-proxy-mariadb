@@ -13,8 +13,8 @@
 #pragma once
 
 #include <maxpgsql/pg_connector.hh>
-#include <maxscale/ccdefs.hh>
-#include <maxscale/monitor.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/monitor.hh>
 
 class PgServer final : public mxs::MonitorServer
 {

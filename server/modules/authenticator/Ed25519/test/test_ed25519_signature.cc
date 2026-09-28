@@ -11,9 +11,9 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <string>
-#include <maxscale/utils.hh>
+#include <percona-proxy/utils.hh>
 #include "../ed25519_auth.hh"
 #include "../ref10/exports/api.h"
 #include "../ref10/exports/crypto_sign.h"

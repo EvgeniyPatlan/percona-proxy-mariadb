@@ -28,7 +28,7 @@ void test_rwsplit(TestConnections& test)
     std::string master_id = test.repl->get_server_id_str(0);
     test.repl->disconnect();
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Connection to readwritesplit should succeed");
 
     // Test simple reads and writes outside of transactions
@@ -145,29 +145,29 @@ void test_rwsplit(TestConnections& test)
     c.query("DROP TABLE test.t1");
 
     // COM_STATISTICS
-    test.maxscale->connect();
+    test.percona_proxy->connect();
     for (int i = 0; i < 10; i++)
     {
-        mysql_stat(test.maxscale->conn_rwsplit);
-        test.try_query(test.maxscale->conn_rwsplit, "SELECT 1");
+        mysql_stat(test.percona_proxy->conn_rwsplit);
+        test.try_query(test.percona_proxy->conn_rwsplit, "SELECT 1");
     }
 
     //
     // MXS-3229: Hang with COM_SET_OPTION
     //
 
-    mysql_set_server_option(test.maxscale->conn_rwsplit, MYSQL_OPTION_MULTI_STATEMENTS_ON);
-    mysql_set_server_option(test.maxscale->conn_rwsplit, MYSQL_OPTION_MULTI_STATEMENTS_OFF);
+    mysql_set_server_option(test.percona_proxy->conn_rwsplit, MYSQL_OPTION_MULTI_STATEMENTS_ON);
+    mysql_set_server_option(test.percona_proxy->conn_rwsplit, MYSQL_OPTION_MULTI_STATEMENTS_OFF);
 
     // Make sure the connection is still OK
-    test.try_query(test.maxscale->conn_rwsplit, "SELECT 1");
+    test.try_query(test.percona_proxy->conn_rwsplit, "SELECT 1");
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 }
 
 void test_mxs3915(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     c.query("SET autocommit=0");
     c.query("COMMIT");
@@ -189,7 +189,7 @@ void test_mxs3915(TestConnections& test)
 
 void test_mxs4269(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
 
     auto check_contents = [&](std::string rows){
         std::string from_slave = c.field("SELECT COUNT(*) FROM test.t1 WHERE server_id = @@server_id");
@@ -299,7 +299,7 @@ private:
 
 void test_mxs4419(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     test.expect(c.query("CREATE OR REPLACE TABLE test.t1(id INT)"), "Failed to create table: %s", c.error());
 
@@ -423,7 +423,7 @@ void test_mxs4419(TestConnections& test)
 
 void mxs4843_lots_of_connection_attributes(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     size_t len = 0;
     int i = 0;
 
@@ -448,7 +448,7 @@ void test_mxs4981(TestConnections& test)
 
     try
     {
-        auto c = test.maxscale->rwsplit();
+        auto c = test.percona_proxy->rwsplit();
         CHECK(c.connect());
         thr_id = c.thread_id();
         auto id = c.field("SELECT @@server_id, @@last_insert_id");
@@ -466,7 +466,7 @@ void test_mxs4981(TestConnections& test)
 
         for (int i = 0; i < 20; i++)
         {
-            CHECK(c.change_user(test.maxscale->user_name(), test.maxscale->password()));
+            CHECK(c.change_user(test.percona_proxy->user_name(), test.percona_proxy->password()));
         }
     }
     catch (const std::runtime_error& e)
@@ -479,7 +479,7 @@ void test_mxs4981(TestConnections& test)
         auto check_start = mxb::Clock::now();
 
         while (mxb::Clock::now() - check_start < 30s
-               && test.maxctrl("api get sessions/" + std::to_string(thr_id)).rc == 0)
+               && test.percona_proxyctl("api get sessions/" + std::to_string(thr_id)).rc == 0)
         {
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
@@ -496,7 +496,7 @@ void test_mxs5127(TestConnections& test)
     test.repl->connect();
     test.repl->execute_query_all_nodes("SET GLOBAL max_prepared_stmt_count=10");
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
     auto master_id = c.field("SELECT @@server_id, @@last_insert_id");
 
@@ -516,7 +516,7 @@ void test_mxs5127(TestConnections& test)
 
 void test_mxs5256(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
     c.query("SET names UTF8MB4,autocommit=1,tx_isolation='REPEATABLE-READ',session_track_schema=1,"
             "session_track_system_variables=CONCAT(@@session_track_system_variables,',autocommit,tx_isolation')");
@@ -524,23 +524,23 @@ void test_mxs5256(TestConnections& test)
 
 void test_mxs5480(TestConnections& test)
 {
-    test.check_maxctrl("alter service RW-Split-Router disable_sescmd_history=true");
+    test.check_percona_proxyctl("alter service RW-Split-Router disable_sescmd_history=true");
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
     test.expect(c.query("SET @foo='bar'"), "SET failed: %s", c.error());
     test.expect(c.query("SELECT 1"), "SELECT failed: %s", c.error());
 
-    test.check_maxctrl("alter service RW-Split-Router disable_sescmd_history=false");
+    test.check_percona_proxyctl("alter service RW-Split-Router disable_sescmd_history=false");
 }
 
 void test_mxs5507(TestConnections& test)
 {
     MYSQL* c = mysql_init(nullptr);
-    const char* ip = test.maxscale->ip();
-    const char* user = test.maxscale->user_name().c_str();
-    const char* pw = test.maxscale->password().c_str();
-    int port = test.maxscale->rwsplit_port;
+    const char* ip = test.percona_proxy->ip();
+    const char* user = test.percona_proxy->user_name().c_str();
+    const char* pw = test.percona_proxy->password().c_str();
+    int port = test.percona_proxy->rwsplit_port;
 
     test.expect(mysql_real_connect(c, ip, user, pw, nullptr, port, nullptr, 0),
                 "Failed to connect: %s", mysql_error(c));
@@ -548,7 +548,7 @@ void test_mxs5507(TestConnections& test)
                 "Multi-statement should fail with causal_reads=none");
     mysql_close(c);
 
-    test.check_maxctrl("alter service RW-Split-Router causal_reads=local");
+    test.check_percona_proxyctl("alter service RW-Split-Router causal_reads=local");
 
     c = mysql_init(nullptr);
     test.expect(mysql_real_connect(c, ip, user, pw, nullptr, port, nullptr, 0),
@@ -558,12 +558,12 @@ void test_mxs5507(TestConnections& test)
                 mysql_error(c));
     mysql_close(c);
 
-    test.check_maxctrl("alter service RW-Split-Router causal_reads=none");
+    test.check_percona_proxyctl("alter service RW-Split-Router causal_reads=none");
 }
 
 void test_mxs6005(TestConnections& test)
 {
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.connect();
 
     for (std::string query : {
@@ -581,25 +581,25 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     auto connections = [&]() {
-            return test.maxctrl("api get servers/server1 data.attributes.statistics.connections").output;
+            return test.percona_proxyctl("api get servers/server1 data.attributes.statistics.connections").output;
         };
 
     test.expect(connections()[0] == '0', "The master should have no connections");
-    test.maxscale->connect();
+    test.percona_proxy->connect();
     test.expect(connections()[0] == '2', "The master should have two connections");
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
     test.expect(connections()[0] == '0', "The master should have no connections");
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
     for (auto a : {"show status", "show variables", "show global status"})
     {
         for (int i = 0; i < 10; i++)
         {
-            test.try_query(test.maxscale->conn_rwsplit, "%s", a);
-            test.try_query(test.maxscale->conn_master, "%s", a);
+            test.try_query(test.percona_proxy->conn_rwsplit, "%s", a);
+            test.try_query(test.percona_proxy->conn_master, "%s", a);
         }
     }
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     // Readwritesplit sanity checks
     test_rwsplit(test);
@@ -616,7 +616,7 @@ int main(int argc, char** argv)
     // MXS-4843: Check that large sets of connection attributes are accepted
     mxs4843_lots_of_connection_attributes(test);
 
-    // MXS-4981: Large amounts of session commands will prevent MaxScale from stopping.
+    // MXS-4981: Large amounts of session commands will prevent Percona Proxy from stopping.
     test_mxs4981(test);
 
     // MXS-5127: DEALLOCATE PREPARE is not routed to all nodes

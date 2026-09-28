@@ -1,13 +1,13 @@
 # Filter Resource
 
-A filter resource represents an instance of a filter inside MaxScale. Multiple
+A filter resource represents an instance of a filter inside Percona Proxy. Multiple
 services can use the same filter and a single service can use multiple filters.
 
 [TOC]
 
 ## Resource Operations
 
-The _:name_ in all of the URIs must be the name of a filter in MaxScale.
+The _:name_ in all of the URIs must be the name of a filter in Percona Proxy.
 
 ### Get a filter
 
@@ -49,7 +49,7 @@ GET /v1/filters/:name
                 "user_match": null
             },
             "source": {
-                "file": "/etc/maxscale.cnf",
+                "file": "/etc/percona-proxy.cnf",
                 "type": "static"
             }
         },
@@ -101,7 +101,7 @@ GET /v1/filters
                     "module": "hintfilter"
                 },
                 "source": {
-                    "file": "/etc/maxscale.cnf",
+                    "file": "/etc/percona-proxy.cnf",
                     "type": "static"
                 }
             },
@@ -151,7 +151,7 @@ GET /v1/filters
                     "user_match": null
                 },
                 "source": {
-                    "file": "/etc/maxscale.cnf",
+                    "file": "/etc/percona-proxy.cnf",
                     "type": "static"
                 }
             },

@@ -13,18 +13,18 @@
  */
 
 #include <iostream>
-#include <maxscale/filtermodule.hh>
-#include <maxscale/mock/backend.hh>
-#include <maxscale/mock/client.hh>
-#include <maxscale/mock/routersession.hh>
-#include <maxscale/mock/session.hh>
+#include <percona-proxy/filtermodule.hh>
+#include <percona-proxy/mock/backend.hh>
+#include <percona-proxy/mock/client.hh>
+#include <percona-proxy/mock/routersession.hh>
+#include <percona-proxy/mock/session.hh>
 #include "../cachefilter.hh"
 
 #include "../../../../core/test/test_utils.hh"
 
 using namespace std;
-using maxscale::FilterModule;
-namespace mock = maxscale::mock;
+using percona_proxy::FilterModule;
+namespace mock = percona_proxy::mock;
 
 namespace
 {
@@ -43,7 +43,7 @@ const auto trx_active = TrxState::TRX_ACTIVE;
 const auto trx_ro = TrxState::TRX_ACTIVE | TrxState::TRX_READ_ONLY;
 
 // See
-// https://github.com/mariadb-corporation/MaxScale/blob/2.2/Documentation/Filters/Cache.md#cache_inside_transactions
+// https://github.com/mariadb-corporation/Percona Proxy/blob/2.2/Documentation/Filters/Cache.md#cache_inside_transactions
 struct TEST_CASE
 {
     cache_in_trxs_t cit;        /*< How to cache in transactions. */
@@ -432,7 +432,7 @@ int main(int argc, char* argv[])
 
         cout << rv << " failures." << endl;
 
-        maxscale_start_teardown();
+        percona_proxy_start_teardown();
         service_destroy_instances();
     }
     else

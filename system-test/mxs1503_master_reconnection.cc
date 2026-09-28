@@ -30,25 +30,25 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
 
     auto query = [&test](std::string q) {
-            return execute_query_silent(test.maxscale->conn_rwsplit, q.c_str());
+            return execute_query_silent(test.percona_proxy->conn_rwsplit, q.c_str());
         };
 
     auto error_matches = [&test](std::string q) {
-            std::string err = mysql_error(test.maxscale->conn_rwsplit);
+            std::string err = mysql_error(test.percona_proxy->conn_rwsplit);
             return err.find(q) != std::string::npos;
         };
 
     auto block_master = [&test]() {
             test.repl->block_node(0);
-            test.maxscale->wait_for_monitor();
+            test.percona_proxy->wait_for_monitor();
         };
 
     auto unblock_master = [&test]() {
             test.repl->unblock_node(0);
-            test.maxscale->wait_for_monitor();
+            test.percona_proxy->wait_for_monitor();
         };
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
     test.expect(query("DROP TABLE IF EXISTS test.t1") == 0,
                 "DROP TABLE should work.");
     test.expect(query("CREATE TABLE test.t1 (id INT)") == 0,

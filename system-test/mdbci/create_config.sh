@@ -45,7 +45,7 @@ cp -r ${script_dir}/cnf/* ${MDBCI_VM_PATH}/$name/cnf/
 
 echo "running vagrant up $provider"
 
-mdbci up $name --attempts 3 --labels MAXSCALE
+mdbci up $name --attempts 3 --labels PERCONA_PROXY
 if [ $? != 0 ]; then
 	echo "Error creating configuration"
 	exit 1

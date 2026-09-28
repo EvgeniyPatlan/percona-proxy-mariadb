@@ -22,15 +22,15 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    test.tprintf("Changing SQL_MODE to PAD_CHAR_TO_FULL_LENGTH and restarting MaxScale");
+    test.tprintf("Changing SQL_MODE to PAD_CHAR_TO_FULL_LENGTH and restarting Percona Proxy");
     test.repl->connect();
     test.repl->execute_query_all_nodes("SET GLOBAL SQL_MODE='PAD_CHAR_TO_FULL_LENGTH'");
-    test.maxscale->restart_maxscale();
+    test.percona_proxy->restart_percona_proxy();
 
-    test.tprintf("Connecting to MaxScale and executing a query");
-    test.maxscale->connect_maxscale();
-    test.try_query(test.maxscale->conn_rwsplit, "SELECT 1");
-    test.maxscale->close_maxscale_connections();
+    test.tprintf("Connecting to Percona Proxy and executing a query");
+    test.percona_proxy->connect_percona_proxy();
+    test.try_query(test.percona_proxy->conn_rwsplit, "SELECT 1");
+    test.percona_proxy->close_percona_proxy_connections();
 
     test.repl->execute_query_all_nodes("SET GLOBAL SQL_MODE=DEFAULT");
     return test.global_result;

@@ -1,4 +1,4 @@
-[maxscale]
+[percona-proxy]
 threads=###threads###
 key_manager=file
 file.keyfile=/tmp/encryption.key

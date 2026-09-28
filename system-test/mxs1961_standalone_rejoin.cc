@@ -27,7 +27,7 @@ void checkpoint(TestConnections& test)
     for (int i = 0; i < 2; i++)
     {
         sleep(1);
-        test.maxscale->wait_for_monitor(1);
+        test.percona_proxy->wait_for_monitor(1);
     }
 
     for (auto&& s : {
@@ -54,8 +54,8 @@ int main(int argc, char* argv[])
 
     auto comment = [&](const char* comment_str) {
             cout << comment_str << endl;
-        test.maxscale->ssh_node_f(true,
-                                  "echo '----- %s -----' >> /var/log/maxscale/maxscale.log", comment_str);
+        test.percona_proxy->ssh_node_f(true,
+                                  "echo '----- %s -----' >> /var/log/percona-proxy/percona-proxy.log", comment_str);
         };
 
     auto slave = [&](const char* name) {
@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
     slave("server2");
     slave("server3");
 
-    test.maxscale->stop();
+    test.percona_proxy->stop();
 
     return test.global_result;
 }

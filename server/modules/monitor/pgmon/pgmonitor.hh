@@ -12,11 +12,11 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/monitor.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/monitor.hh>
 
 class PgServer;
-class PgMonitor final : public maxscale::SimpleMonitor
+class PgMonitor final : public percona_proxy::SimpleMonitor
 {
 public:
     ~PgMonitor() = default;

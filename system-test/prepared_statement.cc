@@ -36,19 +36,19 @@ void test_basic(TestConnections& test)
     int N = 4;
 
     test.repl->connect();
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
 
-    create_t1(test.maxscale->conn_rwsplit);
-    insert_into_t1(test.maxscale->conn_rwsplit, N);
+    create_t1(test.percona_proxy->conn_rwsplit);
+    insert_into_t1(test.percona_proxy->conn_rwsplit, N);
 
     test.reset_timeout();
-    test.try_query(test.maxscale->conn_rwsplit, "PREPARE stmt FROM 'SELECT * FROM t1 WHERE fl=@x;';");
-    test.try_query(test.maxscale->conn_rwsplit, "SET @x = 3;");
-    test.try_query(test.maxscale->conn_rwsplit, "EXECUTE stmt");
-    test.try_query(test.maxscale->conn_rwsplit, "SET @x = 4;");
-    test.try_query(test.maxscale->conn_rwsplit, "EXECUTE stmt");
+    test.try_query(test.percona_proxy->conn_rwsplit, "PREPARE stmt FROM 'SELECT * FROM t1 WHERE fl=@x;';");
+    test.try_query(test.percona_proxy->conn_rwsplit, "SET @x = 3;");
+    test.try_query(test.percona_proxy->conn_rwsplit, "EXECUTE stmt");
+    test.try_query(test.percona_proxy->conn_rwsplit, "SET @x = 4;");
+    test.try_query(test.percona_proxy->conn_rwsplit, "EXECUTE stmt");
 
-    test.check_maxscale_alive();
+    test.check_percona_proxy_alive();
 }
 
 void test_routing(TestConnections& test)
@@ -56,16 +56,16 @@ void test_routing(TestConnections& test)
     test.reset_timeout();
     test.repl->connect();
     int server_id = test.repl->get_server_id(0);
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
 
     // Test that reads are routed to slaves
     char buf[1024] = "-1";
-    test.try_query(test.maxscale->conn_rwsplit, "PREPARE ps1 FROM 'SELECT @@server_id'");
+    test.try_query(test.percona_proxy->conn_rwsplit, "PREPARE ps1 FROM 'SELECT @@server_id'");
 
     // Sleep so that the slave has time to execute the prepare
     sleep(3);
 
-    test.add_result(find_field(test.maxscale->conn_rwsplit, "EXECUTE ps1", "@@server_id", buf),
+    test.add_result(find_field(test.percona_proxy->conn_rwsplit, "EXECUTE ps1", "@@server_id", buf),
                     "Execute should succeed");
     int res = atoi(buf);
     test.add_result(res == server_id,
@@ -76,37 +76,37 @@ void test_routing(TestConnections& test)
 
     // Test reads inside transactions are routed to master
     strcpy(buf, "-1");
-    test.try_query(test.maxscale->conn_rwsplit, "BEGIN");
-    test.add_result(find_field(test.maxscale->conn_rwsplit, "EXECUTE ps1", "@@server_id", buf),
+    test.try_query(test.percona_proxy->conn_rwsplit, "BEGIN");
+    test.add_result(find_field(test.percona_proxy->conn_rwsplit, "EXECUTE ps1", "@@server_id", buf),
                     "Execute should succeed");
     res = atoi(buf);
     test.add_result(res != server_id,
                     "Query should be routed to master inside a transaction (got %d, master is %d)",
                     res,
                     server_id);
-    test.try_query(test.maxscale->conn_rwsplit, "COMMIT");
+    test.try_query(test.percona_proxy->conn_rwsplit, "COMMIT");
 
     // Test reads inside read-only transactions are routed slaves
     strcpy(buf, "-1");
-    test.try_query(test.maxscale->conn_rwsplit, "START TRANSACTION READ ONLY");
-    test.add_result(find_field(test.maxscale->conn_rwsplit, "EXECUTE ps1", "@@server_id", buf),
+    test.try_query(test.percona_proxy->conn_rwsplit, "START TRANSACTION READ ONLY");
+    test.add_result(find_field(test.percona_proxy->conn_rwsplit, "EXECUTE ps1", "@@server_id", buf),
                     "Execute should succeed");
     res = atoi(buf);
     test.add_result(res == server_id,
                     "Query should be routed to a slave inside a read-only transaction (got %d, master is %d)",
                     res,
                     server_id);
-    test.try_query(test.maxscale->conn_rwsplit, "COMMIT");
+    test.try_query(test.percona_proxy->conn_rwsplit, "COMMIT");
 
     // Test prepared statements that modify data
     strcpy(buf, "-1");
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1 (id INT)");
-    test.try_query(test.maxscale->conn_rwsplit, "PREPARE ps2 FROM 'INSERT INTO test.t1 VALUES (?)'");
-    test.try_query(test.maxscale->conn_rwsplit, "SET @a = @@server_id");
-    test.try_query(test.maxscale->conn_rwsplit, "EXECUTE ps2 USING @a");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE OR REPLACE TABLE test.t1 (id INT)");
+    test.try_query(test.percona_proxy->conn_rwsplit, "PREPARE ps2 FROM 'INSERT INTO test.t1 VALUES (?)'");
+    test.try_query(test.percona_proxy->conn_rwsplit, "SET @a = @@server_id");
+    test.try_query(test.percona_proxy->conn_rwsplit, "EXECUTE ps2 USING @a");
     test.reset_timeout();
     test.repl->sync_slaves();
-    test.add_result(find_field(test.maxscale->conn_rwsplit, "SELECT id FROM test.t1", "id", buf),
+    test.add_result(find_field(test.percona_proxy->conn_rwsplit, "SELECT id FROM test.t1", "id", buf),
                     "Read should succeed");
     res = atoi(buf);
     test.add_result(res != server_id,
@@ -115,7 +115,7 @@ void test_routing(TestConnections& test)
                     server_id);
 
     // Cleanup
-    test.check_maxscale_alive();
+    test.check_percona_proxy_alive();
 }
 
 int main(int argc, char* argv[])

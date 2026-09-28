@@ -13,11 +13,11 @@
  */
 
 /**
- * @file mxs822_maxpasswd.cpp Regression test for bug MXS-822 ("encrypted passwords containing special
+ * @file mxs822_percona-proxy-passwd.cpp Regression test for bug MXS-822 ("encrypted passwords containing special
  * characters appear to not work")
- * - create .secret with maxkeys
- * - generate encrypted password with maxpasswd, use password with special characters
- * - replace passwords in maxscale.cnf with generated encrypted password
+ * - create .secret with percona-proxy-keys
+ * - generate encrypted password with percona-proxy-passwd, use password with special characters
+ * - replace passwords in percona-proxy.cnf with generated encrypted password
  * - try to connect to RWSplit
  * - repeate for several other password with special characters
  */
@@ -37,32 +37,32 @@ void try_password(TestConnections& test, Connection& m, const std::string& pass,
      * Encrypt and change the password
      */
     test.tprintf("Encrypting password: %s", pass.c_str());
-    int rc = test.maxscale->ssh_node_f(true, "maxpasswd %s '%s' > /tmp/encrypted.txt",
+    int rc = test.percona_proxy->ssh_node_f(true, "percona-proxy-passwd %s '%s' > /tmp/encrypted.txt",
                                        secretsdir.c_str(), pass.c_str());
     test.expect(rc == 0, "Encryption failed");
 
-    auto encrypted = test.maxscale->ssh_output("cat /tmp/encrypted.txt").output;
+    auto encrypted = test.percona_proxy->ssh_output("cat /tmp/encrypted.txt").output;
     test.tprintf("Encrypted password: %s", encrypted.c_str());
 
-    rc = test.maxscale->ssh_node_f(true, "maxpasswd %s -d %s > /tmp/decrypted.txt",
+    rc = test.percona_proxy->ssh_node_f(true, "percona-proxy-passwd %s -d %s > /tmp/decrypted.txt",
                                    secretsdir.c_str(), encrypted.c_str());
     test.expect(rc == 0, "Decryption failed");
 
-    auto decrypted = test.maxscale->ssh_output("cat /tmp/decrypted.txt").output;
+    auto decrypted = test.percona_proxy->ssh_output("cat /tmp/decrypted.txt").output;
     test.tprintf("Decrypted password: %s", decrypted.c_str());
     test.expect(decrypted == pass, "Decrypted password should be identical");
 
-    rc = test.maxscale->ssh_node_f(true,
-                                   "sed -i 's/user=.*/user=test/' /etc/maxscale.cnf && "
-                                   "sed -i 's/password=.*/password=%s/' /etc/maxscale.cnf",
+    rc = test.percona_proxy->ssh_node_f(true,
+                                   "sed -i 's/user=.*/user=test/' /etc/percona-proxy.cnf && "
+                                   "sed -i 's/password=.*/password=%s/' /etc/percona-proxy.cnf",
                                    encrypted.c_str());
 
-    test.expect(test.maxscale->restart() == 0, "Failed to start MaxScale");
+    test.expect(test.percona_proxy->restart() == 0, "Failed to start Percona Proxy");
 
     // Wait for a monitoring cycle to make sure that the connection creation works.
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
-    auto rws = test.maxscale->rwsplit();
+    auto rws = test.percona_proxy->rwsplit();
     test.expect(rws.connect(), "Connection failed: %s", rws.error());
     test.expect(rws.query("SELECT 1"), "Query failed: %s", rws.error());
 
@@ -74,19 +74,19 @@ void test_main(TestConnections& test)
     auto c = test.repl->get_connection(0);
     c.connect();
 
-    test.maxscale->ssh_node_f(true, "maxkeys");
+    test.percona_proxy->ssh_node_f(true, "percona-proxy-keys");
 
     try_password(test, c, "aaa$aaa");
     try_password(test, c, "#¤&");
     try_password(test, c, "пароль");
 
-    test.maxscale->ssh_node_f(true, "sudo mv /var/lib/maxscale/.secrets /tmp/.secrets");
-    test.maxscale->ssh_node_f(true, "sudo sed -i '/threads=/ a secretsdir=/tmp' /etc/maxscale.cnf");
+    test.percona_proxy->ssh_node_f(true, "sudo mv /var/lib/percona-proxy/.secrets /tmp/.secrets");
+    test.percona_proxy->ssh_node_f(true, "sudo sed -i '/threads=/ a secretsdir=/tmp' /etc/percona-proxy.cnf");
     try_password(test, c, "hello world", "/tmp");
 }
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     return TestConnections().run_test(argc, argv, test_main);
 }

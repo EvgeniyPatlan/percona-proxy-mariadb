@@ -17,7 +17,7 @@
 
 #include "examplefiltersession.hh"
 #include "examplefilter.hh"
-#include <maxscale/session.hh>
+#include <percona-proxy/session.hh>
 
 ExampleFilterSession::ExampleFilterSession(MXS_SESSION* pSession, SERVICE* pService, ExampleFilter& filter)
     : mxs::FilterSession(pSession, pService)

@@ -29,4 +29,4 @@ set(MARIADB_CONNECTOR_LIBRARIES
   ${CMAKE_BINARY_DIR}/connector-c/install/lib/mariadb/libmariadbclient.a
   CACHE INTERNAL "")
 
-install_directory(${CMAKE_BINARY_DIR}/connector-c/install/lib/mariadb/plugin ${MAXSCALE_LIBDIR} core)
+install_directory(${CMAKE_BINARY_DIR}/connector-c/install/lib/mariadb/plugin ${PERCONA_PROXY_LIBDIR} core)

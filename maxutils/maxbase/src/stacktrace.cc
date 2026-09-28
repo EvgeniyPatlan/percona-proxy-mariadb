@@ -172,7 +172,7 @@ static void extract_file_and_line(void* symbol, char* cmd, size_t size)
             }
         }
 
-        const char prefix[] = "MaxScale/";
+        const char prefix[] = "Percona Proxy/";
 
         // Remove common source prefix
         if (char* str = strstr(file_start, prefix))
@@ -255,7 +255,7 @@ void emergency_stacktrace(void (* handler)(const char*))
 
 void dump_gdb_stacktrace(void (* handler)(const char*))
 {
-    char path[] = "/tmp/maxscale-stacktrace-XXXXXX";
+    char path[] = "/tmp/percona-proxy-stacktrace-XXXXXX";
     int fd = mkstemp(path);
 
     if (fd == -1)

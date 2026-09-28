@@ -65,7 +65,7 @@ void kill_and_unlock(TestConnections& test, Connection& master)
 void test_replay_ok(TestConnections& test, Connection& master)
 {
     test.log_printf("Do a partial transaction");
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     c.set_credentials(USER, PASSWORD);
     EXPECT(c.connect());
     EXPECT(c.query("BEGIN"));
@@ -85,7 +85,7 @@ void test_replay_ok(TestConnections& test, Connection& master)
 void test_replay_failure(TestConnections& test, Connection& master)
 {
     test.log_printf("Do a partial transaction");
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     c.set_credentials(USER, PASSWORD);
     EXPECT(c.connect());
     EXPECT(c.query("BEGIN"));
@@ -107,9 +107,9 @@ void test_replay_failure(TestConnections& test, Connection& master)
 void test_replay_time_limit(TestConnections& test, Connection& master)
 {
     test.log_printf("Exceeding replay attempt limit should not matter if a time limit is configured");
-    test.maxctrl("alter service RW-Split-Router transaction_replay_timeout=5m");
+    test.percona_proxyctl("alter service RW-Split-Router transaction_replay_timeout=5m");
 
-    Connection c = test.maxscale->rwsplit();
+    Connection c = test.percona_proxy->rwsplit();
     c.set_credentials(USER, PASSWORD);
     EXPECT(c.connect());
     EXPECT(c.query("BEGIN"));
@@ -136,7 +136,7 @@ void test_replay_time_limit(TestConnections& test, Connection& master)
     test.log_printf("Exceeding replay time limit should close the connection "
                     "even if attempt limit is not reached");
 
-    test.maxctrl("alter service RW-Split-Router "
+    test.percona_proxyctl("alter service RW-Split-Router "
                  "transaction_replay_timeout=5s transaction_replay_attempts=200");
 
     EXPECT(c.connect());

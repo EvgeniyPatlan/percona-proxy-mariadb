@@ -18,15 +18,15 @@ namespace
 {
 void drop_connections(TestConnections& test)
 {
-    test.check_maxctrl("set server --force server1 maintenance");
-    test.check_maxctrl("clear server server1 maintenance");
+    test.check_percona_proxyctl("set server --force server1 maintenance");
+    test.check_percona_proxyctl("clear server server1 maintenance");
 }
 }
 
 void test_main(TestConnections& test)
 {
-    test.check_maxctrl("stop monitor MariaDB-Monitor");
-    auto c = test.maxscale->rwsplit();
+    test.check_percona_proxyctl("stop monitor MariaDB-Monitor");
+    auto c = test.percona_proxy->rwsplit();
     auto srv = test.repl->get_connection(0);
     auto lock_conn = test.repl->get_connection(0);
     std::string lock_sql = "SELECT GET_LOCK('mxs4549_splice_results', 300)";
@@ -145,7 +145,7 @@ void test_main(TestConnections& test)
     server_conn->cmd("INSERT INTO test.conflict VALUES (0, 0), (1, 1)");
 
     test.log_printf("Replay partially delivered result that ends in a deadlock error");
-    auto c2 = test.maxscale->rwsplit();
+    auto c2 = test.percona_proxy->rwsplit();
     MXT_EXPECT(c.connect());
     MXT_EXPECT(c2.connect());
     MXT_EXPECT(c.query("START TRANSACTION"));

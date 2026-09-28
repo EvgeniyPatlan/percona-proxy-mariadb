@@ -23,9 +23,9 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    test.maxctrl("alter monitor MariaDB-Monitor monitor_interval 99999ms");
+    test.percona_proxyctl("alter monitor MariaDB-Monitor monitor_interval 99999ms");
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     conn.connect();
     conn.query("SET @a = (SELECT SLEEP(1))");
 
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     thr.join();
 
 
-    test.maxctrl("alter monitor MariaDB-Monitor monitor_interval 1000ms");
+    test.percona_proxyctl("alter monitor MariaDB-Monitor monitor_interval 1000ms");
 
     return test.global_result;
 }

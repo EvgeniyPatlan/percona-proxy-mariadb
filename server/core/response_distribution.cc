@@ -13,12 +13,12 @@
  */
 
 #include <maxbase/assert.hh>
-#include <maxscale/response_distribution.hh>
+#include <percona-proxy/response_distribution.hh>
 #include <cmath>
 #include <iostream>
 #include <iomanip>
 
-namespace maxscale
+namespace percona_proxy
 {
 
 ResponseDistribution::ResponseDistribution(int range_base)

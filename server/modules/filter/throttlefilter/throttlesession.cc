@@ -14,8 +14,8 @@
 
 #define MXB_MODULE_NAME "throttlefilter"
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/session.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/session.hh>
 
 #include "throttlesession.hh"
 #include "throttlefilter.hh"
@@ -28,7 +28,7 @@
 namespace throttle
 {
 ThrottleSession::ThrottleSession(MXS_SESSION* mxsSession, SERVICE* service, ThrottleFilter& filter)
-    : maxscale::FilterSession(mxsSession, service)
+    : percona_proxy::FilterSession(mxsSession, service)
     , m_max_qps(filter.config().max_qps.get())
     , m_sampling_duration(filter.config().sampling_duration.get())
     , m_throttling_duration(filter.config().throttling_duration.get())

@@ -26,7 +26,7 @@ auto down = mxt::ServerInfo::DOWN;
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     // Check semisync is off when starting.
     semisync::check_semisync_off(test);

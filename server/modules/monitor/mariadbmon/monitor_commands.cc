@@ -15,15 +15,15 @@
 #include "monitor_commands.hh"
 #include <maxbase/format.hh>
 #include <maxbase/http.hh>
-#include <maxscale/modulecmd.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/modulecmd.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/utils.hh>
 #include <unistd.h>
 #include "mariadbmon.hh"
 #include "ssh_utils.hh"
 
-using maxscale::Monitor;
-using maxscale::MonitorServer;
+using percona_proxy::Monitor;
+using percona_proxy::MonitorServer;
 using std::string;
 using std::move;
 using RType = ssh_util::CmdResult::Type;
@@ -37,7 +37,7 @@ enum class ExecMode
     ASYNC   /**< Function only schedules the operation and will not wait */
 };
 
-const char err_passive_mode[] = "%s requested but not performed, as MaxScale is in passive mode.";
+const char err_passive_mode[] = "%s requested but not performed, as Percona Proxy is in passive mode.";
 const char failover_cmd[] = "failover";
 const char switchover_cmd[] = "switchover";
 const char rejoin_cmd[] = "rejoin";
@@ -361,7 +361,7 @@ bool manual_rejoin(ExecMode mode, const MODULECMD_ARG* args, json_t** output)
     bool rv = false;
     if (mxs::Config::get().passive.get())
     {
-        PRINT_MXS_JSON_ERROR(output, "Rejoin requested but not performed, as MaxScale is in passive mode.");
+        PRINT_MXS_JSON_ERROR(output, "Rejoin requested but not performed, as Percona Proxy is in passive mode.");
     }
     else
     {
@@ -400,7 +400,7 @@ bool manual_reset_replication(ExecMode mode, const MODULECMD_ARG* args, json_t**
     bool rv = false;
     if (mxs::Config::get().passive.get())
     {
-        PRINT_MXS_JSON_ERROR(output, "Replication reset requested but not performed, as MaxScale is in "
+        PRINT_MXS_JSON_ERROR(output, "Replication reset requested but not performed, as Percona Proxy is in "
                                      "passive mode.");
     }
     else
@@ -1371,7 +1371,7 @@ bool BackupOperation::check_free_listen_port(const char* srvname, ssh::Session& 
     auto get_port_pids = [&]() {
         std::vector<int> pids;
         // lsof needs to be run as sudo to see ports, even from the same user. This part could be made
-        // optional if users are not willing to give MaxScale sudo-privs.
+        // optional if users are not willing to give Percona Proxy sudo-privs.
         auto port_pid_cmd = mxb::string_printf("sudo lsof -n -P -i TCP:%i -s TCP:LISTEN | tr -s ' ' "
                                                "| cut --fields=2 --delimiter=' ' | tail -n+2", port);
         auto port_res = ssh_util::run_cmd(ses, port_pid_cmd, m_ssh_timeout);
@@ -1886,7 +1886,7 @@ bool BackupOperation::prepare_target()
     bool target_prepared = false;
     string clear_datadir = mxb::string_printf("sudo rm -rf %s/*", rebuild_datadir.c_str());
     // Check that the rm-command length is correct. A safeguard against later changes which could
-    // cause MaxScale to delete all files (sudo rm -rf *). Datadir may need to be configurable or read
+    // cause Percona Proxy to delete all files (sudo rm -rf *). Datadir may need to be configurable or read
     // from server. rm must be run as sudo since the directory and files is owned by "mysql". Even group
     // access would not suffice as server does not give write access to group members.
     if (clear_datadir.length() == 28)
@@ -2185,7 +2185,7 @@ bool BackupOperation::start_target()
     // chown must be run as sudo since changing user to something else than self.
     string chown_cmd = mxb::string_printf("sudo chown -R mysql:mysql %s", rebuild_datadir.c_str());
     // Check that the chown-command length is correct. Mainly a safeguard against later changes which could
-    // cause MaxScale to change owner of every file on the system.
+    // cause Percona Proxy to change owner of every file on the system.
     if (chown_cmd.length() == 40)
     {
         if (run_cmd_on_target(chown_cmd, "change ownership of datadir contents")

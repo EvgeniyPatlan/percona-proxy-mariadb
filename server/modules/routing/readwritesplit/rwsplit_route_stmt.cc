@@ -21,8 +21,8 @@
 #include <maxbase/format.hh>
 
 using std::chrono::seconds;
-using maxscale::Parser;
-using maxscale::RWBackend;
+using percona_proxy::Parser;
+using percona_proxy::RWBackend;
 using mariadb::QueryClassifier;
 using RouteInfo = QueryClassifier::RouteInfo;
 
@@ -256,7 +256,7 @@ bool RWSplitSession::query_not_supported(const GWBUF& querybuf)
             // Unknown PS ID, can't route this query
             std::stringstream ss;
             ss << "Unknown prepared statement handler (" << extract_binary_ps_id(querybuf)
-               << ") for " << mariadb::cmd_to_string(info.command()) << " given to MaxScale";
+               << ") for " << mariadb::cmd_to_string(info.command()) << " given to Percona Proxy";
             err = mariadb::create_error_packet(1, ER_UNKNOWN_STMT_HANDLER, "HY000", ss.str().c_str());
             mxs::unexpected_situation(ss.str().c_str());
         }

@@ -14,7 +14,7 @@
 #include <iostream>
 #include <maxbase/log.hh>
 #include <maxbase/string.hh>
-#include <maxscale/maxscale_test.h>
+#include <percona-proxy/percona_proxy_test.h>
 #include "../internal/config.hh"
 
 using namespace std;

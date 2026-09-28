@@ -27,7 +27,7 @@
 
 #define MXB_MODULE_NAME "topfilter"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <vector>
 #include <fstream>
@@ -35,11 +35,11 @@
 
 #include <maxbase/regex.hh>
 #include <maxbase/stopwatch.hh>
-#include <maxscale/config2.hh>
-#include <maxscale/filter.hh>
-#include <maxscale/session.hh>
-#include <maxscale/workerlocal.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/workerlocal.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 
 class TopFilter;
 

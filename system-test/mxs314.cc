@@ -27,9 +27,9 @@ int main(int argc, char** argv)
     std::ostringstream ss;
     ss << "SELECT 1";
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
 
-    MYSQL_STMT* stmt = mysql_stmt_init(test.maxscale->conn_rwsplit);
+    MYSQL_STMT* stmt = mysql_stmt_init(test.percona_proxy->conn_rwsplit);
 
     for (int i = 0; i < 50; i++)
     {
@@ -37,9 +37,9 @@ int main(int argc, char** argv)
         test.reset_timeout();
         test.add_result(mysql_stmt_prepare(stmt, query.c_str(), query.length()),
                         "Failed at %d: %s\n", i,
-                        mysql_error(test.maxscale->conn_rwsplit));
+                        mysql_error(test.percona_proxy->conn_rwsplit));
         test.add_result(mysql_stmt_reset(stmt), "Failed at %d: %s\n", i,
-                        mysql_error(test.maxscale->conn_rwsplit));
+                        mysql_error(test.percona_proxy->conn_rwsplit));
 
         for (int x = 0; x < 17; x++)
         {
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 
     test.reset_timeout();
     mysql_stmt_close(stmt);
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

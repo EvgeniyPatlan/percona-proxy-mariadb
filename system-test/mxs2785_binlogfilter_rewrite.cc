@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     slave.connect();
     slave.query("STOP SLAVE");
     std::ostringstream ss;
-    ss << "CHANGE MASTER TO MASTER_HOST='" << test.maxscale->ip()
+    ss << "CHANGE MASTER TO MASTER_HOST='" << test.percona_proxy->ip()
        << "', MASTER_PORT=4008, MASTER_USE_GTID=slave_pos"
        << ", MASTER_SSL_VERIFY_SERVER_CERT=0";
     slave.query(ss.str());

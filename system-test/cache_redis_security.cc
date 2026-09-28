@@ -28,8 +28,8 @@ void test_that_connecting_fails(TestConnections& test)
 {
     test.tprintf("Testing that connecting fails.");
 
-    Connection c = test.maxscale->get_connection(PORT_RWS_REDIS);
-    test.expect(c.connect(), "1: Could not connect to MaxScale.");
+    Connection c = test.percona_proxy->get_connection(PORT_RWS_REDIS);
+    test.expect(c.connect(), "1: Could not connect to Percona Proxy.");
 
     c.query("SELECT 1"); // Trigger connecting to Redis
     sleep(1);
@@ -43,8 +43,8 @@ void test_that_connecting_succeeds(TestConnections& test)
 {
     test.tprintf("Testing that connecting succeeds.");
 
-    Connection c = test.maxscale->get_connection(PORT_RWS_REDIS);
-    test.expect(c.connect(), "1: Could not connect to MaxScale.");
+    Connection c = test.percona_proxy->get_connection(PORT_RWS_REDIS);
+    test.expect(c.connect(), "1: Could not connect to Percona Proxy.");
 
     c.query("SELECT 1"); // Trigger connecting to Redis
     sleep(1);
@@ -56,11 +56,11 @@ void test_that_connecting_succeeds(TestConnections& test)
 
 }
 
-void install_and_start_redis(mxt::MaxScale& maxscales)
+void install_and_start_redis(mxt::PerconaProxy& percona_proxies)
 {
-    setenv("maxscale_000_keyfile", maxscales.sshkey(), 0);
-    setenv("maxscale_000_whoami", maxscales.access_user(), 0);
-    setenv("maxscale_000_network", maxscales.ip4(), 0);
+    setenv("percona_proxy_000_keyfile", percona_proxies.sshkey(), 0);
+    setenv("percona_proxy_000_whoami", percona_proxies.access_user(), 0);
+    setenv("percona_proxy_000_network", percona_proxies.ip4(), 0);
 
     // This will install memcached as well, but that's ok.
 
@@ -72,28 +72,28 @@ void install_and_start_redis(mxt::MaxScale& maxscales)
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
-    auto maxscales = test.maxscale;
+    auto percona_proxies = test.percona_proxy;
 
-    install_and_start_redis(*maxscales);
+    install_and_start_redis(*percona_proxies);
 
     // Make redis require a password
-    maxscales->ssh_node(
+    percona_proxies->ssh_node(
         "sed -i \"s/# requirepass foobared/requirepass foobared/\" /etc/redis.conf; "
         "systemctl restart redis",
         true);
 
-    maxscales->start();
+    percona_proxies->start();
     sleep(1);
 
     test_that_connecting_fails(test);
 
-    // Make MaxScale provide a password
-    maxscales->ssh_node(
-        "sed -i \"s/server=127.0.0.1/server=127.0.0.1,password=foobared/\" /etc/maxscale.cnf; "
-        "systemctl restart maxscale",
+    // Make Percona Proxy provide a password
+    percona_proxies->ssh_node(
+        "sed -i \"s/server=127.0.0.1/server=127.0.0.1,password=foobared/\" /etc/percona-proxy.cnf; "
+        "systemctl restart percona-proxy",
         true);
 
     sleep(1);
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
     test_that_connecting_succeeds(test);
 
     // Remove redis requirement of a password
-    maxscales->ssh_node(
+    percona_proxies->ssh_node(
         "sed -i \"s/requirepass foobared/# requirepass foobared/\" /etc/redis.conf; "
         "systemctl restart redis",
         true);

@@ -18,9 +18,9 @@
 #include <set>
 #include <map>
 #include <bsoncxx/json.hpp>
-#include <maxscale/dcb.hh>
-#include <maxscale/session.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 #include "../../filter/cache/cache_storage_api.hh"
 #include "../../filter/masking/mysql.hh"
 #include "clientconnection.hh"
@@ -302,7 +302,7 @@ string elemMatch_to_json_contain(const string& subfield,
     }
     else
     {
-        throw SoftError("$elemMatch supports only operators $eq and $ne (MaxScale)",
+        throw SoftError("$elemMatch supports only operators $eq and $ne (Percona Proxy)",
                         error::BAD_VALUE);
     }
 
@@ -352,7 +352,7 @@ string elemMatch_to_json_contain(const Path::Incarnation& p, const bsoncxx::docu
         }
         else
         {
-            throw SoftError("$elemMatch supports only operators $eq and $ne (MaxScale)",
+            throw SoftError("$elemMatch supports only operators $eq and $ne (Percona Proxy)",
                             error::BAD_VALUE);
         }
 

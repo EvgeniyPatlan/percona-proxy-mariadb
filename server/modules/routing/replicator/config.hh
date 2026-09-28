@@ -16,7 +16,7 @@
 
 #include <string>
 
-#include <maxscale/service.hh>
+#include <percona-proxy/service.hh>
 #include <maxbase/regex.hh>
 
 namespace cdc

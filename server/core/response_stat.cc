@@ -11,13 +11,13 @@
  * of this software will be governed by version 2 or later of the General
  * Public License.
  */
-#include <maxscale/response_stat.hh>
+#include <percona-proxy/response_stat.hh>
 
 #include <algorithm>
 #include <maxbase/worker.hh>
 #include <maxbase/stopwatch.hh>
 
-namespace maxscale
+namespace percona_proxy
 {
 ResponseStat::ResponseStat(Target* target, int num_filter_samples,
                            maxbase::Duration sync_duration)

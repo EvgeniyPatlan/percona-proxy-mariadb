@@ -16,11 +16,11 @@ if(PACKAGE)
   set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "Prefix prepended to install directories.")
 endif()
 
-# Set default values for cache entries and set the MaxScale version
+# Set default values for cache entries and set the Percona Proxy version
 include(cmake/defaults.cmake)
 
 include(VERSION.cmake)
-if (MAXSCALE_MATURITY EQUAL "Develop")
+if (PERCONA_PROXY_MATURITY EQUAL "Develop")
   add_definitions(-DMAXSCALE_DEVELOP=1)
 endif()
 
@@ -30,7 +30,7 @@ include(FetchContent)
 set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
-project(MaxScale)
+project(PerconaProxy)
 
 # Set the installation layout
 include(${CMAKE_SOURCE_DIR}/cmake/install_layout.cmake)
@@ -131,9 +131,9 @@ else()
   endif()
 endif()
 
-if(MAXSCALE_COMMIT)
+if(PERCONA_PROXY_COMMIT)
   # Given on the command line, e.g. when building from a source tarball that has no .git directory.
-  message(STATUS "Commit ID (from -DMAXSCALE_COMMIT): ${MAXSCALE_COMMIT}")
+  message(STATUS "Commit ID (from -DMAXSCALE_COMMIT): ${PERCONA_PROXY_COMMIT}")
 elseif(GIT_FOUND)
   message(STATUS "Found git ${GIT_VERSION_STRING}")
   execute_process(COMMAND ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
@@ -142,31 +142,31 @@ elseif(GIT_FOUND)
     ERROR_VARIABLE GIT_ERROR
     RESULT_VARIABLE GIT_RVAL)
   if(${GIT_RVAL} EQUAL 0)
-    string(REPLACE "\n" "" MAXSCALE_COMMIT ${GIT_COMMIT})
-    message(STATUS "Commit ID: ${MAXSCALE_COMMIT}")
+    string(REPLACE "\n" "" PERCONA_PROXY_COMMIT ${GIT_COMMIT})
+    message(STATUS "Commit ID: ${PERCONA_PROXY_COMMIT}")
   else()
     message(STATUS "Git exited with non-zero value: ${GIT_ERROR}")
-    message(STATUS "Could not find repository in source folder, MaxScale commit ID will not be resolved. Will use 'source-build' for commit ID.")
-    set(MAXSCALE_COMMIT "source-build")
+    message(STATUS "Could not find repository in source folder, Percona Proxy commit ID will not be resolved. Will use 'source-build' for commit ID.")
+    set(PERCONA_PROXY_COMMIT "source-build")
   endif()
 else()
-  message(WARNING "Could not find git, MaxScale commit ID will not be resolved. Will use 'source-build' for commit ID.")
-  set(MAXSCALE_COMMIT "source-build")
+  message(WARNING "Could not find git, Percona Proxy commit ID will not be resolved. Will use 'source-build' for commit ID.")
+  set(PERCONA_PROXY_COMMIT "source-build")
 endif()
 
 # Copy cmake_flags, JENKINS_BUILD_TAG, source and value evironmental variables
 # into cmake variables. These are used by the build system to store information
 # about the packages being built.
-set(MAXSCALE_SOURCE "$ENV{source} $ENV{value}")
-set(MAXSCALE_CMAKE_FLAGS "$ENV{cmake_flags}")
-set(MAXSCALE_JENKINS_BUILD_TAG "$ENV{BUILD_TAG}")
+set(PERCONA_PROXY_SOURCE "$ENV{source} $ENV{value}")
+set(PERCONA_PROXY_CMAKE_FLAGS "$ENV{cmake_flags}")
+set(PERCONA_PROXY_JENKINS_BUILD_TAG "$ENV{BUILD_TAG}")
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/server/include)
-configure_file(${CMAKE_SOURCE_DIR}/server/test/maxscale_test.h.in ${CMAKE_BINARY_DIR}/include/maxscale/maxscale_test.h @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/server/test/percona_proxy_test.h.in ${CMAKE_BINARY_DIR}/include/percona-proxy/percona_proxy_test.h @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/etc/postinst.in ${CMAKE_BINARY_DIR}/postinst @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/etc/prerm.in ${CMAKE_BINARY_DIR}/prerm @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/etc/upstart/maxscale.conf.in ${CMAKE_BINARY_DIR}/upstart/maxscale.conf @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/test/maxscale_test.cnf ${CMAKE_BINARY_DIR}/maxscale.cnf @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/etc/upstart/percona-proxy.conf.in ${CMAKE_BINARY_DIR}/upstart/percona-proxy.conf @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/test/percona-proxy-test.cnf ${CMAKE_BINARY_DIR}/percona-proxy.cnf @ONLY)
 
 set(FLAGS "-fno-omit-frame-pointer -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-but-set-variable -Werror=format-security -Werror -fPIC" CACHE STRING "Compilation flags")
 
@@ -185,7 +185,7 @@ endif()
 if (WITH_ASAN)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
-  # Only relevant when MaxScale is linked with -fsanitize=address
+  # Only relevant when Percona Proxy is linked with -fsanitize=address
   set(SERVICE_FILE_ASAN_OPTIONS "Environment=ASAN_OPTIONS=abort_on_error=1:unmap_shadow_on_exit=1")
   add_definitions(-DMXS_WITH_ASAN=1)
 endif()
@@ -234,10 +234,10 @@ include_directories(maxutils/maxsimd/include)
 
 add_subdirectory(maxutils)
 add_subdirectory(server)
-add_subdirectory(include/maxscale)
-add_subdirectory(maxctrl)
+add_subdirectory(include/percona-proxy)
+add_subdirectory(percona-proxyctl)
 add_subdirectory(connectors)
-add_subdirectory(maxgui)
+add_subdirectory(gui)
 
 if(BUILD_TESTS)
   add_subdirectory(examples)
@@ -247,24 +247,24 @@ if(BUILD_SYSTEM_TESTS)
   add_subdirectory(system-test)
 endif()
 
-install_file(etc/maxscale.cnf.template core)
-install_script(script/maxscale_generate_support_info.py core)
+install_file(etc/percona-proxy.cnf.template core)
+install_script(script/percona-proxy-generate-support-info.py core)
 
 # Install the template into /etc
 if(WITH_MAXSCALE_CNF AND (NOT TARGET_COMPONENT OR "core" STREQUAL "${TARGET_COMPONENT}"))
-  install_custom_file(etc/maxscale.cnf.template ${MAXSCALE_CONFDIR} core)
+  install_custom_file(etc/percona-proxy.cnf.template ${PERCONA_PROXY_CONFDIR} core)
 endif()
 
 install_file(${CMAKE_SOURCE_DIR}/COPYRIGHT core)
 install_file(${CMAKE_SOURCE_DIR}/README.md core)
-install(FILES ${CMAKE_SOURCE_DIR}/licenses/LICENSE2308.TXT RENAME LICENSE.TXT DESTINATION ${MAXSCALE_SHAREDIR} COMPONENT core)
+install(FILES ${CMAKE_SOURCE_DIR}/licenses/LICENSE2308.TXT RENAME LICENSE.TXT DESTINATION ${PERCONA_PROXY_SHAREDIR} COMPONENT core)
 install_file(${CMAKE_SOURCE_DIR}/LICENSE-THIRDPARTY.TXT core)
 install_file(${CMAKE_SOURCE_DIR}/Documentation/Changelog.md core)
-install_manual(Documentation/maxscale.1 1 core)
-install_manual(Documentation/maxctrl.1 1 core)
-install_manual(Documentation/maxkeys.1 1 core)
-install_manual(Documentation/maxpasswd.1 1 core)
-install_file(${CMAKE_SOURCE_DIR}/etc/logrotate.d/maxscale_logrotate core)
+install_manual(Documentation/percona-proxy.1 1 core)
+install_manual(Documentation/percona-proxyctl.1 1 core)
+install_manual(Documentation/percona-proxy-keys.1 1 core)
+install_manual(Documentation/percona-proxy-passwd.1 1 core)
+install_file(${CMAKE_SOURCE_DIR}/etc/logrotate.d/percona-proxy-logrotate core)
 
 # For devel package, these files are put to the base folder
 install_header(${CMAKE_SOURCE_DIR}/COPYRIGHT devel)
@@ -289,28 +289,28 @@ if(PACKAGE AND NOT SKIP_CPACK)
     COMMAND ${CMAKE_CPACK_COMMAND} -G TGZ --config ${CMAKE_BINARY_DIR}/CPackSourceConfig.cmake
     COMMENT "Building source tarball" VERBATIM)
 
-  # If we're building a source package and the GUI or MaxCtrl are being built, bundle the
+  # If we're building a source package and the GUI or Percona Proxyctl are being built, bundle the
   # node_modules so that they don't need to be downloaded.
   set(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CMAKE_SOURCE_DIR};.")
 
   set(CPACK_PACKAGE_CHECKSUM "SHA256")
 
   if (BUILD_GUI)
-    set(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CPACK_SOURCE_INSTALLED_DIRECTORIES};${CMAKE_BINARY_DIR}/maxgui/node_modules;./maxgui/node_modules")
-    add_dependencies(dist maxgui_node_modules)
+    set(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CPACK_SOURCE_INSTALLED_DIRECTORIES};${CMAKE_BINARY_DIR}/gui/node_modules;./gui/node_modules")
+    add_dependencies(dist gui_node_modules)
   endif()
 
   if (BUILD_MAXCTRL)
-    set(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CPACK_SOURCE_INSTALLED_DIRECTORIES};${CMAKE_BINARY_DIR}/maxctrl/node_modules;./maxctrl/node_modules")
-    add_dependencies(dist maxctrl_node_modules)
+    set(CPACK_SOURCE_INSTALLED_DIRECTORIES "${CPACK_SOURCE_INSTALLED_DIRECTORIES};${CMAKE_BINARY_DIR}/percona-proxyctl/node_modules;./percona-proxyctl/node_modules")
+    add_dependencies(dist percona-proxyctl_node_modules)
   endif()
 
 endif()
 
 if(PACKAGE)
   # Install the files copied by the postinst script into the share folder
-  install_program(${CMAKE_BINARY_DIR}/maxscale core)
-  install_file(${CMAKE_BINARY_DIR}/maxscale.conf core)
+  install_program(${CMAKE_BINARY_DIR}/percona-proxy core)
+  install_file(${CMAKE_BINARY_DIR}/percona-proxy.conf core)
   install_program(${CMAKE_BINARY_DIR}/postinst core)
   install_program(${CMAKE_BINARY_DIR}/prerm core)
 endif()
@@ -322,7 +322,7 @@ if(PACKAGE AND NOT SKIP_CPACK)
 endif()
 
 #
-# Custom targets for MaxScale
+# Custom targets for Percona Proxy
 #
 
 # uninstall target
@@ -338,9 +338,9 @@ add_custom_target(uninstall
 # NOTE: If you make changes here, ensure they are compatible with the
 #       situation in paths.h.in.
 if (NOT PACKAGE)
-  install(DIRECTORY DESTINATION var/cache/maxscale)
-  install(DIRECTORY DESTINATION var/log/maxscale)
-  install(DIRECTORY DESTINATION var/run/maxscale)
-  install(DIRECTORY DESTINATION var/lib/maxscale)
+  install(DIRECTORY DESTINATION var/cache/percona-proxy)
+  install(DIRECTORY DESTINATION var/log/percona-proxy)
+  install(DIRECTORY DESTINATION var/run/percona-proxy)
+  install(DIRECTORY DESTINATION var/lib/percona-proxy)
   install(DIRECTORY DESTINATION ${DEFAULT_MODULE_CONFIG_SUBPATH})
 endif()

@@ -14,10 +14,10 @@
 
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/protocol2.hh>
-#include <maxscale/protocol/mariadb/authenticator.hh>
-#include <maxscale/protocol/mariadb/protocol_classes.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/protocol2.hh>
+#include <percona-proxy/protocol/mariadb/authenticator.hh>
+#include <percona-proxy/protocol/mariadb/protocol_classes.hh>
 
 class ProtocolConfig final : public mxs::config::Configuration
 {

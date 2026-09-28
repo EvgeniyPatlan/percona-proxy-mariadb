@@ -30,7 +30,7 @@ atomic<bool> running {true};
 void client_thr(TestConnections& test, int id)
 {
     std::string str_id = std::to_string(id);
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     test.expect(c.connect(), "Failed to connect: %s", c.error());
 
     while (running && test.ok())

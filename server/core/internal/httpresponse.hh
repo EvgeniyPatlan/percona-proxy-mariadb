@@ -13,7 +13,7 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -21,7 +21,7 @@
 #include <memory>
 
 #include <maxbase/jansson.hh>
-#include <maxscale/http.hh>
+#include <percona-proxy/http.hh>
 
 #include "websocket.hh"
 #include "microhttpd.hh"

@@ -15,19 +15,19 @@
 
 #define MXB_MODULE_NAME "avrorouter"
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string>
 #include <vector>
 #include <mysql.h>
-#include <maxscale/dcb.hh>
-#include <maxscale/protocol/cdc/cdc.hh>
-#include <maxscale/protocol/cdc/module_names.hh>
-#include <maxscale/protocol/mariadb/binlog.hh>
-#include <maxscale/router.hh>
-#include <maxscale/service.hh>
-#include <maxscale/users.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/protocol/cdc/cdc.hh>
+#include <percona-proxy/protocol/cdc/module_names.hh>
+#include <percona-proxy/protocol/mariadb/binlog.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/service.hh>
+#include <percona-proxy/users.hh>
 #include <maxavro.hh>
 #include <blr_constants.hh>
 

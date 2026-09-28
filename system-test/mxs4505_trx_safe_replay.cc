@@ -15,13 +15,13 @@
 
 bool do_test(TestConnections& test)
 {
-    auto c1 = test.maxscale->rwsplit();
-    auto c2 = test.maxscale->rwsplit();
+    auto c1 = test.percona_proxy->rwsplit();
+    auto c2 = test.percona_proxy->rwsplit();
     auto r1 = test.repl->get_connection(0);
     test.expect(c1.connect() && c2.connect() && r1.connect(),
                 "Connections failed: %s%s%s", c1.error(), c2.error(), r1.error());
 
-    // Get the real connection ID on the master. We'll need to bypass the KILL handling in MaxScale to make
+    // Get the real connection ID on the master. We'll need to bypass the KILL handling in Percona Proxy to make
     // sure the transaction replay takes place. Normally, a KILL will disable transaction replay to prevent
     // the killed query from being attempted again.
     auto c2_id = c2.field("SELECT CONNECTION_ID(), @@last_insert_id");
@@ -59,7 +59,7 @@ void test_main(TestConnections& test)
     test.expect(!do_test(test), "COMMIT should fail");
 
     test.log_printf("2. With transaction_replay_safe_commit off, the replay should succeed");
-    test.maxctrl("alter service RW-Split-Router transaction_replay_safe_commit=false");
+    test.percona_proxyctl("alter service RW-Split-Router transaction_replay_safe_commit=false");
     test.expect(do_test(test), "COMMIT should work");
 }
 

@@ -19,10 +19,10 @@
 #include <set>
 #include <string>
 
-#include <maxscale/router.hh>
-#include <maxscale/pcre2.hh>
-#include <maxscale/protocol/mariadb/module_names.hh>
-#include <maxscale/modulecmd.hh>
+#include <percona-proxy/router.hh>
+#include <percona-proxy/pcre2.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
+#include <percona-proxy/modulecmd.hh>
 
 #include "schemaroutersession.hh"
 

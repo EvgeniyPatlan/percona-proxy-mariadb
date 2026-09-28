@@ -13,7 +13,7 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <list>
 #include <mutex>
@@ -22,9 +22,9 @@
 #include <set>
 #include <vector>
 
-#include <maxscale/service.hh>
+#include <percona-proxy/service.hh>
 
-using namespace maxscale;
+using namespace percona_proxy;
 
 /** This contains the database to server mapping */
 typedef std::unordered_map<std::string, std::unordered_map<std::string, std::set<mxs::Target*>>> ServerMap;

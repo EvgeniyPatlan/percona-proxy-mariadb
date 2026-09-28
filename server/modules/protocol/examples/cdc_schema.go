@@ -128,7 +128,7 @@ func StoreSchema(db *sql.DB, schema, table string) {
 		fieldlist = append(fieldlist, field)
 	}
 
-	encoder.Encode(Schema{Namespace: "MaxScaleChangeDataSchema.avro", Type: "record", Name: "ChangeRecord", Fields: fieldlist})
+	encoder.Encode(Schema{Namespace: "PerconaProxyChangeDataSchema.avro", Type: "record", Name: "ChangeRecord", Fields: fieldlist})
 }
 
 // Main funtion that queries the database for table names

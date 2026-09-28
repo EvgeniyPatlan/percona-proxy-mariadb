@@ -13,12 +13,12 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/filter.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/filter.hh>
 
 struct SessionData;
 
-class RewriteFilterSession : public maxscale::FilterSession
+class RewriteFilterSession : public percona_proxy::FilterSession
 {
 public:
     ~RewriteFilterSession();

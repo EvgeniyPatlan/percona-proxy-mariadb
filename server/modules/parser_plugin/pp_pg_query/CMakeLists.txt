@@ -9,7 +9,7 @@ add_dependencies(pp_pg_query libpg_query postgresprotocol)
 target_include_directories(pp_pg_query PRIVATE ${LIBPG_QUERY_INCLUDE_DIR})
 
 target_link_libraries(pp_pg_query
-  maxscale-common
+  percona-proxy-common
   postgresprotocol
   ${LIBPG_QUERY_STATIC_LIBRARIES}
   )

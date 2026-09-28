@@ -24,15 +24,15 @@ int main(int argc, char* argv[])
     TestConnections test(argc, argv);
 
     test.tprintf("Creating a server and verifying it exists");
-    test.check_maxctrl("create server server1234 127.0.0.1 3306");
-    test.check_maxctrl("show server server1234");
+    test.check_percona_proxyctl("create server server1234 127.0.0.1 3306");
+    test.check_percona_proxyctl("show server server1234");
 
-    test.tprintf("Restarting MaxScale");
-    test.maxscale->restart_maxscale();
+    test.tprintf("Restarting Percona Proxy");
+    test.percona_proxy->restart_percona_proxy();
 
     test.tprintf("Creating the server again and verifying it is successful");
-    test.check_maxctrl("create server server1234 127.0.0.1 3306");
-    test.check_maxctrl("show server server1234");
+    test.check_percona_proxyctl("create server server1234 127.0.0.1 3306");
+    test.check_percona_proxyctl("show server server1234");
 
     return test.global_result;
 }

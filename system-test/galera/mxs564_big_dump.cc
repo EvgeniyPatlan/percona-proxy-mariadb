@@ -20,7 +20,7 @@
  * - after a while block first slave
  * - after a while block second slave
  * - check that all INSERTs are ok
- * - repeat with both RWSplit and ReadConn master maxscales->routers[0]
+ * - repeat with both RWSplit and ReadConn master percona_proxies->routers[0]
  * - check Maxscale is alive
  */
 
@@ -39,8 +39,8 @@ void query_thread(TestConnections* t)
     std::string sql(1000000, '\0');
     create_insert_string(&sql[0], 1000, 2);
 
-    MYSQL* conn1 = test.maxscale->open_rwsplit_connection();
-    MYSQL* conn2 = test.maxscale->open_readconn_master_connection();
+    MYSQL* conn1 = test.percona_proxy->open_rwsplit_connection();
+    MYSQL* conn2 = test.percona_proxy->open_readconn_master_connection();
 
     test.add_result(mysql_errno(conn1), "Error connecting to readwritesplit: %s", mysql_error(conn1));
     test.add_result(mysql_errno(conn2), "Error connecting to readconnroute: %s", mysql_error(conn2));
@@ -71,10 +71,10 @@ int main(int argc, char* argv[])
         }
     }
 
-    test.maxscale->connect();
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE IF EXISTS t1");
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE TABLE t1 (x1 int, fl int)");
-    test.maxscale->disconnect();
+    test.percona_proxy->connect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE IF EXISTS t1");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE TABLE t1 (x1 int, fl int)");
+    test.percona_proxy->disconnect();
 
     std::vector<std::thread> threads;
 
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     {
         test.tprintf("Blocking node %d", i);
         test.galera->block_node(i);
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
     }
 
     test.tprintf("Unblocking nodes\n");
@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
         test.galera->unblock_node(i);
     }
 
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     running = false;
     test.reset_timeout();
@@ -108,9 +108,9 @@ int main(int argc, char* argv[])
         a.join();
     }
 
-    test.maxscale->connect();
-    execute_query(test.maxscale->conn_rwsplit, "DROP TABLE t1");
-    test.maxscale->disconnect();
+    test.percona_proxy->connect();
+    execute_query(test.percona_proxy->conn_rwsplit, "DROP TABLE t1");
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

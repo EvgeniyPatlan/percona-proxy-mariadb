@@ -6,7 +6,7 @@ if (JANSSON_FOUND)
     maskingrules.cc
     )
 
-  target_link_libraries(masking maxscale-common ${JANSSON_LIBRARIES})
+  target_link_libraries(masking percona-proxy-common ${JANSSON_LIBRARIES})
   set_target_properties(masking PROPERTIES VERSION "1.0.0" LINK_FLAGS -Wl,-z,defs)
   install_module(masking core)
 

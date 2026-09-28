@@ -30,7 +30,7 @@ enum class Column
 
 void drop(TestConnections& test)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     string stmt("DROP TABLE IF EXISTS cache_test");
 
@@ -42,7 +42,7 @@ void create(TestConnections& test)
 {
     drop(test);
 
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     string stmt("CREATE TABLE cache_test (a INT, b INT)");
 
@@ -52,7 +52,7 @@ void create(TestConnections& test)
 
 void insert(TestConnections& test)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     string stmt("INSERT INTO cache_test VALUES (1, 1)");
 
@@ -62,7 +62,7 @@ void insert(TestConnections& test)
 
 void update(TestConnections& test, Column column, int value)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     string stmt("UPDATE cache_test SET ");
     stmt += (column == Column::A) ? "a=" : "b=";
@@ -74,7 +74,7 @@ void update(TestConnections& test, Column column, int value)
 
 void select(TestConnections& test, Column column, int* pValue)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
     string stmt("SELECT ");
     stmt += (column == Column::A) ? "a" : "b";
@@ -119,9 +119,9 @@ enum What
 
 void set(TestConnections& test, Cache::What what, uint32_t value)
 {
-    MYSQL* pMysql = test.maxscale->conn_rwsplit;
+    MYSQL* pMysql = test.percona_proxy->conn_rwsplit;
 
-    string stmt("SET @maxscale.cache.");
+    string stmt("SET @percona_proxy.cache.");
     stmt += ((what == Cache::SOFT_TTL) ? "soft_ttl" : "hard_ttl");
     stmt += "=";
     stmt += std::to_string(value);
@@ -181,14 +181,14 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    if (test.maxscale->connect_rwsplit() == 0)
+    if (test.percona_proxy->connect_rwsplit() == 0)
     {
         run(test);
     }
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
     drop(test);
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

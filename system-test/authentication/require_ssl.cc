@@ -19,7 +19,7 @@ namespace
 {
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
@@ -31,7 +31,7 @@ void test_main(TestConnections& test)
     repl.sync_slaves();
 
     auto test_port = [&](int port, bool ssl, bool expect_success) {
-        auto ssl_mode = ssl ? mxt::MaxScale::SslMode::ON : mxt::MaxScale::SslMode::OFF;
+        auto ssl_mode = ssl ? mxt::PerconaProxy::SslMode::ON : mxt::PerconaProxy::SslMode::OFF;
         auto conn = mxs.try_open_connection(ssl_mode, port, uname, pw);
         if (expect_success)
         {

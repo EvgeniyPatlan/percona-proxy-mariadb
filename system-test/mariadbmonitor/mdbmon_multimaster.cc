@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
     TestConnections::require_repl_version("10.2.3");    // Delayed replication needs this.
     TestConnections test(argc, argv);
 
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
     test.tprintf("Test 1 - Configure all servers into a multi-master ring with one slave");
     int max_rlag = 100;
@@ -229,7 +229,7 @@ int main(int argc, char* argv[])
     if (test.ok())
     {
         test.tprintf("Test 9 - All slaves lagging more than switchover_timeout.");
-        mxs.maxctrl("alter monitor MySQL-Monitor switchover_timeout 3s");
+        mxs.percona_proxyctl("alter monitor MySQL-Monitor switchover_timeout 3s");
 
         auto set_delay = [&test](int node, int delay) {
             const char stop[] = "stop slave;";
@@ -249,7 +249,7 @@ int main(int argc, char* argv[])
         // All slaves should be invalid for promotion now. Expect the switchover to fail quickly, as it's
         // not even attempted.
         mxb::StopWatch timer;
-        auto res = mxs.maxctrl("call command mariadbmon switchover MySQL-Monitor");
+        auto res = mxs.percona_proxyctl("call command mariadbmon switchover MySQL-Monitor");
         double time_s = mxb::to_secs(timer.lap());
         test.expect(res.rc != 0, "Switchover succeeded when it should have failed.");
         if (res.rc != 0)

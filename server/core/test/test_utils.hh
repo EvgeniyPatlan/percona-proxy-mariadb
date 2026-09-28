@@ -13,26 +13,26 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <maxbase/maxbase.hh>
 #include <maxbase/stacktrace.hh>
 #include <maxbase/watchdognotifier.hh>
-#include <maxscale/built_in_modules.hh>
-#include <maxscale/cachingparser.hh>
-#include <maxscale/cn_strings.hh>
-#include <maxscale/config.hh>
-#include <maxscale/dcb.hh>
-#include <maxscale/listener.hh>
-#include <maxscale/log.hh>
-#include <maxscale/maxscale_test.h>
-#include <maxscale/paths.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/test.hh>
+#include <percona-proxy/built_in_modules.hh>
+#include <percona-proxy/cachingparser.hh>
+#include <percona-proxy/cn_strings.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/listener.hh>
+#include <percona-proxy/log.hh>
+#include <percona-proxy/percona_proxy_test.h>
+#include <percona-proxy/paths.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/test.hh>
 
 #include <sys/stat.h>
 #include <openssl/ssl.h>
 
-#include "../internal/maxscale.hh"
+#include "../internal/percona-proxy.hh"
 #include "../internal/modules.hh"
 
 /**
@@ -110,7 +110,7 @@ void init_test_env(char* __attribute((unused))path = nullptr)
     set_signal(SIGBUS, sigfatal_handler);
 #endif
 
-    const char* argv = "maxscale";
+    const char* argv = "percona-proxy";
     mxs::Config::init(1, (char**)&argv);
 
     mxs::Config::get().n_threads = 1;
@@ -128,7 +128,7 @@ void init_test_env(char* __attribute((unused))path = nullptr)
     mxs::set_libdir(TEST_DIR "/server/modules/parser_plugin/pp_sqlite/");
     maxbase::init();
     watchdog_notifier = new mxb::WatchdogNotifier(0);
-    maxscale::RoutingWorker::init(watchdog_notifier);
+    percona_proxy::RoutingWorker::init(watchdog_notifier);
 
     add_built_in_module(mariadbprotocol_info());
     add_built_in_module(mariadbauthenticator_info());
@@ -154,7 +154,7 @@ void run_unit_test(std::function<void ()> func)
 
             func();
 
-            maxscale_shutdown();
+            percona_proxy_shutdown();
         }, mxb::Worker::EXECUTE_QUEUED);
 
     main_worker.run();

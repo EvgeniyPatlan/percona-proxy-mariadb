@@ -19,7 +19,7 @@
 #include <mutex>
 #include <maxbase/stopwatch.hh>
 #include <maxbase/queryresult.hh>
-#include <maxscale/monitor.hh>
+#include <percona-proxy/monitor.hh>
 #include "server_utils.hh"
 
 class MariaDBServer;

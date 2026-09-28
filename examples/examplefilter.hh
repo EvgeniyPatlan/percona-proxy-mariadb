@@ -13,16 +13,16 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <atomic>
-#include <maxscale/filter.hh>
-#include <maxscale/config2.hh>
+#include <percona-proxy/filter.hh>
+#include <percona-proxy/config2.hh>
 
 #include "examplefiltersession.hh"
 
 /**
- * Defines general data for the filter. This object is generated when MaxScale starts and deleted at
- * shutdown. When MaxScale is routing queries, this object may be accessed from multiple threads
+ * Defines general data for the filter. This object is generated when Percona Proxy starts and deleted at
+ * shutdown. When Percona Proxy is routing queries, this object may be accessed from multiple threads
  * concurrently. This should be considered if the object contains fields that are unsafe to
  * access/modify concurrently.
  */
@@ -57,14 +57,14 @@ public:
     /*
      * Creates a new session for this filter. This is called when a new client connects.
      *
-     * @param pSession The generic MaxScale session object.
+     * @param pSession The generic Percona Proxy session object.
      * @return The new session, or NULL on failure.
      */
     ExampleFilterSession* newSession(MXS_SESSION* pSession, SERVICE* pService) override;
 
     /*
-     * Returns JSON form diagnostic data. This is called when the admin tool MaxCtrl asks for the status
-     * of this filter. Run MaxCtrl with "./maxctrl show filters" in the MaxScale binary directory.
+     * Returns JSON form diagnostic data. This is called when the admin tool Percona Proxyctl asks for the status
+     * of this filter. Run Percona Proxyctl with "./percona-proxyctl show filters" in the Percona Proxy binary directory.
      *
      * @return Json object
      */
@@ -79,7 +79,7 @@ public:
     uint64_t getCapabilities() const override;
 
     /**
-     * Get filter configuration. Used by the MaxScale core to configure the instance.
+     * Get filter configuration. Used by the Percona Proxy core to configure the instance.
      *
      * @return The configuration for this filter instance
      */

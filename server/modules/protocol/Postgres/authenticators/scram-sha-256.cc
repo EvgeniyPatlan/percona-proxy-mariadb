@@ -15,7 +15,7 @@
 #include <openssl/rand.h>
 #include <openssl/hmac.h>
 #include <maxbase/format.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/utils.hh>
 #include "../pgprotocoldata.hh"
 
 using std::string;

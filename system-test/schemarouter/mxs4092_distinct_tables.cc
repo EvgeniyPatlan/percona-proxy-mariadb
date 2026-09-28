@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
     test.repl->execute_query_all_nodes("STOP SLAVE");
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
     auto node = test.repl->get_connection(0);
 
     test.tprintf("Create tables t1 and T1: they shuould be treated as the same table");
@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     test.expect(node.query("CREATE TABLE test.T1(id INT)"),
                 "Failed to create `test` . `T1`: %s", node.error());
 
-    auto rws = test.maxscale->rwsplit();
+    auto rws = test.percona_proxy->rwsplit();
     test.expect(rws.connect(), "Failed to connect to readwritesplit: %s", rws.error());
     test.expect(rws.query("SELECT * FROM test.t1"), "Failed to query `test` . `t1`: %s", rws.error());
     test.expect(rws.query("SELECT * FROM test.T1"), "Failed to query `test` . `T1`: %s", rws.error());

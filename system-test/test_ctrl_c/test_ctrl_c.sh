@@ -13,7 +13,7 @@
 # Public License.
 #
 
-sudo systemctl stop maxscale || sudo service maxscale stop
+sudo systemctl stop percona-proxy || sudo service percona-proxy stop
 
 hm=`pwd`
 $hm/start_killer.sh &
@@ -23,10 +23,10 @@ fi
 
 T="$(date +%s)"
 
-# Normally SystemD would create the PID directory /var/run/maxscale/ for us but
-# since we're starting MaxScale manually, we need to make sure it points to a
-# location that the maxscale user can write into.
-/usr/bin/sudo ASAN_OPTIONS=detect_leaks=0 maxscale -d -U maxscale --piddir=/tmp/
+# Normally SystemD would create the PID directory /var/run/percona-proxy/ for us but
+# since we're starting Percona Proxy manually, we need to make sure it points to a
+# location that the percona-proxy user can write into.
+/usr/bin/sudo ASAN_OPTIONS=detect_leaks=0 percona-proxy -d -U percona-proxy --piddir=/tmp/
 if [ $? -ne 0 ] ; then
 	exit 1
 fi

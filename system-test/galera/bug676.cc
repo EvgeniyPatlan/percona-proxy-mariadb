@@ -19,7 +19,7 @@
  * - sleep 20 seconds
  * - reconnect
  * - check if 'USE test' is ok
- * - check MaxScale is alive
+ * - check Percona Proxy is alive
  */
 
 #include <maxtest/testconnections.hh>
@@ -31,20 +31,20 @@ int main(int argc, char* argv[])
 
     test.reset_timeout();
 
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
     test.tprintf("Stopping node 0");
     test.galera->block_node(0);
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 
     test.tprintf("Waiting until the monitor picks a new master");
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     test.reset_timeout();
 
-    test.maxscale->connect_maxscale();
-    test.try_query(test.maxscale->conn_rwsplit, "USE test");
-    test.try_query(test.maxscale->conn_rwsplit, "show processlist;");
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->connect_percona_proxy();
+    test.try_query(test.percona_proxy->conn_rwsplit, "USE test");
+    test.try_query(test.percona_proxy->conn_rwsplit, "show processlist;");
+    test.percona_proxy->close_percona_proxy_connections();
 
     test.galera->unblock_node(0);
 

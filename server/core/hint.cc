@@ -11,7 +11,7 @@
  * of this software will be governed by version 2 or later of the General
  * Public License.
  */
-#include <maxscale/hint.hh>
+#include <percona-proxy/hint.hh>
 
 const char* Hint::type_to_str(Type t)
 {

@@ -17,8 +17,8 @@
  * @file adminusers.hh - Administration users support routines
  */
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/users.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/users.hh>
 
 extern const char* ADMIN_SUCCESS;
 

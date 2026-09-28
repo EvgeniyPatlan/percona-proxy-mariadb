@@ -56,8 +56,8 @@ namespace
 {
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
-    // At this point, MaxScale cannot connect to the server since it's not expecting a proxy header.
+    auto& mxs = *test.percona_proxy;
+    // At this point, Percona Proxy cannot connect to the server since it's not expecting a proxy header.
     mxs.check_print_servers_status({mxt::ServerInfo::DOWN});
 
     if (test.ok())
@@ -92,7 +92,7 @@ void test_main(TestConnections& test)
             {
                 client_ip = client_userhost.substr(at_pos + 1, string::npos);
                 test.tprintf("Client IP is %s", client_ip.c_str());
-                test.tprintf("MaxScale IP is %s and port is %i", mxs_ip, mxs_port);
+                test.tprintf("Percona Proxy IP is %s and port is %i", mxs_ip, mxs_port);
                 test.tprintf("Server IP is %s", repl.ip4(0));
             }
         }
@@ -104,7 +104,7 @@ void test_main(TestConnections& test)
         if (test.ok())
         {
             auto adminconn = mxs.open_rwsplit_connection2();
-            test.expect(adminconn->is_open(), "MaxScale connection failed.");
+            test.expect(adminconn->is_open(), "Percona Proxy connection failed.");
             if (adminconn->is_open())
             {
                 // Remove any existing conflicting usernames. Usually these should not exist.
@@ -115,9 +115,9 @@ void test_main(TestConnections& test)
 
                 mxs.try_open_rwsplit_connection("qwerty", "asdf");      // Forces users reload.
 
-                // Try to connect through MaxScale using the proxy-user, it shouldn't work yet.
+                // Try to connect through Percona Proxy using the proxy-user, it shouldn't work yet.
                 auto testcon = mxs.try_open_connection(mxs_port, proxy_user, proxy_pw);
-                test.expect(!testcon->is_open(), "Connection to MaxScale succeeded when it should have "
+                test.expect(!testcon->is_open(), "Connection to Percona Proxy succeeded when it should have "
                                                  "failed.");
 
                 if (test.ok())
@@ -137,9 +137,9 @@ void test_main(TestConnections& test)
                         test.expect(testcon->is_open(), "Connection to server1 as %s failed when success "
                                                         "was expected.", proxy_user.c_str());
 
-                        // The test user should be able to log in also through MaxScale.
+                        // The test user should be able to log in also through Percona Proxy.
                         testcon = mxs.try_open_rwsplit_connection(proxy_user, proxy_pw);
-                        test.expect(testcon->is_open(), "Connection to MaxScale as %s failed when success "
+                        test.expect(testcon->is_open(), "Connection to Percona Proxy as %s failed when success "
                                                         "was expected.", proxy_user.c_str());
                         if (testcon->is_open())
                         {
@@ -169,7 +169,7 @@ void test_main(TestConnections& test)
          * https://jira.mariadb.org/browse/MXS-2252
          */
         Connection direct = test.repl->get_connection(0);
-        Connection rwsplit = test.maxscale->rwsplit();
+        Connection rwsplit = test.percona_proxy->rwsplit();
         direct.connect();
         rwsplit.connect();
         auto d = direct.field("SELECT USER()");
@@ -218,8 +218,8 @@ void test_main(TestConnections& test)
                     {
                         const char* protocol = (proxy_ip.find(':') == string::npos) ? "TCP4" : "TCP6";
                         string header = mxb::string_printf("PROXY %s %s %s %i %i\r\n", protocol,
-                                                           proxy_ip.c_str(), test.maxscale->ip(), proxy_port,
-                                                           test.maxscale->rwsplit_port);
+                                                           proxy_ip.c_str(), test.percona_proxy->ip(), proxy_port,
+                                                           test.percona_proxy->rwsplit_port);
                         auto ptr = reinterpret_cast<const uint8_t*>(header.data());
                         header_bytes.assign(ptr, ptr + header.size());
                     }
@@ -268,7 +268,7 @@ void test_main(TestConnections& test)
                 int fake_port = 1234;
 
                 test.tprintf("Test normal connection as '%s' to a normal listener. Server should see "
-                             "client's real ip, as MaxScale is sending proxy header regardless of listener.",
+                             "client's real ip, as Percona Proxy is sending proxy header regardless of listener.",
                              anyhost_un.c_str());
                 auto conn = mxs.try_open_connection(rwsplit_no_proxy_port, anyhost_un, anyhost_pw, "");
                 check_conn(test, conn.get(), true, client_ip);
@@ -296,7 +296,7 @@ void test_main(TestConnections& test)
                 conn->open(mxs_ip4, rwsplit_all_proxy_port, "");
                 check_conn(test, conn.get(), true, client_ip);
 
-                // MXS-5159: Check that MaxScale actually uses the proxy header contents to
+                // MXS-5159: Check that Percona Proxy actually uses the proxy header contents to
                 // authenticate the client.
                 test.tprintf("Test that '%s' can connect with proxy header containing fake ip to "
                              "a proxy enabled listener.", fakeip_un.c_str());
@@ -356,7 +356,7 @@ void test_main(TestConnections& test)
 
                 test.tprintf("Test normal SSL connection as '%s' to a proxy enabled listener.",
                              anyhost_un.c_str());
-                conn = mxs.try_open_connection(mxt::MaxScale::SslMode::ON, ssl_proxy_port,
+                conn = mxs.try_open_connection(mxt::PerconaProxy::SslMode::ON, ssl_proxy_port,
                                                anyhost_un, anyhost_pw, "");
                 check_conn(test, conn.get(), true, client_ip);
 
@@ -415,7 +415,7 @@ void test_main(TestConnections& test)
                 auto set_proxy_nws = [&test](const string& value) {
                     string alter_cmd = mxb::string_printf("alter listener RWS-Listener-proxy-multi "
                                                           "proxy_protocol_networks %s", value.c_str());
-                    auto res = test.maxscale->maxctrl(alter_cmd);
+                    auto res = test.percona_proxy->percona_proxyctl(alter_cmd);
                     test.expect(res.rc == 0 && res.output == "OK", "Alter command '%s' failed.",
                                 alter_cmd.c_str());
                 };
@@ -478,7 +478,7 @@ void test_main(TestConnections& test)
                 conn->try_open(mxs_ip4, alter_listener_port, "");
                 check_conn(test, conn.get(), false, "");
 
-                conn = mxs.try_open_connection(mxt::MaxScale::SslMode::OFF, alter_listener_port,
+                conn = mxs.try_open_connection(mxt::PerconaProxy::SslMode::OFF, alter_listener_port,
                                                anyhost_un, anyhost_pw, "");
                 check_conn(test, conn.get(), true, client_ip);
 

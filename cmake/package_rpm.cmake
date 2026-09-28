@@ -10,13 +10,13 @@ set(CPACK_RPM_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}")
 set(CPACK_RPM_SPEC_INSTALL_POST "/bin/true")
 
 if(DISTRIB_SUFFIX)
-  set(CPACK_RPM_PACKAGE_RELEASE "${MAXSCALE_BUILD_NUMBER}.${DISTRIB_SUFFIX}")
+  set(CPACK_RPM_PACKAGE_RELEASE "${PERCONA_PROXY_BUILD_NUMBER}.${DISTRIB_SUFFIX}")
 else()
-  set(CPACK_RPM_PACKAGE_RELEASE ${MAXSCALE_BUILD_NUMBER})
+  set(CPACK_RPM_PACKAGE_RELEASE ${PERCONA_PROXY_BUILD_NUMBER})
 endif()
 
 # This prevents the default %post from running which causes binaries to be
-# striped. Without this, MaxCtrl will not work on all systems as the
+# striped. Without this, Percona Proxyctl will not work on all systems as the
 # binaries will be stripped.
 set(CPACK_RPM_SPEC_INSTALL_POST "/bin/true")
 

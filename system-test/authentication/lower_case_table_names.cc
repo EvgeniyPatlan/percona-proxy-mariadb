@@ -35,7 +35,7 @@ bool try_normal_login(TestConnections& test, int port, const string& user, const
 
 void test_main(TestConnections& test)
 {
-    test.maxscale->check_print_servers_status({mxt::ServerInfo::master_st, mxt::ServerInfo::slave_st});
+    test.percona_proxy->check_print_servers_status({mxt::ServerInfo::master_st, mxt::ServerInfo::slave_st});
     if (test.ok())
     {
         test.repl->connect();
@@ -47,10 +47,10 @@ void test_main(TestConnections& test)
 void test_match_host_false(TestConnections& test)
 {
     const char create_fmt[] = "CREATE OR REPLACE USER '%s'@'%s' IDENTIFIED BY '%s';";
-    test.tprintf("Create a user which can only connect from MaxScale IP. Should work with the listener with "
+    test.tprintf("Create a user which can only connect from Percona Proxy IP. Should work with the listener with "
                  "authenticator_options=match_host=false.");
     string user = "maxhost_user";
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto userz = user.c_str();
     auto hostz = mxs.ip4();
     string pass = "maxhost_pass";
@@ -75,7 +75,7 @@ void test_match_host_false(TestConnections& test)
 
 void test_lower_case_table_names(TestConnections& test)
 {
-    // Test lower_case_table_names. Only test the MaxScale-side of authentication, as testing
+    // Test lower_case_table_names. Only test the Percona Proxy-side of authentication, as testing
     // the server is not really the purpose here.
     test.tprintf("Preparing to test lower_case_table_names.");
     const char create_fmt[] = "CREATE OR REPLACE USER '%s'@'%s' IDENTIFIED BY '%s';";
@@ -141,7 +141,7 @@ void test_lower_case_table_names(TestConnections& test)
 void expect_access_denied(TestConnections& test, int port, const string& user, const string& pass,
                           const string& db)
 {
-    auto host = test.maxscale->ip4();
+    auto host = test.percona_proxy->ip4();
     MYSQL* maxconn = db.empty() ? open_conn_no_db(port, host, user, pass) :
         open_conn_db(port, host, db, user, pass);
     int ret = mysql_errno(maxconn);
@@ -163,10 +163,10 @@ void expect_access_denied(TestConnections& test, int port, const string& user, c
 void expect_login_success(TestConnections& test, int port, const string& user, const string& pass,
                           const string& db)
 {
-    auto host = test.maxscale->ip4();
+    auto host = test.percona_proxy->ip4();
     MYSQL* conn = open_conn_db(port, host, db, user, pass);
     int ret = mysql_errno(conn);
-    test.expect(ret == 0, "Login to MaxScale port %i failed. Error %i: '%s'", port, ret, mysql_error(conn));
+    test.expect(ret == 0, "Login to Percona Proxy port %i failed. Error %i: '%s'", port, ret, mysql_error(conn));
     mysql_close(conn);
 }
 
@@ -174,7 +174,7 @@ bool try_normal_login(TestConnections& test, int port, const string& user, const
                       const string& db)
 {
     bool rval = false;
-    auto host = test.maxscale->ip4();
+    auto host = test.percona_proxy->ip4();
     MYSQL* maxconn = db.empty() ? open_conn_no_db(port, host, user, pass) :
         open_conn_db(port, host, db, user, pass);
 

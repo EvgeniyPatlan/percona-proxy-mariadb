@@ -22,14 +22,14 @@
  * 10-06-2013   Massimiliano Pinto      Initial implementation
  * 12-06-2013   Massimiliano Pinto      Read function trought
  *                                      the gwbuff strategy
- * 13-06-2013   Massimiliano Pinto      MaxScale local authentication
+ * 13-06-2013   Massimiliano Pinto      Percona Proxy local authentication
  *                                      basics
  * 02-09-2014   Martin Brampton         Replaced C++ comments by C comments
  *
  * @endverbatim
  */
 
-#include <maxscale/utils.hh>
+#include <percona-proxy/utils.hh>
 
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -47,9 +47,9 @@
 #include <unistd.h>
 #include <fstream>
 
-#include <maxscale/config.hh>
-#include <maxscale/secrets.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/secrets.hh>
+#include <percona-proxy/routingworker.hh>
 
 #if !defined (PATH_MAX)
 # if defined (__USE_POSIX)
@@ -188,7 +188,7 @@ return_eno:
     return eno;
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 std::string create_hex_sha1_sha1_passwd(const char* passwd)
 {
@@ -788,7 +788,7 @@ int64_t get_total_memory()
     return pagesize * num_pages;
 }
 
-namespace maxscale
+namespace percona_proxy
 {
 
 std::string crypt(const std::string& password, const std::string& salt)

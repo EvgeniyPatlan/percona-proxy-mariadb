@@ -13,7 +13,7 @@
  */
 
 /**
- * @file bug571.cpp  regression case for bug 571 and bug 585 ( "Using regex filter hangs MaxScale" and
+ * @file bug571.cpp  regression case for bug 571 and bug 585 ( "Using regex filter hangs Percona Proxy" and
  *"modutil_extract_SQL doesn't work with multiple GWBUF buffers" )
  *
  * - Maxscale.cnf
@@ -82,7 +82,7 @@
  *
  *  fetch * from mysql.user
  *
- *  with this config hangs MaxScale
+ *  with this config hangs Percona Proxy
  *
  *  [regex]
  *  type=filter
@@ -137,19 +137,19 @@ int main(int argc, char* argv[])
 {
     TestConnections* Test = new TestConnections(argc, argv);
 
-    Test->tprintf("Connecting to all MaxScale services\n");
+    Test->tprintf("Connecting to all Percona Proxy services\n");
     Test->reset_timeout();
-    Test->add_result(Test->maxscale->connect_maxscale(), "Error connectiong to Maxscale\n");
+    Test->add_result(Test->percona_proxy->connect_percona_proxy(), "Error connectiong to Maxscale\n");
 
     Test->tprintf("executing fetch * from mysql.user \n");
     Test->reset_timeout();
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "fetch * from mysql.user;");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "fetch * from mysql.user;");
     Test->reset_timeout();
-    Test->try_query(Test->maxscale->conn_rwsplit, (char*) "fetch count(*) form mysql.user;");
+    Test->try_query(Test->percona_proxy->conn_rwsplit, (char*) "fetch count(*) form mysql.user;");
 
     Test->reset_timeout();
-    Test->maxscale->close_maxscale_connections();
-    Test->check_maxscale_alive();
+    Test->percona_proxy->close_percona_proxy_connections();
+    Test->check_percona_proxy_alive();
     int rval = Test->global_result;
     delete Test;
     return rval;

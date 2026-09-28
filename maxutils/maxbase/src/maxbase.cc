@@ -108,13 +108,13 @@ MaxBase::MaxBase(const char* zIdent,
         if (!m_log_inited)
         {
             zMessage =
-                "The initialization of the MaxScale base library succeeded, but the "
-                "initialization of the MaxScale log failed.";
+                "The initialization of the Percona Proxy base library succeeded, but the "
+                "initialization of the Percona Proxy log failed.";
         }
     }
     else
     {
-        zMessage = "The initialization of the MaxScale base library failed.";
+        zMessage = "The initialization of the Percona Proxy base library failed.";
     }
 
     if (zMessage)
@@ -142,7 +142,7 @@ bool init()
         else
         {
             // Out of luck, just write to stderr.
-            fprintf(stderr, "MaxScale: Fatal error, could not initialize a temporary log.\n");
+            fprintf(stderr, "Percona Proxy: Fatal error, could not initialize a temporary log.\n");
         }
     }
 

@@ -12,11 +12,11 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/cachingparser.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/cachingparser.hh>
 
 
-class PgParser : public maxscale::CachingParser
+class PgParser : public percona_proxy::CachingParser
 {
 public:
     class Helper : public mxs::Parser::Helper

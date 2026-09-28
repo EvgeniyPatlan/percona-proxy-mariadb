@@ -41,7 +41,7 @@
  *  @endverbatim
  * - second test (bug587_1) is executed with "filters=regex|hints" (dffeent order of filters)
  * - check if hints filter working by executing and comparing results:
- *  + via RWSPLIT: "select @@server_id; -- maxscale route to server server%d" (%d - node number)
+ *  + via RWSPLIT: "select @@server_id; -- percona-proxy route to server server%d" (%d - node number)
  *  + directly to backend node "select @@server_id;"
  * - do the same test with "filters=regex|hints" "filters=hints|regex"
  */
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
     TestConnections* Test = new TestConnections(argc, argv);
     Test->reset_timeout();
     Test->repl->connect();
-    Test->maxscale->connect_maxscale();
+    Test->percona_proxy->connect_percona_proxy();
 
     char server_id[256];
     char server_id_d[256];
@@ -100,10 +100,10 @@ int main(int argc, char* argv[])
         for (int j = 0; j < Test->repl->N; j++)
         {
             Test->reset_timeout();
-            sprintf(hint_sql, "select @@server_id; -- maxscale route to server server%d", j + 1);
+            sprintf(hint_sql, "select @@server_id; -- percona-proxy route to server server%d", j + 1);
             Test->tprintf("%s\n", hint_sql);
 
-            find_field(Test->maxscale->conn_rwsplit, hint_sql, (char*) "@@server_id", &server_id[0]);
+            find_field(Test->percona_proxy->conn_rwsplit, hint_sql, (char*) "@@server_id", &server_id[0]);
             find_field(Test->repl->nodes[j],
                        (char*) "select @@server_id;",
                        (char*) "@@server_id",
@@ -116,10 +116,10 @@ int main(int argc, char* argv[])
         }
     }
 
-    Test->maxscale->close_maxscale_connections();
+    Test->percona_proxy->close_percona_proxy_connections();
     Test->repl->close_connections();
 
-    Test->check_maxscale_alive();
+    Test->check_percona_proxy_alive();
 
     int rval = Test->global_result;
     delete Test;

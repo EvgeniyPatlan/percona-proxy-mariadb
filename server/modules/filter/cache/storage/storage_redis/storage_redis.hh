@@ -14,5 +14,5 @@
 #pragma once
 
 #define MXB_MODULE_NAME "storage_redis"
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include "../../cache_storage_api.hh"

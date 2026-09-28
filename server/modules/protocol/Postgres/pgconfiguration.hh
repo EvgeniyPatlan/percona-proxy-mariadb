@@ -13,7 +13,7 @@
 #pragma once
 
 #include "postgresprotocol.hh"
-#include <maxscale/config2.hh>
+#include <percona-proxy/config2.hh>
 
 class PgProtocolModule;
 

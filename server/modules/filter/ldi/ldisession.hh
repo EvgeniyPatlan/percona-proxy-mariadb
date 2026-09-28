@@ -12,9 +12,9 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <maxbase/externcmd.hh>
-#include <maxscale/filter.hh>
+#include <percona-proxy/filter.hh>
 #include <maxbase/stopwatch.hh>
 
 #include <vector>
@@ -124,7 +124,7 @@ private:
     UploadTracker                     m_tracker;
 };
 
-class LDISession : public maxscale::FilterSession
+class LDISession : public percona_proxy::FilterSession
 {
 public:
     static LDISession* create(MXS_SESSION* pSession, SERVICE* pService, LDI* pFilter);

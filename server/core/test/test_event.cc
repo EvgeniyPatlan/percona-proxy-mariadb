@@ -24,7 +24,7 @@
 #include <sstream>
 #include <maxbase/assert.hh>
 
-using namespace maxscale;
+using namespace percona_proxy;
 using namespace std;
 
 namespace

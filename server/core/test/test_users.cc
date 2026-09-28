@@ -21,7 +21,7 @@
 #endif
 #include <cstdio>
 #include <cstring>
-#include <maxscale/users.hh>
+#include <percona-proxy/users.hh>
 #include "test_utils.hh"
 
 using mxs::USER_ACCOUNT_ADMIN;

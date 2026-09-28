@@ -3,8 +3,8 @@
 
 int count_lines(TestConnections& test)
 {
-    test.maxscale->copy_from_node("/var/log/maxscale/maxscale.log", "./maxscale.log");
-    std::ifstream infile("./maxscale.log");
+    test.percona_proxy->copy_from_node("/var/log/percona-proxy/percona-proxy.log", "./percona-proxy.log");
+    std::ifstream infile("./percona-proxy.log");
     int found = 0;
 
     for (std::string line; std::getline(infile, line);)
@@ -12,7 +12,7 @@ int count_lines(TestConnections& test)
         found += line.find("user@host entries") != std::string::npos ? 1 : 0;
     }
 
-    remove("./maxscale.log");
+    remove("./percona-proxy.log");
     return found;
 }
 
@@ -24,8 +24,8 @@ void test_main(TestConnections& test)
     int before = count_lines(test);
     test.log_printf("Before: %d", before);
 
-    test.check_maxctrl("alter maxscale users_refresh_interval=1s");
-    test.log_printf("Altered to maxscale users_refresh_interval=1s");
+    test.check_percona_proxyctl("alter percona-proxy users_refresh_interval=1s");
+    test.log_printf("Altered to percona-proxy users_refresh_interval=1s");
     std::this_thread::sleep_for(10s);
 
     int after = count_lines(test);
@@ -34,16 +34,16 @@ void test_main(TestConnections& test)
     test.expect(after - before > 5, "Expected more than 5 updates of users, found only %d", after - before);
 
     test.log_printf("MXS-5983: Default users_refresh_interval causes repeated user account loading");
-    test.maxscale->ssh_node_f(
-        true, "find /var/lib/maxscale/maxscale.cnf.d -delete -mindepth 1");
-    test.maxscale->ssh_node_f(
-        true, "sed -i -e 's/users_refresh_interval=60s/users_refresh_interval=0s/' /etc/maxscale.cnf");
+    test.percona_proxy->ssh_node_f(
+        true, "find /var/lib/percona-proxy/percona-proxy.cnf.d -delete -mindepth 1");
+    test.percona_proxy->ssh_node_f(
+        true, "sed -i -e 's/users_refresh_interval=60s/users_refresh_interval=0s/' /etc/percona-proxy.cnf");
 
-    test.maxscale->restart();
+    test.percona_proxy->restart();
     test.log_printf("Wait for a bit for things to stabilize");
     std::this_thread::sleep_for(5s);
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     c.set_credentials("foo", "bar");
     int initial = count_lines(test);
     auto dur = 15s;

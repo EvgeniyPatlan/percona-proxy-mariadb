@@ -15,7 +15,7 @@
 
 #include "postgresprotocol.hh"
 #include "pgprotocoldata.hh"
-#include <maxscale/protocol2.hh>
+#include <percona-proxy/protocol2.hh>
 #include <deque>
 #include <tuple>
 #include <memory>

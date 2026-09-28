@@ -22,10 +22,10 @@ int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
 
-    test.maxscale->connect_rwsplit();
+    test.percona_proxy->connect_rwsplit();
 
     // Make sure we have at least one fully opened connection
-    test.try_query(test.maxscale->conn_rwsplit, "select 1");
+    test.try_query(test.percona_proxy->conn_rwsplit, "select 1");
 
     // Block and unblock all nodes to sever all connections
     for (int i = 0; i < test.repl->N; i++)
@@ -33,15 +33,15 @@ int main(int argc, char** argv)
         test.repl->block_node(i);
     }
 
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     test.repl->unblock_all_nodes();
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     // Make sure that session commands trigger a reconnection if there are no open connections
     test.reset_timeout();
-    test.try_query(test.maxscale->conn_rwsplit, "set @a = 1");
-    test.maxscale->disconnect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "set @a = 1");
+    test.percona_proxy->disconnect();
 
     return test.global_result;
 }

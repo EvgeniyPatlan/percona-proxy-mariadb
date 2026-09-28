@@ -15,13 +15,13 @@ add_library(pinloki-core OBJECT
   parser.cc
   )
 
-target_link_libraries(pinloki-core maxscale-common uuid)
+target_link_libraries(pinloki-core percona-proxy-common uuid)
 
 # Clang 15 complains about deprecated builtins in the boost headers without this
 target_compile_options(pinloki-core PRIVATE "-Wno-deprecated-builtins")
 
 add_library(binlogrouter SHARED pinloki.cc pinlokisession.cc)
-target_link_libraries(binlogrouter pinloki-core maxscale-common)
+target_link_libraries(binlogrouter pinloki-core percona-proxy-common)
 set_target_properties(binlogrouter PROPERTIES VERSION "1.0.0"  LINK_FLAGS -Wl,-z,defs)
 install_module(binlogrouter core)
 

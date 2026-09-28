@@ -17,7 +17,7 @@
 
 #include "binlogfilter.hh"
 
-// This declares a module in MaxScale
+// This declares a module in Percona Proxy
 extern "C" MXS_MODULE* MXS_CREATE_MODULE()
 {
     static const char desc[] = "A binlog event filter for slave servers";

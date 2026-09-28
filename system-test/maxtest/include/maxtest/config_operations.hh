@@ -37,7 +37,7 @@ public:
         SERVICE_RCONN_SLAVE  = 2,
     };
 
-    using Expect = mxt::MaxScale::Expect;
+    using Expect = mxt::PerconaProxy::Expect;
 
     /**
      * Add a server to all services and monitors
@@ -82,7 +82,7 @@ public:
     template<class K, class V, class ...Args>
     void alter_server(int num, K k, V v, Args... args)
     {
-        test_->maxscale->maxctrlf("alter server server%d %s", num,
+        test_->percona_proxy->percona_proxyctlf("alter server server%d %s", num,
                                   create_alter_server_params(k, v, args...).c_str());
     }
 
@@ -169,7 +169,7 @@ private:
     TestConnections*      test_;
     std::set<int>         created_servers_;
     std::set<std::string> created_monitors_;
-    mxt::MaxScale*        mxs;
+    mxt::PerconaProxy*        mxs;
 
     template<class K, class V, class ...Args>
     std::string create_alter_server_params(K k, V v, Args... args)

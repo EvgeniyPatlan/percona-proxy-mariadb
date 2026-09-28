@@ -25,7 +25,7 @@ namespace maxbase
 {
 
 /**
- *  The MaxScale "standard" steady clock. Do not use this directly,
+ *  The Percona Proxy "standard" steady clock. Do not use this directly,
  *  use Clock declared further down (specifically, use Clock::now()).
  */
 using SteadyClock = std::chrono::steady_clock;
@@ -86,7 +86,7 @@ enum class NowType {EPollTick, RealTime};
 /**
  *   @class Clock
  *
- *   MaxScale "standard" clock. It is exactly the same as std::chrono::steady_clock
+ *   Percona Proxy "standard" clock. It is exactly the same as std::chrono::steady_clock
  *   except it redefines the static member function now().
  */
 struct Clock : public SteadyClock

@@ -38,7 +38,7 @@ add_library(ldi SHARED
   ${MS3}/src/xml.c
 )
 
-target_link_libraries(ldi maxscale-common curl)
+target_link_libraries(ldi percona-proxy-common curl)
 set_target_properties(ldi PROPERTIES VERSION "1.0.0" LINK_FLAGS -Wl,-z,defs)
 install_module(ldi core)
 

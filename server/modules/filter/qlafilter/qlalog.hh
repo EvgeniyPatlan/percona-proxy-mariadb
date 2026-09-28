@@ -13,8 +13,8 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
-#include <maxscale/routingworker.hh>
+#include <percona-proxy/ccdefs.hh>
+#include <percona-proxy/routingworker.hh>
 #include <maxbase/gcupdater.hh>
 
 #include <fstream>
@@ -60,13 +60,13 @@ struct LogContext
 using SharedLogLine = maxbase::SharedData<LogContext, LogUpdate>;
 
 class QlaLog : public maxbase::GCUpdater<SharedLogLine>
-             , private maxscale::RoutingWorker::Data
+             , private percona_proxy::RoutingWorker::Data
 {
 public:
     QlaLog();
 private:
-    void init_for(maxscale::RoutingWorker* pWorker) override final;
-    void finish_for(maxscale::RoutingWorker* pWorker) override final;
+    void init_for(percona_proxy::RoutingWorker* pWorker) override final;
+    void finish_for(percona_proxy::RoutingWorker* pWorker) override final;
 
     void make_updates(LogContext*,
                       std::vector<typename SharedLogLine::InternalUpdate>& queue) override;

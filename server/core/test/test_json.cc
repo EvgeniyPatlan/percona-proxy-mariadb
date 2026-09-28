@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
 #include <cstring>
 #include <string>
@@ -21,7 +21,7 @@
 #include <maxbase/alloc.hh>
 #include <maxbase/jansson.hh>
 #include <maxbase/string.hh>
-#include <maxscale/json_api.hh>
+#include <percona-proxy/json_api.hh>
 
 using std::string;
 

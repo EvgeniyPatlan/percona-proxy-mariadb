@@ -15,7 +15,7 @@
 
 # First argument is the name of the test
 # Second argument is the directory name where tests are found
-# Third argument defines the MaxScale port
+# Third argument defines the Percona Proxy port
 # Fourth OPTIONAL argument defines the user to be used.
 # Fifth OPTIONAL argument defines the password to be used.
 
@@ -25,9 +25,9 @@ then
     exit 1
 fi
 
-if [ "${maxscale_000_network}" == "" ]
+if [ "${percona_proxy_000_network}" == "" ]
 then
-    echo "Error: The environment variable maxscale_IP must be set."
+    echo "Error: The environment variable percona_proxy_IP must be set."
     exit 1
 fi
 
@@ -61,7 +61,7 @@ do
     printf "$t:"
     test_name=${t%%.test}
     mariadb-test --no-defaults \
-              --host=${maxscale_000_network} --port=$port \
+              --host=${percona_proxy_000_network} --port=$port \
               --user=$user --password=$password \
               --ssl-verify-server-cert=0 \
               --logdir=log_$1 \

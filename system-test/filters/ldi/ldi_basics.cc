@@ -19,10 +19,10 @@ const size_t TARGET_ROWS = TARGET_BYTES / 6;    // Length of 'hello\n' is 6
 const std::string ROWS = std::to_string(TARGET_ROWS);
 
 // The S3 variables are required by normal MariaDB data imports. The others are required by Xpand.
-const char* SET_VARIABLES = "SET @maxscale.ldi.s3_key='my-access-key', "
-                            "@maxscale.ldi.s3_secret='my-secret-key', "
-                            "@maxscale.ldi.import_user='maxskysql', "
-                            "@maxscale.ldi.import_password='skysql'";
+const char* SET_VARIABLES = "SET @percona_proxy.ldi.s3_key='my-access-key', "
+                            "@percona_proxy.ldi.s3_secret='my-secret-key', "
+                            "@percona_proxy.ldi.import_user='maxskysql', "
+                            "@percona_proxy.ldi.import_password='skysql'";
 
 // Puts InnoDB into a special mode that makes it faster
 const char* GO_FASTER = "SET autocommit=0, unique_checks=0, foreign_key_checks=0";
@@ -32,7 +32,7 @@ void ldi_from_s3(TestConnections& test, mxt::MariaDBServer* backend)
     auto conn = backend->open_connection();
     auto table = conn->create_table("test.t1", "data CHAR(10)");
 
-    auto c = test.maxscale->rwsplit();
+    auto c = test.percona_proxy->rwsplit();
     MXT_EXPECT_F(c.connect(), "Failed to connect: %s", c.error());
     MXT_EXPECT_F(c.query(SET_VARIABLES), "SET failed: %s", c.error());
     MXT_EXPECT(c.query(GO_FASTER));
@@ -62,7 +62,7 @@ void normal_ldli(TestConnections& test, mxt::MariaDBServer* backend)
         auto conn = backend->open_connection();
         auto table = conn->create_table("test.t1", "data CHAR(10)");
 
-        auto c = test.maxscale->rwsplit();
+        auto c = test.percona_proxy->rwsplit();
         MXT_EXPECT_F(c.connect(), "Failed to connect: %s", c.error());
         MXT_EXPECT_F(c.query(SET_VARIABLES), "SET failed: %s", c.error());
         MXT_EXPECT(c.query(GO_FASTER));

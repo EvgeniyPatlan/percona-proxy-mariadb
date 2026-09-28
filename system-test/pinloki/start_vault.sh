@@ -23,10 +23,10 @@ sleep 2
 export VAULT_TOKEN=$(cat ~/.vault-token)
 export VAULT_ADDR='http://127.0.0.1:8200'
 
-# Use the root token in the maxscale.cnf. Not quite what you'd do in production
+# Use the root token in the percona-proxy.cnf. Not quite what you'd do in production
 # but it's adequately for testing.
-sudo sed -i "s/vault[.]token.*/vault.token=$VAULT_TOKEN/" /etc/maxscale.cnf
+sudo sed -i "s/vault[.]token.*/vault.token=$VAULT_TOKEN/" /etc/percona-proxy.cnf
 
-# Put the first version of the key into Vault. MaxScale needs it to exist when
+# Put the first version of the key into Vault. Percona Proxy needs it to exist when
 # starting up.
 openssl rand -hex 32|vault kv put secret/1 data=-

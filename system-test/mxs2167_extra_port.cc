@@ -35,10 +35,10 @@ int main(int argc, char** argv)
         return test.global_result;
     }
 
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
 
-    test.tprintf("Stopping MaxScale");
-    test.maxscale->stop();
+    test.tprintf("Stopping Percona Proxy");
+    test.percona_proxy->stop();
 
     // Configure extra-port on servers 1&2.
     const int N_extra_port = 2;
@@ -145,11 +145,11 @@ int main(int argc, char** argv)
 
             if (test.ok())
             {
-                // Finally, start MaxScale. The monitor should use extra port to connect to nodes 0&1,
+                // Finally, start Percona Proxy. The monitor should use extra port to connect to nodes 0&1,
                 // and normal port to connect to 2&3. All servers should be running.
-                test.tprintf("Starting MaxScale");
+                test.tprintf("Starting Percona Proxy");
                 mxs.start();
-                sleep(3);   // Give maxscale some time to start properly.
+                sleep(3);   // Give percona-proxy some time to start properly.
                 mxs.wait_for_monitor(2);
                 mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
 
@@ -157,7 +157,7 @@ int main(int argc, char** argv)
                 {
                     // Creating sessions should not work since normal connections cannot be created to
                     // the master node.
-                    auto conn = test.maxscale->open_rwsplit_connection();
+                    auto conn = test.percona_proxy->open_rwsplit_connection();
                     if (!conn)
                     {
                         test.tprintf("Session creation failed, as expected.");
@@ -193,10 +193,10 @@ int main(int argc, char** argv)
         test.tprintf("Change %s configuration such that the primary port is wrong. "
                      "Monitoring should still work.", srv_name.c_str());
 
-        mxs.maxctrl("alter server " + srv_name + " port 12345");
+        mxs.percona_proxyctl("alter server " + srv_name + " port 12345");
         mxs.wait_for_monitor(2);
         mxs.check_print_servers_status({mxt::ServerInfo::master_st});
-        test.maxctrl("alter server " + srv_name + " port " + std::to_string(test.repl->port(0)));
+        test.percona_proxyctl("alter server " + srv_name + " port " + std::to_string(test.repl->port(0)));
     }
 
     // Remove extra_port

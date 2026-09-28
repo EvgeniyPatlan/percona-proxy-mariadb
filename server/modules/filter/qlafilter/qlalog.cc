@@ -12,7 +12,7 @@
  * Public License.
  */
 #include "qlalog.hh"
-#include <maxscale/config.hh>
+#include <percona-proxy/config.hh>
 
 namespace
 {
@@ -36,12 +36,12 @@ QlaLog::QlaLog()
     Data::initialize_workers();
 }
 
-void QlaLog::init_for(maxscale::RoutingWorker* pWorker)
+void QlaLog::init_for(percona_proxy::RoutingWorker* pWorker)
 {
     increase_client_count(pWorker->index());
 }
 
-void QlaLog::finish_for(maxscale::RoutingWorker* pWorker)
+void QlaLog::finish_for(percona_proxy::RoutingWorker* pWorker)
 {
     decrease_client_count(pWorker->index());
 }

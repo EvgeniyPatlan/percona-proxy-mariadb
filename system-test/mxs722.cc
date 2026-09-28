@@ -13,7 +13,7 @@
  */
 
 /**
- * @file mxs722.cpp MaxScale configuration check functionality test
+ * @file mxs722.cpp Percona Proxy configuration check functionality test
  *
  * - Get baseline for test from a valid config
  * - Test wrong parameter name
@@ -32,44 +32,44 @@ using namespace std;
 int main(int argc, char* argv[])
 {
     TestConnections* test = new TestConnections(argc, argv);
-    test->maxscale->stop();
+    test->percona_proxy->stop();
 
     /** Copy original config so we can easily reset the testing environment */
-    test->maxscale->ssh_node_f(true, "cp /etc/maxscale.cnf /tmp/maxscale.cnf");
-    test->maxscale->ssh_node_f(true, "chmod a+rw /tmp/maxscale.cnf");
+    test->percona_proxy->ssh_node_f(true, "cp /etc/percona-proxy.cnf /tmp/percona-proxy.cnf");
+    test->percona_proxy->ssh_node_f(true, "chmod a+rw /tmp/percona-proxy.cnf");
 
-    const char* maxscale_cmd =
-        "ASAN_OPTIONS=detect_leaks=0 maxscale -c --user=maxscale --piddir=/tmp -f /tmp/maxscale.cnf";
+    const char* percona_proxy_cmd =
+        "ASAN_OPTIONS=detect_leaks=0 percona-proxy -c --user=percona-proxy --piddir=/tmp -f /tmp/percona-proxy.cnf";
 
     /** Get a baseline result with a good configuration */
-    int baseline = test->maxscale->ssh_node_f(true, "%s", maxscale_cmd);
+    int baseline = test->percona_proxy->ssh_node_f(true, "%s", percona_proxy_cmd);
 
     /** Configure bad parameter for a listener */
-    test->maxscale->ssh_node_f(true, "sed -i -e 's/service/ecivres/' /tmp/maxscale.cnf");
+    test->percona_proxy->ssh_node_f(true, "sed -i -e 's/service/ecivres/' /tmp/percona-proxy.cnf");
     test->add_result(
-        baseline == test->maxscale->ssh_node_f(true, "%s", maxscale_cmd),
+        baseline == test->percona_proxy->ssh_node_f(true, "%s", percona_proxy_cmd),
         "Bad parameter name should be detected.\n");
-    test->maxscale->ssh_node_f(true, "cp /etc/maxscale.cnf /tmp/maxscale.cnf");
+    test->percona_proxy->ssh_node_f(true, "cp /etc/percona-proxy.cnf /tmp/percona-proxy.cnf");
 
     /** Set router_options to a bad value */
-    test->maxscale->ssh_node_f(true,
-                               "sed -i -e 's/router_options.*/router_options=bad_option=true/' /tmp/maxscale.cnf");
+    test->percona_proxy->ssh_node_f(true,
+                               "sed -i -e 's/router_options.*/router_options=bad_option=true/' /tmp/percona-proxy.cnf");
     test->add_result(
-        baseline == test->maxscale->ssh_node_f(true, "%s", maxscale_cmd),
+        baseline == test->percona_proxy->ssh_node_f(true, "%s", percona_proxy_cmd),
         "Bad router_options should be detected.\n");
 
-    test->maxscale->ssh_node_f(true, "cp /etc/maxscale.cnf /tmp/maxscale.cnf");
+    test->percona_proxy->ssh_node_f(true, "cp /etc/percona-proxy.cnf /tmp/percona-proxy.cnf");
 
     /** Configure bad filter parameter */
-    test->maxscale->ssh_node_f(true, "sed -i -e 's/filebase/basefile/' /tmp/maxscale.cnf");
+    test->percona_proxy->ssh_node_f(true, "sed -i -e 's/filebase/basefile/' /tmp/percona-proxy.cnf");
     test->add_result(
-        baseline == test->maxscale->ssh_node_f(true, "%s", maxscale_cmd),
+        baseline == test->percona_proxy->ssh_node_f(true, "%s", percona_proxy_cmd),
         "Bad filter parameter should be detected.\n");
 
     /** Remove configuration file */
-    test->maxscale->ssh_node_f(true, "rm -f /tmp/maxscale.cnf");
+    test->percona_proxy->ssh_node_f(true, "rm -f /tmp/percona-proxy.cnf");
     test->add_result(
-        baseline == test->maxscale->ssh_node_f(true, "%s", maxscale_cmd),
+        baseline == test->percona_proxy->ssh_node_f(true, "%s", percona_proxy_cmd),
         "Missing configuration file should be detected.\n");
 
     int rval = test->global_result;

@@ -31,17 +31,17 @@ int main(int argc, char** argv)
     TestConnections test(argc, argv);
     std::vector<MYSQL_STMT*> stmts;
 
-    test.maxscale->connect();
+    test.percona_proxy->connect();
 
     test.tprintf("Setting variable @a to 123");
-    mysql_query(test.maxscale->conn_rwsplit, "SET @a = 123");
-    int rc = execute_query_check_one(test.maxscale->conn_rwsplit, "SELECT @a", "123");
+    mysql_query(test.percona_proxy->conn_rwsplit, "SET @a = 123");
+    int rc = execute_query_check_one(test.percona_proxy->conn_rwsplit, "SELECT @a", "123");
     test.expect(rc == 0, "Text protocol should return 123 as the value of @a");
 
     test.tprintf("Preparing %d prepared statements", NUM_STMT);
     for (int i = 0; i < NUM_STMT && test.global_result == 0; i++)
     {
-        stmts.push_back(mysql_stmt_init(test.maxscale->conn_rwsplit));
+        stmts.push_back(mysql_stmt_init(test.percona_proxy->conn_rwsplit));
         MYSQL_STMT* stmt = stmts.back();
         const char* query = "SELECT @a";
         test.add_result(mysql_stmt_prepare(stmt, query, strlen(query)),
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
         mysql_stmt_close(stmt);
     }
 
-    test.maxscale->disconnect();
+    test.percona_proxy->disconnect();
     test.log_excludes("unknown prepared statement");
 
     return test.global_result;

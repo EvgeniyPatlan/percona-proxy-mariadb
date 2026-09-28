@@ -17,9 +17,9 @@
  * @file blr_defines.h - Various definitions for binlogrouter
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 #include <mysql.h>
 #include <mariadb_rpl.h>
 

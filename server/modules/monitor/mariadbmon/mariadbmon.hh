@@ -23,7 +23,7 @@
 #include <maxbase/http.hh>
 #include <maxbase/stopwatch.hh>
 #include <maxbase/threadpool.hh>
-#include <maxscale/monitor.hh>
+#include <percona-proxy/monitor.hh>
 #include "mariadbserver.hh"
 #include "monitor_commands.hh"
 
@@ -40,7 +40,7 @@ typedef std::unordered_map<int64_t, MariaDBServer*> IdToServerMap;
 typedef std::map<int, ServerArray> CycleMap;
 
 // MariaDB Monitor instance data
-class MariaDBMonitor : public maxscale::Monitor
+class MariaDBMonitor : public percona_proxy::Monitor
 {
 public:
     MariaDBMonitor(const MariaDBMonitor&) = delete;
@@ -421,7 +421,7 @@ private:
 
         // Replication topology detection settings.
 
-        bool assume_unique_hostnames;   /* Are server hostnames consistent between MaxScale and servers */
+        bool assume_unique_hostnames;   /* Are server hostnames consistent between Percona Proxy and servers */
 
         int64_t failcount;      /* Number of ticks master must be down before it's considered
                                  * totally down, allowing failover or master change. */
@@ -523,7 +523,7 @@ private:
     bool try_acquire_locks_this_tick();
     void update_cluster_lock_status();
     int  get_free_locks();
-    bool is_slave_maxscale() const;
+    bool is_slave_percona_proxy() const;
 
     MariaDBServer* find_topology_master_server(RequireRunning req_running, std::string* msg_out = nullptr);
     MariaDBServer* find_best_reach_server(const ServerArray& candidates);

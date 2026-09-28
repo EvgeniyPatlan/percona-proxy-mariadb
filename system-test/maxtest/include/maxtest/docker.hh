@@ -30,7 +30,7 @@ public:
     Docker& operator=(const Docker&) = delete;
 
     /**
-     * Start a docker container on the first MaxScale VM
+     * Start a docker container on the first Percona Proxy VM
      *
      * @param test      TestConnections instance
      * @param image     The image to start
@@ -69,7 +69,7 @@ public:
 
         cmd << image << " " << args;
 
-        auto res = m_test.maxscale->ssh_output(cmd.str());
+        auto res = m_test.percona_proxy->ssh_output(cmd.str());
 
         if (res.rc == 0)
         {
@@ -81,7 +81,7 @@ public:
 
                 for (int i = 0; i < 30; i++)
                 {
-                    res = m_test.maxscale->ssh_output(check);
+                    res = m_test.percona_proxy->ssh_output(check);
 
                     if (res.rc == 0)
                     {
@@ -114,7 +114,7 @@ public:
      */
     int execute(std::string_view cmd)
     {
-        return m_test.maxscale->ssh_node(mxb::cat("docker exec -u root ", m_name, " ", cmd), true);
+        return m_test.percona_proxy->ssh_node(mxb::cat("docker exec -u root ", m_name, " ", cmd), true);
     }
 
     ~Docker()
@@ -134,7 +134,7 @@ private:
 
     bool cleanup()
     {
-        auto res = m_test.maxscale->ssh_output(mxb::cat("docker rm -vf ", m_name));
+        auto res = m_test.percona_proxy->ssh_output(mxb::cat("docker rm -vf ", m_name));
         return res.rc == 0;
     }
 

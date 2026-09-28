@@ -162,7 +162,7 @@ string gen_auth_tool_run_cmd(Debug debug)
             buf[len] = '\0';
             char* directory = dirname(buf);
             total_path = directory;
-            total_path.append("/maxscale_pam_auth_tool");
+            total_path.append("/percona-proxy-pam-auth-tool");
             if (debug == Debug::YES)
             {
                 total_path.append(" -d");

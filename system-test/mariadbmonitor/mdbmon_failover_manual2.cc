@@ -31,18 +31,18 @@ namespace
 namespace x
 {
 
-void connect_maxscale(TestConnections& test)
+void connect_percona_proxy(TestConnections& test)
 {
-    if (test.maxscale->connect_maxscale() != 0)
+    if (test.percona_proxy->connect_percona_proxy() != 0)
     {
         ++test.global_result;
-        throw std::runtime_error("Could not connect to MaxScale.");
+        throw std::runtime_error("Could not connect to Percona Proxy.");
     }
 }
 
 void try_query(TestConnections& test, const char* zQuery)
 {
-    if (test.try_query(test.maxscale->conn_rwsplit, "%s", zQuery) != 0)
+    if (test.try_query(test.percona_proxy->conn_rwsplit, "%s", zQuery) != 0)
     {
         string s("Could not execute query: ");
         s += zQuery;
@@ -66,7 +66,7 @@ void stop_node(MariaDBCluster& nodes, int node)
 
 void fail_query(TestConnections& test)
 {
-    int rv = execute_query(test.maxscale->conn_rwsplit, "BEGIN");
+    int rv = execute_query(test.percona_proxy->conn_rwsplit, "BEGIN");
 
     if (rv == 0)
     {
@@ -84,7 +84,7 @@ namespace
 
 void list_servers(TestConnections& test)
 {
-    test.print_maxctrl("list servers");
+    test.print_percona_proxyctl("list servers");
 }
 
 void create_table(TestConnections& test)
@@ -107,8 +107,8 @@ void insert_data(TestConnections& test)
 
 void run(TestConnections& test)
 {
-    cout << "\nConnecting to MaxScale." << endl;
-    x::connect_maxscale(test);
+    cout << "\nConnecting to Percona Proxy." << endl;
+    x::connect_percona_proxy(test);
 
     cout << "\nCreating table." << endl;
     create_table(test);
@@ -133,8 +133,8 @@ void run(TestConnections& test)
     list_servers(test);
 
     cout << "\nPerforming failover... " << endl;
-    test.maxscale->wait_for_monitor();
-    test.print_maxctrl("call command mysqlmon failover MySQL-Monitor");
+    test.percona_proxy->wait_for_monitor();
+    test.print_percona_proxyctl("call command mysqlmon failover MySQL-Monitor");
 
     list_servers(test);
 
@@ -143,12 +143,12 @@ void run(TestConnections& test)
     x::fail_query(test);
     cout << "Failed as expected." << endl;
 
-    cout << "\nClosing connection to MaxScale." << endl;
-    test.maxscale->close_maxscale_connections();
-    test.maxscale->wait_for_monitor();
+    cout << "\nClosing connection to Percona Proxy." << endl;
+    test.percona_proxy->close_percona_proxy_connections();
+    test.percona_proxy->wait_for_monitor();
 
-    cout << "\nConnecting to MaxScale." << endl;
-    x::connect_maxscale(test);
+    cout << "\nConnecting to Percona Proxy." << endl;
+    x::connect_percona_proxy(test);
 
     list_servers(test);
 

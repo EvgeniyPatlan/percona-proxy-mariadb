@@ -48,7 +48,7 @@ namespace
 
 void create_table(TestConnections& test)
 {
-    MYSQL* pConn = test.maxscale->conn_rwsplit;
+    MYSQL* pConn = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pConn, "DROP TABLE IF EXISTS test.t1");
     test.try_query(pConn, "CREATE TABLE test.t1(id INT)");
@@ -60,7 +60,7 @@ static int i_end = 0;
 
 void insert_data(TestConnections& test)
 {
-    MYSQL* pConn = test.maxscale->conn_rwsplit;
+    MYSQL* pConn = test.percona_proxy->conn_rwsplit;
 
     test.try_query(pConn, "BEGIN");
 
@@ -157,14 +157,14 @@ void check_server_status(TestConnections& test, int N, int down = -1)
 
 void run(TestConnections& test)
 {
-    test.maxscale->wait_for_monitor();
+    test.percona_proxy->wait_for_monitor();
 
     const int N = 4;
 
     check_server_status(test, N);
 
-    cout << "\nConnecting to MaxScale." << endl;
-    test.maxscale->connect_maxscale();
+    cout << "\nConnecting to Percona Proxy." << endl;
+    test.percona_proxy->connect_percona_proxy();
 
     cout << "\nCreating table." << endl;
     create_table(test);
@@ -182,14 +182,14 @@ void run(TestConnections& test)
         cout << "\nStopping slave " << slave << endl;
         test.repl->stop_node(i);
 
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
 
         check_server_status(test, N, i);
 
         cout << "\nStarting slave " << slave << endl;
         test.repl->start_node(i, (char*)"");
 
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
 
         check_server_status(test, N);
     }

@@ -60,5 +60,5 @@ describe("Listener", function () {
     return request.delete(base_url + "/listeners/RW-Split-Listener").should.be.fulfilled;
   });
 
-  after(restartMaxScale);
+  after(restartPerconaProxy);
 });

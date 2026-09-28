@@ -4,7 +4,7 @@
 # static library and the pcre2.h header. If your target requires PCRE2 you
 # need to add a dependeny on the 'pcre2' target by adding add_dependencies(<target> pcre2)
 # to the CMakeLists.txt. You don't need to link against the pcre2 library
-# because the static symbols will be in MaxScale.
+# because the static symbols will be in Percona Proxy.
 
 set(PCRE2_REPO "https://github.com/PCRE2Project/pcre2.git" CACHE STRING "PCRE2 Git repository")
 

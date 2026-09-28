@@ -323,7 +323,7 @@ public:
         bool capped;
         if (optional(key::CAPPED, &capped) && capped)
         {
-            const char* zMessage = "Capped collections are not supported (MaxScale)";
+            const char* zMessage = "Capped collections are not supported (Percona Proxy)";
 
             MXB_WARNING("%s", zMessage);
             throw SoftError(zMessage, error::COMMAND_NOT_SUPPORTED);
@@ -332,7 +332,7 @@ public:
         string view_on;
         if (optional(key::VIEW_ON, &view_on))
         {
-            const char* zMessage = "Views are not supported (MaxScale)";
+            const char* zMessage = "Views are not supported (Percona Proxy)";
 
             MXB_WARNING("%s", zMessage);
             throw SoftError(zMessage, error::COMMAND_NOT_SUPPORTED);
@@ -952,7 +952,7 @@ public:
 
     Response::Status populate_response(DocumentBuilder& doc) override
     {
-        doc.append(kvp(key::ERRMSG, "fsync not supported by MaxScale:nosqlprotocol"));
+        doc.append(kvp(key::ERRMSG, "fsync not supported by Percona Proxy:nosqlprotocol"));
         doc.append(kvp(key::CODE, (int)error::COMMAND_NOT_SUPPORTED));
         doc.append(kvp(key::CODE_NAME, nosql::error::name(error::COMMAND_NOT_SUPPORTED)));
         doc.append(kvp(key::OK, 0));

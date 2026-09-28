@@ -21,13 +21,13 @@
 #include <vector>
 #include <maxbase/log.hh>
 #include <maxbase/maxbase.hh>
-#include <maxscale/mainworker.hh>
+#include <percona-proxy/mainworker.hh>
 #include "../../../../core/internal/server.hh"
 #include "../../../../core/test/test_utils.hh"
 
 using std::string;
 using std::cout;
-using maxscale::MonitorServer;
+using percona_proxy::MonitorServer;
 
 // Maximum sizes for array types
 const int MAX_CYCLE_SIZE = 10;

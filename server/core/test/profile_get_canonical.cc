@@ -12,7 +12,7 @@
  * Public License.
  */
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <maxbase/stopwatch.hh>
 #include <maxsimd/canonical.hh>
 #include <iostream>

@@ -34,8 +34,8 @@ the `monitoruser` parameter, that value will be used instead.
 Password for the user defined with the `user` parameter. If a server defines
 the `monitorpw` parameter, that value will be used instead.
 
-**Note:** In older versions of MaxScale this parameter was called `passwd`. The
-  use of `passwd` was deprecated in MaxScale 2.3.0.
+**Note:** In older versions of Percona Proxy this parameter was called `passwd`. The
+  use of `passwd` was deprecated in Percona Proxy 2.3.0.
 
 ### `servers`
 
@@ -66,7 +66,7 @@ monitor_interval=2s
 
 The interval is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as milliseconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as milliseconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected.
 
 ### `backend_connect_timeout`
@@ -79,7 +79,7 @@ versions a value without a unit may be rejected.
 This parameter controls the timeout for connecting to a monitored server.
 The interval is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second. The minimum value is 1 second.
@@ -98,7 +98,7 @@ backend_connect_timeout=3s
 This parameter controls the timeout for writing to a monitored server.
 The timeout is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second. The minimum value is 1 seconds.
@@ -117,7 +117,7 @@ backend_write_timeout=3s
 This parameter controls the timeout for reading from a monitored server.
 The timeout is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second. The minimum value is 1 second.
@@ -247,7 +247,7 @@ at `/DbData` while both `server2` and `server3` have it mounted on
 With this parameter it can be specified the minimum amount of time
 between disk space checks. The interval is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as milliseconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as milliseconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected.
 The default value is 0, which means that by default the disk space
 will not be checked.
@@ -267,9 +267,9 @@ the checking will still take place at `monitor_interval` intervals.
 
 This command will be executed on a server state change. The parameter should
 be an absolute path to a command or the command should be in the executable
-path. The user running MaxScale should have execution rights to the file itself
+path. The user running Percona Proxy should have execution rights to the file itself
 and the directory it resides in. The script may have placeholders which
-MaxScale will substitute with useful information when launching the script.
+Percona Proxy will substitute with useful information when launching the script.
 
 The placeholders and their substitution results are:
 
@@ -304,7 +304,7 @@ The above script could be executed as:
 
 See section [Script example](#script-example) below for an example script.
 
-Any output by the executed script will be logged into the MaxScale log. Each
+Any output by the executed script will be logged into the Percona Proxy log. Each
 outputted line will be logged as a separate log message.
 
 The log level on which the messages are logged depends on the format of the
@@ -315,7 +315,7 @@ the message will be logged on the notice level. Whitespace before, after or
 between the keyword and the colon is ignored and the matching is
 case-insensitive.
 
-Currently, the script must not execute any of the following MaxCtrl
+Currently, the script must not execute any of the following Percona Proxyctl
 calls as they cause a deadlock:
 
 * `alter monitor` to the monitor executing the script
@@ -331,7 +331,7 @@ calls as they cause a deadlock:
 
 The timeout for the executed script. The interval is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the timeout is seconds, a timeout specified in milliseconds will be rejected,
 even if the duration is longer than a second.
@@ -381,7 +381,7 @@ new_slave   |A new Replica was detected
 
 The maximum journal file age. The interval is specified as documented
 [here](../Getting-Started/Configuration-Guide.md#durations). If no explicit unit
-is provided, the value is interpreted as seconds in MaxScale 2.4. In subsequent
+is provided, the value is interpreted as seconds in Percona Proxy 2.4. In subsequent
 versions a value without a unit may be rejected. Note that since the granularity
 of the max age is seconds, a max age specified in milliseconds will be rejected,
 even if the duration is longer than a second.
@@ -392,10 +392,10 @@ starts with no prior knowledge of the servers.
 
 ## Monitor Crash Safety
 
-Starting with MaxScale 2.2.0, the monitor modules keep an on-disk journal of the
+Starting with Percona Proxy 2.2.0, the monitor modules keep an on-disk journal of the
 latest server states. This change makes the monitors crash-safe when options
 that introduce states are used. It also allows the monitors to retain stateful
-information when MaxScale is restarted.
+information when Percona Proxy is restarted.
 
 For MySQL monitor, options that introduce states into the monitoring process are
 the `detect_stale_master` and `detect_stale_slave` options, both of which are
@@ -403,11 +403,11 @@ enabled by default. Galeramon has the `disable_master_failback` parameter which
 introduces a state.
 
 The default location for the server state journal is in
-`/var/lib/maxscale/<monitor name>/monitor.dat` where `<monitor name>` is the
-name of the monitor section in the configuration file. If MaxScale crashes or is
-shut down in an uncontrolled fashion, the journal will be read when MaxScale is
+`/var/lib/percona-proxy/<monitor name>/monitor.dat` where `<monitor name>` is the
+name of the monitor section in the configuration file. If Percona Proxy crashes or is
+shut down in an uncontrolled fashion, the journal will be read when Percona Proxy is
 started. To skip the recovery process, manually delete the journal file before
-starting MaxScale.
+starting Percona Proxy.
 
 ## Script example
 
@@ -420,13 +420,13 @@ file and sends it as email.
 type=monitor
 module=mariadbmon
 servers=C1N1,C1N2,C1N3
-user=maxscale
+user=percona-proxy
 password=password
 monitor_interval=10s
-script=/path/to/maxscale_monitor_alert_script.sh --initiator=$INITIATOR --parent=$PARENT --children=$CHILDREN --event=$EVENT --node_list=$NODELIST --list=$LIST --master_list=$MASTERLIST --slave_list=$SLAVELIST --synced_list=$SYNCEDLIST
+script=/path/to/percona_proxy_monitor_alert_script.sh --initiator=$INITIATOR --parent=$PARENT --children=$CHILDREN --event=$EVENT --node_list=$NODELIST --list=$LIST --master_list=$MASTERLIST --slave_list=$SLAVELIST --synced_list=$SYNCEDLIST
 ```
 
-File "maxscale_monitor_alert_script.sh":
+File "percona_proxy_monitor_alert_script.sh":
 ```
 #!/usr/bin/env bash
 
@@ -484,5 +484,5 @@ EOM
 # print message to file
 echo "$MESSAGE" > /path/to/script_output.txt
 # email the message
-echo "$MESSAGE" | mail -s "MaxScale received $event event for initiator $initiator." mariadb_admin@domain.com
+echo "$MESSAGE" | mail -s "Percona Proxy received $event event for initiator $initiator." mariadb_admin@domain.com
 ```

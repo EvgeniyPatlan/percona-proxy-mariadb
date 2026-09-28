@@ -15,9 +15,9 @@
 #include "pinloki.hh"
 #include "pinlokisession.hh"
 
-#include <maxscale/protocol/mariadb/resultset.hh>
-#include <maxscale/json.hh>
-#include <maxscale/secrets.hh>
+#include <percona-proxy/protocol/mariadb/resultset.hh>
+#include <percona-proxy/json.hh>
+#include <percona-proxy/secrets.hh>
 
 #include <fstream>
 #include <sys/types.h>
@@ -268,7 +268,7 @@ std::string Pinloki::change_master(const parser::ChangeMasterValues& values)
     {
         MXB_SINFO("Turning off select_master functionality"
                   " due to 'CHANGE MASTER TO' command. select_master"
-                  " will take effect again in the next MaxScale restart.");
+                  " will take effect again in the next Percona Proxy restart.");
     }
 
     m_config.disable_select_master();

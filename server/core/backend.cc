@@ -12,11 +12,11 @@
  * Public License.
  */
 
-#include <maxscale/backend.hh>
+#include <percona-proxy/backend.hh>
 
 #include <sstream>
 
-using namespace maxscale;
+using namespace percona_proxy;
 
 Backend::Backend(mxs::Endpoint* b)
     : m_backend(b)

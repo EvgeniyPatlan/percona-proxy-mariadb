@@ -21,7 +21,7 @@
 #include <maxbase/json.hh>
 #include <maxbase/worker.hh>
 #include <maxsql/mariadb_connector.hh>
-#include <maxscale/sqlite3.hh>
+#include <percona-proxy/sqlite3.hh>
 #include "nosqlscram.hh"
 
 class Configuration;

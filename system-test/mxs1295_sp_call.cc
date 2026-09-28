@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 {
     TestConnections test(argc, argv);
 
-    test.maxscale->connect_maxscale();
+    test.percona_proxy->connect_percona_proxy();
     test.repl->connect();
 
     test.tprintf("Create the stored procedure and check that it works");
@@ -46,12 +46,12 @@ int main(int argc, char* argv[])
 
     int master = get_server_id(test.repl->nodes[0]);
     int slave = get_server_id(test.repl->nodes[1]);
-    int result = get_server_id(test.maxscale->conn_rwsplit);
+    int result = get_server_id(test.percona_proxy->conn_rwsplit);
 
     test.add_result(result != slave, "The query should be routed to a slave(%d): %d", slave, result);
-    test.try_query(test.maxscale->conn_rwsplit, "USE test");
-    test.try_query(test.maxscale->conn_rwsplit, "CALL multi()");
-    result = get_server_id(test.maxscale->conn_rwsplit);
+    test.try_query(test.percona_proxy->conn_rwsplit, "USE test");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CALL multi()");
+    result = get_server_id(test.percona_proxy->conn_rwsplit);
     test.add_result(result != master, "The query should be routed to the master(%d): %d", master, result);
 
     return test.global_result;

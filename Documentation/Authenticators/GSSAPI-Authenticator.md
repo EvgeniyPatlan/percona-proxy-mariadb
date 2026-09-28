@@ -2,13 +2,13 @@
 
 GSSAPI is an authentication protocol that is commonly implemented with Kerberos
 on Unix or Active Directory on Windows. This document describes GSSAPI
-authentication in MaxScale. The authentication module name in MaxScale is
+authentication in Percona Proxy. The authentication module name in Percona Proxy is
 *GSSAPIAuth*.
 
 ## Preparing the GSSAPI system
 
 For Unix systems, the usual GSSAPI implementation is Kerberos. This is a short
-guide on how to set up Kerberos for MaxScale.
+guide on how to set up Kerberos for Percona Proxy.
 
 The first step is to configure MariaDB to use GSSAPI authentication. The MariaDB
 documentation for the
@@ -16,7 +16,7 @@ documentation for the
 is a good example on how to set it up.
 
 The next step is to copy the keytab file from the server where MariaDB is
-installed to the server where MaxScale is located. The keytab file must be
+installed to the server where Percona Proxy is located. The keytab file must be
 placed in the configured default location which almost always is
 `/etc/krb5.keytab`. Alternatively, the keytab filepath can be given as an
 authenticator option.
@@ -69,7 +69,7 @@ authenticator_options=principal_name=mymariadb@EXAMPLE.COM,gssapi_keytab_path=/h
 ## Implementation details
 
 Read the [Authentication Modules](Authentication-Modules.md) document for more
-details on how authentication modules work in MaxScale.
+details on how authentication modules work in Percona Proxy.
 
 ### GSSAPI authentication
 

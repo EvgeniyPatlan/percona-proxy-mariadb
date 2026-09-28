@@ -35,20 +35,20 @@ int main(int argc, char** argv)
         "  COMMIT;\n"
         "END\n";
 
-    test.maxscale->connect();
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE IF EXISTS test.t1");
-    test.try_query(test.maxscale->conn_rwsplit, "CREATE TABLE test.t1(id INT)");
-    test.try_query(test.maxscale->conn_rwsplit, "%s", sql);
+    test.percona_proxy->connect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE IF EXISTS test.t1");
+    test.try_query(test.percona_proxy->conn_rwsplit, "CREATE TABLE test.t1(id INT)");
+    test.try_query(test.percona_proxy->conn_rwsplit, "%s", sql);
 
     // Do the select inside a transacttion so that it gets routed to the master
-    test.try_query(test.maxscale->conn_rwsplit, "BEGIN");
-    test.expect(execute_query_check_one(test.maxscale->conn_rwsplit, "SELECT id FROM test.t1", "2") == 0,
+    test.try_query(test.percona_proxy->conn_rwsplit, "BEGIN");
+    test.expect(execute_query_check_one(test.percona_proxy->conn_rwsplit, "SELECT id FROM test.t1", "2") == 0,
                 "Table should contain one row with value 2");
-    test.try_query(test.maxscale->conn_rwsplit, "COMMIT");
+    test.try_query(test.percona_proxy->conn_rwsplit, "COMMIT");
 
-    test.try_query(test.maxscale->conn_rwsplit, "DROP TABLE test.t1");
-    test.maxscale->disconnect();
+    test.try_query(test.percona_proxy->conn_rwsplit, "DROP TABLE test.t1");
+    test.percona_proxy->disconnect();
 
-    test.check_maxscale_alive();
+    test.check_percona_proxy_alive();
     return test.global_result;
 }

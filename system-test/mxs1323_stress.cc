@@ -28,7 +28,7 @@ void* async_query(void* data)
 
     while (running && test->global_result == 0)
     {
-        MYSQL* conn = test->maxscale->open_rwsplit_connection();
+        MYSQL* conn = test->percona_proxy->open_rwsplit_connection();
 
         for (int i = 0; i < 50 && running && test->global_result == 0; i++)
         {
@@ -51,8 +51,8 @@ int main(int argc, char* argv[])
     std::stringstream ss;
 
     ss << "CREATE OR REPLACE TABLE test.t1 (id INT)";
-    test.maxscale->connect_maxscale();
-    test.try_query(test.maxscale->conn_rwsplit, "%s", ss.str().c_str());
+    test.percona_proxy->connect_percona_proxy();
+    test.try_query(test.percona_proxy->conn_rwsplit, "%s", ss.str().c_str());
 
     ss.str("");
     ss << "INSERT INTO test.t1 VALUES (0)";
@@ -60,9 +60,9 @@ int main(int argc, char* argv[])
     {
         ss << ",(" << i << ")";
     }
-    test.try_query(test.maxscale->conn_rwsplit, "%s", ss.str().c_str());
+    test.try_query(test.percona_proxy->conn_rwsplit, "%s", ss.str().c_str());
 
-    test.maxscale->close_maxscale_connections();
+    test.percona_proxy->close_percona_proxy_connections();
 
     if (test.global_result)
     {

@@ -27,16 +27,16 @@ void add_servers(TestConnections* test)
 {
     test->tprintf("Adding the servers");
     test->reset_timeout();
-    test->check_maxctrl("link monitor " MONITOR_NAME " server1 server2 server3 server4 ");
-    test->check_maxctrl("link service " SERVICE_NAME " server1 server2 server3 server4 ");
+    test->check_percona_proxyctl("link monitor " MONITOR_NAME " server1 server2 server3 server4 ");
+    test->check_percona_proxyctl("link service " SERVICE_NAME " server1 server2 server3 server4 ");
 }
 
 void remove_servers(TestConnections* test)
 {
     test->tprintf("Remove the servers");
     test->reset_timeout();
-    test->check_maxctrl("unlink monitor " MONITOR_NAME " server1 server2 server3 server4 ");
-    test->check_maxctrl("unlink service " SERVICE_NAME " server1 server2 server3 server4 ");
+    test->check_percona_proxyctl("unlink monitor " MONITOR_NAME " server1 server2 server3 server4 ");
+    test->check_percona_proxyctl("unlink service " SERVICE_NAME " server1 server2 server3 server4 ");
 }
 
 void destroy_servers(TestConnections* test)
@@ -46,7 +46,7 @@ void destroy_servers(TestConnections* test)
 
     for (int i = 0; i < 4; i++)
     {
-        test->check_maxctrl("destroy server server" + std::to_string(i + 1));
+        test->check_percona_proxyctl("destroy server server" + std::to_string(i + 1));
     }
 }
 
@@ -55,16 +55,16 @@ void do_query(TestConnections* test, bool should_fail)
     test->tprintf("Trying to query, expecting %s", should_fail ? "failure" : "success");
     test->reset_timeout();
 
-    test->maxscale->connect_maxscale();
+    test->percona_proxy->connect_percona_proxy();
 
-    bool failed = execute_query(test->maxscale->conn_rwsplit, "select @@server_id") == 0;
+    bool failed = execute_query(test->percona_proxy->conn_rwsplit, "select @@server_id") == 0;
 
     const char* msg = should_fail ?
         "Query was successful when failure was expected." :
         "Query failed when success was expected.";
 
     test->add_result(failed == should_fail, "%s", msg);
-    test->maxscale->close_maxscale_connections();
+    test->percona_proxy->close_percona_proxy_connections();
 
 }
 
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 
     for (int i = 0; i < 4; i++)
     {
-        test->check_maxctrl("create server server" + std::to_string(i + 1)
+        test->check_percona_proxyctl("create server server" + std::to_string(i + 1)
                             + " 127.0.0.1 999" + std::to_string(i + 1));
     }
 
@@ -95,17 +95,17 @@ int main(int argc, char* argv[])
         std::stringstream ss;
         ss << "create server server" << i + 1 << " "
            << test->repl->ip_private(i) << " " << test->repl->port(i);
-        test->check_maxctrl(ss.str());
+        test->check_percona_proxyctl(ss.str());
     }
 
     /**  Add the servers again */
     add_servers(test);
 
     test->tprintf("Wait for the monitor to see the new servers");
-    test->maxscale->wait_for_monitor();
+    test->percona_proxy->wait_for_monitor();
 
     test->tprintf("Reload users");
-    test->check_maxctrl("reload service rwsplit-service");
+    test->check_percona_proxyctl("reload service rwsplit-service");
 
     do_query(test, false);
 
@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
 
     do_query(test, true);
 
-    test->maxscale->expect_running_status(true);
+    test->percona_proxy->expect_running_status(true);
     int rval = test->global_result;
     delete test;
     return rval;

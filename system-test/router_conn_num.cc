@@ -31,7 +31,7 @@
 
 /*
  *  lisu87 2014-09-08 16:50:29 UTC
- *  After starting maxscale and putting some traffic to it, the number of current connections to master server
+ *  After starting percona-proxy and putting some traffic to it, the number of current connections to master server
  * are still going up:
  *
  *  Server 0x29e6330 (carlsberg)
@@ -110,22 +110,22 @@
  *
  *  When rwsplit listens port 3333 and when a command like :
  *
- *  mysql -h 127.0.0.1 -P 3333 -u maxscaleuser -ppwd -e "select count(user) from mysql.user"
+ *  mysql -h 127.0.0.1 -P 3333 -u percona_proxy_user -ppwd -e "select count(user) from mysql.user"
  *
- *  is executed client connects to MaxScale:3333, and MaxScale connects to master and slave(s). So connection
+ *  is executed client connects to Percona Proxy:3333, and Percona Proxy connects to master and slave(s). So connection
  * count increases in each of those backends despite of query type.
  *
  *  If you already have a rwsplit session, no new connections should be created when new queries are executed.
  *  Comment 7 Vilho Raatikka 2014-09-11 12:34:26 UTC
- *  I built MaxScale from releaes-1.0beta-refresh branch and tested by running 5000 prepared statements in one
- * session to MaxScale/RWSplit and executing 'show servers' in another window. During the run the number of
+ *  I built Percona Proxy from releaes-1.0beta-refresh branch and tested by running 5000 prepared statements in one
+ * session to Percona Proxy/RWSplit and executing 'show servers' in another window. During the run the number of
  * current connections was 1 in each server and after the run all 'current' counters show 0.
  *
  *  If you want me to try with some other use case, describe it and I'll give it a try.
  *  Comment 8 lisu87 2014-09-11 12:45:37 UTC
  *  Thanks, Vilho.
  *
- *  I'm building maxscale from that branch now and will retest shortly.
+ *  I'm building percona-proxy from that branch now and will retest shortly.
  *  Comment 9 lisu87 2014-09-11 14:45:26 UTC
  *  Confirmed. It works fine with 1.0beta-refresh.
  *
@@ -172,20 +172,20 @@ int main(int argc, char* argv[])
 
     Test->repl->connect();
 
-    conn = Test->maxscale->open_rwsplit_connection();
+    conn = Test->percona_proxy->open_rwsplit_connection();
     execute_query(conn, (char*) "USE test;");
     create_t1(conn);
     mysql_close(conn);
     Test->tprintf("Table t1 is created\n");
-    const char* mxs_ip = Test->maxscale->ip_private();
-    const char* mxs_host = Test->maxscale->hostname();
+    const char* mxs_ip = Test->percona_proxy->ip_private();
+    const char* mxs_host = Test->percona_proxy->hostname();
 
     for (i = 0; i < conn_N; i++)
     {
         Test->reset_timeout();
-        rwsplit_conn[i] = Test->maxscale->open_rwsplit_connection();
-        master_conn[i] = Test->maxscale->open_readconn_master_connection();
-        slave_conn[i] = Test->maxscale->open_readconn_slave_connection();
+        rwsplit_conn[i] = Test->percona_proxy->open_rwsplit_connection();
+        master_conn[i] = Test->percona_proxy->open_readconn_master_connection();
+        slave_conn[i] = Test->percona_proxy->open_readconn_slave_connection();
         sprintf(sql, "INSERT INTO t1 (x1, fl) VALUES(%d, 1);", i);
         execute_query(rwsplit_conn[i], "%s", sql);
         sprintf(sql, "INSERT INTO t1 (x1, fl) VALUES(%d, 2);", i);
@@ -271,7 +271,7 @@ int main(int argc, char* argv[])
     for (i = 0; i < conn_N; i++)
     {
         Test->reset_timeout();
-        slave_conn[i] = Test->maxscale->open_readconn_slave_connection();
+        slave_conn[i] = Test->percona_proxy->open_readconn_slave_connection();
         sprintf(sql, "SELECT * FROM t1");
         execute_query(slave_conn[i], "%s", sql);
         fflush(stdout);
@@ -319,7 +319,7 @@ void* parall_traffic(void* ptr)
     int i;
     for (i = 0; i < conn_N; i++)
     {
-        slave_conn1[i] = Test->maxscale->open_readconn_slave_connection();
+        slave_conn1[i] = Test->percona_proxy->open_readconn_slave_connection();
         execute_query(slave_conn1[i], "SELECT * FROM t1");
     }
 

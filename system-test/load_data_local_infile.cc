@@ -16,7 +16,7 @@
  * Test LOAD DATA LOCAL INFILE.
  *
  * 1. Create a 50Mb test file
- * 2. Load and read it through MaxScale
+ * 2. Load and read it through Percona Proxy
  */
 
 
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 
 void test_main(TestConnections& test)
 {
-    auto& mxs = *test.maxscale;
+    auto& mxs = *test.percona_proxy;
     auto& repl = *test.repl;
 
     // MXS-4388: Next command hangs after LOAD DATA LOCAL INFILE
@@ -73,8 +73,8 @@ void test_main(TestConnections& test)
         }
         if (test.ok())
         {
-            // The last load should take 20 seconds. MaxScale is only running 1 routing thread for
-            // this test. Check that MaxScale is still responsive for other clients while processing
+            // The last load should take 20 seconds. Percona Proxy is only running 1 routing thread for
+            // this test. Check that Percona Proxy is still responsive for other clients while processing
             // the load.
 
             std::atomic_bool keep_running {true};
@@ -89,7 +89,7 @@ void test_main(TestConnections& test)
                 while (keep_running && test.ok())
                 {
                     mxb::StopWatch timer;
-                    auto test_conn = test.maxscale->open_rwsplit_connection2();
+                    auto test_conn = test.percona_proxy->open_rwsplit_connection2();
                     auto res = test_conn->simple_query("select rand();");
                     test.expect(!res.empty(), "Query during LOAD DATA failed.");
                     auto dur = timer.split();
@@ -102,7 +102,7 @@ void test_main(TestConnections& test)
                 test.tprintf("Queried %i times during LOAD DATA. Max query duration: %f seconds.",
                              i, max_dur_s);
                 // The following may need tuning if tester machine network or speed changes significantly.
-                // The idea is to detect any big changes in MaxScale behavior.
+                // The idea is to detect any big changes in Percona Proxy behavior.
                 test.expect(i > 50 && i < 3000, "Unexpected number of queries: %i.", i);
                 test.expect(max_dur_s > 0.001 && max_dur_s < 5, "Unexpected max query duration: %f.",
                             max_dur_s);
@@ -114,7 +114,7 @@ void test_main(TestConnections& test)
             tester_thread.join();
         }
     }
-    mxs.maxctrl("call command mariadbmon reset-replication MariaDB-Monitor server1");
+    mxs.percona_proxyctl("call command mariadbmon reset-replication MariaDB-Monitor server1");
     mxs.sleep_and_wait_for_monitor(1, 1);
     mxs.check_print_servers_status(mxt::ServersInfo::default_repl_states());
 }
@@ -124,7 +124,7 @@ void test_load_data(TestConnections& test, size_t datasize, size_t expected_rows
     const char table_name[] = "test.dump";
     if (create_datafile(test, datasize))
     {
-        auto& mxs = *test.maxscale;
+        auto& mxs = *test.percona_proxy;
         auto conn = mxs.open_rwsplit_connection2();
         conn->cmd_f("DROP TABLE IF EXISTS %s;", table_name);
         conn->cmd_f("CREATE TABLE %s (a int, b varchar(80), c varchar(80));", table_name);
@@ -170,7 +170,7 @@ bool test_repeated_ldli(TestConnections& test)
 {
     if (create_datafile(test, 1024))
     {
-        auto conn = test.maxscale->open_rwsplit_connection2();
+        auto conn = test.percona_proxy->open_rwsplit_connection2();
         const char table_name[] = "test.dump";
         conn->cmd_f("CREATE OR REPLACE TABLE %s (a int, b varchar(80), c varchar(80));", table_name);
         conn->cmd("SET AUTOCOMMIT=0");

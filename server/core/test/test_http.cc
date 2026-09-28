@@ -15,7 +15,7 @@
 #include <iostream>
 
 #include <maxbase/assert.hh>
-#include <maxscale/http.hh>
+#include <percona-proxy/http.hh>
 
 using std::string;
 using std::cout;

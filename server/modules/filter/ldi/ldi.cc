@@ -15,7 +15,7 @@
 #include "ldi.hh"
 #include "ldisession.hh"
 
-#include <maxscale/service.hh>
+#include <percona-proxy/service.hh>
 
 namespace cnf = mxs::config;
 

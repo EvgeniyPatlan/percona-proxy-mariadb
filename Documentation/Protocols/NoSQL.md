@@ -40,11 +40,11 @@ Since _nosqlprotocol_ is a _listener_, there must be a _service_ to which
 the client requests will be sent. _Nosqlprotocol_ places no limitations
 on what filters, routers or backends can be used.
 
-To configure the same listener with MaxCtrl, the parameters must be passed in a
+To configure the same listener with Percona Proxyctl, the parameters must be passed in a
 JSON object in the following manner:
 
 ```
-maxctrl create listener TheService MongoDB-Listener --protocol=nosqlprotocol 'nosqlprotocol={"user":"the_user", "password": "the_password"}'
+percona-proxyctl create listener TheService MongoDB-Listener --protocol=nosqlprotocol 'nosqlprotocol={"user":"the_user", "password": "the_password"}'
 ```
 
 All the parameters that the nosqlprotocol module takes must be passed in the
@@ -321,7 +321,7 @@ At this point `nosqlprotocol.authentication_required` and
 `nosqlprotocol.authorization_enabled` should both be `false`. Note that
 as those are their default values, they do not have to be specified.
 
-Start MaxScale and connect to it with the MongoDB® command line client
+Start Percona Proxy and connect to it with the MongoDB® command line client
 ```
 $ mongo --port 17017
 ...
@@ -344,12 +344,12 @@ switched to db admin
 { "ok" : 1 }
 ```
 
-Now you should shutdown MaxScale and add the entries
+Now you should shutdown Percona Proxy and add the entries
 ```
 nosqlprotocol.authentication_required=true
 nosqlprotocol.authorization_enabled=true
 ```
-and start MaxScale.
+and start Percona Proxy.
 
 The `nosqlprotocol.user` and `nosqlprotocol.password` can be removed but
 as they will be ignored with `nosqlprotocol.authentication_required=true`
@@ -391,7 +391,7 @@ at first startup, nosqlprotocol will create the corresponding
 NoSQL user, which will enable the authenticated and authorized
 use of nosqlprotocol.
 
-When MaxScale is started, if the following hold
+When Percona Proxy is started, if the following hold
 
 * `nosqlprotocol.authentication_required` and
   `nosqlprotocol.authorization_enabled` are true in the configuration
@@ -399,7 +399,7 @@ When MaxScale is started, if the following hold
 * `nosqlprotocol.user` and `nosqlprotocol.password` are provided, and
 * there are **no** NoSQL users in the NoSQL account database.
 
-then, MaxScale will
+then, Percona Proxy will
 
 * wait until the _primary_ of the service pointed to by the listener
   is available,
@@ -507,7 +507,7 @@ nosqlprotocol.authentication_required=true
 nosqlprotocol.authorization_enabled=true
 ...
 ```
-At MaxScale startup, the NoSQL user will then be created.
+At Percona Proxy startup, the NoSQL user will then be created.
 
 #### Examples
 
@@ -534,11 +534,11 @@ nosqlprotocol.password=nosql_password
 nosqlprotocol.authentication_required=true
 nosqlprotocol.authorization_enabled=true
 ```
-and start MaxScale.
+and start Percona Proxy.
 
 As the creation of the initial user can be made only after the
 monitor for the listener's service has marked one server as primary,
-whether the creation succeeded or not must be checked from MaxScale'
+whether the creation succeeded or not must be checked from Percona Proxy'
 log file:
 ```
 ... notice : [nosqlprotocol] Created initial NoSQL user 'admin.nosql_admin'.
@@ -621,11 +621,11 @@ nosqlprotocol.password=test_password
 nosqlprotocol.authentication_required=true
 nosqlprotocol.authorization_enabled=true
 ```
-and start MaxScale.
+and start Percona Proxy.
 
 As the creation of the initial user can be made only after the
 monitor for the listener's service has marked one server as primary,
-whether the creation succeeded or not must be checked from MaxScale'
+whether the creation succeeded or not must be checked from Percona Proxy'
 log file:
 ```
 ... notice : [nosqlprotocol] Created initial NoSQL user 'test.test_user'.
@@ -692,8 +692,8 @@ with sha256 for use with the `SCRAM-SHA-256` authentication mechanism
 (if that is enabled for the user).
 
 The account information can be stored _privately_, in which case it
-can be used only by a particular MaxScale instance, or in a
-_shared_ manner, in which case multiple MaxScale instances can
+can be used only by a particular Percona Proxy instance, or in a
+_shared_ manner, in which case multiple Percona Proxy instances can
 share the information and a user created/added on one instance
 can be used on another.
 
@@ -702,9 +702,9 @@ can be used on another.
 In the private case, the account information of nosqlprotocol is
 stored in an [sqlite3](https://sqlite.org/index.html) database
 whose name is `<libdir>/nosqlprotocol/<listener-name>-v1.db`,
-where `<libdir>` is the _libdir_ of MaxScale, typically
-`/var/lib/maxscale`, `<listener-name>` is the name of the
-listener section in the MaxScale configuration file, and `-v1`
+where `<libdir>` is the _libdir_ of Percona Proxy, typically
+`/var/lib/percona-proxy`, `<listener-name>` is the name of the
+listener section in the Percona Proxy configuration file, and `-v1`
 a suffix for making schema evolution easier, should there be
 a need for that.
 
@@ -727,9 +727,9 @@ renamed.
 
 At first startup, the `nosqlprotocol` directory and
 the file `NoSQL-Listener-v1.db` will be created. They will
-be created with file permissions that only allow MaxScale
+be created with file permissions that only allow Percona Proxy
 access. At subsequent startups the permissions will be checked
-and MaxScale will refuse to start if the permissions allow
+and Percona Proxy will refuse to start if the permissions allow
 access to others.
 
 **We strongly recommend that no manual modifications are made
@@ -751,11 +751,11 @@ NoSQL listener resides. The primary of the cluster will be used
 both for reading and writing data.
 
 A table whose name is the same as the listener's name in the
-MaxScale configuration will be created in the database
+Percona Proxy configuration will be created in the database
 specified with the [authentication_db](#authentication_db)
 parameter. If it is not specified explicitly, the default is
 `nosqlprotocol`. The name of the table will be the name of
-the listener section in the MaxScale configuration file.
+the listener section in the Percona Proxy configuration file.
 
 For instance, given a configuration like
 ```
@@ -778,13 +778,13 @@ user specified with [authentication_user](#authentication_user)
 must have sufficient grants to be able to do that.
 
 `nosqlprotocol` will store in the table, data that allow
-any MaxScale to authenticate a MongoDB® client, irrespective
-of which MaxScale instance was used when the user was created.
+any Percona Proxy to authenticate a MongoDB® client, irrespective
+of which Percona Proxy instance was used when the user was created.
 
 `nosqlprotocol` also stores in the table the SHA1 of a user's
 password, to be able to authenticate against the MariaDB server.
 Therefore it is **strongly** suggested to enable encryption key
-management in MaxScale and to provide an authentication
+management in Percona Proxy and to provide an authentication
 key ID with [authentication_key_id](#authentication_key_id) so
 that the data will be encrypted.
 
@@ -907,7 +907,7 @@ have the grants required to do so.
 
 The encryption key ID, using which the NoSQL account information should be
 encrypted with when stored in the MariaDB server. If an encryption key ID is
-given, the encryption key manager in MaxScale must also be enabled.
+given, the encryption key manager in Percona Proxy must also be enabled.
 
 The encryption key must be a 256-bit key. Keys of shorter length are rejected
 as invalid encryption keys.
@@ -952,10 +952,10 @@ MariaDB server.
 Specifies the _host_ to be used when a MariaDB user is created via nosqlprotocol.
 By default all users are created as `...@'%'`, which means that it is possible to
 connect to the MariaDB server from any host using the credentials of the created
-user. For tighter security, the IP-address of the MaxScale host can be specified.
+user. For tighter security, the IP-address of the Percona Proxy host can be specified.
 
 NOTE: This value does **not** specify from which host it is allowed to connect to
-MaxScale.
+Percona Proxy.
 
 ## `on_unknown_command`
 
@@ -1756,7 +1756,7 @@ fsync| any | Ignored
 The response will always be
 ```
 {
-  "errmsg" : "fsync not supported by MaxScale:nosqlprotocol",
+  "errmsg" : "fsync not supported by Percona Proxy:nosqlprotocol",
   "code" : 115,
   "codeName" : "CommandNotSupported",
   "ok" : 0
@@ -1842,7 +1842,7 @@ Field | Type | Description
 ------|------|------------
 buildInfo | any | Ignored.
 
-The command returns a document containing the stable fields. In addition, there is a field `maxscale` whose value is the MaxScale version, expressed as a string.
+The command returns a document containing the stable fields. In addition, there is a field `percona-proxy` whose value is the Percona Proxy version, expressed as a string.
 
 ### explain
 
@@ -1942,7 +1942,7 @@ The following document will always be returned:
 { "state" : "undecided", "ok" : 1 }
 ```
 
-## MaxScale Specific Commands
+## Percona Proxy Specific Commands
 
 ### mxsAddUser
 
@@ -2071,7 +2071,7 @@ If the database creation fails, the command returns an error document.
 ##### **mxsDiagnose**
 
 The `mxsDiagnose` command provides diagnostics for any other command; that is, how
-MaxScale will handle that command.
+Percona Proxy will handle that command.
 
 #### Syntax
 
@@ -2117,7 +2117,7 @@ provided as argument. For example:
 }
 ```
 `kind` specifies of what kind the command is; an _immediate_ command is one for
-which MaxScale autonomously can generate the response, a _single_ command is one
+which Percona Proxy autonomously can generate the response, a _single_ command is one
 where the command will cause a single SQL statement to be sent to the backend, and
 a _multi_ command is one where potentially multiple SQL statements will be sent to
 the backend.
@@ -2367,9 +2367,9 @@ integer.
 # Caching
 
 The conversion of the BSON used in the communication between the client and
-MaxScale, to the SQL used in the communication between MaxScale and the server
+Percona Proxy, to the SQL used in the communication between Percona Proxy and the server
 carries a not insignificant cost, as does the conversion of result sets
-returned by the server to the BSON returned by MaxScale to the client. The
+returned by the server to the BSON returned by Percona Proxy to the client. The
 regular [cache filter](../Filters/Cache.md) provides no remedy for this, as
 it is located after the protocol and uses SQL as the key and stores result
 sets as values.
@@ -2435,15 +2435,15 @@ test-suite pass.
 # Example
 
 The following is a minimal setup for getting _nosqlprotocol_ up and
-running. It is assumed the reader knows how to configure MaxScale for
+running. It is assumed the reader knows how to configure Percona Proxy for
 normal use. If not, please start with the
-[MaxScale tutorial](../Tutorials/MaxScale-Tutorial.md).
-Note that as _nosqlprotocol_ is the first component in the MaxScale
+[Percona Proxy tutorial](../Tutorials/Percona Proxy-Tutorial.md).
+Note that as _nosqlprotocol_ is the first component in the Percona Proxy
 routing chain, it can be used with all routers and filters.
 
-## Configuring MaxScale
+## Configuring Percona Proxy
 
-In the following it is assumed that MaxScale already has been configured
+In the following it is assumed that Percona Proxy already has been configured
 for normal use and that there exists a _service_ `[TheService]`.
 ```
 [TheService]
@@ -2461,7 +2461,7 @@ port=17017
 The values `the_user` and `the_password` must be replaced with the
 actual credentials to be used for every MongoDB® client that connects.
 
-If MaxScale is now started, the following entry should appear in the
+If Percona Proxy is now started, the following entry should appear in the
 log file.
 ```
 ... notice : (NoSQL-Listener); Listening for connections at [127.0.0.1]:17017
@@ -2583,7 +2583,7 @@ const uri = "mongodb+srv://<user>:<password>@<cluster-url>?writeConcern=majority
 ```
 to
 ```
-const uri = "mongodb://<maxscale-ip>:17017";
+const uri = "mongodb://<percona-proxy-ip>:17017";
 ```
 with the assumption that the default _nosqlprotocol_ port is used.
 

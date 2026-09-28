@@ -23,8 +23,8 @@
 
 #include <blr_constants.hh>
 
-#include <maxscale/pcre2.hh>
-#include <maxscale/service.hh>
+#include <percona-proxy/pcre2.hh>
+#include <percona-proxy/service.hh>
 
 #include "tokenizer.hh"
 #include "config.hh"

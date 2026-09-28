@@ -16,8 +16,8 @@
 #include <unistd.h>
 #include <iostream>
 #include <mysql.h>
-#include <maxscale/config.hh>
-#include <maxscale/protocol/mariadb/maxscale.hh>
+#include <percona-proxy/config.hh>
+#include <percona-proxy/protocol/mariadb/percona-proxy.hh>
 #include "../internal/server.hh"
 
 using namespace std;

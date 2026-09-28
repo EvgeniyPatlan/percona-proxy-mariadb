@@ -12,7 +12,7 @@ following format (example created by `CREATE TABLE test.t1(id INT)`):
 
 ```javascript
 {
-  "namespace": "MaxScaleChangeDataSchema.avro",
+  "namespace": "PerconaProxyChangeDataSchema.avro",
   "type": "record",
   "name": "ChangeRecord",
   "table": "t2",              // name of the table
@@ -102,11 +102,11 @@ format (example created by `INSERT INTO test.t1 VALUES (1)`):
 }
 ```
 
-The `table_name` and `table_schema` fields were added in MaxScale 2.5.3. These
+The `table_name` and `table_schema` fields were added in Percona Proxy 2.5.3. These
 contain the table name and schema the event targets.
 
-The router stores table metadata in the MaxScale data directory. The
-default value is `/var/lib/maxscale/<service name>`. If data for a table
+The router stores table metadata in the Percona Proxy data directory. The
+default value is `/var/lib/percona-proxy/<service name>`. If data for a table
 is replicated before a DDL event for it is replicated, the CREATE TABLE
 will be queried from the primary server.
 
@@ -161,8 +161,8 @@ newer to work and is disabled by default.
 
 When enabled, the Kafka producer enters a strict mode which avoids event
 duplication due to broker outages or other network errors. In HA scenarios where
-there are more than two MaxScale instances, event duplication can still happen
-as there is no synchronization between the MaxScale instances.
+there are more than two Percona Proxy instances, event duplication can still happen
+as there is no synchronization between the Percona Proxy instances.
 
 The Kafka C library,
 [librdkafka](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md),
@@ -198,7 +198,7 @@ from Kafka.
 
 Once the replication has started and a GTID position has been recorded, this
 parameter will be ignored. To reset the recorded GTID position, delete the
-`current_gtid.txt` file located in `/var/lib/maxscale/<SERVICE>/` where
+`current_gtid.txt` file located in `/var/lib/percona-proxy/<SERVICE>/` where
 `<SERVICE>` is the name of the KafkaCDC service.
 
 ### `server_id`
@@ -211,7 +211,7 @@ parameter will be ignored. To reset the recorded GTID position, delete the
 The
 [server_id](https://mariadb.com/kb/en/replication-and-binary-log-system-variables/#server_id)
 used when replicating from the primary in direct replication mode. The default
-value is 1234. This parameter was added in MaxScale 2.5.7.
+value is 1234. This parameter was added in Percona Proxy 2.5.7.
 
 ### `match`
 
@@ -273,7 +273,7 @@ matched against the database and table names.
 
 Controls whether multiple instances cooperatively replicate from the same
 cluster. This is a boolean parameter and is disabled by default. It was added in
-MaxScale 6.0.
+Percona Proxy 6.0.
 
 When this parameter is enabled and the monitor pointed to by the `cluster`
 parameter supports cooperative monitoring (currently only `mariadbmon`), the
@@ -283,11 +283,11 @@ Whenever an instance that does not own the cluster gains ownership of the
 cluster, the replication will continue from the latest GTID that was delivered
 to Kafka.
 
-This means that multiple MaxScale instances can replicate from the same set of
+This means that multiple Percona Proxy instances can replicate from the same set of
 servers and the event is only processed once. This feature does not provide
 exactly-once semantics for the Kafka event delivery. However, it does provide
 high-availability for the `kafkacdc` instances which allows automated failover
-between multiple MaxScale instances.
+between multiple Percona Proxy instances.
 
 ### `send_schema`
 
@@ -313,7 +313,7 @@ parameter.
 
 On startup, the latest GTID is by default read from the Kafka cluster. This
 makes it possible to recover the replication position stored by another
-MaxScale. Sometimes this is not desirable and the GTID should only be read from
+Percona Proxy. Sometimes this is not desirable and the GTID should only be read from
 the local file or started anew. Examples of these are when the GTIDs are reset
 or the replication topology has changed.
 

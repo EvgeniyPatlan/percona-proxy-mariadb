@@ -37,7 +37,7 @@
  * have MXB_MODULE_NAME defined as something else than the name of a real
  * module, or not at all.
  *
- * Any file that is compiled into maxscale-common should *not* have
+ * Any file that is compiled into percona-proxy-common should *not* have
  * MXB_MODULE_NAME defined.
  */
 #if !defined (MXB_MODULE_NAME)
@@ -132,7 +132,7 @@ void mxb_log_set_syslog_enabled(bool enabled);
 bool mxb_log_is_syslog_enabled();
 
 /**
- * Enable/disable maxscale log logging.
+ * Enable/disable percona-proxy log logging.
  *
  * @param enabled True, if maxlog logging should be enabled, false if it should be disabled.
  */

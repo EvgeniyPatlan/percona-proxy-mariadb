@@ -24,14 +24,14 @@
 #include <maxbase/log.hh>
 #include <maxbase/stopwatch.hh>
 
-#include <maxscale/config2.hh>
-#include <maxscale/dcb.hh>
-#include <maxscale/http.hh>
-#include <maxscale/json_api.hh>
-#include <maxscale/parser.hh>
-#include <maxscale/routingworker.hh>
-#include <maxscale/session.hh>
-#include <maxscale/ssl.hh>
+#include <percona-proxy/config2.hh>
+#include <percona-proxy/dcb.hh>
+#include <percona-proxy/http.hh>
+#include <percona-proxy/json_api.hh>
+#include <percona-proxy/parser.hh>
+#include <percona-proxy/routingworker.hh>
+#include <percona-proxy/session.hh>
+#include <percona-proxy/ssl.hh>
 
 #include "internal/config.hh"
 #include "internal/monitormanager.hh"
@@ -39,7 +39,7 @@
 #include "internal/session.hh"
 
 using maxbase::Worker;
-using maxscale::RoutingWorker;
+using percona_proxy::RoutingWorker;
 
 using std::string;
 using Guard = std::lock_guard<std::mutex>;
@@ -357,7 +357,7 @@ bool Server::ParamDiskSpaceLimits::from_json(const json_t* pJson, value_type* pV
     }
     else if (json_is_string(pJson))
     {
-        // Allow conversion from the INI format string to make it easier to configure this via maxctrl:
+        // Allow conversion from the INI format string to make it easier to configure this via percona-proxyctl:
         // defining JSON objects with it is not very convenient.
         ok = from_string(json_string_value(pJson), pValue, pMessage);
     }
@@ -1019,7 +1019,7 @@ std::string SERVER::VersionInfo::type_string() const
         break;
 
     case Type::BLR:
-        type_str = "MaxScale Binlog Router";
+        type_str = "Percona Proxy Binlog Router";
         break;
 
     case Type::POSTGRESQL:
@@ -1039,7 +1039,7 @@ const SERVER::VersionInfo& Server::info() const
     return m_info;
 }
 
-maxscale::ResponseDistribution& Server::response_distribution(Operation opr)
+percona_proxy::ResponseDistribution& Server::response_distribution(Operation opr)
 {
     mxb_assert(opr != Operation::NOP);
 
@@ -1053,7 +1053,7 @@ maxscale::ResponseDistribution& Server::response_distribution(Operation opr)
     }
 }
 
-const maxscale::ResponseDistribution& Server::response_distribution(Operation opr) const
+const percona_proxy::ResponseDistribution& Server::response_distribution(Operation opr) const
 {
     return const_cast<Server*>(this)->response_distribution(opr);
 }
@@ -1064,11 +1064,11 @@ const maxscale::ResponseDistribution& Server::response_distribution(Operation op
 // but the total not, or even the other way around as there are no atomics
 // in ResponseDistribution.
 // Fine, it is still thread safe. All in the name of performance.
-maxscale::ResponseDistribution Server::get_complete_response_distribution(Operation opr) const
+percona_proxy::ResponseDistribution Server::get_complete_response_distribution(Operation opr) const
 {
     mxb_assert(opr != Operation::NOP);
 
-    maxscale::ResponseDistribution ret = m_read_distributions->with_stats_reset();
+    percona_proxy::ResponseDistribution ret = m_read_distributions->with_stats_reset();
 
     const auto& distr = (opr == Operation::READ) ? m_read_distributions : m_write_distributions;
 
@@ -1111,7 +1111,7 @@ bool Server::is_mxs_service() const
 {
     bool rval = false;
 
-    /** Do a coarse check for local server pointing to a MaxScale service */
+    /** Do a coarse check for local server pointing to a Percona Proxy service */
     if (address()[0] == '/')
     {
         if (service_socket_is_used(address()))

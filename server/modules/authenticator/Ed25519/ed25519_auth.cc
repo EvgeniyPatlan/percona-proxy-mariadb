@@ -12,15 +12,15 @@
  * Public License.
  */
 
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 #define MXB_MODULE_NAME "Ed25519Auth"
 
 #include "ed25519_auth.hh"
 #include <maxbase/filesystem.hh>
 #include <maxbase/format.hh>
-#include <maxscale/authenticator.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
-#include <maxscale/utils.hh>
+#include <percona-proxy/authenticator.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
+#include <percona-proxy/utils.hh>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 #include <openssl/rsa.h>
@@ -627,7 +627,7 @@ AuthRes Ed25519ClientAuthenticator::sha_check_cleartext_pw(AuthenticationData& a
     AuthRes res;
     if (pk64 == auth_data.user_entry.entry.auth_string)
     {
-        // Password is correct, copy to backend token so that MaxScale can impersonate the client.
+        // Password is correct, copy to backend token so that Percona Proxy can impersonate the client.
         auth_data.backend_token = std::move(m_client_passwd);
         res.status = AuthRes::Status::SUCCESS;
     }

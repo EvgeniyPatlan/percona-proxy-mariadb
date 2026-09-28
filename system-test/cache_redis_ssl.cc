@@ -25,7 +25,7 @@ bool install_dependency(TestConnections& test, const char* zDependency)
 {
     test.tprintf("Installing %s.", zDependency);
 
-    int rv = test.maxscale->ssh_node_f(true, "yum install -y %s", zDependency);
+    int rv = test.percona_proxy->ssh_node_f(true, "yum install -y %s", zDependency);
     test.expect(rv == 0, "Could not install %s.", zDependency);
 
     return rv == 0;
@@ -33,7 +33,7 @@ bool install_dependency(TestConnections& test, const char* zDependency)
 
 bool build_redis(TestConnections& test)
 {
-    auto maxscale = test.maxscale;
+    auto percona_proxy = test.percona_proxy;
 
     int rv = 0;
 
@@ -50,29 +50,29 @@ bool build_redis(TestConnections& test)
     if (rv == 0)
     {
         test.tprintf("Removing possible old redis installation.");
-        rv = maxscale->ssh_node_f(false, "cd %s; rm -rf redis",
-                                  maxscale->access_homedir());
+        rv = percona_proxy->ssh_node_f(false, "cd %s; rm -rf redis",
+                                  percona_proxy->access_homedir());
         test.expect(rv == 0, "Could not remove old redis installation.");
 
         if (rv == 0)
         {
             test.tprintf("Cloning redis.");
-            rv = maxscale->ssh_node_f(false, "cd %s; git clone https://github.com/redis/redis.git",
-                                      maxscale->access_homedir());
+            rv = percona_proxy->ssh_node_f(false, "cd %s; git clone https://github.com/redis/redis.git",
+                                      percona_proxy->access_homedir());
             test.expect(rv == 0, "Could not clone redis.");
 
             if (rv == 0)
             {
                 test.tprintf("Checking out 6.2.8.");
-                rv = maxscale->ssh_node_f(false, "cd %s/redis; git checkout 6.2.8",
-                                          maxscale->access_homedir());
+                rv = percona_proxy->ssh_node_f(false, "cd %s/redis; git checkout 6.2.8",
+                                          percona_proxy->access_homedir());
                 test.expect(rv == 0, "Could not checkout 6.2.8.");
 
                 if (rv == 0)
                 {
                     test.tprintf("Building redis.");
-                    rv = maxscale->ssh_node_f(false, "cd %s/redis; make BUILD_TLS=yes",
-                                              maxscale->access_homedir());
+                    rv = percona_proxy->ssh_node_f(false, "cd %s/redis; make BUILD_TLS=yes",
+                                              percona_proxy->access_homedir());
                     test.expect(rv == 0, "Could not build redis.");
                 }
             }
@@ -84,17 +84,17 @@ bool build_redis(TestConnections& test)
 
 bool generate_certificates(TestConnections& test)
 {
-    auto maxscale = test.maxscale;
+    auto percona_proxy = test.percona_proxy;
 
     int rv;
 
-    const char* zHome = maxscale->access_homedir();
+    const char* zHome = percona_proxy->access_homedir();
 
     test.tprintf("Generating certificates.");
-    rv = maxscale->ssh_node_f(false, "cd %s/redis; ./utils/gen-test-certs.sh", zHome);
+    rv = percona_proxy->ssh_node_f(false, "cd %s/redis; ./utils/gen-test-certs.sh", zHome);
     test.expect(rv == 0, "Could not generate certificates.");
 
-    rv = maxscale->ssh_node_f(true,
+    rv = percona_proxy->ssh_node_f(true,
                               "chmod o+x %s/redis;"
                               "chmod o+x %s/redis/tests;"
                               "chmod o+x %s/redis/tests/tls;"
@@ -107,12 +107,12 @@ bool generate_certificates(TestConnections& test)
 
 bool stop_system_redis(TestConnections& test)
 {
-    auto maxscale = test.maxscale;
+    auto percona_proxy = test.percona_proxy;
 
     int rv;
 
     test.tprintf("Stopping system redis.");
-    rv = maxscale->ssh_node_f(true, "systemctl stop redis");
+    rv = percona_proxy->ssh_node_f(true, "systemctl stop redis");
     test.expect(rv == 0, "Could not stop system redis.");
 
     return rv == 0;
@@ -120,18 +120,18 @@ bool stop_system_redis(TestConnections& test)
 
 bool start_custom_redis(TestConnections& test)
 {
-    auto maxscale = test.maxscale;
+    auto percona_proxy = test.percona_proxy;
 
     int rv;
 
     test.tprintf("Starting custom redis.");
-    rv = maxscale->ssh_node_f(false,
+    rv = percona_proxy->ssh_node_f(false,
                               "cd %s/redis; "
                               "./src/redis-server --daemonize yes --tls-port 6379 --port 0 "
                               "--tls-cert-file ./tests/tls/redis.crt "
                               "--tls-key-file ./tests/tls/redis.key "
                               "--tls-ca-cert-file ./tests/tls/ca.crt",
-                              maxscale->access_homedir());
+                              percona_proxy->access_homedir());
     test.expect(rv == 0, "Could not start custom redis.");
 
     return rv == 0;
@@ -139,12 +139,12 @@ bool start_custom_redis(TestConnections& test)
 
 bool stop_custom_redis(TestConnections& test)
 {
-    auto maxscale = test.maxscale;
+    auto percona_proxy = test.percona_proxy;
 
     int rv;
 
     test.tprintf("Stopping custom redis.");
-    rv = maxscale->ssh_node_f(true, "pkill redis-server");
+    rv = percona_proxy->ssh_node_f(true, "pkill redis-server");
     test.expect(rv == 0, "Could not stop custom redis.");
 
     return rv == 0;
@@ -154,8 +154,8 @@ void test_that_usage_fails(TestConnections& test)
 {
     test.tprintf("Testing that usage fails.");
 
-    Connection c = test.maxscale->get_connection(PORT_RWS_REDIS);
-    test.expect(c.connect(), "Could not connect to MaxScale.");
+    Connection c = test.percona_proxy->get_connection(PORT_RWS_REDIS);
+    test.expect(c.connect(), "Could not connect to Percona Proxy.");
 
     c.query("SELECT 1"); // Trigger connecting to Redis
     sleep(1);
@@ -169,8 +169,8 @@ void test_that_usage_succeeds(TestConnections& test)
 {
     test.tprintf("Testing that usage succeeds.");
 
-    Connection c = test.maxscale->get_connection(PORT_RWS_REDIS);
-    test.expect(c.connect(), "Could not connect to MaxScale.");
+    Connection c = test.percona_proxy->get_connection(PORT_RWS_REDIS);
+    test.expect(c.connect(), "Could not connect to Percona Proxy.");
 
     c.query("SELECT 1"); // Trigger connecting to Redis
     sleep(1);
@@ -182,34 +182,34 @@ void test_that_usage_succeeds(TestConnections& test)
 
 void run_test(TestConnections& test)
 {
-    auto maxscale = test.maxscale;
+    auto percona_proxy = test.percona_proxy;
 
-    test.expect(maxscale->start_and_check_started(), "Could not start maxscale.");
+    test.expect(percona_proxy->start_and_check_started(), "Could not start percona-proxy.");
     test_that_usage_fails(test);
 
-    test.expect(maxscale->stop_and_check_stopped(), "Could not stop maxscale.");
+    test.expect(percona_proxy->stop_and_check_stopped(), "Could not stop percona-proxy.");
 
-    test.tprintf("Configuring MaxScale for SSL.");
-    int rv = maxscale->ssh_node_f(
+    test.tprintf("Configuring Percona Proxy for SSL.");
+    int rv = percona_proxy->ssh_node_f(
         true,
         "sed -i "
         "-e \"s@storage_redis.ssl=false@storage_redis.ssl=true@\" "
-        "-e \"s@storage_redis.ssl_cert=/etc/maxscale.cnf@storage_redis.ssl_cert=%s/redis/tests/tls/redis.crt@\" "
-        "-e \"s@storage_redis.ssl_key=/etc/maxscale.cnf@storage_redis.ssl_key=%s/redis/tests/tls/redis.key@\" "
-        "-e \"s@storage_redis.ssl_ca=/etc/maxscale.cnf@storage_redis.ssl_ca=%s/redis/tests/tls/ca.crt@\" "
-        "/etc/maxscale.cnf",
-        maxscale->access_homedir(),
-        maxscale->access_homedir(),
-        maxscale->access_homedir());
+        "-e \"s@storage_redis.ssl_cert=/etc/percona-proxy.cnf@storage_redis.ssl_cert=%s/redis/tests/tls/redis.crt@\" "
+        "-e \"s@storage_redis.ssl_key=/etc/percona-proxy.cnf@storage_redis.ssl_key=%s/redis/tests/tls/redis.key@\" "
+        "-e \"s@storage_redis.ssl_ca=/etc/percona-proxy.cnf@storage_redis.ssl_ca=%s/redis/tests/tls/ca.crt@\" "
+        "/etc/percona-proxy.cnf",
+        percona_proxy->access_homedir(),
+        percona_proxy->access_homedir(),
+        percona_proxy->access_homedir());
 
-    test.expect(rv == 0, "Could not configure MaxScale for SSL.");
+    test.expect(rv == 0, "Could not configure Percona Proxy for SSL.");
 
     if (rv == 0)
     {
-        rv = maxscale->ssh_node_f(true, "rm /var/log/maxscale/maxscale.log");
-        test.expect(rv == 0, "Could not remove /var/log/maxscale/maxscale.log");
+        rv = percona_proxy->ssh_node_f(true, "rm /var/log/percona-proxy/percona-proxy.log");
+        test.expect(rv == 0, "Could not remove /var/log/percona-proxy/percona-proxy.log");
 
-        test.expect(maxscale->start_and_check_started(), "Could not start maxscale.");
+        test.expect(percona_proxy->start_and_check_started(), "Could not start percona-proxy.");
         test_that_usage_succeeds(test);
     }
 }
@@ -218,7 +218,7 @@ void run_test(TestConnections& test)
 
 int main(int argc, char* argv[])
 {
-    TestConnections::skip_maxscale_start(true);
+    TestConnections::skip_percona_proxy_start(true);
     TestConnections test(argc, argv);
 
     if (build_redis(test))

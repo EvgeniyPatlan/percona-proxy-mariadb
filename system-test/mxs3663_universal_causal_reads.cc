@@ -32,13 +32,13 @@ std::string wait_prefix;
 void test_reads(TestConnections& test)
 {
     std::string table = "test.t" + std::to_string(id++);
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     conn.connect();
     test.expect(conn.query("CREATE OR REPLACE TABLE " + table + " (a INT)"),
                 "[%d] Table creation should work: %s", conn.thread_id(), conn.error());
     conn.disconnect();
 
-    auto secondary = test.maxscale->rwsplit();
+    auto secondary = test.percona_proxy->rwsplit();
     secondary.connect();
     auto id2 = secondary.thread_id();
 
@@ -89,7 +89,7 @@ void check_row(TestConnections& test, const char* func, Connection& conn,
 void check_row_new_conn(TestConnections& test, const char* func, uint32_t orig_id,
                         const std::string& table, const std::string& value)
 {
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     test.expect(conn.connect(), "Failed to connect when querying '%s': %s", table.c_str(), conn.error());
     auto stored_value = conn.field(wait_prefix + "SELECT MAX(a) FROM " + table + " WHERE a = " + value);
 
@@ -136,7 +136,7 @@ void test_queries(TestConnections& test, const char* func,
                   std::function<void(Connection&, const std::string&, const std::string&)> cb)
 {
     std::string table = "test.t" + std::to_string(id++);
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     bool created = false;
     int errnum = 0;
     std::string errmsg;
@@ -279,11 +279,11 @@ void run_test(TestConnections& test, Backend* backend)
 {
     backend->set_replication_delay(1);
 
-    test.log_printf("Cross-MaxScale causal reads with causal_reads=universal");
+    test.log_printf("Cross-Percona Proxy causal reads with causal_reads=universal");
     test_reads(test);
 
     test.log_printf("Master failure during universal causal read");
-    test.check_maxctrl("alter service RW-Split-Router transaction_replay=true transaction_replay_timeout=60s");
+    test.check_percona_proxyctl("alter service RW-Split-Router transaction_replay=true transaction_replay_timeout=60s");
 
     // The read-only versions will get errors as they try to insert inside of a read-only transaction which
     // always returns an error. We don't care as the main purpose is to stress-test the transaction replay
@@ -303,10 +303,10 @@ void run_test(TestConnections& test, Backend* backend)
     for (int i = 0; i < 5; i++)
     {
         backend->block_node(0);
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
         sleep(5);
         backend->unblock_node(0);
-        test.maxscale->wait_for_monitor();
+        test.percona_proxy->wait_for_monitor();
         sleep(5);
     }
 
@@ -317,7 +317,7 @@ void run_test(TestConnections& test, Backend* backend)
         t.join();
     }
 
-    auto conn = test.maxscale->rwsplit();
+    auto conn = test.percona_proxy->rwsplit();
     conn.connect();
 
     for (int i = 1; i < id; i++)

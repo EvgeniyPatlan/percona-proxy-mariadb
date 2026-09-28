@@ -13,7 +13,7 @@
  */
 #pragma once
 
-#include <maxscale/ccdefs.hh>
+#include <percona-proxy/ccdefs.hh>
 #include <array>
 #include <ostream>
 #include <sstream>
@@ -21,8 +21,8 @@
 #include <vector>
 #include <mysql.h>
 #include <maxsql/mariadb.hh>
-#include <maxscale/buffer.hh>
-#include <maxscale/protocol/mariadb/mysql.hh>
+#include <percona-proxy/buffer.hh>
+#include <percona-proxy/protocol/mariadb/mysql.hh>
 
 namespace maxsql
 {

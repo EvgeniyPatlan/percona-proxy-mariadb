@@ -27,7 +27,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
     TestConnections test(argc, argv);
-    Connection conn {test.maxscale->rwsplit()};
+    Connection conn {test.percona_proxy->rwsplit()};
 
     auto query = [&](bool should_work, string q) {
         test.expect(conn.query(q) == should_work,
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     auto block = [&](int node) {
         return bind([&](int i) {
             test.repl->block_node(i);
-            test.maxscale->wait_for_monitor(2);
+            test.percona_proxy->wait_for_monitor(2);
         },
                     node);
     };
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     auto unblock = [&](int node) {
         return bind([&](int i) {
             test.repl->unblock_node(i);
-            test.maxscale->wait_for_monitor(2);
+            test.percona_proxy->wait_for_monitor(2);
         },
                     node);
     };

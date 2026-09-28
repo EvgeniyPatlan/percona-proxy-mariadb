@@ -22,7 +22,7 @@
 #include <mysql.h>
 #include <maxbase/stopwatch.hh>
 #include <maxbase/worker.hh>
-#include <maxscale/buffer.hh>
+#include <percona-proxy/buffer.hh>
 
 namespace nosql
 {

@@ -16,7 +16,7 @@
 #include "gssapi_client_auth.hh"
 #include "gssapi_backend_auth.hh"
 
-#include <maxscale/protocol/mariadb/module_names.hh>
+#include <percona-proxy/protocol/mariadb/module_names.hh>
 
 using std::string;
 
