@@ -1,47 +1,51 @@
-# MaxScale by MariaDB plc
+# Percona Proxy for MariaDB
 
-The MariaDB MaxScale is an intelligent proxy that allows
-forwarding of database statements to one or more database servers using
-complex rules, a semantic understanding of the database statements and the
-roles of the various servers within the backend cluster of databases.
+Percona Proxy for MariaDB is a database proxy that forwards database statements to
+one or more servers, using configurable rules, a semantic understanding of the
+statements and the roles of the servers in the backend cluster. It provides load
+balancing and high availability transparently to the applications, and a plugin
+architecture for protocols, routers, filters, monitors and authenticators.
 
-MaxScale is designed to provide load balancing and high availability
-functionality transparently to the applications. In addition it provides
-a highly scalable and flexible architecture, with plugin components to
-support different protocols and routing decisions.
+## Status
 
-Please access the full documentation [here](https://mariadb.com/docs/maxscale).
+Early development. The product is derived from MariaDB MaxScale 23.08.12 and is
+being renamed; until that work lands, parts of the tree, the binaries and the
+packages still carry the upstream names. See `NOTICE` for the provenance and the
+licensing.
 
-A Google Group exists for MaxScale that can be used to discuss ideas,
-issues and communicate with the MaxScale community.
+## License
 
-- Email: maxscale@googlegroups.com
-- Forum: http://groups.google.com/forum/#!forum/maxscale
+GNU General Public License, version 2 or later. See `COPYING`.
 
-The [MariaDB Zulip instance](https://mariadb.zulipchat.com/) can also be used to
-contact the MariaDB MaxScale developers.
+MaxScale 23.08 was published under the Business Source License 1.1 with the Change
+Date 2026-09-21 and the GNU General Public License version 2 or later as the Change
+License. That date has passed, so this code is available under the GPL.
 
-Please report all feature requests, improvements and bugs in the
-[MariaDB Jira](https://jira.mariadb.org/projects/MXS/issues).
+## Building
 
-# Contributing Code
+The build is CMake based and needs the `mariadb-connector-c` submodule:
 
-Read the [Contributing](https://github.com/mariadb-corporation/MaxScale/wiki/Contributing)
-page on the wiki for more information on how to do pull request and where to do
-them.
+```bash
+git submodule update --init
+mkdir ../build && cd ../build
+../percona-proxy-mariadb/BUILD/install_build_deps.sh
+cmake ../percona-proxy-mariadb -DCMAKE_BUILD_TYPE=RelWithDebInfo
+make -j$(nproc)
+```
 
-# License
+Packages are built from the packaging in `BUILD/percona`:
 
-MariaDB MaxScale up until version 24.02 is licensed under the
-[Business Source License](https://mariadb.com/bsl-faq-mariadb/).
-For the full details of the license, refer to [LICENSE.TXT](./LICENSE.TXT).
+```bash
+BUILD/percona/maxscale_builder.sh --builddir=<dir> --install_deps=1 --get_sources=1
+BUILD/percona/maxscale_builder.sh --builddir=<dir> --build_src_rpm=1
+BUILD/percona/maxscale_builder.sh --builddir=<dir> --build_rpm=1
+```
 
-The following is a table of the BSL change dates.
+`BUILD/percona/verify_packages.sh` installs the resulting packages on every
+supported platform and checks that queries are routed through two real MariaDB
+servers. `BUILD/percona/docker` holds the container images.
 
-| Version | Change Date|
-|---------|------------|
-| 24.02   | 2027-04-10 |
-| 23.08   | 2026-09-21 |
-| 23.02   | 2026-03-20 |
-| 22.08   | 2025-09-12 |
-| 21.06   | 2024-06-03 |
+## Documentation
+
+The documentation in `Documentation/` is inherited from upstream and still uses the
+upstream names.

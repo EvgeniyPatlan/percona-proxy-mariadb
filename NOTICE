@@ -1,0 +1,28 @@
+Percona Proxy for MariaDB
+=========================
+
+This product is derived from MariaDB MaxScale.
+
+  Copyright (c) 2018 MariaDB Corporation Ab
+  Copyright (c) 2023 MariaDB plc
+  Copyright (c) 2026 Percona LLC and/or its affiliates
+
+MariaDB MaxScale 23.08 was published under the Business Source License 1.1,
+which names 2026-09-21 as the Change Date and version 2 or later of the GNU
+General Public License as the Change License. That date has passed, so the
+code this product is derived from is available under the GNU General Public
+License, version 2 or later.
+
+This product is distributed under the same license; see COPYING for the full
+text of the GNU General Public License version 2. The original Business Source
+License text is kept in licenses/ for reference.
+
+The upstream source this product was forked from is MariaDB MaxScale 23.08.12,
+tagged in this repository as upstream-23.08.12.
+
+Third-party components keep their own licenses and are listed in
+LICENSE-THIRDPARTY.TXT.
+
+MariaDB is a trademark of MariaDB Corporation Ab. MaxScale is a trademark of
+MariaDB plc. Their use here describes the origin of this software and does not
+imply any endorsement by, or affiliation with, the trademark holders.
