@@ -1,13 +1,13 @@
-# Percona Proxy for MariaDB 23.08.5 Release Notes -- 2024-03-11
+# MariaDB MaxScale 23.08.5 Release Notes -- 2024-03-11
 
 Release 23.08.5 is a GA release.
 
 This document describes the changes in release 23.08.5, when compared to the
 previous release in the same series.
 
-If you are upgrading from an older major version of Percona Proxy, please read the
-[upgrading document](../Upgrading/Upgrading-To-Percona-Proxy-23.08.md) for
-this Percona Proxy version.
+If you are upgrading from an older major version of MaxScale, please read the
+[upgrading document](../Upgrading/Upgrading-To-MaxScale-23.08.md) for
+this MaxScale version.
 
 For any problems you encounter, please consider submitting a bug
 report on [our Jira](https://jira.mariadb.org/projects/MXS).
@@ -28,14 +28,14 @@ report on [our Jira](https://jira.mariadb.org/projects/MXS).
 
 * [MXS-5008](https://jira.mariadb.org/browse/MXS-5008) Log message on releasing exclusive locks when no lock majority is confusing
 * [MXS-5007](https://jira.mariadb.org/browse/MXS-5007) Top-level service reconnection may cause a use-after-free
-* [MXS-5001](https://jira.mariadb.org/browse/MXS-5001) Maxscale fail to initiate percona-proxy.service (Missing /var/run/percona-proxy) directory
-* [MXS-4998](https://jira.mariadb.org/browse/MXS-4998) Percona Proxy may send two COM_QUIT packets
-* [MXS-4997](https://jira.mariadb.org/browse/MXS-4997) Percona Proxy: BUILD/install_build_deps.sh: deprecated --force-yes
+* [MXS-5001](https://jira.mariadb.org/browse/MXS-5001) Maxscale fail to initiate maxscale.service (Missing /var/run/maxscale) directory
+* [MXS-4998](https://jira.mariadb.org/browse/MXS-4998) MaxScale may send two COM_QUIT packets
+* [MXS-4997](https://jira.mariadb.org/browse/MXS-4997) MaxScale: BUILD/install_build_deps.sh: deprecated --force-yes
 * [MXS-4996](https://jira.mariadb.org/browse/MXS-4996) Order of servers is different after restart if runtime modifications have been done
 * [MXS-4995](https://jira.mariadb.org/browse/MXS-4995) The "static" property of an object is lost upon restart
 * [MXS-4994](https://jira.mariadb.org/browse/MXS-4994) Multiple warnings from the REST-API are printed on the same line
 * [MXS-4992](https://jira.mariadb.org/browse/MXS-4992) Documentation Link in GUI leads to 404 page not found
-* [MXS-4988](https://jira.mariadb.org/browse/MXS-4988) percona-proxy doesn't properly close connections for TCP health check probes
+* [MXS-4988](https://jira.mariadb.org/browse/MXS-4988) maxscale doesn't properly close connections for TCP health check probes
 * [MXS-4982](https://jira.mariadb.org/browse/MXS-4982) OpenSSL system call error is logged as ERROR when client disconnects abruptly
 * [MXS-4981](https://jira.mariadb.org/browse/MXS-4981) Hang on shutdown when large batches of session command are pending
 * [MXS-4979](https://jira.mariadb.org/browse/MXS-4979) COM_CHANGE_USER may leave stale IDs to be checked
@@ -51,21 +51,21 @@ report on [our Jira](https://jira.mariadb.org/projects/MXS).
 * [MXS-4943](https://jira.mariadb.org/browse/MXS-4943) delayed_retry timeout errors do not have enough information
 * [MXS-4935](https://jira.mariadb.org/browse/MXS-4935) False protocol incompatibility error
 * [MXS-4934](https://jira.mariadb.org/browse/MXS-4934) Use-after-free after service deletion
-* [MXS-4930](https://jira.mariadb.org/browse/MXS-4930) 'percona-proxyctl reload tls' has the usage of 'percona-proxyctl reload service'
+* [MXS-4930](https://jira.mariadb.org/browse/MXS-4930) 'maxctrl reload tls' has the usage of 'maxctrl reload service'
 * [MXS-4926](https://jira.mariadb.org/browse/MXS-4926) History length of sessions is not visible in the REST-API
-* [MXS-4925](https://jira.mariadb.org/browse/MXS-4925) self link in /percona-proxy/logs/data is off by one page
+* [MXS-4925](https://jira.mariadb.org/browse/MXS-4925) self link in /maxscale/logs/data is off by one page
 * [MXS-4924](https://jira.mariadb.org/browse/MXS-4924) Very fast client and server may end up busy-looping a worker
 * [MXS-4922](https://jira.mariadb.org/browse/MXS-4922) Memory growth for long-running sessions that use COM_CHANGE_USER
 * [MXS-4921](https://jira.mariadb.org/browse/MXS-4921) Memory growth for long-running sessions that use prepared statements
 * [MXS-4914](https://jira.mariadb.org/browse/MXS-4914) GUI dashboard's width is reduced unexpectedly
 * [MXS-4912](https://jira.mariadb.org/browse/MXS-4912) Query classifier cache total-size book-keeping may be wrong
 * [MXS-4910](https://jira.mariadb.org/browse/MXS-4910) readconnroute performance regression in 6.4
-* [MXS-4907](https://jira.mariadb.org/browse/MXS-4907) Nested parameters in PATCH /v1/percona-proxy/ do not work correctly
+* [MXS-4907](https://jira.mariadb.org/browse/MXS-4907) Nested parameters in PATCH /v1/maxscale/ do not work correctly
 * [MXS-4906](https://jira.mariadb.org/browse/MXS-4906) MonitorWorker::call_run_one_tick() called more often than intended
 * [MXS-4903](https://jira.mariadb.org/browse/MXS-4903) Bad configuration in PATCH may partially configure monitors
 * [MXS-4901](https://jira.mariadb.org/browse/MXS-4901) Turning on log_info causes parsing related errors and warnings
-* [MXS-4900](https://jira.mariadb.org/browse/MXS-4900) percona-proxyctl show qc_cache can easily overwhelm Percona Proxy
-* [MXS-4898](https://jira.mariadb.org/browse/MXS-4898) Percona Proxy sends wrong character set (session tracking)
+* [MXS-4900](https://jira.mariadb.org/browse/MXS-4900) maxctrl show qc_cache can easily overwhelm MaxScale
+* [MXS-4898](https://jira.mariadb.org/browse/MXS-4898) MaxScale sends wrong character set (session tracking)
 * [MXS-4896](https://jira.mariadb.org/browse/MXS-4896) Reducing the size of the query classifier cache does not cause excess entries to be freed.
 * [MXS-4893](https://jira.mariadb.org/browse/MXS-4893) Query history retention period increases unexpectedly every time the setting dialog is opened
 * [MXS-4891](https://jira.mariadb.org/browse/MXS-4891) Query editor schema explorer is disabled after reconnecting connections
@@ -75,20 +75,20 @@ report on [our Jira](https://jira.mariadb.org/projects/MXS).
 
 ## Known Issues and Limitations
 
-There are some limitations and known issues within this version of Percona Proxy.
+There are some limitations and known issues within this version of MaxScale.
 For more information, please refer to the [Limitations](../About/Limitations.md) document.
 
 ## Packaging
 
 RPM and Debian packages are provided for the supported Linux distributions.
 
-Packages can be downloaded [here](https://mariadb.com/downloads/#mariadb_platform-mariadb_percona_proxy).
+Packages can be downloaded [here](https://mariadb.com/downloads/#mariadb_platform-mariadb_maxscale).
 
 ## Source Code
 
-The source code of Percona Proxy is tagged at GitHub with a tag, which is identical
-with the version of Percona Proxy. For instance, the tag of version X.Y.Z of Percona Proxy
-is `percona-proxy-X.Y.Z`. Further, the default branch is always the latest GA version
-of Percona Proxy.
+The source code of MaxScale is tagged at GitHub with a tag, which is identical
+with the version of MaxScale. For instance, the tag of version X.Y.Z of MaxScale
+is `maxscale-X.Y.Z`. Further, the default branch is always the latest GA version
+of MaxScale.
 
 The source code is available [here](https://github.com/mariadb-corporation/MaxScale).

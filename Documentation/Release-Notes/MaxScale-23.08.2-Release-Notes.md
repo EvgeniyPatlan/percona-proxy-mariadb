@@ -1,13 +1,13 @@
-# Percona Proxy for MariaDB 23.08.2 Release Notes -- 2023-10-30
+# MariaDB MaxScale 23.08.2 Release Notes -- 2023-10-30
 
 Release 23.08.2 is a GA release.
 
 This document describes the changes in release 23.08.2, when compared to the
 previous release in the same series.
 
-If you are upgrading from an older major version of Percona Proxy, please read the
-[upgrading document](../Upgrading/Upgrading-To-Percona-Proxy-23.08.md) for
-this Percona Proxy version.
+If you are upgrading from an older major version of MaxScale, please read the
+[upgrading document](../Upgrading/Upgrading-To-MaxScale-23.08.md) for
+this MaxScale version.
 
 For any problems you encounter, please consider submitting a bug
 report on [our Jira](https://jira.mariadb.org/projects/MXS).
@@ -28,17 +28,17 @@ report on [our Jira](https://jira.mariadb.org/projects/MXS).
 * [MXS-4829](https://jira.mariadb.org/browse/MXS-4829) Query Editor doesn't assign active database to existing query tabs
 * [MXS-4822](https://jira.mariadb.org/browse/MXS-4822) Chart pane width issue in Query Editor
 * [MXS-4821](https://jira.mariadb.org/browse/MXS-4821) Multi-statement detection works differently on non-AVX2 CPUs
-* [MXS-4817](https://jira.mariadb.org/browse/MXS-4817) percona-proxy crashes on maxsimd::generic::is_multi_stmt_imp
+* [MXS-4817](https://jira.mariadb.org/browse/MXS-4817) maxscale crashes on maxsimd::generic::is_multi_stmt_imp
 * [MXS-4815](https://jira.mariadb.org/browse/MXS-4815) @@last_gtid and @@last_insert_id are treated differently
-* [MXS-4814](https://jira.mariadb.org/browse/MXS-4814) GTIDs used by causal_reads=global cannot be reset without restarting Percona Proxy
-* [MXS-4812](https://jira.mariadb.org/browse/MXS-4812) More than one primary database in a monitor results in errors in Percona Proxy GUI
-* [MXS-4811](https://jira.mariadb.org/browse/MXS-4811) Error handling differences between running percona-proxyctl directly or in a subshell
+* [MXS-4814](https://jira.mariadb.org/browse/MXS-4814) GTIDs used by causal_reads=global cannot be reset without restarting MaxScale
+* [MXS-4812](https://jira.mariadb.org/browse/MXS-4812) More than one primary database in a monitor results in errors in MaxScale GUI
+* [MXS-4811](https://jira.mariadb.org/browse/MXS-4811) Error handling differences between running maxctrl directly or in a subshell
 * [MXS-4810](https://jira.mariadb.org/browse/MXS-4810) --timeout doesn't work with multiple values in --hosts
 * [MXS-4808](https://jira.mariadb.org/browse/MXS-4808) connection_metadata checks for the wrong capability bit
-* [MXS-4807](https://jira.mariadb.org/browse/MXS-4807) Percona Proxy does not always report the OS version correctly
+* [MXS-4807](https://jira.mariadb.org/browse/MXS-4807) MaxScale does not always report the OS version correctly
 * [MXS-4799](https://jira.mariadb.org/browse/MXS-4799) ConfigManager may spam the log with warnings
 * [MXS-4797](https://jira.mariadb.org/browse/MXS-4797) NullFilter has not been extended to support all routing enumeration values.
-* [MXS-4792](https://jira.mariadb.org/browse/MXS-4792) Semi-sync replication through Percona Proxy causes errors on STOP SLAVE
+* [MXS-4792](https://jira.mariadb.org/browse/MXS-4792) Semi-sync replication through MaxScale causes errors on STOP SLAVE
 * [MXS-4790](https://jira.mariadb.org/browse/MXS-4790) Log version after log rotation
 * [MXS-4788](https://jira.mariadb.org/browse/MXS-4788) Galeramon should use gtid_binlog_pos if gtid_current_pos is empty
 * [MXS-4782](https://jira.mariadb.org/browse/MXS-4782) Kafkacdc logs warnings about the configuration
@@ -61,20 +61,20 @@ report on [our Jira](https://jira.mariadb.org/projects/MXS).
 
 ## Known Issues and Limitations
 
-There are some limitations and known issues within this version of Percona Proxy.
+There are some limitations and known issues within this version of MaxScale.
 For more information, please refer to the [Limitations](../About/Limitations.md) document.
 
 ## Packaging
 
 RPM and Debian packages are provided for the supported Linux distributions.
 
-Packages can be downloaded [here](https://mariadb.com/downloads/#mariadb_platform-mariadb_percona_proxy).
+Packages can be downloaded [here](https://mariadb.com/downloads/#mariadb_platform-mariadb_maxscale).
 
 ## Source Code
 
-The source code of Percona Proxy is tagged at GitHub with a tag, which is identical
-with the version of Percona Proxy. For instance, the tag of version X.Y.Z of Percona Proxy
-is `percona-proxy-X.Y.Z`. Further, the default branch is always the latest GA version
-of Percona Proxy.
+The source code of MaxScale is tagged at GitHub with a tag, which is identical
+with the version of MaxScale. For instance, the tag of version X.Y.Z of MaxScale
+is `maxscale-X.Y.Z`. Further, the default branch is always the latest GA version
+of MaxScale.
 
 The source code is available [here](https://github.com/mariadb-corporation/MaxScale).

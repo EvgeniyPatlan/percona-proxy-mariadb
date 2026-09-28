@@ -31,13 +31,15 @@ routing rules and backend server status. Filters work on data as it passes
 through Percona Proxy for MariaDB. Filter are often used for logging queries or modifying
 server responses.
 
-A Google Group exists for Percona Proxy for MariaDB. The Group is used to discuss ideas,
-issues and communicate with the Percona Proxy for MariaDB community. Send email to
-[percona-proxy@googlegroups.com](mailto:percona-proxy@googlegroups.com) or use the
-[forum](http://groups.google.com/forum/#!forum/percona-proxy) interface.
+Bugs can be reported in the issue tracker of the repository,
+[github.com/EvgeniyPatlan/percona-proxy-mariadb](https://github.com/EvgeniyPatlan/percona-proxy-mariadb/issues).
 
-Bugs can be reported in the MariaDB Jira
-[https://jira.mariadb.org](https://mariadb.atlassian.net)
+## Provenance
+
+Percona Proxy for MariaDB is derived from MariaDB MaxScale 23.08.12. MaxScale 23.08 was
+published under the Business Source License 1.1 with the Change Date 2026-09-21 and version 2
+or later of the GNU General Public License as the Change License. That date has passed, so this
+code is available under the GPL. `NOTICE` records the copyright holders.
 
 ## Installing Percona Proxy for MariaDB
 

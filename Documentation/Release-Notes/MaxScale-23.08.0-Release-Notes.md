@@ -1,4 +1,4 @@
-# Percona Proxy for MariaDB 23.08 Release Notes -- 2023-09-04
+# MariaDB MaxScale 23.08 Release Notes -- 2023-09-04
 
 Release 23.08.0 is a Beta release.
 
@@ -55,7 +55,7 @@ The use of the old name is deprecated.
 
 ### [MXS-3531](https://jira.mariadb.org/browse/MXS-3531) Lower regular expression matching limits
 
-The PCRE2 library used by Percona Proxy now limits the heap memory to 1GB and the
+The PCRE2 library used by MaxScale now limits the heap memory to 1GB and the
 matching limit to 500000 matches. This change was done to prevent catastrophic
 backtracing that occurred when regular expressions used nested recursion
 e.g. `SELECT.*.*FROM.*.*t1`.
@@ -84,11 +84,11 @@ when routing queries.
 
 ### [MXS-4215](https://jira.mariadb.org/browse/MXS-4215) Manual schemarouter cache invalidation
 
-The schemarouter database map cache can now be manually cleared with a Percona Proxyctl
+The schemarouter database map cache can now be manually cleared with a MaxCtrl
 command:
 
 ```
-percona-proxyctl call command schemarouter clear <service>
+maxctrl call command schemarouter clear <service>
 ```
 
 This makes it possible to schedule the clearing of the caches for busy systems
@@ -102,15 +102,15 @@ the client applications.
 
 ### [MXS-4232](https://jira.mariadb.org/browse/MXS-4232) Remember old service password
 
-When the service password is changed, Percona Proxy will remember and use the previous
+When the service password is changed, MaxScale will remember and use the previous
 password if the new does not work. This makes it easier to manage the changing of
-the password, as the password in the backend and in Percona Proxy need not be changed
+the password, as the password in the backend and in MaxScale need not be changed
 simultaneously. More information about this functionality can be found
 [here](../Getting-Started/Configuration-Guide.md#user-and-password).
 
 ### [MXS-4277](https://jira.mariadb.org/browse/MXS-4277) Configurable `iss` field in JWTs
 
-The `iss` field of the JWTs that the REST-API in Percona Proxy generates can now be
+The `iss` field of the JWTs that the REST-API in MaxScale generates can now be
 configured with `admin_jwt_issuer`. This allows REST-API clients to see who
 issued the token.
 
@@ -156,7 +156,7 @@ By default the values of the system variables `character_set_client`,
 current number of connections as the `threads_connected` variable and the real
 64-bit connection ID as `connection_id`.
 
-Compatible MariaDB connectors will use this information from Percona Proxy instead of
+Compatible MariaDB connectors will use this information from MaxScale instead of
 querying the values of the variables from the database server which greatly
 speeds up connection creation.
 
@@ -166,15 +166,15 @@ It is now possible to limit the nodes the Xpand monitor dynamically detects
 to those residing in a specific region. See [region_name](../Monitors/Xpand-Monitor.md#region_name)
 and [region_oid](../Monitors/Xpand-Monitor.md#region_oid) for more information.
 
-### Percona Proxy GUI
-Numerous additions have been added and improvements made to Percona Proxy GUI.
+### MaxGUI
+Numerous additions have been added and improvements made to MaxGUI.
 The most notable ones are listed here:
 
 * [MXS-3735](https://jira.mariadb.org/browse/MXS-3735) Add ERD modeler to the
-workspace. Instructions on using it can be found [here](../Tutorials/Using-Percona-Proxy GUI-Tutorial.md#create-an-erd).
+workspace. Instructions on using it can be found [here](../Tutorials/Using-MaxGUI-Tutorial.md#create-an-erd).
 
 * [MXS-3991](https://jira.mariadb.org/browse/MXS-3991) Show schema objects
-insights. Instructions on using it can be found [here](../Tutorials/Using-Percona-Proxy GUI-Tutorial.md#show-object-creation-statement-and-insights-info).
+insights. Instructions on using it can be found [here](../Tutorials/Using-MaxGUI-Tutorial.md#show-object-creation-statement-and-insights-info).
 
 * [MXS-4364](https://jira.mariadb.org/browse/MXS-4364) Auto choose active schema for new query tab.
 
@@ -184,20 +184,20 @@ insights. Instructions on using it can be found [here](../Tutorials/Using-Percon
 
 ## Known Issues and Limitations
 
-There are some limitations and known issues within this version of Percona Proxy.
+There are some limitations and known issues within this version of MaxScale.
 For more information, please refer to the [Limitations](../About/Limitations.md) document.
 
 ## Packaging
 
 RPM and Debian packages are provided for the supported Linux distributions.
 
-Packages can be downloaded [here](https://mariadb.com/downloads/#mariadb_platform-mariadb_percona_proxy).
+Packages can be downloaded [here](https://mariadb.com/downloads/#mariadb_platform-mariadb_maxscale).
 
 ## Source Code
 
-The source code of Percona Proxy is tagged at GitHub with a tag, which is identical
-with the version of Percona Proxy. For instance, the tag of version X.Y.Z of Percona Proxy
-is `percona-proxy-X.Y.Z`. Further, the default branch is always the latest GA version
-of Percona Proxy.
+The source code of MaxScale is tagged at GitHub with a tag, which is identical
+with the version of MaxScale. For instance, the tag of version X.Y.Z of MaxScale
+is `maxscale-X.Y.Z`. Further, the default branch is always the latest GA version
+of MaxScale.
 
 The source code is available [here](https://github.com/mariadb-corporation/MaxScale).

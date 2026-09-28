@@ -90,7 +90,7 @@ accounts must use the same password since they will effectively share the
 Percona Proxy-to-backend user account. Option 2 requires server support.
 
 See
-[Percona Proxy Troubleshooting](https://mariadb.com/kb/en/mariadb-enterprise/percona-proxy-troubleshooting/)
+troubleshooting articles in the MariaDB Knowledge Base, which describe the same software
 for additional information on how to solve authentication issues.
 
 ### Wildcard database grants

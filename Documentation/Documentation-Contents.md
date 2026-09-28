@@ -12,11 +12,12 @@
  - [Percona Proxy for MariaDB Installation Guide](Getting-Started/MariaDB-Percona-Proxy-Installation-Guide.md)
  - [Building Percona Proxy for MariaDB from Source Code](Getting-Started/Building-Percona-Proxy-from-Source-Code.md)
  - [Configuration Guide](Getting-Started/Configuration-Guide.md)
- - [Percona Proxy GUI](Getting-Started/Percona-Proxy GUI.md)
+ - [Percona Proxy GUI](Getting-Started/Percona-Proxy-GUI.md)
 
 ## Upgrading Percona Proxy for MariaDB
 
-- [Upgrading Percona Proxy](Upgrading/Upgrading-Percona-Proxy.md)
+- [Upgrading to Percona Proxy](Upgrading/Upgrading-Percona-Proxy.md)
+- [Upgrading MaxScale (upstream history)](Upgrading/Upgrading-MaxScale.md)
 
 ## Reference
 

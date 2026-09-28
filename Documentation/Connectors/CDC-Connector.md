@@ -1,7 +1,7 @@
 # Maxscale CDC Connector
 
 The C++ connector for the [Percona Proxy for MariaDB](https://mariadb.com/products/technology/percona-proxy)
-[CDC system](https://mariadb.com/kb/en/mariadb-enterprise/mariadb-percona-proxy-22-avrorouter-tutorial/).
+[CDC system](../Tutorials/Avrorouter-Tutorial.md).
 
 ## Usage
 

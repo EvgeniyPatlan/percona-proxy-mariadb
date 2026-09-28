@@ -9,7 +9,7 @@ solution to [Percona Proxyctl](../Reference/Percona-Proxyctl.md).
 
 # Dashboard
 
-![Percona Proxy GUI dashboard](./images/Percona-Proxy GUI-dashboard.png)
+![Percona Proxy GUI dashboard](./images/Percona-Proxy-GUI-dashboard.png)
 
 ## Annotation
 
@@ -45,7 +45,7 @@ replication_state, seconds_behind_master, slave_io_running, slave_sql_running.
 A session can be killed easily on the "Current Sessions" list which can be
 found on the [Dashboard](#dashboard), Server detail, and Service detail page.
 
-![Percona Proxy GUI Percona Proxy kill session](./images/Percona-Proxy GUI-kill-session.png)
+![Percona Proxy GUI Percona Proxy kill session](./images/Percona-Proxy-GUI-kill-session.png)
 
 ### Annotation
 
@@ -60,7 +60,7 @@ control buttons will be shown on the mouse hover. Below is a screenshot of a
 Monitor Detail page, other Detail pages also have a similar layout structure so
 this is used for illustration purpose.
 
-![Percona Proxy GUI Percona Proxy Monitor Detail](./images/Percona-Proxy GUI-detail.png)
+![Percona Proxy GUI Percona Proxy Monitor Detail](./images/Percona-Proxy-GUI-detail.png)
 
 ## Annotation
 
@@ -91,7 +91,7 @@ This page visualizes Percona Proxy configuration and clusters.
 
 This page visualizes Percona Proxy configuration as shown in the figure below.
 
-![Percona Proxy GUI Percona Proxy Config visualization](./images/Percona-Proxy GUI-config-visualization.png)
+![Percona Proxy GUI Percona Proxy Config visualization](./images/Percona-Proxy-GUI-config-visualization.png)
 
 ### Annotation
 
@@ -113,7 +113,7 @@ This page shows all monitor clusters using
 Clicking on the card will visualize the cluster into a tree graph as shown in
 the figure below.
 
-![Percona Proxy GUI Percona Proxy Cluster visualization](./images/Percona-Proxy GUI-cluster-visualization.png)
+![Percona Proxy GUI Percona Proxy Cluster visualization](./images/Percona-Proxy-GUI-cluster-visualization.png)
 
 ### Annotation
 
@@ -151,7 +151,7 @@ the figure below.
 
 This page shows and allows editing of Percona Proxy parameters.
 
-![Percona Proxy GUI Percona Proxy Settings](./images/Percona-Proxy GUI-settings.png)
+![Percona Proxy GUI Percona Proxy Settings](./images/Percona-Proxy-GUI-settings.png)
 
 ## Annotation
 
@@ -166,7 +166,7 @@ This page shows and allows editing of Percona Proxy parameters.
 
 This page show real-time Percona Proxy logs with filter options.
 
-![Percona Proxy GUI Percona Proxy Logs Archive](./images/Percona-Proxy GUI-logs-archive.png)
+![Percona Proxy GUI Percona Proxy Logs Archive](./images/Percona-Proxy-GUI-logs-archive.png)
 
 ## Annotation
 
@@ -178,7 +178,7 @@ This page show real-time Percona Proxy logs with filter options.
 On this page, you may add numerous worksheets, each of which can be used for
 "Run queries", "Data migration" or "Create an ERD" task.
 
-![Percona Proxy GUI Percona Proxy Workspace](./images/Percona-Proxy GUI-workspace.png)
+![Percona Proxy GUI Percona Proxy Workspace](./images/Percona-Proxy-GUI-workspace.png)
 
 ## Run Queries
 
@@ -192,7 +192,7 @@ The Query Editor worksheet will be rendered in the active worksheet after correc
 
 There are various features in the Query Editor worksheet, the most notable ones are listed below.
 
-![Percona Proxy GUI Workspace Query Editor](./images/Percona-Proxy GUI-workspace-query-editor.png)
+![Percona Proxy GUI Workspace Query Editor](./images/Percona-Proxy-GUI-workspace-query-editor.png)
 
 #### Create a new connection
 
@@ -289,7 +289,7 @@ and limitations [here](../About/Limitations.md#etl-limitations).
 
 #### Connections
 
-![Percona Proxy GUI Workspace Data Migration Set Up Connections](./images/Percona-Proxy GUI-workspace-data-migration-set-up-connections.png)
+![Percona Proxy GUI Workspace Data Migration Set Up Connections](./images/Percona-Proxy-GUI-workspace-data-migration-set-up-connections.png)
 
 Source connection shows the most common parameter inputs for creating
 an ODBC connection. For extra parameters, enable the `Advanced` mode
@@ -300,7 +300,7 @@ click on the `Select objects to migrate` to navigate to the next stage.
 
 #### Objects Selection
 
-![Percona Proxy GUI Workspace Data Migration Objects Selection](./images/Percona-Proxy GUI-workspace-data-migration-objects-selection.png)
+![Percona Proxy GUI Workspace Data Migration Objects Selection](./images/Percona-Proxy-GUI-workspace-data-migration-objects-selection.png)
 
 Select the objects you wish to migrate to the MariaDB server.
 
@@ -311,7 +311,7 @@ the question icon for additional information on the modes.
 
 #### Migration
 
-![Percona Proxy GUI Workspace Data Migration Migration Script](./images/Percona-Proxy GUI-workspace-data-migration-migration-script.png)
+![Percona Proxy GUI Workspace Data Migration Migration Script](./images/Percona-Proxy-GUI-workspace-data-migration-migration-script.png)
 
 As shown in the screenshot, you can quickly modify the script for each object
 by selecting the corresponding object in the table and using the editors on the
@@ -322,7 +322,7 @@ executed in parallel.
 
 #### Migration report
 
-![Percona Proxy GUI Workspace Data Migration Migration Report](./images/Percona-Proxy GUI-workspace-data-migration-migration-report.png)
+![Percona Proxy GUI Workspace Data Migration Migration Report](./images/Percona-Proxy-GUI-workspace-data-migration-migration-report.png)
 
 If errors are reported for certain objects, review the output messages and
 adjust the script accordingly. Then, click the `Manage` button and select `Restart`.
@@ -343,7 +343,7 @@ everything after migration, click the `Manage` button, then select
 There are various features in the ERD worksheet, the most notable ones are
 listed below.
 
-![Percona Proxy GUI Workspace ERD](./images/Percona-Proxy GUI-workspace-erd.png)
+![Percona Proxy GUI Workspace ERD](./images/Percona-Proxy-GUI-workspace-erd.png)
 
 ### ERD worksheet
 
@@ -381,7 +381,7 @@ entity. The entity editor will be shown at the bottom of the worksheet.
 
 #### Foreign keys quick common options
 
-![Percona Proxy GUI Workspace ERD FK Options](./images/Percona-Proxy GUI-workspace-erd-fk-options.png)
+![Percona Proxy GUI Workspace ERD FK Options](./images/Percona-Proxy-GUI-workspace-erd-fk-options.png)
 
 - Edit Foreign Key, this opens an editor for viewing/editing foreign keys.
 - Remove Foreign Key.
@@ -402,7 +402,7 @@ be shown in a tooltip.
 
 #### Quickly draw a foreign key link
 
-![Percona Proxy GUI Workspace ERD FK Quick Option](./images/Percona-Proxy GUI-workspace-erd-fk-quick-option.png)
+![Percona Proxy GUI Workspace ERD FK Quick Option](./images/Percona-Proxy-GUI-workspace-erd-fk-quick-option.png)
 
 As shown in the screenshot, a foreign key can be quickly established by
 performing the following actions:
@@ -413,7 +413,7 @@ performing the following actions:
 
 #### Entity editor
 
-![Percona Proxy GUI Workspace ERD Entity editor](./images/Percona-Proxy GUI-workspace-erd-entity-editor.png)
+![Percona Proxy GUI Workspace ERD Entity editor](./images/Percona-Proxy-GUI-workspace-erd-entity-editor.png)
 
 Table columns, foreign keys and indexes can be modified via
 the entity editor which can be accessed quickly by double-clicking
@@ -437,7 +437,7 @@ editor within the dialog.
 
 #### Visual Enhancement options
 
-![Percona Proxy GUI Workspace ERD Visual Enhancements](./images/Percona-Proxy GUI-workspace-erd-visual-enhancements.png)
+![Percona Proxy GUI Workspace ERD Visual Enhancements](./images/Percona-Proxy-GUI-workspace-erd-visual-enhancements.png)
 
 The first section of the top toolbar, there are options to improve the visual of
 the diagram as follows:
