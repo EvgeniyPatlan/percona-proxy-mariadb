@@ -59,7 +59,7 @@ export default {
             )
             const res = await http.get('/percona-proxy?fields[percona-proxy]=version')
             commit(
-                'percona-proxy/SET_MAXSCALE_VERSION',
+                'percona_proxy/SET_MAXSCALE_VERSION',
                 this.vue.$typy(res, 'data.data.attributes.version').safeString,
                 { root: true }
             )
@@ -88,7 +88,7 @@ export default {
                 })
                 router.push(router.app.$route.query.redirect || '/dashboard/servers')
                 await dispatch('fetchLoggedInUserAttrs')
-                await dispatch('percona-proxy/fetchVersion', {}, { root: true })
+                await dispatch('percona_proxy/fetchVersion', {}, { root: true })
             }
         },
         async logout({ commit, rootState }) {

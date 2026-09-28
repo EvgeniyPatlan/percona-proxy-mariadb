@@ -8,18 +8,26 @@ architecture for protocols, routers, filters, monitors and authenticators.
 
 ## Status
 
-Early development. The product is derived from Percona Proxy for MariaDB 23.08.12 and is
-being renamed; until that work lands, parts of the tree, the binaries and the
-packages still carry the upstream names. See `NOTICE` for the provenance and the
-licensing.
+Early development, version 1.0.0. The product is derived from MariaDB MaxScale
+23.08.12. The source tree, the binaries and the packages carry the Percona Proxy
+names; `tools/rename.sh` documents how that rename was produced from the upstream
+import. See `NOTICE` for the provenance and the licensing.
+
+The bundled SQLite parser keeps the upstream names, on both sides of its interface,
+because it is third-party code that is not renamed.
+
+An installation that has not been migrated is still read: when `/etc/percona-proxy.cnf`
+does not exist, `/etc/maxscale.cnf` is used and a warning is logged.
+`percona-proxy-migrate` converts a MaxScale configuration into a Percona Proxy one.
 
 ## License
 
 GNU General Public License, version 2 or later. See `COPYING`.
 
-Percona Proxy 23.08 was published under the Business Source License 1.1 with the Change
-Date 2026-09-21 and the GNU General Public License version 2 or later as the Change
-License. That date has passed, so this code is available under the GPL.
+MariaDB MaxScale 23.08, from which this product is derived, was published under the
+Business Source License 1.1 with the Change Date 2026-09-21 and the GNU General Public
+License version 2 or later as the Change License. That date has passed, so this code is
+available under the GPL.
 
 ## Building
 
@@ -47,5 +55,7 @@ servers. `BUILD/percona/docker` holds the container images.
 
 ## Documentation
 
-The documentation in `Documentation/` is inherited from upstream and still uses the
-upstream names.
+The documentation in `Documentation/` is inherited from upstream. The product names in
+it were renamed with the rest of the tree, but it has not yet been reviewed for
+statements that only hold for MariaDB MaxScale, such as links to the MariaDB
+knowledge base.

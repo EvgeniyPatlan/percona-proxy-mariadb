@@ -241,6 +241,12 @@ const int PERCONA_PROXY_RESTARTING = 75;     /* Percona Proxy must restart (same
 
 // The default configuration file name
 const char default_cnf_fname[] = "percona-proxy.cnf";
+/**
+ * Percona Proxy for MariaDB is derived from MariaDB MaxScale, so a deployment that has not been
+ * migrated yet still keeps its configuration under the old name. It is read when there is no
+ * percona-proxy.cnf, as a migration aid; percona-proxy-migrate converts one into the other.
+ */
+const char legacy_cnf_fname[] = "maxscale.cnf";
 
 string get_absolute_fname(const string& relative_path, const char* fname);
 bool   is_file_and_readable(const string& absolute_pathname);
@@ -805,7 +811,22 @@ string resolve_percona_proxy_conf_fname(const string& cnf_file_arg)
         {
             home_dir += '/';
         }
-        cnf_full_path = get_absolute_fname(home_dir, default_cnf_fname);
+        const char* cnf_fname = default_cnf_fname;
+
+        // Both names are checked with access() rather than with get_absolute_fname(), which
+        // reports an unreadable file as an error: a missing percona-proxy.cnf is not an error
+        // while the MaxScale configuration is still there.
+        if (access((home_dir + default_cnf_fname).c_str(), R_OK) != 0
+            && access((home_dir + legacy_cnf_fname).c_str(), R_OK) == 0)
+        {
+            MXB_WARNING("Reading the MariaDB MaxScale configuration '%s%s', because '%s%s' does "
+                        "not exist. Run percona-proxy-migrate to convert it; reading the old "
+                        "file is a migration aid.",
+                        home_dir.c_str(), legacy_cnf_fname, home_dir.c_str(), default_cnf_fname);
+            cnf_fname = legacy_cnf_fname;
+        }
+
+        cnf_full_path = get_absolute_fname(home_dir, cnf_fname);
     }
 
     if (!cnf_full_path.empty() && !is_file_and_readable(cnf_full_path))
@@ -1035,7 +1056,7 @@ static void usage()
             "dir will be '/path/percona-proxy/var/log/percona-proxy', the config dir will be\n"
             "'/path/percona-proxy/etc' and the default config file will be\n"
             "'/path/percona-proxy/etc/percona-proxy.cnf'.\n\n"
-            "Percona Proxy documentation: https://mariadb.com/kb/en/percona-proxy/ \n",
+            "Percona Proxy documentation: https://github.com/EvgeniyPatlan/percona-proxy-mariadb/tree/main/Documentation \n",
             mxs::configdir(),
             default_cnf_fname,
             mxs::configdir(),

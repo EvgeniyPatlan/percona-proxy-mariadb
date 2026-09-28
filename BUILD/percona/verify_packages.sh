@@ -1,11 +1,11 @@
 #!/bin/bash
 #
-# Verifies percona-maxscale packages on every supported platform.
+# Verifies percona-proxy-mariadb packages on every supported platform.
 #
 # For each platform the script installs the packages in a container of that distribution,
-# points MaxScale at two real MariaDB servers (a master and its replica) and checks that
+# points Percona Proxy at two real MariaDB servers (a master and its replica) and checks that
 # queries are routed, that the monitor sees the replication topology, and that the REST API
-# and the GUI answer. The backends and MaxScale share the host network, so the platforms are
+# and the GUI answer. The backends and Percona Proxy share the host network, so the platforms are
 # verified one after another.
 #
 # Usage: verify_packages.sh (--packages=DIR | --repo-component=NAME) [OPTIONS]
@@ -13,9 +13,11 @@
 #                         (the layout the builder produces) or the packages directly in DIR.
 #     --repo-component=NAME
 #                         Install from repo.percona.com instead, with
-#                         "percona-release enable maxscale NAME", e.g. experimental,
+#                         "percona-release enable $REPO_PRODUCT NAME", e.g. experimental,
 #                         testing, laboratory or release. This is what users install.
-#     --version=X.Y.Z     Fail unless the installed MaxScale reports this version
+#                         The repository for this product is not provisioned yet; set
+#                         REPO_PRODUCT in the environment once it is.
+#     --version=X.Y.Z     Fail unless the installed Percona Proxy reports this version
 #     --platforms=LIST    Space separated subset of: el8 el9 el10 amzn2023 jammy noble
 #                         bookworm trixie (default: all of them)
 #     --port-base=N       First of the five ports used on the host (default: 3000), so that
@@ -32,6 +34,9 @@ VERSION=
 PLATFORMS="el8 el9 el10 amzn2023 jammy noble bookworm trixie"
 KEEP=0
 PORT_BASE=3000
+# The product name percona-release expects. The repository for Percona Proxy for MariaDB is
+# not provisioned on repo.percona.com yet, so this is overridable from the environment.
+REPO_PRODUCT="${REPO_PRODUCT:-percona-proxy}"
 
 BACKEND_IMAGE=mariadb:10.11
 
@@ -44,8 +49,8 @@ set_ports() {
     ADMIN_PORT=$((PORT_BASE + 4))
     MASTER_ID=$MASTER_PORT
     REPLICA_ID=$REPLICA_PORT
-    MASTER_CONTAINER="mxsverify-master-$PORT_BASE"
-    REPLICA_CONTAINER="mxsverify-replica-$PORT_BASE"
+    MASTER_CONTAINER="ppverify-master-$PORT_BASE"
+    REPLICA_CONTAINER="ppverify-replica-$PORT_BASE"
 }
 
 usage() {
@@ -177,9 +182,9 @@ stop_backends() {
     docker rm -f "$MASTER_CONTAINER" "$REPLICA_CONTAINER" > /dev/null 2>&1
 }
 
-write_maxscale_config() {  # write_maxscale_config <file>
+write_percona_proxy_config() {  # write_percona_proxy_config <file>
     cat > "$1" <<EOF
-[maxscale]
+[percona-proxy]
 threads=2
 admin_host=127.0.0.1
 admin_port=$ADMIN_PORT
@@ -230,18 +235,21 @@ port=$READCONN_PORT
 EOF
 }
 
-# The part that runs inside the platform container: install the packages and start MaxScale.
+# The part that runs inside the platform container: install the packages and start Percona Proxy.
 write_container_script() {  # write_container_script <file>
     cat > "$1" <<'EOF'
 set -o errexit
 set -o xtrace
 
-# maxctrl talks to 127.0.0.1:8989 by default, but the admin port follows --port-base.
+# percona-proxyctl talks to 127.0.0.1:8989 by default, but the admin port follows --port-base.
 admin_port=$1
 # Empty for local packages, otherwise the repo.percona.com component to install from.
 repo_component=$2
 expected_version=$3
-printf '#!/bin/sh\nexec maxctrl --hosts 127.0.0.1:%s "$@"\n' "$admin_port" > /usr/local/bin/mxctl
+# Passed in, because the heredoc that writes this script is quoted on purpose: every other
+# expansion here has to happen inside the container, not when the file is written.
+repo_product=$4
+printf '#!/bin/sh\nexec percona-proxyctl --hosts 127.0.0.1:%s "$@"\n' "$admin_port" > /usr/local/bin/mxctl
 chmod +x /usr/local/bin/mxctl
 
 if command -v apt-get > /dev/null
@@ -256,9 +264,9 @@ then
         DEBIAN_FRONTEND=noninteractive apt-get install -y -qq wget gnupg2 lsb-release
         wget -q https://repo.percona.com/apt/percona-release_latest.generic_all.deb
         DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ./percona-release_latest.generic_all.deb
-        percona-release enable maxscale "$repo_component"
+        percona-release enable "$repo_product" "$repo_component"
         apt-get update -qq
-        DEBIAN_FRONTEND=noninteractive apt-get install -y -qq percona-maxscale percona-maxscale-devel
+        DEBIAN_FRONTEND=noninteractive apt-get install -y -qq percona-proxy-mariadb percona-proxy-mariadb-devel
     else
         DEBIAN_FRONTEND=noninteractive apt-get install -y -qq /pkgs/*.deb
     fi
@@ -270,33 +278,33 @@ else
     if [ -n "$repo_component" ]
     then
         dnf install -y -q https://repo.percona.com/yum/percona-release-latest.noarch.rpm
-        percona-release enable maxscale "$repo_component"
-        dnf install -y -q percona-maxscale percona-maxscale-devel
+        percona-release enable "$repo_product" "$repo_component"
+        dnf install -y -q percona-proxy-mariadb percona-proxy-mariadb-devel
     else
         dnf install -y -q /pkgs/*.rpm
     fi
 fi
 
 # The packages must not be built for a different distribution.
-maxscale --version
+percona-proxy --version
 
-if [ -n "$expected_version" ] && ! maxscale --version | grep -q "$expected_version"
+if [ -n "$expected_version" ] && ! percona-proxy --version | grep -q "$expected_version"
 then
-    echo "Expected MaxScale $expected_version but got: $(maxscale --version)"
+    echo "Expected Percona Proxy $expected_version but got: $(percona-proxy --version)"
     exit 1
 fi
 
-install -o maxscale -g maxscale -d /var/log/maxscale /var/lib/maxscale /var/cache/maxscale /run/maxscale
-cp /cnf/maxscale.cnf /etc/maxscale.cnf
+install -o percona-proxy -g percona-proxy -d /var/log/percona-proxy /var/lib/percona-proxy /var/cache/percona-proxy /run/percona-proxy
+cp /cnf/percona-proxy.cnf /etc/percona-proxy.cnf
 
-maxscale -U maxscale -f /etc/maxscale.cnf --log=stdout > /var/log/maxscale/stdout.log 2>&1 &
+percona-proxy -U percona-proxy -f /etc/percona-proxy.cnf --log=stdout > /var/log/percona-proxy/stdout.log 2>&1 &
 
 for i in $(seq 1 60)
 do
     mxctl list servers > /dev/null 2>&1 && break
     sleep 1
 done
-mxctl list servers > /dev/null 2>&1 || { echo "MaxScale did not start"; tail -20 /var/log/maxscale/stdout.log; exit 1; }
+mxctl list servers > /dev/null 2>&1 || { echo "Percona Proxy did not start"; tail -20 /var/log/percona-proxy/stdout.log; exit 1; }
 EOF
 }
 
@@ -318,7 +326,7 @@ in_container() {  # in_container <container> <command...>
     docker exec "$1" sh -c "$2"
 }
 
-sql() {  # sql <port> <query>, through MaxScale
+sql() {  # sql <port> <query>, through Percona Proxy
     docker run --rm --network host "$BACKEND_IMAGE" \
         mariadb -h 127.0.0.1 -P "$1" -u maxuser -pmaxpwd --skip-ssl -N -B -e "$2" 2>/dev/null
 }
@@ -341,12 +349,12 @@ verify_platform() {  # verify_platform <platform>
     echo "== $platform ($image)"
     pkgdir=$(mktemp -d)
     [ -n "$packages" ] && echo "$packages" | while read -r p; do cp "$p" "$pkgdir/"; done
-    write_maxscale_config "$pkgdir/maxscale.cnf"
+    write_percona_proxy_config "$pkgdir/percona-proxy.cnf"
     write_container_script "$pkgdir/setup.sh"
 
-    container="mxsverify-$platform-$PORT_BASE"
+    container="ppverify-$platform-$PORT_BASE"
     docker rm -f "$container" > /dev/null 2>&1
-    # --init reaps the MaxScale process once it exits, so that the shutdown check does not
+    # --init reaps the Percona Proxy process once it exits, so that the shutdown check does not
     # find a zombie.
     if ! docker run -d --name "$container" --network host --init \
         -v "$pkgdir:/pkgs:ro" -v "$pkgdir:/cnf:ro" "$image" sleep infinity > /dev/null
@@ -356,7 +364,7 @@ verify_platform() {  # verify_platform <platform>
         return 1
     fi
 
-    if ! docker exec "$container" sh /pkgs/setup.sh "$ADMIN_PORT" "$REPO_COMPONENT" "$VERSION" \
+    if ! docker exec "$container" sh /pkgs/setup.sh "$ADMIN_PORT" "$REPO_COMPONENT" "$VERSION" "$REPO_PRODUCT" \
         > "$pkgdir/setup.log" 2>&1
     then
         echo "   FAIL  install and start"
@@ -400,12 +408,12 @@ verify_platform() {  # verify_platform <platform>
         in_container "$container" "mxctl list modules --tsv | grep -q mariadbmon && mxctl list modules --tsv | grep -q readwritesplit" || failures=$((failures + 1))
 
     check "no errors in the log" \
-        in_container "$container" "! grep -iE '  (error|alert) *:' /var/log/maxscale/stdout.log" || failures=$((failures + 1))
+        in_container "$container" "! grep -iE '  (error|alert) *:' /var/log/percona-proxy/stdout.log" || failures=$((failures + 1))
 
     check "shuts down cleanly" \
-        in_container "$container" "pkill -TERM -x maxscale;
-            for i in \$(seq 1 30); do pgrep -x maxscale > /dev/null || break; sleep 1; done;
-            ! pgrep -x maxscale && grep -q 'MaxScale shutdown completed' /var/log/maxscale/stdout.log" \
+        in_container "$container" "pkill -TERM -x percona-proxy;
+            for i in \$(seq 1 30); do pgrep -x percona-proxy > /dev/null || break; sleep 1; done;
+            ! pgrep -x percona-proxy && grep -q 'Percona Proxy shutdown completed' /var/log/percona-proxy/stdout.log" \
         || failures=$((failures + 1))
 
     # Clean up for the next platform.

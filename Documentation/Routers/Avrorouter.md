@@ -550,7 +550,7 @@ configuring the Avro C library.
 ```
 
 For more details about building Percona Proxy from source, please refer to the
-[Building Percona Proxy from Source Code](../Getting-Started/Building-Percona Proxy-from-Source-Code.md)
+[Building Percona Proxy from Source Code](../Getting-Started/Building-Percona-Proxy-from-Source-Code.md)
 document.
 
 ## Router Diagnostics

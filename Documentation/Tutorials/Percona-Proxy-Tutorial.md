@@ -14,13 +14,13 @@ This tutorial assumes that one of the standard Percona Proxy binary distribution
 that Percona Proxy is installed using default options.
 
 Building from source code in GitHub is covered in
-[Building from Source](../Getting-Started/Building-Percona Proxy-from-Source-Code.md).
+[Building from Source](../Getting-Started/Building-Percona-Proxy-from-Source-Code.md).
 
 ## Installing Percona Proxy
 
 The precise installation process varies from one distribution to another. Details on
 package installation can be found in the
-[Installation Guide](../Getting-Started/MariaDB-Percona Proxy-Installation-Guide.md).
+[Installation Guide](../Getting-Started/MariaDB-Percona-Proxy-Installation-Guide.md).
 
 ## Creating a user account for Percona Proxy
 

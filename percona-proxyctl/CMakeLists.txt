@@ -6,7 +6,7 @@ if (BUILD_MAXCTRL)
 
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/version.js.in ${CMAKE_CURRENT_BINARY_DIR}/lib/version.js @ONLY)
 
-    file(GLOB_RECURSE MAXCTRL_SOURCES lib/*)
+    file(GLOB_RECURSE PERCONA_PROXYCTL_SOURCES lib/*)
 
     add_custom_target(percona-proxyctl_copy_sources
       COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/copy_sources.sh ${CMAKE_SOURCE_DIR}
@@ -23,7 +23,7 @@ if (BUILD_MAXCTRL)
     if (WITH_SYSTEM_NODEJS)
       # Runs webpack to bundle all the sources and dependencies into one file.
       add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dist/percona-proxyctl.js
-        DEPENDS percona-proxyctl_node_modules ${MAXCTRL_SOURCES} percona-proxyctl.js
+        DEPENDS percona-proxyctl_node_modules ${PERCONA_PROXYCTL_SOURCES} percona-proxyctl.js
         COMMAND npm ci
         COMMAND npm run build
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -41,7 +41,7 @@ if (BUILD_MAXCTRL)
       # Build Percona Proxyctl into a single executable using pkg. This makes it so that
       # the same Node.js version is used in all operating systems.
       add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/percona-proxyctl
-        DEPENDS ${MAXCTRL_SOURCES} percona-proxyctl.js
+        DEPENDS ${PERCONA_PROXYCTL_SOURCES} percona-proxyctl.js
         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build.sh ${CMAKE_SOURCE_DIR}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
       add_custom_target(percona-proxyctl ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/percona-proxyctl percona-proxyctl_node_modules)

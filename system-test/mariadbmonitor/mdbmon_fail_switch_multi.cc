@@ -55,10 +55,10 @@ void test_main(TestConnections& test)
         test.percona_proxy->wait_for_monitor(ticks);
     };
 
-    mxs.ssh_output("maxkeys");
-    auto monpw = mxs.ssh_output("maxpasswd mariadbmon").output;
-    auto replpw = mxs.ssh_output("maxpasswd repl").output;
-    auto svcpw = mxs.ssh_output("maxpasswd skysql").output;
+    mxs.ssh_output("percona-proxy-keys");
+    auto monpw = mxs.ssh_output("percona-proxy-passwd mariadbmon").output;
+    auto replpw = mxs.ssh_output("percona-proxy-passwd repl").output;
+    auto svcpw = mxs.ssh_output("percona-proxy-passwd skysql").output;
     const char mon_name[] = "MariaDB-Monitor";
     mxs.start_and_check_started();
     mxs.alter_monitor(mon_name, "password", monpw);

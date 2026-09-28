@@ -168,7 +168,7 @@ export default {
         }),
         ...mapGetters({
             isAdmin: 'user/isAdmin',
-            getModulesByType: 'percona-proxy/getModulesByType',
+            getModulesByType: 'percona_proxy/getModulesByType',
 
             getAllServicesMap: 'service/getAllServicesMap',
             getAllServicesInfo: 'service/getAllServicesInfo',
@@ -246,7 +246,7 @@ export default {
     methods: {
         ...mapMutations(['SET_REFRESH_RESOURCE', 'SET_FORM_TYPE']),
         ...mapActions({
-            fetchAllMxsObjIds: 'percona-proxy/fetchAllMxsObjIds',
+            fetchAllMxsObjIds: 'percona_proxy/fetchAllMxsObjIds',
             createService: 'service/createService',
             createMonitor: 'monitor/createMonitor',
             createFilter: 'filter/createFilter',
@@ -257,7 +257,7 @@ export default {
             fetchAllMonitors: 'monitor/fetchAllMonitors',
             fetchAllFilters: 'filter/fetchAllFilters',
             fetchAllListeners: 'listener/fetchAllListeners',
-            fetchAllModules: 'percona-proxy/fetchAllModules',
+            fetchAllModules: 'percona_proxy/fetchAllModules',
         }),
         async onCreate() {
             // fetch data before open dlg

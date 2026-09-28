@@ -36,7 +36,7 @@ be closed.
 
 Here is a simple example service definition that uses the servers from the
 [Configuring Servers](../Tutorials/Configuring-Servers.md) tutorial and the
-credentials from the [Percona Proxy Tutorial](../Tutorials/Percona Proxy-Tutorial.md).
+credentials from the [Percona Proxy Tutorial](../Tutorials/Percona-Proxy-Tutorial.md).
 
 ```
 [concat-service]

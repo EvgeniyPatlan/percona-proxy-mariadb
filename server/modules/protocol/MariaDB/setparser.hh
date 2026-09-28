@@ -99,7 +99,7 @@ public:
     {
         status_t rv = NOT_RELEVANT;
 
-        // sizeof(command_byte) + MIN(strlen("SET percona-proxy"), strlen("SET sql_mode=ORACLE"))
+        // sizeof(command_byte) + MIN(strlen("SET @percona_proxy"), strlen("SET sql_mode=ORACLE"))
         if (sql.length() >= 13)
         {
             const char* pStmt = sql.data();
@@ -505,7 +505,7 @@ private:
                 {
                     token = expect_token(MXS_CP_EXPECT_TOKEN("@@LOCAL"), TK_SESSION_VAR);
                 }
-                else if (is_next_alpha('M', 1))
+                else if (is_next_alpha('P', 1))
                 {
                     token = expect_token(MXS_CP_EXPECT_TOKEN("@PERCONA_PROXY"), TK_MAXSCALE_VAR);
                 }

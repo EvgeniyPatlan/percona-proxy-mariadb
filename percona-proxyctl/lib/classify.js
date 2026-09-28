@@ -78,7 +78,7 @@ exports.builder = function (yargs) {
       `
 Classify the statement using Percona Proxy and display the result.
 The possible values for "Parse result", "Type mask" and "Operation"
-can be looked up in https://github.com/mariadb-corporation/Percona Proxy/blob/2.3/include/percona-proxy/query_classifier.h
+can be looked up in https://github.com/mariadb-corporation/MaxScale/blob/2.3/include/percona-proxy/query_classifier.h
 `
     )
     .help()

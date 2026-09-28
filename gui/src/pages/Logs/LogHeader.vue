@@ -74,7 +74,7 @@ export default {
     },
     methods: {
         ...mapMutations({
-            SET_HIDDEN_LOG_LEVELS: 'percona-proxy/SET_HIDDEN_LOG_LEVELS',
+            SET_HIDDEN_LOG_LEVELS: 'percona_proxy/SET_HIDDEN_LOG_LEVELS',
         }),
     },
 }

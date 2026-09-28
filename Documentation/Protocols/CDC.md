@@ -103,4 +103,4 @@ REQUEST-DATA db2.table4 0-11-345
 ## Example Client
 
 Percona Proxy includes an example CDC client application written in Python 3. You can
-find the source code for it [in the Percona Proxy repository](https://github.com/mariadb-corporation/Percona Proxy/tree/2.0/server/modules/protocol/examples/cdc.py).
+find the source code for it [in the Percona Proxy repository](https://github.com/mariadb-corporation/MaxScale/tree/2.0/server/modules/protocol/examples/cdc.py).

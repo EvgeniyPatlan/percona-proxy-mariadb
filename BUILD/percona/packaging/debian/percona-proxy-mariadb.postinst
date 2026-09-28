@@ -2,7 +2,7 @@
 set -e
 
 if [ "$1" = "configure" ]; then
-    sh /usr/share/maxscale/postinst
+    sh /usr/share/percona-proxy/postinst
 fi
 
 #DEBHELPER#

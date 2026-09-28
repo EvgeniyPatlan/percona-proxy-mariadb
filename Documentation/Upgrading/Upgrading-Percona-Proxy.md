@@ -447,7 +447,7 @@ GRANT SELECT ON mysql.tables_priv TO 'username'@'percona_proxy_host';
 Percona Proxy 1.4 upgrades the used password encryption algorithms to more secure ones.
 This requires that the password files are recreated with the `percona-proxy-keys` tool.
 For more information about how to do this, please read the installation guide:
-[Percona Proxy for MariaDB Installation Guide](../Getting-Started/MariaDB-Percona Proxy-Installation-Guide.md)
+[Percona Proxy for MariaDB Installation Guide](../Getting-Started/MariaDB-Percona-Proxy-Installation-Guide.md)
 
 ## SSL
 

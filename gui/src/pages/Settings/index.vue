@@ -79,8 +79,8 @@ export default {
     methods: {
         ...mapActions({
             fetchModuleParameters: 'fetchModuleParameters',
-            fetchMaxScaleParameters: 'percona-proxy/fetchMaxScaleParameters',
-            updateMaxScaleParameters: 'percona-proxy/updateMaxScaleParameters',
+            fetchMaxScaleParameters: 'percona_proxy/fetchMaxScaleParameters',
+            updateMaxScaleParameters: 'percona_proxy/updateMaxScaleParameters',
         }),
         processModuleParams() {
             const parameters = this.$helpers.lodash.cloneDeep(this.module_parameters)

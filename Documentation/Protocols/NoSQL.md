@@ -2437,7 +2437,7 @@ test-suite pass.
 The following is a minimal setup for getting _nosqlprotocol_ up and
 running. It is assumed the reader knows how to configure Percona Proxy for
 normal use. If not, please start with the
-[Percona Proxy tutorial](../Tutorials/Percona Proxy-Tutorial.md).
+[Percona Proxy tutorial](../Tutorials/Percona-Proxy-Tutorial.md).
 Note that as _nosqlprotocol_ is the first component in the Percona Proxy
 routing chain, it can be used with all routers and filters.
 

@@ -6,7 +6,7 @@ This document describes the changes in release 23.08.2, when compared to the
 previous release in the same series.
 
 If you are upgrading from an older major version of Percona Proxy, please read the
-[upgrading document](../Upgrading/Upgrading-To-Percona Proxy-23.08.md) for
+[upgrading document](../Upgrading/Upgrading-To-Percona-Proxy-23.08.md) for
 this Percona Proxy version.
 
 For any problems you encounter, please consider submitting a bug
@@ -77,4 +77,4 @@ with the version of Percona Proxy. For instance, the tag of version X.Y.Z of Per
 is `percona-proxy-X.Y.Z`. Further, the default branch is always the latest GA version
 of Percona Proxy.
 
-The source code is available [here](https://github.com/mariadb-corporation/Percona Proxy).
+The source code is available [here](https://github.com/mariadb-corporation/MaxScale).

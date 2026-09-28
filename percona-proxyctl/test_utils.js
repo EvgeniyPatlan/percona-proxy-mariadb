@@ -48,11 +48,11 @@ function stopPerconaProxy() {
 
 // Execute a single Percona Proxyctl command, returns a Promise
 function doCommand(command) {
-  var percona_proxyctl_cmd = process.env.MAXCTRL_CMD;
+  var percona_proxyctl_cmd = process.env.PERCONA_PROXYCTL_CMD;
   if (percona_proxyctl_cmd == null) {
     // Run the tests directly from the sources
     var ctrl = require("./lib/core.js");
-    process.env["MAXCTRL_WARNINGS"] = "0";
+    process.env["PERCONA_PROXYCTL_WARNINGS"] = "0";
     return ctrl.execute(command.split(" "));
   }
 
@@ -61,7 +61,7 @@ function doCommand(command) {
     const cmd = args.shift();
 
     var ret = spawnSync(cmd, args, {
-      env: { MAXCTRL_WARNINGS: "0" },
+      env: { PERCONA_PROXYCTL_WARNINGS: "0" },
     });
 
     if (ret.status != 0) {

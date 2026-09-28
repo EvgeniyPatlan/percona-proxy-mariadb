@@ -30,7 +30,7 @@ To close the connection, destroy the instantiated object.
 ## Examples
 
 The source code
-[contains an example](https://github.com/mariadb-corporation/Percona Proxy/blob/2.2/connectors/cdc-connector/examples/main.cpp)
+[contains an example](https://github.com/mariadb-corporation/MaxScale/blob/2.2/connectors/cdc-connector/examples/main.cpp)
 that demonstrates basic usage of the Percona Proxy CDC Connector.
 
 ## Dependencies

@@ -249,6 +249,7 @@ endif()
 
 install_file(etc/percona-proxy.cnf.template core)
 install_script(script/percona-proxy-generate-support-info.py core)
+install_script(script/percona-proxy-migrate core)
 
 # Install the template into /etc
 if(WITH_MAXSCALE_CNF AND (NOT TARGET_COMPONENT OR "core" STREQUAL "${TARGET_COMPONENT}"))

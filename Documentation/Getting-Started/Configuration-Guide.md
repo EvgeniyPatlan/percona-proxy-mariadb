@@ -116,7 +116,7 @@ The administation of Percona Proxy can be divided in two parts:
 
 * Writing the Percona Proxy configuration file, which is described in the following
   [section](#configuration).
-* Performing runtime modifications using [Percona Proxyctl](../Reference/Percona Proxyctl.md)
+* Performing runtime modifications using [Percona Proxyctl](../Reference/Percona-Proxyctl.md)
 
 For detailed information about _Percona Proxyctl_ please refer to the specific
 documentation referred to above. In the following it will only be explained how
@@ -4208,11 +4208,11 @@ Read the following documents for different methods of altering the Percona Proxy
 configuration at runtime.
 
 * Percona Proxyctl
-  * [`create`](../Reference/Percona Proxyctl.md#create)
-  * [`destroy`](../Reference/Percona Proxyctl.md#destroy)
-  * [`add`](../Reference/Percona Proxyctl.md#add)
-  * [`remove`](../Reference/Percona Proxyctl.md#remove)
-  * [`alter`](../Reference/Percona Proxyctl.md#alter)
+  * [`create`](../Reference/Percona-Proxyctl.md#create)
+  * [`destroy`](../Reference/Percona-Proxyctl.md#destroy)
+  * [`add`](../Reference/Percona-Proxyctl.md#add)
+  * [`remove`](../Reference/Percona-Proxyctl.md#remove)
+  * [`alter`](../Reference/Percona-Proxyctl.md#alter)
 
 * [REST API](../REST-API/API.md) documentation
 
@@ -4867,9 +4867,9 @@ query_classifier_cache_size=3100000000
 
 # Troubleshooting
 
-For a list of common problems and their solutions, read the
-[Percona Proxy Troubleshooting](https://mariadb.com/kb/en/percona-proxy-troubleshooting/)
-article on the MariaDB Knowledge Base.
+For a list of common problems and their solutions, read the documentation in this
+repository. Percona Proxy for MariaDB is derived from MariaDB MaxScale, so the
+troubleshooting articles in the MariaDB Knowledge Base describe the same software.
 
 ## Systemd Watchdog
 

@@ -20,7 +20,7 @@ Without this comment, the pull request will not be accepted.
   branch. For bug fixes or minor improvements, use the default branch (at the
   time of writing `2.1`).  For new features, use the `develop` branch.
 
-* Please ensure that your code follows our [Coding Style](https://github.com/mariadb-corporation/Percona Proxy/wiki/Coding-Style-and-Guidelines).
+* Please ensure that your code follows our [Coding Style](Development/coding-style-and-guidelines.md).
   All new code should be formatted with the
-  [Astyle configuration](https://github.com/mariadb-corporation/Percona Proxy/wiki/Coding-Style-and-Guidelines#tldr)
+  [uncrustify configuration](uncrustify.cfg)
   provided with the Percona Proxy source code.

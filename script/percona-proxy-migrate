@@ -1,0 +1,179 @@
+#!/bin/bash
+#
+# Converts a MariaDB MaxScale installation into a Percona Proxy for MariaDB one.
+#
+# Percona Proxy for MariaDB is derived from MariaDB MaxScale, and keeps the same configuration
+# syntax, but every path, the section name, the system user and the service carry the new name.
+# This script reads the MaxScale configuration and writes the Percona Proxy equivalent. It never
+# removes anything: the MaxScale files are left exactly as they are, so a migration can be
+# undone by stopping percona-proxy and starting maxscale again.
+#
+# Percona Proxy also reads /etc/maxscale.cnf when /etc/percona-proxy.cnf does not exist, so an
+# unmigrated installation still starts. That fallback is a migration aid; converting the
+# configuration with this script is what makes the new paths take effect.
+#
+# Usage: percona-proxy-migrate [OPTIONS]
+#     --from=FILE      MaxScale configuration (default: /etc/maxscale.cnf)
+#     --to=FILE        Configuration to write (default: /etc/percona-proxy.cnf)
+#     --data           Also copy the persisted configuration and the data directory
+#     --dry-run        Print what would be done and change nothing
+#     --force          Overwrite the target if it exists
+#     --help           This text
+#
+set -o errexit
+set -o nounset
+set -o pipefail
+
+FROM=/etc/maxscale.cnf
+TO=/etc/percona-proxy.cnf
+COPY_DATA=0
+DRY_RUN=0
+FORCE=0
+
+OLD_NAME=maxscale
+NEW_NAME=percona-proxy
+
+usage()
+{
+    sed -n '3,25p' "$0" | sed 's/^#//; s/^ //'
+}
+
+die()
+{
+    echo >&2 "error: $*"
+    exit 1
+}
+
+run()
+{
+    if [ "$DRY_RUN" = 1 ]
+    then
+        echo "would: $*"
+    else
+        "$@"
+    fi
+}
+
+for arg in "$@"
+do
+    case "$arg" in
+        --from=*)  FROM="${arg#*=}" ;;
+        --to=*)    TO="${arg#*=}" ;;
+        --data)    COPY_DATA=1 ;;
+        --dry-run) DRY_RUN=1 ;;
+        --force)   FORCE=1 ;;
+        --help|-h) usage; exit 0 ;;
+        *)         die "unknown option '$arg'; --help lists them" ;;
+    esac
+done
+
+[ -r "$FROM" ] || die "cannot read '$FROM'. Pass --from=FILE if the configuration is elsewhere."
+
+if [ -e "$TO" ] && [ "$FORCE" = 0 ]
+then
+    die "'$TO' already exists. Pass --force to overwrite it."
+fi
+
+# The conversion is deliberately narrow: only the names this product renamed are touched, so
+# that hostnames, user names and passwords that happen to contain the old name are left alone.
+#   [maxscale]                  the global section
+#   /var/{lib,log,cache,run}/maxscale, /etc/maxscale.cnf.d   the paths owned by the packages
+#   maxscale.cnf.d              the persisted configuration subdirectory
+# END is what may follow a converted directory, so that /var/lib/maxscale and
+# /var/lib/maxscale/foo are rewritten but /var/lib/maxscale-extra-app, which belongs to
+# something else, is not. Extended regular expressions are used for the alternation, with @ as
+# the delimiter because | separates the branches.
+END='([^A-Za-z0-9_-]|$)'
+
+convert()
+{
+    sed -E -e "s@^\\[${OLD_NAME}\\]@[${NEW_NAME}]@" \
+           -e "s@/var/lib/${OLD_NAME}${END}@/var/lib/${NEW_NAME}\\1@g" \
+           -e "s@/var/log/${OLD_NAME}${END}@/var/log/${NEW_NAME}\\1@g" \
+           -e "s@/var/cache/${OLD_NAME}${END}@/var/cache/${NEW_NAME}\\1@g" \
+           -e "s@/var/run/${OLD_NAME}${END}@/var/run/${NEW_NAME}\\1@g" \
+           -e "s@/run/${OLD_NAME}${END}@/run/${NEW_NAME}\\1@g" \
+           -e "s@/usr/lib64/${OLD_NAME}${END}@/usr/lib64/${NEW_NAME}\\1@g" \
+           -e "s@/usr/share/${OLD_NAME}${END}@/usr/share/${NEW_NAME}\\1@g" \
+           -e "s@/etc/${OLD_NAME}\\.cnf@/etc/${NEW_NAME}.cnf@g" \
+           -e "s@${OLD_NAME}\\.cnf\\.d${END}@${NEW_NAME}.cnf.d\\1@g" \
+           -e "s|@${OLD_NAME}\\.|@percona_proxy.|g" \
+           "$1"
+}
+
+echo "Converting '$FROM' -> '$TO'"
+
+if [ "$DRY_RUN" = 1 ]
+then
+    echo "--- the result would be:"
+    convert "$FROM"
+else
+    convert "$FROM" > "$TO.tmp"
+    chmod --reference="$FROM" "$TO.tmp" 2>/dev/null || chmod 0644 "$TO.tmp"
+    mv "$TO.tmp" "$TO"
+fi
+
+# Additional configuration files are read from <name>.cnf.d next to the configuration.
+from_dir="${FROM%.cnf}.cnf.d"
+to_dir="${TO%.cnf}.cnf.d"
+
+if [ -d "$from_dir" ]
+then
+    echo "Converting the files in '$from_dir' -> '$to_dir'"
+    run mkdir -p "$to_dir"
+    for file in "$from_dir"/*.cnf
+    do
+        [ -e "$file" ] || continue
+        target="$to_dir/$(basename "$file")"
+        if [ "$DRY_RUN" = 1 ]
+        then
+            echo "would: convert $file -> $target"
+        else
+            convert "$file" > "$target"
+        fi
+    done
+fi
+
+if [ "$COPY_DATA" = 1 ]
+then
+    # The persisted configuration that the REST API writes, and the data directory. They are
+    # copied rather than moved, so that MaxScale still has them.
+    for pair in "/var/lib/${OLD_NAME}:/var/lib/${NEW_NAME}" "/var/cache/${OLD_NAME}:/var/cache/${NEW_NAME}"
+    do
+        src="${pair%%:*}"
+        dst="${pair##*:}"
+        if [ -d "$src" ]
+        then
+            echo "Copying '$src' -> '$dst'"
+            run mkdir -p "$dst"
+            run cp -a "$src/." "$dst/"
+            run chown -R "${NEW_NAME}:${NEW_NAME}" "$dst"
+        fi
+    done
+
+    # The persisted configuration names the old directory in the same way the main file does.
+    persisted="/var/lib/${NEW_NAME}/${NEW_NAME}.cnf.d"
+    old_persisted="/var/lib/${NEW_NAME}/${OLD_NAME}.cnf.d"
+    if [ "$DRY_RUN" = 0 ] && [ -d "$old_persisted" ] && [ ! -e "$persisted" ]
+    then
+        mv "$old_persisted" "$persisted"
+        for file in "$persisted"/*.cnf
+        do
+            [ -e "$file" ] || continue
+            convert "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+        done
+    fi
+fi
+
+cat <<EOF
+
+Done. What is left to do:
+
+  1. Check '$TO'. Anything this script does not know about, such as a path under a directory
+     of your own, keeps the name it had.
+  2. Stop MaxScale:            systemctl stop maxscale
+  3. Start Percona Proxy:      systemctl enable --now percona-proxy
+  4. Check that it is healthy: percona-proxyctl list servers
+
+The MaxScale configuration and data were not removed, so step 2 and 3 can be reversed.
+EOF

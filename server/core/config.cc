@@ -4211,12 +4211,16 @@ post_process_config(mxb::ini::map_result::ParseResult&& res)
         bool conflict_found = false;
         auto case_fix_iter = res.config.end();
 
-        // Check that the config has only one section name that case-insensitively matches "percona-proxy".
+        // Check that the config has only one section name that case-insensitively matches
+        // "percona-proxy". The MariaDB MaxScale name of the section is accepted as well, so that
+        // a configuration that has not been migrated is read rather than having its global
+        // section silently ignored; it is renamed below, like a section that differs only in case.
         for (auto it = res.config.begin(); it != res.config.end(); ++it)
         {
             const auto& section = *it;
             const string& header = section.first;
-            if (strcasecmp(header.c_str(), CN_MAXSCALE) == 0)
+            if (strcasecmp(header.c_str(), CN_MAXSCALE) == 0
+                || strcasecmp(header.c_str(), CN_MAXSCALE_LEGACY) == 0)
             {
                 // Equivalent to "percona-proxy".
                 if (first_mxs_lineno < 0)
@@ -4243,8 +4247,20 @@ post_process_config(mxb::ini::map_result::ParseResult&& res)
         if (first_mxs_lineno >= 0 && !conflict_found && case_fix_iter != res.config.end())
         {
             // Replace the section name so that later checks don't need to worry about case-insensitivity.
-            warning = mxb::string_printf("Section header '%s' at line %i is interpreted as "
-                                         "'percona-proxy'.", case_fix_iter->first.c_str(), first_mxs_lineno);
+            if (strcasecmp(case_fix_iter->first.c_str(), CN_MAXSCALE_LEGACY) == 0)
+            {
+                warning = mxb::string_printf(
+                    "Section header '%s' at line %i is the MariaDB MaxScale name of the global "
+                    "section and is interpreted as '%s'. Run percona-proxy-migrate to convert the "
+                    "configuration.",
+                    case_fix_iter->first.c_str(), first_mxs_lineno, CN_MAXSCALE);
+            }
+            else
+            {
+                warning = mxb::string_printf("Section header '%s' at line %i is interpreted as "
+                                             "'percona-proxy'.",
+                                             case_fix_iter->first.c_str(), first_mxs_lineno);
+            }
             auto section_data_temp = std::move(case_fix_iter->second);
             res.config.erase(case_fix_iter);
             res.config.emplace(CN_MAXSCALE, std::move(section_data_temp));

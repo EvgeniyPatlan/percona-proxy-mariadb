@@ -39,18 +39,18 @@ application will use.
 
 ```
 -- Create the user for the service
--- https://mariadb.com/kb/en/mariadb-percona-proxy-2308-authentication-modules/#required-grants
+-- https://mariadb.com/kb/en/mariadb-maxscale-2308-authentication-modules/#required-grants
 CREATE USER 'service_user'@'%' IDENTIFIED BY 'secret';
 GRANT SELECT ON mysql.* TO 'service_user'@'%';
 GRANT SHOW DATABASES ON *.* TO 'service_user'@'%';
 
 -- Create the user for the monitor
--- https://mariadb.com/kb/en/mariadb-percona-proxy-2308-galera-monitor/#required-grants
+-- https://mariadb.com/kb/en/mariadb-maxscale-2308-galera-monitor/#required-grants
 CREATE USER 'monitor_user'@'%' IDENTIFIED BY 'secret';
 GRANT REPLICATION CLIENT ON *.* TO 'monitor_user'@'%';
 
 -- Create the application user
--- https://mariadb.com/kb/en/mariadb-percona-proxy-2308-authentication-modules/#limitations-and-troubleshooting
+-- https://mariadb.com/kb/en/mariadb-maxscale-2308-authentication-modules/#limitations-and-troubleshooting
 CREATE USER app_user@'%' IDENTIFIED BY 'secret';
 GRANT SELECT, INSERT, UPDATE, DELETE ON *.* TO app_user@'%';
 ```

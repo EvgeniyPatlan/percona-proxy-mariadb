@@ -43,7 +43,7 @@ const auto trx_active = TrxState::TRX_ACTIVE;
 const auto trx_ro = TrxState::TRX_ACTIVE | TrxState::TRX_READ_ONLY;
 
 // See
-// https://github.com/mariadb-corporation/Percona Proxy/blob/2.2/Documentation/Filters/Cache.md#cache_inside_transactions
+// https://github.com/mariadb-corporation/MaxScale/blob/2.2/Documentation/Filters/Cache.md#cache_inside_transactions
 struct TEST_CASE
 {
     cache_in_trxs_t cit;        /*< How to cache in transactions. */

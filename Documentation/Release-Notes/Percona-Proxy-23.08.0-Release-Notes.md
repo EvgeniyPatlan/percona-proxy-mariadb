@@ -171,10 +171,10 @@ Numerous additions have been added and improvements made to Percona Proxy GUI.
 The most notable ones are listed here:
 
 * [MXS-3735](https://jira.mariadb.org/browse/MXS-3735) Add ERD modeler to the
-workspace. Instructions on using it can be found [here](../Tutorials/Using-Percona Proxy GUI-Tutorial.md#create-an-erd).
+workspace. Instructions on using it can be found [here](../Tutorials/Using-Percona-Proxy GUI-Tutorial.md#create-an-erd).
 
 * [MXS-3991](https://jira.mariadb.org/browse/MXS-3991) Show schema objects
-insights. Instructions on using it can be found [here](../Tutorials/Using-Percona Proxy GUI-Tutorial.md#show-object-creation-statement-and-insights-info).
+insights. Instructions on using it can be found [here](../Tutorials/Using-Percona-Proxy GUI-Tutorial.md#show-object-creation-statement-and-insights-info).
 
 * [MXS-4364](https://jira.mariadb.org/browse/MXS-4364) Auto choose active schema for new query tab.
 
@@ -200,4 +200,4 @@ with the version of Percona Proxy. For instance, the tag of version X.Y.Z of Per
 is `percona-proxy-X.Y.Z`. Further, the default branch is always the latest GA version
 of Percona Proxy.
 
-The source code is available [here](https://github.com/mariadb-corporation/Percona Proxy).
+The source code is available [here](https://github.com/mariadb-corporation/MaxScale).

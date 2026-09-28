@@ -3,24 +3,24 @@
 
 ## About Percona Proxy for MariaDB
 
- - [About Percona Proxy for MariaDB](About/About-Percona Proxy.md)
+ - [About Percona Proxy for MariaDB](About/About-Percona-Proxy.md)
  - [Changelog](Changelog.md)
  - [Limitations](About/Limitations.md)
 
 ## Getting Started
 
- - [Percona Proxy for MariaDB Installation Guide](Getting-Started/MariaDB-Percona Proxy-Installation-Guide.md)
- - [Building Percona Proxy for MariaDB from Source Code](Getting-Started/Building-Percona Proxy-from-Source-Code.md)
+ - [Percona Proxy for MariaDB Installation Guide](Getting-Started/MariaDB-Percona-Proxy-Installation-Guide.md)
+ - [Building Percona Proxy for MariaDB from Source Code](Getting-Started/Building-Percona-Proxy-from-Source-Code.md)
  - [Configuration Guide](Getting-Started/Configuration-Guide.md)
- - [Percona Proxy GUI](Getting-Started/Percona Proxy GUI.md)
+ - [Percona Proxy GUI](Getting-Started/Percona-Proxy GUI.md)
 
 ## Upgrading Percona Proxy for MariaDB
 
-- [Upgrading Percona Proxy](Upgrading/Upgrading-Percona Proxy.md)
+- [Upgrading Percona Proxy](Upgrading/Upgrading-Percona-Proxy.md)
 
 ## Reference
 
- - [Percona Proxyctl - Command Line Admin Interface](Reference/Percona Proxyctl.md)
+ - [Percona Proxyctl - Command Line Admin Interface](Reference/Percona-Proxyctl.md)
  - [Percona Proxy REST API](REST-API/API.md)
  - [Module Commands](Reference/Module-Commands.md)
  - [Routing Hints](Reference/Hint-Syntax.md)
@@ -29,7 +29,7 @@
 
 The main tutorial for Percona Proxy for MariaDB consist of setting up Percona Proxy for MariaDB for the environment you are using with either a connection-based or a read/write-based configuration.
 
- - [Percona Proxy for MariaDB Tutorial](Tutorials/Percona Proxy-Tutorial.md)
+ - [Percona Proxy for MariaDB Tutorial](Tutorials/Percona-Proxy-Tutorial.md)
 
 These tutorials are for specific use cases and module combinations.
 

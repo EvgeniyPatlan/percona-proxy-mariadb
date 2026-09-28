@@ -85,9 +85,10 @@ export default {
             if (meta.external) {
                 let url = meta.external
                 if (url === 'document') {
-                    const parts = this.percona_proxy_version.split('.')
-                    const ver = `${parts[0]}-${parts[1]}` //  e.g. 23-02
-                    url = `https://mariadb.com/kb/en/mariadb-percona-proxy-${ver}/`
+                    // The documentation ships with the source; there is no knowledge base
+                    // keyed by version to derive a URL from.
+                    url =
+                        'https://github.com/EvgeniyPatlan/percona-proxy-mariadb/tree/main/Documentation'
                 }
                 window.open(url, '_blank', 'noopener,noreferrer')
             } else {

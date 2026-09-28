@@ -52,9 +52,9 @@ export default {
     },
     methods: {
         ...mapActions({
-            fetchMaxScaleOverviewInfo: 'percona-proxy/fetchMaxScaleOverviewInfo',
-            fetchThreadStats: 'percona-proxy/fetchThreadStats',
-            genThreadsDataSets: 'percona-proxy/genDataSets',
+            fetchMaxScaleOverviewInfo: 'percona_proxy/fetchMaxScaleOverviewInfo',
+            fetchThreadStats: 'percona_proxy/fetchThreadStats',
+            genThreadsDataSets: 'percona_proxy/genDataSets',
 
             fetchAllServers: 'server/fetchAllServers',
             genServersConnectionsDataSets: 'server/genDataSets',

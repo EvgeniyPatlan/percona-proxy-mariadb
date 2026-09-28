@@ -1,28 +1,28 @@
 FROM redhat/ubi9-minimal
 
 # Please don't remove old-style LABEL since it's needed for RedHat certification
-LABEL name="Percona MaxScale" \
+LABEL name="Percona Proxy for MariaDB" \
       vendor="Percona" \
       summary="Database proxy for MariaDB and MySQL" \
-      description="MariaDB MaxScale is a database proxy that forwards database statements to one or more servers, using complex rules, a semantic understanding of the statements and the roles of the servers in the backend cluster. It provides load balancing and high availability transparently to the applications." \
+      description="Percona Proxy for MariaDB is a database proxy that forwards database statements to one or more servers, using complex rules, a semantic understanding of the statements and the roles of the servers in the backend cluster. It provides load balancing and high availability transparently to the applications." \
       maintainer="Percona Development <info@percona.com>"
 
-LABEL org.opencontainers.image.title="Percona MaxScale"
+LABEL org.opencontainers.image.title="Percona Proxy for MariaDB"
 LABEL org.opencontainers.image.vendor="Percona"
-LABEL org.opencontainers.image.description="MariaDB MaxScale is a database proxy that forwards \
+LABEL org.opencontainers.image.description="Percona Proxy for MariaDB is a database proxy that forwards \
 database statements to one or more servers, using complex rules, a semantic understanding of the \
 statements and the roles of the servers in the backend cluster."
 LABEL org.opencontainers.image.license="GPL-2.0-or-later"
 LABEL org.opencontainers.image.authors="info@percona.com"
 
 # The component of repo.percona.com to install from, and the version to pin to.
-ARG MAXSCALE_VERSION=23.08.12
-ARG MAXSCALE_RELEASE=1
+ARG PERCONA_PROXY_VERSION=1.0.0
+ARG PERCONA_PROXY_RELEASE=1
 ARG REPO_COMPONENT=experimental
 
-ENV MAXSCALE_VERSION=${MAXSCALE_VERSION}
-LABEL org.label-schema.schema-version=${MAXSCALE_VERSION}
-LABEL org.opencontainers.image.version=${MAXSCALE_VERSION}
+ENV PERCONA_PROXY_VERSION=${PERCONA_PROXY_VERSION}
+LABEL org.label-schema.schema-version=${PERCONA_PROXY_VERSION}
+LABEL org.opencontainers.image.version=${PERCONA_PROXY_VERSION}
 
 # Check the repository package signature in a secure way.
 RUN set -ex; \
@@ -36,11 +36,11 @@ RUN set -ex; \
     rpm -i /tmp/percona-release.rpm; \
     rm -rf "$GNUPGHOME" /tmp/percona-release.rpm; \
     rpm --import /etc/pki/rpm-gpg/PERCONA-PACKAGING-KEY; \
-    percona-release enable maxscale ${REPO_COMPONENT}
+    percona-release enable percona-proxy ${REPO_COMPONENT}
 
 RUN set -ex; \
     microdnf install -y \
-        percona-maxscale-${MAXSCALE_VERSION}-${MAXSCALE_RELEASE}.el9 \
+        percona-proxy-mariadb-${PERCONA_PROXY_VERSION}-${PERCONA_PROXY_RELEASE}.el9 \
         shadow-utils \
         procps-ng \
         hostname; \
@@ -48,28 +48,28 @@ RUN set -ex; \
     microdnf clean all; \
     rm -rf /var/cache/dnf /var/cache/yum
 
-# MaxScale runs as this user; the packages create it, so only the ownership is set here.
+# Percona Proxy runs as this user; the packages create it, so only the ownership is set here.
 RUN set -ex; \
-    install -o maxscale -g maxscale -m 0755 -d \
-        /var/lib/maxscale /var/log/maxscale /var/cache/maxscale /run/maxscale \
-        /var/lib/maxscale/maxscale.cnf.d; \
+    install -o percona-proxy -g percona-proxy -m 0755 -d \
+        /var/lib/percona-proxy /var/log/percona-proxy /var/cache/percona-proxy /run/percona-proxy \
+        /var/lib/percona-proxy/percona-proxy.cnf.d; \
     mkdir -p /licenses; \
-    cp /usr/share/maxscale/LICENSE.TXT /licenses/LICENSE.maxscale; \
-    cp /usr/share/maxscale/GPL-2.0.txt /licenses/GPL-2.0.txt
+    cp /usr/share/percona-proxy/LICENSE.TXT /licenses/LICENSE.percona-proxy; \
+    cp /usr/share/percona-proxy/GPL-2.0.txt /licenses/GPL-2.0.txt
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-COPY maxscale.cnf /etc/maxscale.cnf
+COPY percona-proxy.cnf /etc/percona-proxy.cnf
 RUN chmod +x /usr/local/bin/entrypoint.sh; \
-    chown maxscale:maxscale /etc/maxscale.cnf
+    chown percona-proxy:percona-proxy /etc/percona-proxy.cnf
 
 # readwritesplit, readconnroute and the REST API / GUI
 EXPOSE 4006 4008 8989
 
-VOLUME ["/var/lib/maxscale", "/var/log/maxscale"]
+VOLUME ["/var/lib/percona-proxy", "/var/log/percona-proxy"]
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
-    CMD maxctrl list servers > /dev/null || exit 1
+    CMD percona-proxyctl list servers > /dev/null || exit 1
 
-USER maxscale
+USER percona-proxy
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["maxscale"]
+CMD ["percona-proxy"]

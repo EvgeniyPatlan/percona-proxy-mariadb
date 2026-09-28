@@ -107,7 +107,7 @@ export default {
             prev_filtered_log_link: state => state.percona_proxy.prev_filtered_log_link,
             prev_filtered_log_data: state => state.percona_proxy.prev_filtered_log_data,
         }),
-        ...mapGetters({ getChosenLogLevels: 'percona-proxy/getChosenLogLevels' }),
+        ...mapGetters({ getChosenLogLevels: 'percona_proxy/getChosenLogLevels' }),
 
         logToShow() {
             if (this.isFiltering) return this.filteredLogData
@@ -151,8 +151,8 @@ export default {
         this.cleanUp()
     },
     methods: {
-        ...mapActions('percona-proxy', ['fetchLatestLogs', 'fetchPrevLog', 'fetchPrevFilteredLog']),
-        ...mapMutations('percona-proxy', ['SET_PREV_FILTERED_LOG_LINK']),
+        ...mapActions('percona_proxy', ['fetchLatestLogs', 'fetchPrevLog', 'fetchPrevFilteredLog']),
+        ...mapMutations('percona_proxy', ['SET_PREV_FILTERED_LOG_LINK']),
         /**
          * This function get latest log line
          * It assigns latest_logs to allLogData

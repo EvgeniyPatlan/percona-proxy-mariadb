@@ -28,7 +28,7 @@ can be intercepted from the network traffic. Refer to the
 details on how to enable HTTPS for the Percona Proxy REST API.
 
 For more details on how administrative interface users are created and managed,
-refer to the [Percona Proxyctl](../Reference/Percona Proxyctl.md) documentation as well as the
+refer to the [Percona Proxyctl](../Reference/Percona-Proxyctl.md) documentation as well as the
 documentation of the [users](Resources-User.md) resource.
 
 ### JSON Web Tokens
@@ -130,7 +130,7 @@ given in the HTTP query string.
 The Percona Proxy REST API provides the following resources. All resources conform to
 the [JSON API](http://jsonapi.org/format/) specification.
 
-- [percona-proxy](Resources-Percona Proxy.md)
+- [percona-proxy](Resources-Percona-Proxy.md)
 - [services](Resources-Service.md)
 - [servers](Resources-Server.md)
 - [listeners](Resources-Listener.md)

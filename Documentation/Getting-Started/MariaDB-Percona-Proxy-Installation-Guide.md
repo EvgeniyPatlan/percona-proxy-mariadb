@@ -36,13 +36,13 @@ Percona Proxy can also be installed using a tarball.
 That may be required if you are using a Linux distribution for which there
 exist no installation package or if you want to install many different
 Percona Proxy versions side by side. For instructions on how to do that, please refer to
-[Install Percona Proxy for MariaDB using a Tarball](Install-MariaDB-Percona Proxy-Using-a-Tarball.md).
+[Install Percona Proxy for MariaDB using a Tarball](Install-MariaDB-Percona-Proxy-Using-a-Tarball.md).
 
 ## Building Percona Proxy for MariaDB From Source Code
 
 Alternatively you may download the Percona Proxy for MariaDB source and build your own binaries.
 To do this, refer to the separate document
-[Building Percona Proxy for MariaDB from Source Code](Building-Percona Proxy-from-Source-Code.md)
+[Building Percona Proxy for MariaDB from Source Code](Building-Percona-Proxy-from-Source-Code.md)
 
 ## Assumptions
 
@@ -76,7 +76,7 @@ cat /proc/sys/vm/overcommit_memory
 
 ## Configuring Percona Proxy for MariaDB
 
-[The Percona Proxy Tutorial](../Tutorials/Percona Proxy-Tutorial.md) covers the first
+[The Percona Proxy Tutorial](../Tutorials/Percona-Proxy-Tutorial.md) covers the first
 steps in configuring your Percona Proxy for MariaDB installation. Follow this tutorial
 to learn how to configure and start using Percona Proxy.
 
@@ -93,7 +93,7 @@ configuration file.
 ## Administration Of Percona Proxy for MariaDB
 
 There are various administration tasks that may be done with Percona Proxy for MariaDB.
-A command line tools is available, [percona-proxyctl](../Reference/Percona Proxyctl.md), that will
+A command line tools is available, [percona-proxyctl](../Reference/Percona-Proxyctl.md), that will
 interact with a running Percona Proxy for MariaDB and allow the status of MariaDB
 Percona Proxy to be monitored and give some control of the Percona Proxy for MariaDB
 functionality.

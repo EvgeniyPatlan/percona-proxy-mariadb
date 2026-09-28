@@ -43,7 +43,7 @@ configuring CMake.
 This installs Percona Proxy as if it was installed from a package. Install `git` before running the following commands.
 
 ```
-git clone https://github.com/mariadb-corporation/Percona Proxy
+git clone https://github.com/mariadb-corporation/MaxScale
 mkdir build
 cd build
 ../Percona Proxy/BUILD/install_build_deps.sh

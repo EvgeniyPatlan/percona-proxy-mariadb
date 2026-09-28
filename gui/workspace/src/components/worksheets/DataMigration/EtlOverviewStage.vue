@@ -16,7 +16,7 @@
                     </p>
                     <a
                         target="_blank"
-                        href="https://mariadb.com/kb/en/mariadb-percona-proxy-2302-sql-resource/#prepare-etl-operation"
+                        href="https://mariadb.com/kb/en/mariadb-maxscale-2302-sql-resource/#prepare-etl-operation"
                         rel="noopener noreferrer"
                         class="rsrc-link"
                     >
@@ -24,7 +24,7 @@
                     </a>
                     <a
                         target="_blank"
-                        href="https://mariadb.com/kb/en/mariadb-percona-proxy-2302-limitations-and-known-issues-within-mariadb-percona-proxy/#etl-limitations"
+                        href="https://mariadb.com/kb/en/mariadb-maxscale-2302-limitations-and-known-issues-within-mariadb-maxscale/#etl-limitations"
                         rel="noopener noreferrer"
                         class="d-block rsrc-link"
                     >

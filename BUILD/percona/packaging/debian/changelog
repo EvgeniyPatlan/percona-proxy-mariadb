@@ -1,5 +1,5 @@
-percona-maxscale (23.08.12-1) unstable; urgency=low
+percona-proxy-mariadb (1.0.0-1) unstable; urgency=low
 
-  * Percona build of MariaDB MaxScale.
+  * Percona Proxy for MariaDB, derived from MariaDB MaxScale 23.08.12.
 
- -- Percona Build Team <info@percona.com>  Mon, 21 Sep 2026 00:00:00 +0000
+ -- Percona Build Team <info@percona.com>  Mon, 28 Sep 2026 00:00:00 +0000

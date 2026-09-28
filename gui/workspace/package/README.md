@@ -390,7 +390,7 @@ export default {
             })
         },
         /**
-         * https://github.com/mariadb-corporation/Percona Proxy/blob/22.08/Documentation/REST-API/Resources-SQL.md#open-sql-connection-to-server
+         * https://github.com/mariadb-corporation/MaxScale/blob/22.08/Documentation/REST-API/Resources-SQL.md#open-sql-connection-to-server
          * @param {Object} params.body
          * @param {Object} params.meta - extra info about the connection.
          * @param {String} params.meta.name - connection name.

@@ -2,7 +2,7 @@
 set -e
 
 if [ "$1" = "remove" ]; then
-    sh /usr/share/maxscale/prerm remove
+    sh /usr/share/percona-proxy/prerm remove
 fi
 
 #DEBHELPER#

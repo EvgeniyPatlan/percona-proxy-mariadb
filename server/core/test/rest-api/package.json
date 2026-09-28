@@ -1,7 +1,7 @@
 {
   "name": "rest-api-tests",
   "version": "1.0.0",
-  "repository": "https://github.com/mariadb-corporation/Percona Proxy",
+  "repository": "https://github.com/mariadb-corporation/MaxScale",
   "description": "Percona Proxy REST API tests",
   "scripts": {
     "test": "mocha --exit --timeout 30000 --slow 10000"

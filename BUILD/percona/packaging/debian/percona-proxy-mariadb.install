@@ -1,0 +1,5 @@
+etc/percona-proxy.cnf.template
+usr/bin/*
+usr/lib/*/percona-proxy/*
+usr/share/percona-proxy/*
+usr/share/man/man1/*

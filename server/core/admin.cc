@@ -75,7 +75,7 @@ const char* gui_not_secure_page =
       Configuration and Hardening section of the REST API tutorial.
     </p>
     <p>
-      <a href="https://mariadb.com/kb/en/percona-proxy/">Percona Proxy Documentation</a>
+      <a href="https://github.com/EvgeniyPatlan/percona-proxy-mariadb/tree/main/Documentation">Percona Proxy Documentation</a>
     </p>
   </body>
 </html>

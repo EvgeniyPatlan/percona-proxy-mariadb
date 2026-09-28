@@ -107,8 +107,8 @@ void encrypted_password_in_percona_proxyctl(TestConnections& test)
     command_ok("percona-proxyctl --user=foobar --password=foobar list sessions");
     command_ok("percona-proxyctl -c /tmp/percona-proxyctl-plaintext.cnf list sessions");
     command_ok("sudo percona-proxyctl --user=foobar --password=" + enc + " list sessions");
-    command_ok("MAXCTRL_USER=foobar MAXCTRL_PASSWORD=foobar percona-proxyctl list sessions");
-    command_err("MAXCTRL_USER=wrong MAXCTRL_PASSWORD=wrong percona-proxyctl list sessions");
+    command_ok("PERCONA_PROXYCTL_USER=foobar PERCONA_PROXYCTL_PASSWORD=foobar percona-proxyctl list sessions");
+    command_err("PERCONA_PROXYCTL_USER=wrong PERCONA_PROXYCTL_PASSWORD=wrong percona-proxyctl list sessions");
     command_ok("percona-proxyctl --user=foobar --password=" + enc + " --secretsdir=" + secretsdir + " list sessions");
     command_ok(
         "echo " + enc + "|percona-proxyctl --user=foobar --password='' --secretsdir=" + secretsdir + " list sessions");
@@ -119,8 +119,8 @@ void encrypted_password_in_percona_proxyctl(TestConnections& test)
     command_ok("percona-proxyctl --user=foobar --password=foobar list sessions");
     command_ok("percona-proxyctl -c /tmp/percona-proxyctl-plaintext.cnf list sessions");
     command_ok("sudo percona-proxyctl --user=foobar --password=" + enc + " list sessions");
-    command_ok("MAXCTRL_USER=foobar MAXCTRL_PASSWORD=foobar percona-proxyctl list sessions");
-    command_err("MAXCTRL_USER=wrong MAXCTRL_PASSWORD=wrong percona-proxyctl list sessions");
+    command_ok("PERCONA_PROXYCTL_USER=foobar PERCONA_PROXYCTL_PASSWORD=foobar percona-proxyctl list sessions");
+    command_err("PERCONA_PROXYCTL_USER=wrong PERCONA_PROXYCTL_PASSWORD=wrong percona-proxyctl list sessions");
     command_err("percona-proxyctl --user=foobar --password=" + enc + " --secretsdir=" + secretsdir + " list sessions");
     command_err(
         "echo " + enc + "|percona-proxyctl --user=foobar --password='' --secretsdir=" + secretsdir + " list sessions");

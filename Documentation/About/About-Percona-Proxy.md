@@ -43,7 +43,7 @@ Bugs can be reported in the MariaDB Jira
 
 Information about installing Percona Proxy for MariaDB, either from a repository or by
 building from source code, is included in the [Percona Proxy for MariaDB Installation
-Guide](../Getting-Started/MariaDB-Percona Proxy-Installation-Guide.md).
+Guide](../Getting-Started/MariaDB-Percona-Proxy-Installation-Guide.md).
 
 The same guide also provides basic information on running Percona Proxy for MariaDB. More
 detailed information about configuring Percona Proxy for MariaDB can be found in the

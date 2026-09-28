@@ -54,6 +54,12 @@ constexpr char CN_LISTENER[] = "listener";
 constexpr char CN_LOAD_PERSISTED_CONFIGS[] = "load_persisted_configs";
 constexpr char CN_MAX_ROUTING_CONNECTIONS[] = "max_routing_connections";
 constexpr char CN_MAXSCALE[] = "percona-proxy";
+/**
+ * The name the global section had in MariaDB MaxScale. A configuration that has not been
+ * migrated is still accepted: the section is renamed to CN_MAXSCALE while the file is read,
+ * and a warning points at percona-proxy-migrate.
+ */
+constexpr char CN_MAXSCALE_LEGACY[] = "maxscale";
 constexpr char CN_MEMORY[] = "memory";
 constexpr char CN_MODULE[] = "module";
 constexpr char CN_MODULES[] = "modules";

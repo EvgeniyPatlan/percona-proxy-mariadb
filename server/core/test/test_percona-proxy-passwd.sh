@@ -4,12 +4,12 @@
 SECRETS_DIR=`mktemp -d`
 
 # Generate a .secrets file.
-../maxkeys -u $(whoami) ${SECRETS_DIR} || exit 1
+../percona-proxy-keys -u $(whoami) ${SECRETS_DIR} || exit 1
 rv=0
 
 for ((i=0;i<10;i++))
 do
-    RES=$(../maxpasswd ${SECRETS_DIR} -d $(../maxpasswd ${SECRETS_DIR} dummy))
+    RES=$(../percona-proxy-passwd ${SECRETS_DIR} -d $(../percona-proxy-passwd ${SECRETS_DIR} dummy))
 
     if [ "$RES" != "dummy" ]
     then

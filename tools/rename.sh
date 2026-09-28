@@ -78,6 +78,8 @@ RULES=(
     's/\bmaxscale::/percona_proxy::/g'
     # Namespace aliases such as "namespace mxs = maxscale;" need the identifier spelling.
     's/\(namespace [A-Za-z_][A-Za-z0-9_]* *= *\)maxscale *;/\1percona_proxy;/g'
+    's/PERCONA_PROXYCTL_/PERCONA_PROXYCTL_/g'
+    's/MAXGUI_/GUI_/g'
     's/\bMAXSCALE_/PERCONA_PROXY_/g'
 
     # Executables and helper scripts, which are hyphenated on disk.
@@ -149,7 +151,7 @@ mapfile -t code_files < <(find "${find_args[@]}" \( -name '*.c' -o -name '*.cc' 
     -o -name '*.h' -o -name '*.hh' -o -name '*.hpp' \
     -o -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o -name '*.py' -o -name '*.vue' \) \
     ! -path '*/node_modules/*' -print0 \
-    | xargs -0 grep -lIE 'maxscale|MaxScale|Maxscale|maxctrl|MaxCtrl' 2>/dev/null || true)
+    | xargs -0 grep -lIE 'maxscale|MaxScale|Maxscale|MAXSCALE|maxctrl|MaxCtrl|maxgui|MaxGUI|maxkeys|maxpasswd|maxavrocheck' 2>/dev/null || true)
 echo "   ${#code_files[@]} sources contain the name"
 
 if [ "$DRY_RUN" = 0 ] && [ "${#code_files[@]}" -gt 0 ]
@@ -158,7 +160,7 @@ then
 fi
 
 echo "== rewriting file contents"
-mapfile -t files < <(find "${find_args[@]}" -print0 | xargs -0 grep -lIE 'maxscale|MaxScale|MAXSCALE|maxctrl|MaxCtrl|MaxGUI' 2>/dev/null || true)
+mapfile -t files < <(find "${find_args[@]}" -print0 | xargs -0 grep -lIE 'maxscale|MaxScale|Maxscale|MAXSCALE|maxctrl|MaxCtrl|maxgui|MaxGUI|maxkeys|maxpasswd|maxavrocheck' 2>/dev/null || true)
 echo "   ${#files[@]} files contain the name"
 
 if [ "$DRY_RUN" = 0 ]
@@ -217,7 +219,7 @@ do
               -e 's/maxscale/percona-proxy/g')
     rename_one "$path" "$dir/$new"
 done < <(find . -depth \( -iname '*maxscale*' -o -iname '*maxctrl*' -o -iname '*maxgui*' \
-    -o -iname 'maxkeys*' -o -iname 'maxpasswd*' -o -iname 'maxavrocheck*' \) \
+    -o -iname '*maxkeys*' -o -iname '*maxpasswd*' -o -iname '*maxavrocheck*' \) \
     "${rename_excludes[@]}")
 
 echo "== done"

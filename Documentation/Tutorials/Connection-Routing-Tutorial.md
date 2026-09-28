@@ -6,7 +6,7 @@ balanced across replica servers.
 
 ## Setting up Percona Proxy for MariaDB
 
-This tutorial is a part of the [Percona Proxy for MariaDB Tutorial](Percona Proxy-Tutorial.md).
+This tutorial is a part of the [Percona Proxy for MariaDB Tutorial](Percona-Proxy-Tutorial.md).
 Please read it and follow the instructions. Return here once basic setup is complete.
 
 ## Configuring services
@@ -50,7 +50,7 @@ read service the `slave`-type.
 
 The *user* and *password* parameters define the credentials the service uses to populate
 user authentication data. These users were created at the start of the
-[Percona Proxy Tutorial](Percona Proxy-Tutorial.md).
+[Percona Proxy Tutorial](Percona-Proxy-Tutorial.md).
 
 For increased security, see [password encryption](Encrypting-Passwords.md).
 
@@ -84,4 +84,4 @@ default behavior is to listen on all network interfaces (the IPv6 address `::`).
 
 ## Starting Percona Proxy for MariaDB
 
-For the last steps, please return to [Percona Proxy Tutorial](Percona Proxy-Tutorial.md).
+For the last steps, please return to [Percona Proxy Tutorial](Percona-Proxy-Tutorial.md).

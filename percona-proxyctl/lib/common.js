@@ -417,7 +417,7 @@ async function doRequest(host, resource, obj) {
     var res = await simpleRequest(host, resource, obj);
 
     // Don't generate warnings if the output is not a TTY. This prevents scripts from breaking.
-    if (process.stdout.isTTY && process.env["MAXCTRL_WARNINGS"] != "0" && res.headers["mxs-warning"]) {
+    if (process.stdout.isTTY && process.env["PERCONA_PROXYCTL_WARNINGS"] != "0" && res.headers["mxs-warning"]) {
       for (const w of res.headers["mxs-warning"].split(";")){
         console.log(colors.yellow("Warning: ") + w);
       }

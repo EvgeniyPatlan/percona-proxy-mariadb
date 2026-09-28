@@ -1,1 +1,1 @@
-include(${CMAKE_SOURCE_DIR}/versions/VERSION2308.cmake)
+include(${CMAKE_SOURCE_DIR}/versions/VERSION_PERCONA_PROXY.cmake)

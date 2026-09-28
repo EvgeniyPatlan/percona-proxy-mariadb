@@ -1,10 +1,10 @@
 #!/bin/bash
 #
-# Percona build wrapper for MariaDB MaxScale.
+# Percona build wrapper for Percona Proxy for MariaDB.
 #
 # RPMs and DEBs are built from the packaging in BUILD/percona/packaging (spec and debian
 # directory) so that the published source packages rebuild the shipped binaries. The binary
-# tarball uses MaxScale's own CPack packaging. Everything runs inside the OS the script is
+# tarball uses Percona Proxy's own CPack packaging. Everything runs inside the OS the script is
 # started in, normally a Docker container of the target distribution.
 #
 # The options follow the stage layout of the Percona Jenkins pipelines:
@@ -27,15 +27,15 @@ usage() {
 Usage: $0 --builddir=DIR [OPTIONS]
     --builddir=DIR          Absolute path to an existing directory where all work is done (required)
     --install_deps=1|git    1: install all build dependencies, git: only what --get_sources needs (needs root)
-    --get_sources=1         Clone the MaxScale repository and create the source tarball
+    --get_sources=1         Clone the Percona Proxy repository and create the source tarball
     --build_src_rpm=1       Build the source RPM from the source tarball
     --build_source_deb=1    Build the source DEB (.dsc) from the source tarball
     --build_rpm=1           Build RPM packages from the source RPM
     --build_deb=1           Build DEB packages from the source DEB
     --build_tarball=1       Build a binary tarball from the source tarball
-    --repo=URL              MaxScale git repository (default: ${GIT_REPO})
+    --repo=URL              Percona Proxy git repository (default: ${GIT_REPO})
     --branch=REF            Branch or tag to build (default: ${BRANCH})
-    --version=X.Y.Z         Expected MaxScale version, must match the version in the sources
+    --version=X.Y.Z         Expected Percona Proxy version, must match the version in the sources
     --rpm_release=N         RPM release (default: ${RPM_RELEASE})
     --deb_release=N         DEB release (default: ${DEB_RELEASE})
     --package_name=NAME     Package name (default: ${PACKAGE_NAME})
@@ -276,9 +276,9 @@ get_source_version() {
     local srcdir=$1 vfile major minor patch
     vfile=$(sed -n 's|^include(${CMAKE_SOURCE_DIR}/\(.*\))|\1|p' "$srcdir/VERSION.cmake")
     [ -f "$srcdir/$vfile" ] || die "Cannot find the version file referenced by $srcdir/VERSION.cmake"
-    major=$(sed -n 's/^set(MAXSCALE_VERSION_MAJOR "\([0-9]*\)".*/\1/p' "$srcdir/$vfile")
-    minor=$(sed -n 's/^set(MAXSCALE_VERSION_MINOR "\([0-9]*\)".*/\1/p' "$srcdir/$vfile")
-    patch=$(sed -n 's/^set(MAXSCALE_VERSION_PATCH "\([0-9]*\)".*/\1/p' "$srcdir/$vfile")
+    major=$(sed -n 's/^set(PERCONA_PROXY_VERSION_MAJOR "\([0-9]*\)".*/\1/p' "$srcdir/$vfile")
+    minor=$(sed -n 's/^set(PERCONA_PROXY_VERSION_MINOR "\([0-9]*\)".*/\1/p' "$srcdir/$vfile")
+    patch=$(sed -n 's/^set(PERCONA_PROXY_VERSION_PATCH "\([0-9]*\)".*/\1/p' "$srcdir/$vfile")
     echo "${major}.${minor}.${patch}"
 }
 
@@ -290,9 +290,9 @@ get_sources() {
     fi
 
     cd "$WORKDIR" || die "Cannot enter $WORKDIR"
-    rm -rf maxscale-clone
-    git clone "$GIT_REPO" maxscale-clone || die "There were some issues during repo cloning. Please retry one more time"
-    cd maxscale-clone || die "Cannot enter the cloned repository"
+    rm -rf percona-proxy-clone
+    git clone "$GIT_REPO" percona-proxy-clone || die "There were some issues during repo cloning. Please retry one more time"
+    cd percona-proxy-clone || die "Cannot enter the cloned repository"
     git checkout "$BRANCH" || die "Cannot check out $BRANCH"
     git submodule update --init --recursive || die "Cannot initialize git submodules"
 
@@ -309,7 +309,7 @@ get_sources() {
 
     PRODUCT_FULL="${PACKAGE_NAME}-${VERSION}"
     rm -rf "$PRODUCT_FULL"
-    mv maxscale-clone "$PRODUCT_FULL"
+    mv percona-proxy-clone "$PRODUCT_FULL"
 
     # The packaging has to sit where rpmbuild and dpkg-buildpackage expect it.
     cp -a "$PRODUCT_FULL/BUILD/percona/packaging/rpm" "$PRODUCT_FULL/rpm"
@@ -328,9 +328,9 @@ get_sources() {
         echo "GIT_REPO=${GIT_REPO}"
         echo "BRANCH_NAME=${BRANCH}"
         echo "UPLOAD=UPLOAD/experimental/BUILDS/${PACKAGE_NAME}/${PRODUCT_FULL}/${branch_path}/${revision}/"
-    } > maxscale.properties
+    } > percona-proxy.properties
     # The tarball has no .git directory, so the commit ID travels inside it.
-    cp maxscale.properties "$PRODUCT_FULL/percona-build.properties"
+    cp percona-proxy.properties "$PRODUCT_FULL/percona-build.properties"
 
     tar --owner=0 --group=0 --exclude=.git -czf "${PRODUCT_FULL}.tar.gz" "$PRODUCT_FULL" \
         || die "Failed to create the source tarball"
@@ -338,7 +338,7 @@ get_sources() {
     mkdir -p "$WORKDIR/source_tarball" "$CURDIR/source_tarball"
     cp "${PRODUCT_FULL}.tar.gz" "$WORKDIR/source_tarball/"
     cp "${PRODUCT_FULL}.tar.gz" "$CURDIR/source_tarball/"
-    cat maxscale.properties
+    cat percona-proxy.properties
 }
 
 # Extracts the source tarball into $WORKDIR and sets SRC_DIR, VERSION and COMMIT.
@@ -375,11 +375,11 @@ cmake_build_package() {
     cd "$build_dir" || die "Cannot enter $build_dir"
 
     cmake "$SRC_DIR" -DCMAKE_COLOR_MAKEFILE=N -DPACKAGE=Y -DPACKAGE_NAME="$PACKAGE_NAME" \
-        -DMAXSCALE_COMMIT="$COMMIT" -DBUILD_TESTS="$build_tests" "$@" \
+        -DPERCONA_PROXY_COMMIT="$COMMIT" -DBUILD_TESTS="$build_tests" "$@" \
         || die "CMake configuration failed"
 
-    # Without libsystemd MaxScale sends no watchdog notifications and systemd
-    # kills it because of WatchdogSec in maxscale.service.
+    # Without libsystemd Percona Proxy sends no watchdog notifications and systemd
+    # kills it because of WatchdogSec in percona-proxy.service.
     if grep -q '^HAVE_SYSTEMD:FILEPATH=.*NOTFOUND' CMakeCache.txt
     then
         die "libsystemd was not found; the packages would not work under systemd"
@@ -393,7 +393,7 @@ cmake_build_package() {
             ctest --timeout 120 --output-on-failure -j"$NCPU" || die "Unit tests failed"
     fi
 
-    # dpkg-shlibdeps must be able to resolve MaxScale's own core library.
+    # dpkg-shlibdeps must be able to resolve Percona Proxy's own core library.
     LD_LIBRARY_PATH="$build_dir/server/core" make package || die "Packaging failed"
 }
 
@@ -489,7 +489,7 @@ build_source_deb() {
 
     cd "$SRC_DIR" || die "Cannot enter $SRC_DIR"
     dch --force-bad-version --distribution unstable --force-distribution \
-        -v "${VERSION}-${DEB_RELEASE}" "Percona build of MariaDB MaxScale ${VERSION}" \
+        -v "${VERSION}-${DEB_RELEASE}" "Percona build of Percona Proxy for MariaDB ${VERSION}" \
         || die "Failed to update debian/changelog"
     # -d: the build dependencies are only needed when the binaries are built.
     dpkg-buildpackage -S -us -uc -d || die "Failed to build the source DEB"
@@ -563,18 +563,20 @@ RPM=0
 DEB=0
 BTARBALL=0
 BUILD_TESTS=0
-GIT_REPO="https://github.com/EvgeniyPatlan/MaxScale.git"
-BRANCH="percona-23.08"
+GIT_REPO="https://github.com/EvgeniyPatlan/percona-proxy-mariadb.git"
+# The packaging below lives on the branch that carries the rename. Until that branch is merged,
+# a build with the defaults has to be pointed at it with --branch=rename.
+BRANCH="main"
 VERSION=
 RPM_RELEASE=1
 DEB_RELEASE=1
-PACKAGE_NAME="percona-maxscale"
+PACKAGE_NAME="percona-proxy-mariadb"
 # The name the spec file and debian/control are written for.
-PACKAGING_NAME="percona-maxscale"
+PACKAGING_NAME="percona-proxy-mariadb"
 # Used by dch for the debian/changelog entries.
 export DEBEMAIL="${DEBEMAIL:-info@percona.com}"
 export DEBFULLNAME="${DEBFULLNAME:-Percona Build Team}"
-# Packaging needs CMake 3.25.1 or newer (Documentation/Getting-Started/Building-MaxScale-from-Source-Code.md)
+# Packaging needs CMake 3.25.1 or newer (Documentation/Getting-Started/Building-Percona-Proxy-from-Source-Code.md)
 CMAKE_VERSION="3.25.1"
 NODE_MAJOR=16
 parse_arguments PICK-ARGS-FROM-ARGV "$@"

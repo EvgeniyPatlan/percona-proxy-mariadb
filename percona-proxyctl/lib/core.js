@@ -53,12 +53,12 @@ const expanded_default_filename = os.homedir() + "/.percona-proxyctl.cnf";
 function createDefaultConfig() {
   let ret = {};
 
-  if (process.env["MAXCTRL_USER"] !== undefined) {
-    ret.user = process.env["MAXCTRL_USER"];
+  if (process.env["PERCONA_PROXYCTL_USER"] !== undefined) {
+    ret.user = process.env["PERCONA_PROXYCTL_USER"];
   }
 
-  if (process.env["MAXCTRL_PASSWORD"] !== undefined) {
-    ret.password = process.env["MAXCTRL_PASSWORD"];
+  if (process.env["PERCONA_PROXYCTL_PASSWORD"] !== undefined) {
+    ret.password = process.env["PERCONA_PROXYCTL_PASSWORD"];
   }
 
   return ret;
@@ -318,15 +318,15 @@ the current user's home directory, the following commands can be used:
 
 To hide all warnings from percona-proxyctl, run:
 
-    export MAXCTRL_WARNINGS=0
+    export PERCONA_PROXYCTL_WARNINGS=0
 
 If no commands are given, percona-proxyctl is started in interactive mode.
 Use 'exit' to exit the interactive mode.
 
-The credentials can also be defined using the MAXCTRL_USER and MAXCTRL_PASSWORD
+The credentials can also be defined using the PERCONA_PROXYCTL_USER and PERCONA_PROXYCTL_PASSWORD
 environment variables:
 
-   MAXCTRL_USER=my-user MAXCTRL_PASSWORD=my-secret percona-proxyctl list servers
+   PERCONA_PROXYCTL_USER=my-user PERCONA_PROXYCTL_PASSWORD=my-secret percona-proxyctl list servers
 
 The use of the -p,--password options is discouraged as the process arguments are
 visible to other users. Environment variables are not visible and thus they are

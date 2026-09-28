@@ -1,14 +1,14 @@
-#####################################################
-# Percona Proxy documentation:                           #
-# https://mariadb.com/kb/en/mariadb-percona-proxy-23-08/ #
-#####################################################
+#################################################################################
+# Percona Proxy for MariaDB documentation:                                      #
+# https://github.com/EvgeniyPatlan/percona-proxy-mariadb/tree/main/Documentation#
+#################################################################################
 
-#########################################################################################
-# Global parameters                                                                     #
-#                                                                                       #
-# Complete list of configuration options:                                               #
-# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-mariadb-percona-proxy-configuration-guide/ #
-#########################################################################################
+###############################################################################
+# Global parameters                                                           #
+#                                                                             #
+# Complete list of configuration options:                                     #
+# Documentation/Getting-Started/Configuration-Guide.md                        #
+###############################################################################
 [percona-proxy]
 threads=auto
 
@@ -22,22 +22,22 @@ threads=auto
 type=server
 address=127.0.0.1
 port=3306
-##################################################################################
-# Uncomment this and add Percona Proxy's IP to proxy_protocol_networks in MariaDB for #
-# easier user management: https://mariadb.com/kb/en/proxy-protocol-support/      #
-##################################################################################
+######################################################################################
+# Uncomment this and add Percona Proxy's IP to proxy_protocol_networks in MariaDB for#
+# easier user management: https://mariadb.com/kb/en/proxy-protocol-support/          #
+######################################################################################
 # proxy_protocol=true
 
 ####################################################################################
 # Monitor for the servers                                                          #
 #                                                                                  #
-# This will keep Percona Proxy aware of the state of the servers.                       #
+# This will keep Percona Proxy aware of the state of the servers.                  #
 # MariaDB Monitor documentation:                                                   #
-# https://mariadb.com/kb/en/mariadb-percona-proxy-23-08-monitors/                       #
+# Documentation/Monitors/Monitor-Common.md                                         #
 #                                                                                  #
 # The GRANTs needed by the monitor user depend on the actual monitor.              #
 # The GRANTs required by the MariaDB Monitor can be found here:                    #
-# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-mariadb-monitor/#required-grants #
+# Documentation/Monitors/MariaDB-Monitor.md#required-grants                        #
 ####################################################################################
 
 [MariaDB-Monitor]
@@ -49,10 +49,10 @@ password=monitor_pw
 monitor_interval=2s
 ####################################################################################################
 # Uncomment these to enable automatic node failover:                                               #
-# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-mariadb-monitor/#cluster-manipulation-operations #
+# Documentation/Monitors/MariaDB-Monitor.md#cluster-manipulation-operations                        #
 #                                                                                                  #
 # The GRANTs required for automatic node failover can be found here:                               #
-# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-mariadb-monitor/#cluster-manipulation-grants     #
+# Documentation/Monitors/MariaDB-Monitor.md#cluster-manipulation-grants                            #
 ####################################################################################################
 # auto_failover=true
 # auto_rejoin=true
@@ -60,8 +60,8 @@ monitor_interval=2s
 # replication_user=<username used for replication>
 # replication_password=<password used for replication>
 #################################################################################################
-# Uncomment this if you use more than one Percona Proxy with automatic node failover:                #
-# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-mariadb-monitor/#cooperative-monitoring       #
+# Uncomment this if you use more than one Percona Proxy with automatic node failover:           #
+# Documentation/Monitors/MariaDB-Monitor.md#cooperative-monitoring                              #
 #################################################################################################
 # cooperative_monitoring_locks=majority_of_all
 
@@ -71,12 +71,12 @@ monitor_interval=2s
 # Service Definition for a read-only service and a read/write splitting service.          #
 #                                                                                         #
 # The GRANTs needed by the service user can be found here:                                #
-# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-authentication-modules/#required-grants #
+# Documentation/Authenticators/Authentication-Modules.md#required-grants                  #
 ###########################################################################################
 
 ##################################################################
 # ReadConnRoute documentation:                                   #
-# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-readconnroute/ #
+# Documentation/Routers/ReadConnRoute.md                         #
 ##################################################################
 
 [Read-Only-Service]
@@ -89,7 +89,7 @@ router_options=slave
 
 ###################################################################
 # ReadWriteSplit documentation:                                   #
-# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-readwritesplit/ #
+# Documentation/Routers/ReadWriteSplit.md                         #
 ###################################################################
 
 [Read-Write-Service]
@@ -100,7 +100,7 @@ user=service_user
 password=service_pw
 ######################################################################################
 # Uncomment these to enable transparent transaction replay on node failure:          #
-# https://mariadb.com/kb/en/mariadb-percona-proxy-2308-readwritesplit/#transaction_replay #
+# Documentation/Routers/ReadWriteSplit.md#transaction_replay                         #
 ######################################################################################
 # transaction_replay=true
 # transaction_replay_timeout=30s
