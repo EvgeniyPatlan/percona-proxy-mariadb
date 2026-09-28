@@ -41,7 +41,7 @@
         "localforage": "~1.10.0",
         "lodash": "~4.17.21",
         "monaco-editor": "~0.33.0",
-        "monaco-editor-webpack-plugin": "~7.1.0",
+        "monaco-editor-webpack-plugin": "~7.1.1",
         "null-loader": "~3.0.0",
         "portal-vue": "~2.1.7",
         "sass": "~1.32.13",
