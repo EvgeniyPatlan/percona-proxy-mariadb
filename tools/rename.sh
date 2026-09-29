@@ -203,6 +203,7 @@ do
     dir=$(dirname "$path")
     new=$(echo "$base" \
         | sed -e 's/_maxscale\./_percona_proxy./' \
+              -e 's/_maxscale$/_percona_proxy/' \
               -e 's/maxscale_test\.h\.in/percona_proxy_test.h.in/' \
               -e 's/maxscale_test\.cnf/percona-proxy-test.cnf/' \
               -e 's/maxscale_generate_support_info\.py/percona-proxy-generate-support-info.py/' \

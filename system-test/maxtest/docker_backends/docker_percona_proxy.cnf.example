@@ -28,6 +28,8 @@ rcrslave_port=4009
 start_cmd=/command/s6-svc -u /run/service/percona-proxy
 # Command which shutdowns Percona Proxy.
 stop_cmd=/command/s6-svc -d /run/service/percona-proxy
+# Command which restarts Percona Proxy.
+restart_cmd=/command/s6-svc -r /run/service/percona-proxy
 # Unused
 reset_cmd=foo
 # Command which runs Percona Proxyctl.
