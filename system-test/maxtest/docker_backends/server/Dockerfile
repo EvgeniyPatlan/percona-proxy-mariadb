@@ -29,6 +29,10 @@ COPY --chmod=771 run_sshd /etc/services.d/sshd/run
 COPY --chmod=771 run_mariadbd /etc/services.d/mariadbd/run
 RUN touch /etc/services.d/mariadbd/down
 
+# Creates the admin account the test framework needs, on first initialisation of the data
+# directory.
+COPY init_test_admin.sql /docker-entrypoint-initdb.d/
+
 RUN mkdir /run/sshd
 
 EXPOSE 22 3306
