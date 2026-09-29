@@ -58,6 +58,8 @@ mariadb_port=3306
 start_cmd=/command/s6-svc -u /run/service/mariadbd
 # Command which stops the local server.
 stop_cmd=/command/s6-svc -d /run/service/mariadbd
+# Command which restarts the server.
+restart_cmd=/command/s6-svc -r /run/service/mariadbd
 # Command which resets the data on the local server. Not used for Docker, as the container and volume are recreated.
 reset_cmd=rm -rf /var/lib/mysql/*
 # Must match the Docker image name.
@@ -75,6 +77,8 @@ homedir=/tmp
 mariadb_port=3306
 start_cmd=/command/s6-svc -u /run/service/mariadbd
 stop_cmd=/command/s6-svc -d /run/service/mariadbd
+# Command which restarts the server.
+restart_cmd=/command/s6-svc -r /run/service/mariadbd
 reset_cmd=rm -rf /var/lib/mysql/*
 image=mxs_test_server:1
 container=server2
@@ -90,6 +94,8 @@ homedir=/tmp
 mariadb_port=3306
 start_cmd=/command/s6-svc -u /run/service/mariadbd
 stop_cmd=/command/s6-svc -d /run/service/mariadbd
+# Command which restarts the server.
+restart_cmd=/command/s6-svc -r /run/service/mariadbd
 reset_cmd=rm -rf /var/lib/mysql/*
 image=mxs_test_server:1
 container=server3
@@ -105,6 +111,8 @@ homedir=/tmp
 mariadb_port=3306
 start_cmd=/command/s6-svc -u /run/service/mariadbd
 stop_cmd=/command/s6-svc -d /run/service/mariadbd
+# Command which restarts the server.
+restart_cmd=/command/s6-svc -r /run/service/mariadbd
 reset_cmd=rm -rf /var/lib/mysql/*
 image=mxs_test_server:1
 container=server4

@@ -29,6 +29,8 @@ rcrslave_port=4009
 start_cmd=/home/me/percona-proxy/install/bin/percona-proxy
 # Command which shutdowns Percona Proxy.
 stop_cmd=pkill percona-proxy 2> /dev/null
+# Command which restarts Percona Proxy.
+restart_cmd=pkill percona-proxy 2> /dev/null; /usr/bin/percona-proxy
 # Unused
 reset_cmd=foo
 # Command which runs Percona Proxyctl. Please set correct executable path.
@@ -55,6 +57,8 @@ mariadb_port=3306
 start_cmd=/command/s6-svc -u /run/service/mariadbd
 # Command which stops the local server.
 stop_cmd=/command/s6-svc -d /run/service/mariadbd
+# Command which restarts the server.
+restart_cmd=/command/s6-svc -r /run/service/mariadbd
 # Command which resets the data on the local server. Not used for Docker, as the container and volume are recreated.
 reset_cmd=rm -rf /var/lib/mysql/*
 # Must match the Docker image name.
@@ -72,6 +76,8 @@ homedir=/tmp
 mariadb_port=3306
 start_cmd=/command/s6-svc -u /run/service/mariadbd
 stop_cmd=/command/s6-svc -d /run/service/mariadbd
+# Command which restarts the server.
+restart_cmd=/command/s6-svc -r /run/service/mariadbd
 reset_cmd=rm -rf /var/lib/mysql/*
 image=mxs_test_server:1
 container=server2
@@ -87,6 +93,8 @@ homedir=/tmp
 mariadb_port=3306
 start_cmd=/command/s6-svc -u /run/service/mariadbd
 stop_cmd=/command/s6-svc -d /run/service/mariadbd
+# Command which restarts the server.
+restart_cmd=/command/s6-svc -r /run/service/mariadbd
 reset_cmd=rm -rf /var/lib/mysql/*
 image=mxs_test_server:1
 container=server3
@@ -102,6 +110,8 @@ homedir=/tmp
 mariadb_port=3306
 start_cmd=/command/s6-svc -u /run/service/mariadbd
 stop_cmd=/command/s6-svc -d /run/service/mariadbd
+# Command which restarts the server.
+restart_cmd=/command/s6-svc -r /run/service/mariadbd
 reset_cmd=rm -rf /var/lib/mysql/*
 image=mxs_test_server:1
 container=server4
