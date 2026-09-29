@@ -424,8 +424,10 @@ verify_platform() {  # verify_platform <platform>
     # Runtime administration, which is what percona-proxyctl and the persisted configuration
     # directory are for. The directory is named after the product, so a rename that missed it
     # would show up as a server that does not survive a restart.
+    # An address of its own: a server may not share one with an existing server, and the
+    # address is never connected to, only recorded.
     check "percona-proxyctl creates a server at runtime" \
-        in_container "$container" "mxctl create server verifyserver 127.0.0.1 $MASTER_PORT \
+        in_container "$container" "mxctl create server verifyserver 127.0.0.1 65001 \
             && mxctl list servers --tsv | grep -q verifyserver" || failures=$((failures + 1))
 
     check "the runtime change is persisted" \
