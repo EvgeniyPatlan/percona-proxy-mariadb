@@ -463,6 +463,15 @@ build_rpm() {
     src_rpm=$(find "$WORKDIR/srpm" "$CURDIR/srpm" -name "${PACKAGE_NAME}-*.src.rpm" 2>/dev/null | sort | tail -n1)
     [ -n "$src_rpm" ] || die "There is no source RPM; create it with --build_src_rpm=1"
 
+    if [ -z "$VERSION" ]
+    then
+        # Only --get_sources reads the version from the sources, and the stages may run as
+        # separate invocations. Take it from the source RPM instead of building a glob with an
+        # empty version in it, which matches nothing however well the build went.
+        VERSION=$(rpm -qp --queryformat '%{VERSION}' "$src_rpm" 2>/dev/null)
+        [ -n "$VERSION" ] || die "Could not read the version from $src_rpm; pass --version=X.Y.Z"
+    fi
+
     prepare_rpmbuild_tree
     rpmbuild --rebuild --define "_topdir ${RPMBUILD_DIR}" --define "dist .${OS_NAME}" "$src_rpm" \
         || die "Failed to build the RPM packages"
@@ -516,6 +525,14 @@ build_deb() {
     done
     dsc=$(find "$WORKDIR" -maxdepth 1 -name "${PACKAGE_NAME}_*.dsc" | sort | tail -n1)
     [ -n "$dsc" ] || die "There is no source DEB; create it with --build_source_deb=1"
+
+    if [ -z "$VERSION" ]
+    then
+        # As in build_rpm: the version comes from the source package when the stage runs on
+        # its own, so that the glob below is not built with an empty version.
+        VERSION=$(sed -n 's/^Version: *\([^-]*\)-.*/\1/p' "$dsc" | head -n1)
+        [ -n "$VERSION" ] || die "Could not read the version from $dsc; pass --version=X.Y.Z"
+    fi
 
     src_dir="$WORKDIR/${PACKAGE_NAME}-${VERSION}"
     rm -rf "$src_dir"
