@@ -87,6 +87,13 @@ parse_arguments() {
     done
 }
 
+# A private repository is cloned with credentials in the URL. They are stripped from anything
+# that is written to a file or printed: percona-build.properties travels inside the published
+# source packages, and an error message ends up in the build log.
+sanitized_repo() {
+    echo "$GIT_REPO" | sed -e 's#://[^/@]*@#://#'
+}
+
 die() {
     echo >&2 "ERROR: $*"
     exit 1
@@ -244,7 +251,7 @@ install_deps() {
     then
         rm -rf "$deps_src"
         git clone "$GIT_REPO" "$deps_src" && git -C "$deps_src" checkout "$BRANCH" \
-            || die "Failed to clone $GIT_REPO ($BRANCH) for the dependency scripts"
+            || die "Failed to clone $(sanitized_repo) ($BRANCH) for the dependency scripts"
     fi
     if [ "$OS_ID" = "amzn" ]
     then
@@ -317,10 +324,7 @@ get_sources() {
 
     branch_path=$(echo "$BRANCH" | tr '/' '_')
 
-    # A private repository is cloned with credentials in the URL, and this file is copied into
-    # the source tarball and published, so anything between // and @ is removed before the URL
-    # is recorded. Without this a token would travel inside every source package.
-    safe_git_repo=$(echo "$GIT_REPO" | sed -e 's#://[^/@]*@#://#')
+    safe_git_repo=$(sanitized_repo)
     {
         echo "PRODUCT=${PACKAGE_NAME}"
         echo "VERSION=${VERSION}"
