@@ -316,6 +316,11 @@ get_sources() {
     cp -a "$PRODUCT_FULL/BUILD/percona/packaging/debian" "$PRODUCT_FULL/debian"
 
     branch_path=$(echo "$BRANCH" | tr '/' '_')
+
+    # A private repository is cloned with credentials in the URL, and this file is copied into
+    # the source tarball and published, so anything between // and @ is removed before the URL
+    # is recorded. Without this a token would travel inside every source package.
+    safe_git_repo=$(echo "$GIT_REPO" | sed -e 's#://[^/@]*@#://#')
     {
         echo "PRODUCT=${PACKAGE_NAME}"
         echo "VERSION=${VERSION}"
@@ -325,7 +330,7 @@ get_sources() {
         echo "COMMIT=${commit}"
         echo "RPM_RELEASE=${RPM_RELEASE}"
         echo "DEB_RELEASE=${DEB_RELEASE}"
-        echo "GIT_REPO=${GIT_REPO}"
+        echo "GIT_REPO=${safe_git_repo}"
         echo "BRANCH_NAME=${BRANCH}"
         echo "UPLOAD=UPLOAD/experimental/BUILDS/${PACKAGE_NAME}/${PRODUCT_FULL}/${branch_path}/${revision}/"
     } > percona-proxy.properties
