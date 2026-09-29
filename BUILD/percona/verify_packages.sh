@@ -404,17 +404,86 @@ verify_platform() {  # verify_platform <platform>
     check "GUI is served" \
         in_container "$container" "curl -s -f -o /dev/null http://127.0.0.1:$ADMIN_PORT/" || failures=$((failures + 1))
 
+    # The global REST resource and the subcommand that reads it are both named after the
+    # product, so they change with it.
+    check "the REST API serves /v1/percona-proxy" \
+        in_container "$container" "curl -s -f -u admin:mariadb http://127.0.0.1:$ADMIN_PORT/v1/percona-proxy \
+            | grep -q '\"percona-proxy\"'" || failures=$((failures + 1))
+
+    # grep for the field rather than for $VERSION, which is empty unless --version was given,
+    # and an empty pattern matches every line.
+    check "percona-proxyctl show percona-proxy reports the version" \
+        in_container "$container" "mxctl show percona-proxy | grep -qi 'version'" || failures=$((failures + 1))
+
     check "modules are loaded" \
         in_container "$container" "mxctl list modules --tsv | grep -q mariadbmon && mxctl list modules --tsv | grep -q readwritesplit" || failures=$((failures + 1))
 
     check "no errors in the log" \
         in_container "$container" "! grep -iE '  (error|alert) *:' /var/log/percona-proxy/stdout.log" || failures=$((failures + 1))
 
+    # Runtime administration, which is what percona-proxyctl and the persisted configuration
+    # directory are for. The directory is named after the product, so a rename that missed it
+    # would show up as a server that does not survive a restart.
+    check "percona-proxyctl creates a server at runtime" \
+        in_container "$container" "mxctl create server verifyserver 127.0.0.1 $MASTER_PORT \
+            && mxctl list servers --tsv | grep -q verifyserver" || failures=$((failures + 1))
+
+    check "the runtime change is persisted" \
+        in_container "$container" "grep -rq verifyserver /var/lib/percona-proxy/percona-proxy.cnf.d/" \
+        || failures=$((failures + 1))
+
+    check "percona-proxyctl destroys the server again" \
+        in_container "$container" "mxctl destroy server verifyserver \
+            && ! mxctl list servers --tsv | grep -q verifyserver" || failures=$((failures + 1))
+
+    # percona-proxy-keys and percona-proxy-passwd are separate binaries, and the encrypted
+    # password has to survive a round trip through both of them.
+    check "encrypted passwords round trip" \
+        in_container "$container" "d=\$(mktemp -d); percona-proxy-keys \$d > /dev/null \
+            && enc=\$(percona-proxy-passwd \$d secret) \
+            && test \"\$(percona-proxy-passwd \$d -d \$enc)\" = secret" || failures=$((failures + 1))
+
     check "shuts down cleanly" \
         in_container "$container" "pkill -TERM -x percona-proxy;
             for i in \$(seq 1 30); do pgrep -x percona-proxy > /dev/null || break; sleep 1; done;
             ! pgrep -x percona-proxy && grep -q 'Percona Proxy shutdown completed' /var/log/percona-proxy/stdout.log" \
         || failures=$((failures + 1))
+
+    # Moving over from MariaDB MaxScale. These run with the daemon stopped, and each one starts
+    # it again from a configuration of the shape an unmigrated installation has.
+    #
+    # The MaxScale configuration used here is the working one with the names put back, so that
+    # a failure means the compatibility path is broken rather than the configuration.
+    in_container "$container" "sed -e 's/^\\[percona-proxy\\]/[maxscale]/' \
+        /etc/percona-proxy.cnf > /etc/maxscale.cnf" > /dev/null 2>&1
+
+    check "percona-proxy-migrate converts a MaxScale configuration" \
+        in_container "$container" "percona-proxy-migrate --from=/etc/maxscale.cnf --to=/tmp/migrated.cnf > /dev/null \
+            && grep -q '^\\[percona-proxy\\]' /tmp/migrated.cnf \
+            && ! grep -q '^\\[maxscale\\]' /tmp/migrated.cnf" || failures=$((failures + 1))
+
+    check "a [maxscale] section is accepted" \
+        in_container "$container" "cp /etc/maxscale.cnf /etc/percona-proxy.cnf;
+            percona-proxy -U percona-proxy --log=stdout > /var/log/percona-proxy/compat.log 2>&1 &
+            for i in \$(seq 1 30); do mxctl list servers > /dev/null 2>&1 && break; sleep 1; done;
+            mxctl list servers --tsv | grep -q 'Master, Running' \
+                && grep -qi 'is the MariaDB MaxScale name of the global section' /var/log/percona-proxy/compat.log" \
+        || failures=$((failures + 1))
+
+    in_container "$container" "pkill -TERM -x percona-proxy;
+        for i in \$(seq 1 30); do pgrep -x percona-proxy > /dev/null || break; sleep 1; done" > /dev/null 2>&1
+
+    # With no percona-proxy.cnf at all, the MaxScale one is read instead.
+    check "starts from /etc/maxscale.cnf when there is no percona-proxy.cnf" \
+        in_container "$container" "rm -f /etc/percona-proxy.cnf;
+            percona-proxy -U percona-proxy --log=stdout > /var/log/percona-proxy/fallback.log 2>&1 &
+            for i in \$(seq 1 30); do mxctl list servers > /dev/null 2>&1 && break; sleep 1; done;
+            mxctl list servers --tsv | grep -q 'Master, Running' \
+                && grep -qi 'Reading the MariaDB MaxScale configuration' /var/log/percona-proxy/fallback.log" \
+        || failures=$((failures + 1))
+
+    in_container "$container" "pkill -TERM -x percona-proxy;
+        for i in \$(seq 1 30); do pgrep -x percona-proxy > /dev/null || break; sleep 1; done" > /dev/null 2>&1
 
     # Clean up for the next platform.
     sql $MASTER_PORT "DROP DATABASE IF EXISTS mxsverify" > /dev/null 2>&1

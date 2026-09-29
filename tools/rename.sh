@@ -140,6 +140,9 @@ RULES=(
     's/@percona-proxy\./@percona_proxy./g'
 
     's/--enable-percona-proxy/--enable-maxscale/g'
+    # mariadb_repo_setup is MariaDB's script, downloaded at build time. Its option keeps the
+    # name it has there.
+    's/--skip_percona_proxy/--skip_maxscale/g'
     's/\bpercona_proxy_create_pseudo_limit\b/maxscale_create_pseudo_limit/g'
     's/\bpercona_proxy_set_type_mask\b/maxscale_set_type_mask/g'
     's/\bpercona_proxy_update_function_info\b/maxscale_update_function_info/g'
