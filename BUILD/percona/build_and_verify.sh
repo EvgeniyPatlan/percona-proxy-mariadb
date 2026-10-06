@@ -49,6 +49,14 @@ die() {
     exit 1
 }
 
+# Set when a branch had to be invented for a detached HEAD, so it can be taken away again.
+TEMP_BRANCH=
+
+cleanup_temp_branch() {
+    [ -n "$TEMP_BRANCH" ] && git -C "$REPO" branch -D "$TEMP_BRANCH" > /dev/null 2>&1
+    return 0
+}
+
 # The distribution each platform is built in. The builder works out the package naming from the
 # container it runs in, so this mapping is what decides the dist tag and the codename.
 platform_image() {
@@ -235,6 +243,18 @@ main() {
         if [ -d "$REPO/.git" ]
         then
             BRANCH=$(git -C "$REPO" rev-parse --abbrev-ref HEAD)
+            if [ "$BRANCH" = HEAD ]
+            then
+                # A detached HEAD, which is what a CI checkout leaves behind. The builder clones
+                # by branch name and "git clone --branch HEAD" fails, so give it a name that
+                # exists and remove it again on the way out.
+                TEMP_BRANCH="build-and-verify-$$"
+                git -C "$REPO" branch "$TEMP_BRANCH" HEAD > /dev/null \
+                    || die "cannot create a branch for the detached HEAD in $REPO"
+                BRANCH="$TEMP_BRANCH"
+                trap cleanup_temp_branch EXIT
+                echo "Detached HEAD: building through temporary branch $TEMP_BRANCH"
+            fi
         else
             BRANCH=main
         fi

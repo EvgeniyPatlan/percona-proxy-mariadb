@@ -82,3 +82,8 @@ compile_commands.json
 # The package the system-test Percona Proxy image is built from. The README tells you to copy
 # a built .deb here under this name; it is a build artifact, not a source file.
 system-test/maxtest/docker_backends/percona-proxy/percona-proxy.deb
+
+# Output of BUILD/percona/build_and_verify.sh. In CI it has to sit inside the workspace,
+# because upload-artifact and hashFiles cannot see outside it.
+/bv/
+/build-and-verify/
