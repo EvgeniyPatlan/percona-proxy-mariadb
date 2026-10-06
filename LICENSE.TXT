@@ -1,1 +1,22 @@
-licenses/LICENSE2308.TXT
+Percona Proxy for MariaDB is distributed under the GNU General Public License,
+version 2 or later. The full text of that license is in COPYING.
+
+This product is derived from MariaDB MaxScale 23.08, which MariaDB plc published
+under the Business Source License 1.1. That license named 2026-09-21 as the
+Change Date, and "version 2 or later of the GNU General Public License" as the
+Change License. The Change Date has passed, so the work this product is derived
+from is governed by the GNU General Public License, and so is this product.
+
+The Business Source License text under which the upstream work was originally
+published is kept unchanged, for reference, in licenses/LICENSE2308.TXT. The
+licenses of earlier MaxScale releases are kept alongside it. Until this file was
+written it was a symbolic link to that text, which is why the Business Source
+License appeared here as though it still governed the work.
+
+Source files still carry the Business Source License notice and the Change Date
+in their headers, as published upstream. They are deliberately left as they are:
+each header records the date on which that file became available under the GNU
+General Public License, and the notices are preserved as that license requires.
+
+Third-party components keep their own licenses; see LICENSE-THIRDPARTY.TXT.
+Copyright and trademark attribution is in NOTICE.

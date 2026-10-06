@@ -23,6 +23,19 @@ tagged in this repository as upstream-23.08.12.
 Third-party components keep their own licenses and are listed in
 LICENSE-THIRDPARTY.TXT.
 
+Modifications by Percona
+------------------------
+
+Percona modified the upstream work in 2026. The product was renamed from MariaDB
+MaxScale to Percona Proxy for MariaDB throughout: the binaries, the libraries,
+the packages, the configuration files and directories, the REST API and the
+documentation. Packaging, migration and verification tooling was added under
+BUILD/percona and script/. Compatibility with existing MariaDB MaxScale
+installations was added, so that a MaxScale configuration file and a [maxscale]
+section are still read, and a MaxScale configuration can be migrated. That
+compatibility is why the MariaDB and MaxScale names still appear throughout the
+source and the documentation.
+
 MariaDB is a trademark of MariaDB Corporation Ab. MaxScale is a trademark of
 MariaDB plc. Their use here describes the origin of this software and does not
 imply any endorsement by, or affiliation with, the trademark holders.
