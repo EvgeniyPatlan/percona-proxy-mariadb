@@ -147,8 +147,11 @@ jobs:
               --workdir="${GITHUB_WORKSPACE}/bv" \
               --verify-only
 
-      - name: Collect logs on failure
-        if: failure()
+      # Always, not only on failure. The builder writes to a log file inside the container, so
+      # this is the only place the unit test results and the compiler output can be read: a
+      # green job otherwise just means ctest did not fail, with nothing to show for it.
+      - name: Upload build logs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: logs-${{ matrix.platform }}-${{ matrix.arch }}
