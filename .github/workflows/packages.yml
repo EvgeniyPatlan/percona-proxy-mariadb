@@ -18,6 +18,10 @@ on:
       platforms:
         description: Space separated platforms, or "all"
         default: all
+      unit_tests:
+        description: Build and run the unit tests inside each package build
+        type: boolean
+        default: true
       architectures:
         description: >-
           Which architectures to build. arm64 needs GitHub's arm64 runners, which are free on a
@@ -43,6 +47,7 @@ jobs:
       platforms: ${{ steps.pick.outputs.platforms }}
       architectures: ${{ steps.pick.outputs.architectures }}
       version: ${{ steps.pick.outputs.version }}
+      build_tests: ${{ steps.pick.outputs.build_tests }}
     steps:
       - id: pick
         shell: bash
@@ -52,6 +57,7 @@ jobs:
           IN_PLATFORMS: ${{ inputs.platforms }}
           IN_ARCHITECTURES: ${{ inputs.architectures }}
           IN_VERSION: ${{ inputs.version }}
+          IN_UNIT_TESTS: ${{ inputs.unit_tests }}
         run: |
           set -o errexit
           requested="$IN_PLATFORMS"
@@ -77,6 +83,14 @@ jobs:
           [ -z "$version" ] && version="${GITHUB_REF_NAME#v}"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
+          # A tag build runs them too: empty is only ever the default here.
+          if [ "$IN_UNIT_TESTS" = false ]
+          then
+              echo "build_tests=" >> "$GITHUB_OUTPUT"
+          else
+              echo "build_tests=--build-tests" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
     needs: plan
     strategy:
@@ -99,13 +113,16 @@ jobs:
               /usr/local/share/boost "${AGENT_TOOLSDIRECTORY:-/opt/hostedtoolcache}" || true
           df -h /
 
-      - name: Build packages
+      - name: Build packages and run the unit tests
         shell: bash
         run: |
+          # The unit tests run inside the package build, so they run against the compiler
+          # and libraries of the platform the package is for.
           ./BUILD/percona/build_and_verify.sh \
               --platforms='${{ matrix.platform }}' \
               --version='${{ needs.plan.outputs.version }}' \
               --workdir="${GITHUB_WORKSPACE}/bv" \
+              ${{ needs.plan.outputs.build_tests }} \
               --build-only
 
       # Uploaded before the packages are verified, so that a failing verification still leaves

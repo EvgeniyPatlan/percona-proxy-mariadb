@@ -20,6 +20,8 @@
 #     --deb-release=N     DEB release value (default: 1)
 #     --workdir=DIR       Where to build (default: ./build-and-verify)
 #     --port-base=N       First of the five ports used on the host (default: 3000)
+#     --build-tests       Also build and run the unit tests inside each package build. The
+#                         build fails if any of them does.
 #     --build-only        Build the packages and stop
 #     --verify-only       Verify packages already in WORKDIR/packages
 #     --keep              Keep the build trees, which are several GB per platform
@@ -40,6 +42,7 @@ RPM_RELEASE=1
 DEB_RELEASE=1
 WORKDIR=
 PORT_BASE=3000
+BUILD_TESTS=0
 BUILD_ONLY=0
 VERIFY_ONLY=0
 KEEP=0
@@ -94,6 +97,7 @@ parse_options() {
             --deb-release=*) DEB_RELEASE="$val" ;;
             --workdir=*)     WORKDIR="$val" ;;
             --port-base=*)   PORT_BASE="$val" ;;
+            --build-tests)   BUILD_TESTS=1 ;;
             --build-only)    BUILD_ONLY=1 ;;
             --verify-only)   VERIFY_ONLY=1 ;;
             --keep)          KEEP=1 ;;
@@ -145,6 +149,7 @@ run_stage() {
     local marker=\$1; shift
     if ! ppb.sh --builddir=/work/build --repo='$container_repo' --branch='$BRANCH' \\
         --version='$VERSION' --rpm_release='$RPM_RELEASE' --deb_release='$DEB_RELEASE' \\
+        --build_tests='$BUILD_TESTS' \\
         "\$@" > "/work/\$marker.log" 2>&1
     then
         tail -40 "/work/\$marker.log"
@@ -267,6 +272,7 @@ main() {
     if [ "$VERIFY_ONLY" -eq 0 ]
     then
         echo "Building $VERSION from $REPO ($BRANCH)"
+        [ "$BUILD_TESTS" -eq 1 ] && echo "The unit tests run inside each package build"
         for platform in $PLATFORMS
         do
             build_platform "$platform" || failed="$failed $platform"
