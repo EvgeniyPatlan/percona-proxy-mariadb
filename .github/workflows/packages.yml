@@ -1,0 +1,178 @@
+# Builds the packages for every supported platform and architecture, verifies each one by
+# installing it and routing queries through two real MariaDB servers, and publishes the whole
+# set as a single downloadable artifact once they have all passed.
+#
+# Each job runs BUILD/percona/build_and_verify.sh, which is the same thing a developer runs
+# locally, so a green run here and a green run on a laptop mean the same thing.
+#
+# amd64 only by default. arm64 needs GitHub's arm64 runners, which are free on a public
+# repository but a paid plan on a private one; pass architectures=both once that is sorted.
+name: Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to build, must match the version in the sources
+        default: "1.0.0"
+      platforms:
+        description: Space separated platforms, or "all"
+        default: all
+      architectures:
+        description: >-
+          Which architectures to build. arm64 needs GitHub's arm64 runners, which are free on a
+          public repository and a paid plan on a private one.
+        type: choice
+        options: [amd64, both, arm64]
+        default: amd64
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: packages-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Turns the inputs into the build matrix. A tag build always covers everything.
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      platforms: ${{ steps.pick.outputs.platforms }}
+      architectures: ${{ steps.pick.outputs.architectures }}
+      version: ${{ steps.pick.outputs.version }}
+    steps:
+      - id: pick
+        shell: bash
+        # The inputs reach the script through the environment rather than being pasted into it,
+        # so a value containing shell syntax stays a value.
+        env:
+          IN_PLATFORMS: ${{ inputs.platforms }}
+          IN_ARCHITECTURES: ${{ inputs.architectures }}
+          IN_VERSION: ${{ inputs.version }}
+        run: |
+          set -o errexit
+          requested="$IN_PLATFORMS"
+          if [ -z "$requested" ] || [ "$requested" = all ]
+          then
+              requested="el8 el9 el10 amzn2023 jammy noble bookworm trixie"
+          fi
+          printf 'platforms=[' >> "$GITHUB_OUTPUT"
+          printf '"%s",' $requested | sed 's/,$//' >> "$GITHUB_OUTPUT"
+          printf ']\n' >> "$GITHUB_OUTPUT"
+
+          # Empty is a tag build, which takes the default rather than everything: arm64 is
+          # opt-in while the arm64 runners are not available here.
+          case "$IN_ARCHITECTURES" in
+              both)  arches='["amd64","arm64"]' ;;
+              arm64) arches='["arm64"]' ;;
+              *)     arches='["amd64"]' ;;
+          esac
+          echo "architectures=$arches" >> "$GITHUB_OUTPUT"
+
+          version="$IN_VERSION"
+          # A tag build takes the version from the tag, so v1.0.0 builds 1.0.0.
+          [ -z "$version" ] && version="${GITHUB_REF_NAME#v}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
+    strategy:
+      # One platform failing should not hide the state of the other fifteen.
+      fail-fast: false
+      matrix:
+        platform: ${{ fromJSON(needs.plan.outputs.platforms) }}
+        arch: ${{ fromJSON(needs.plan.outputs.architectures) }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        shell: bash
+        run: |
+          # A runner has about 14 GB free and one platform needs around 4 GB of build tree.
+          # The preinstalled toolchains are not used here and removing them buys ~20 GB.
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+              /usr/local/share/boost "${AGENT_TOOLSDIRECTORY:-/opt/hostedtoolcache}" || true
+          df -h /
+
+      - name: Build packages
+        shell: bash
+        run: |
+          ./BUILD/percona/build_and_verify.sh \
+              --platforms='${{ matrix.platform }}' \
+              --version='${{ needs.plan.outputs.version }}' \
+              --workdir="${GITHUB_WORKSPACE}/bv" \
+              --build-only
+
+      # Uploaded before the packages are verified, so that a failing verification still leaves
+      # something to look at.
+      - name: Upload packages
+        # Always, so that a failing verification still leaves the packages to look at. The
+        # build step above is what decides whether the job is green.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.platform }}-${{ matrix.arch }}
+          path: bv/packages/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Verify packages
+        shell: bash
+        run: |
+          ./BUILD/percona/build_and_verify.sh \
+              --platforms='${{ matrix.platform }}' \
+              --version='${{ needs.plan.outputs.version }}' \
+              --workdir="${GITHUB_WORKSPACE}/bv" \
+              --verify-only
+
+      - name: Collect logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            bv/*/*.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # Only reached when every build job has passed, so what it publishes is a set of packages
+  # that have all been installed and exercised.
+  publish:
+    needs: [plan, build]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: packages-*
+          merge-multiple: true
+          path: packages
+
+      - name: Summarise
+        shell: bash
+        run: |
+          set -o errexit
+          cd packages
+          sha256sum * > SHA256SUMS
+          {
+              echo "## Packages ${{ needs.plan.outputs.version }}"
+              echo
+              echo "| Package | Size |"
+              echo "|---|---|"
+              for f in *.rpm *.deb
+              do
+                  [ -e "$f" ] || continue
+                  echo "| \`$f\` | $(du -h "$f" | cut -f1) |"
+              done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: percona-proxy-mariadb-${{ needs.plan.outputs.version }}-packages
+          path: packages/
+          retention-days: 30
+          if-no-files-found: error
