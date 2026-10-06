@@ -78,11 +78,31 @@ platform_image() {
 }
 
 # Prints the packages of one platform, newline separated.
+# The build produces both architectures, and a directory holding both would otherwise hand a
+# foreign one to the installer. Only the architecture this machine can run is considered.
+host_arch() {  # host_arch rpm|deb
+    local machine
+    machine=$(uname -m)
+    if [ "$1" = rpm ]
+    then
+        echo "$machine"
+    elif [ "$machine" = aarch64 ]
+    then
+        echo arm64
+    else
+        echo amd64
+    fi
+}
+
 platform_packages() {
     local platform=$1
     case "$platform" in
-        el*|amzn*) find "$PACKAGES" -name "*.${platform}.*.rpm" ! -name "*.src.rpm" ;;
-        *)         find "$PACKAGES" -name "*.${platform}_*.deb" ;;
+        el*|amzn*)
+            find "$PACKAGES" \( -name "*.${platform}.$(host_arch rpm).rpm" \
+                -o -name "*.${platform}.noarch.rpm" \) ! -name "*.src.rpm" ;;
+        *)
+            find "$PACKAGES" \( -name "*.${platform}_$(host_arch deb).deb" \
+                -o -name "*.${platform}_all.deb" \) ;;
     esac
 }
 
