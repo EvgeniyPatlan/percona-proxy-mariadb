@@ -5,8 +5,8 @@
 # Each job runs BUILD/percona/build_and_verify.sh, which is the same thing a developer runs
 # locally, so a green run here and a green run on a laptop mean the same thing.
 #
-# arm64 jobs need GitHub's arm64 runners. Those are free for public repositories; on a private
-# repository they are a paid plan, which is why ARCHITECTURES can be narrowed to amd64.
+# amd64 only by default. arm64 needs GitHub's arm64 runners, which are free on a public
+# repository but a paid plan on a private one; pass architectures=both once that is sorted.
 name: Packages
 
 on:
@@ -19,10 +19,12 @@ on:
         description: Space separated platforms, or "all"
         default: all
       architectures:
-        description: Which architectures to build
+        description: >-
+          Which architectures to build. arm64 needs GitHub's arm64 runners, which are free on a
+          public repository and a paid plan on a private one.
         type: choice
-        options: [both, amd64, arm64]
-        default: both
+        options: [amd64, both, arm64]
+        default: amd64
   push:
     tags: ["v*"]
 
@@ -61,10 +63,12 @@ jobs:
           printf '"%s",' $requested | sed 's/,$//' >> "$GITHUB_OUTPUT"
           printf ']\n' >> "$GITHUB_OUTPUT"
 
+          # Empty is a tag build, which takes the default rather than everything: arm64 is
+          # opt-in while the arm64 runners are not available here.
           case "$IN_ARCHITECTURES" in
-              amd64) arches='["amd64"]' ;;
+              both)  arches='["amd64","arm64"]' ;;
               arm64) arches='["arm64"]' ;;
-              *)     arches='["amd64","arm64"]' ;;
+              *)     arches='["amd64"]' ;;
           esac
           echo "architectures=$arches" >> "$GITHUB_OUTPUT"
 
