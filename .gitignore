@@ -78,3 +78,7 @@ TAGS
 /.cache/
 .clangd
 compile_commands.json
+
+# The package the system-test Percona Proxy image is built from. The README tells you to copy
+# a built .deb here under this name; it is a build artifact, not a source file.
+system-test/maxtest/docker_backends/percona-proxy/percona-proxy.deb
